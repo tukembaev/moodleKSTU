@@ -1,36 +1,37 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { swapiQueries } from "features/Authorization/model/services/loginQueryFactory";
-import { queryClient } from "shared/api/queryClient";
+import { GlobalCourseCarousel } from "entities/Course";
+import { useState } from "react";
 
-import { Button } from "shared/ui/shadcn/button";
+import { BrowseCourse, HighRatedCourseCarousel } from "widgets/Course";
+// import UserBasket from "widgets/User/ui/UserBasket";
 
 const MainPage = () => {
-  const { data, isLoading, error } = useQuery(swapiQueries.allPeople());
-  const mutation = useMutation({
-    mutationFn: swapiQueries.createPerson,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: swapiQueries.all() });
-    },
-  });
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error</div>;
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  console.log(data);
   return (
-    <div className="text-4xl">
-      <h1>{data[0].name}</h1>
-      <Button
-        variant={"outline"}
-        onClick={() =>
-          mutation.mutate({
-            name: "Test",
-            birth_year: "Unknown",
-            gender: "n/a",
-          })
-        }
-      >
-        Button
-      </Button>
+    <div className="flex flex-col gap-4 px-6 py-4">
+      <HighRatedCourseCarousel />
+      <BrowseCourse
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
+      />
+      <div className="flex flex-col gap-2">
+        <GlobalCourseCarousel
+          title="Лучшие курсы по технике"
+          description="Создай порядок из того чего не бывает"
+        />
+        <GlobalCourseCarousel
+          title="Лучшие курсы по политике"
+          description="Создай порядок из того чего не бывает"
+        />
+        <GlobalCourseCarousel
+          title="Лучшие курсы по бизнесу"
+          description="Создай порядок из того чего не бывает"
+        />
+        <GlobalCourseCarousel
+          title="Лучшие курсы по психологии"
+          description="Создай порядок из того чего не бывает"
+        />
+      </div>
     </div>
   );
 };

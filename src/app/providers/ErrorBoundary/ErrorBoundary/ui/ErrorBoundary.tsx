@@ -1,48 +1,47 @@
-import React, { ErrorInfo, ReactNode, Suspense } from 'react';
-import { Layout } from 'widgets/Layout';
-import { ErrorWidget } from 'widgets/ErrorWidget';
+import React, { ErrorInfo, ReactNode, Suspense } from "react";
+import { Layout } from "widgets/Layout";
+import { ErrorWidget } from "widgets/ErrorWidget";
 
 interface ErrorBoundaryProps {
-    children: ReactNode
+  children: ReactNode;
 }
 
 interface ErrorBoundaryState {
-    hasError: boolean
+  hasError: boolean;
 }
 
 class ErrorBoundary extends React.Component<
-    ErrorBoundaryProps,
-    ErrorBoundaryState
+  ErrorBoundaryProps,
+  ErrorBoundaryState
 > {
-    constructor(props: ErrorBoundaryProps) {
-        super(props);
-        this.state = { hasError: false };
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.log(error, errorInfo);
+  }
+
+  render() {
+    const { hasError } = this.state;
+    const { children } = this.props;
+    if (hasError) {
+      return (
+        <Layout>
+          <Suspense fallback="">
+            <ErrorWidget />
+          </Suspense>
+        </Layout>
+      );
     }
 
-    static getDerivedStateFromError() {
-        return { hasError: true };
-    }
-
-    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        console.log(error, errorInfo);
-    }
-
-    render() {
-        const { hasError } = this.state;
-        const { children } = this.props;
-        if (hasError) {
-            return (
-                <Layout>
-                    <Suspense fallback="">
-                        <ErrorWidget />
-                    </Suspense>
-                </Layout>
-            );
-        }
-
-        return children;
-    }
+    return children;
+  }
 }
 
 export default ErrorBoundary;
-

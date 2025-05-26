@@ -2,10 +2,10 @@ import path from "path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import tailwindcss from "@tailwindcss/vite"
-
+import { analyzer } from 'vite-bundle-analyzer'
 export default defineConfig({
-  plugins: [react(),tailwindcss()],
-  base: '/login',
+  plugins: [react(),tailwindcss(),analyzer()],
+
   resolve: {
     alias: {
       'app': path.resolve("./src/app/"),
@@ -20,4 +20,18 @@ export default defineConfig({
 
   }
   },
+  build: {
+    chunkSizeWarningLimit: 500,
+    modulePreload: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          charts: ['recharts'],
+          icons: ['lucide-react', 'react-icons'],
+        },
+      },
+    },
+  },
+
 })

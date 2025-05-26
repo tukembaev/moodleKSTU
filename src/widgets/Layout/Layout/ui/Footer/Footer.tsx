@@ -1,4 +1,4 @@
-import { Button } from "shared/ui/shadcn/button";
+import { Button } from "shared/shadcn/ui/button";
 
 const Footer = () => {
   return (

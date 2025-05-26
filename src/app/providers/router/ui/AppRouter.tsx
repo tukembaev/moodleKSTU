@@ -1,30 +1,24 @@
-import { memo, Suspense } from "react";
+import { memo } from "react";
 import { Route, Routes } from "react-router-dom";
-import { AppRoutesProps, routeConfig } from "shared/config/routeConfig/routeConfig";
-
+import {
+  AppRoutesProps,
+  routeConfig,
+} from "shared/config/routeConfig/routeConfig";
 
 const AppRouter = () => {
-    return (
-        <Routes>
-            {Object.values(routeConfig).map((route: AppRoutesProps) => (
-                <Route
-                    key={route.path}
-                    path={route.path}
-                    element={
-                        <Suspense
-                            fallback={
-                                <div>
-                  Loading...
-                                </div>
-                            }
-                        >
-                            {route.element}
-                        </Suspense>
-                    }
-                />
+  return (
+    <Routes>
+      {Object.values(routeConfig).map(
+        ({ path, element, children }: AppRoutesProps) => (
+          <Route key={path} path={path} element={element}>
+            {children?.map(({ path, element }) => (
+              <Route key={path} path={path} element={element} />
             ))}
-        </Routes>
-    );
+          </Route>
+        )
+      )}
+    </Routes>
+  );
 };
 
 export default memo(AppRouter);

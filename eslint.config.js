@@ -26,7 +26,8 @@ export default tseslint.config(
         { allowConstantExport: true },
         
       ],
-      'no-used-vars' : 'warn',
+"no-unused-vars": "off",
+"react-hooks/rules-of-hooks": "off"
     },
   },
 )

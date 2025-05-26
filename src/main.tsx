@@ -11,12 +11,12 @@ import { queryClient } from "shared/api/queryClient.ts";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ErrorBoundary>
           <App />
-        </QueryClientProvider>
-      </ErrorBoundary>
-    </BrowserRouter>
+        </ErrorBoundary>
+      </BrowserRouter>
+    </QueryClientProvider>
   </StrictMode>
 );
