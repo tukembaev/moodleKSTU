@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   ClipboardList,
   FolderInput,
@@ -23,7 +23,7 @@ import {
   useSidebar,
 } from "shared/shadcn/ui/sidebar";
 import { FooterUserMenu } from "./lib/FooterUserMenu";
-import { PlatformNavigation } from "./lib/PlatformNavigationGroup";
+
 import logo from "/src/assets/logo.svg";
 
 const navigationItems: {
@@ -61,25 +61,25 @@ const navigationItems: {
 const Sidebar = () => {
   const url = useLocation();
   const { isStudent } = useAuth();
-  const { state, setOpen } = useSidebar();
-  const [activeCollapsible, setActiveCollapsible] = useState<string | null>(
-    null
-  );
+  const { state } = useSidebar();
+  // const [activeCollapsible, setActiveCollapsible] = useState<string | null>(
+  //   null
+  // );
   const filteredNavigationItems = navigationItems.filter(
     (item) =>
       (isStudent && item.url !== RoutePath.groups) ||
       (!isStudent && item.url !== RoutePath.registration)
   );
 
-  const handleCollapsibleClick = (collapsibleTitle: string) => {
-    if (state === "collapsed") {
-      setOpen(true);
-      setActiveCollapsible(collapsibleTitle);
-      setActiveCollapsible((prev) =>
-        prev === collapsibleTitle ? null : collapsibleTitle
-      );
-    }
-  };
+  // const handleCollapsibleClick = (collapsibleTitle: string) => {
+  //   if (state === "collapsed") {
+  //     setOpen(true);
+  //     setActiveCollapsible(collapsibleTitle);
+  //     setActiveCollapsible((prev) =>
+  //       prev === collapsibleTitle ? null : collapsibleTitle
+  //     );
+  //   }
+  // };
 
   return (
     <ShadcnSidebar collapsible="icon">
@@ -91,10 +91,10 @@ const Sidebar = () => {
         )}
       </SidebarHeader>
       <SidebarContent>
-        <PlatformNavigation
+        {/* <PlatformNavigation
           onCollapsibleClick={handleCollapsibleClick}
           activeCollapsible={activeCollapsible}
-        />
+        /> */}
 
         <SidebarGroup>
           <SidebarGroupLabel>Навигация</SidebarGroupLabel>

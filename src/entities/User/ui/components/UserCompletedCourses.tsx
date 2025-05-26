@@ -39,7 +39,7 @@ const UserCompletedCourses = () => {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {courses.map((item) => (
-          <Card className="min-h-68 flex flex-col justify-between">
+          <Card className="min-h-68 bg-zinc-50 flex flex-col justify-between">
             <div>
               <CardHeader className="text-lg font-semibold w-full break-all">
                 {item.title}

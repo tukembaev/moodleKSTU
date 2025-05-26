@@ -112,7 +112,7 @@ const TestList = () => {
                   </div>
 
                   <span
-                    className={`text-lg font-semibold flex gap-2 py-2 items-center`}
+                    className={`text-lg font-semibold flex gap-2 items-center`}
                   >
                     {theme.title}
                     {!isStudent ? null : theme.status ? (
@@ -125,54 +125,53 @@ const TestList = () => {
                       </Badge>
                     )}
                   </span>
+                  <div className="flex gap-6 text-sm text-foreground/80 items-center py-2">
+                    {theme.max_points && (
+                      <UseTooltip text="Максимальное количество баллов">
+                        <div className="flex items-center gap-2">
+                          <LuHandCoins className="h-4 w-4" />
+                          <span>{theme.max_points}</span>
+                        </div>
+                      </UseTooltip>
+                    )}
+                    {theme.deadline && (
+                      <UseTooltip text="Дедлайн сдачи задания">
+                        <div className="flex items-center gap-2">
+                          <LuTarget className="h-4 w-4" />
+                          <span>{format(theme.deadline, "PPP")}</span>
+                        </div>
+                      </UseTooltip>
+                    )}
+                  </div>
                   <span className={`text-md text-foreground/80 `}>
                     {theme.description}
                   </span>
-                  <div className="flex justify-between text-sm text-foreground/80 pt-8">
-                    <div className="flex gap-6 text-sm text-foreground/80 items-center">
-                      {theme.max_points && (
-                        <UseTooltip text="Максимальное количество баллов">
-                          <div className="flex items-center gap-2">
-                            <LuHandCoins className="h-4 w-4" />
-                            <span>{theme.max_points}</span>
-                          </div>
-                        </UseTooltip>
-                      )}
-                      {theme.deadline && (
-                        <UseTooltip text="Дедлайн сдачи задания">
-                          <div className="flex items-center gap-2">
-                            <LuTarget className="h-4 w-4" />
-                            <span>{format(theme.deadline, "PPP")}</span>
-                          </div>
-                        </UseTooltip>
-                      )}
-                    </div>
-                    {!isStudent || theme.status ? (
-                      <Button
-                        className="shadow-none"
-                        variant={"outline"}
-                        onClick={() =>
-                          navigate(
-                            "/test/result/" +
-                              theme.id +
-                              `?course_id=${theme.resides.course[0].id}`
-                          )
-                        }
-                      >
-                        Открыть результаты <ChevronRight />
-                      </Button>
-                    ) : (
-                      <Button
-                        className="shadow-none"
-                        variant={"outline"}
-                        onClick={() =>
-                          navigate("/test/pass" + `?url=${theme.link_form}`)
-                        }
-                      >
-                        Пройти тест <ChevronRight />
-                      </Button>
-                    )}
-                  </div>
+
+                  {!isStudent || theme.status ? (
+                    <Button
+                      className="shadow-none w-full mt-4"
+                      variant={"outline"}
+                      onClick={() =>
+                        navigate(
+                          "/test/result/" +
+                            theme.id +
+                            `?course_id=${theme.resides.course[0].id}`
+                        )
+                      }
+                    >
+                      Открыть результаты <ChevronRight />
+                    </Button>
+                  ) : (
+                    <Button
+                      className="shadow-none w-full mt-4"
+                      variant={"outline"}
+                      onClick={() =>
+                        navigate("/test/pass" + `?url=${theme.link_form}`)
+                      }
+                    >
+                      Пройти тест <ChevronRight />
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );
