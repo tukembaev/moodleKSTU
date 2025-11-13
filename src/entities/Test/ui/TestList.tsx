@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ChevronRight } from "lucide-react";
 import { LuHandCoins, LuPlus, LuTarget } from "react-icons/lu";
+import { ru } from "date-fns/locale";
+
 import { useNavigate } from "react-router-dom";
 import {
   FadeIn,
@@ -138,7 +140,12 @@ const TestList = () => {
                       <UseTooltip text="Дедлайн сдачи задания">
                         <div className="flex items-center gap-2">
                           <LuTarget className="h-4 w-4" />
-                          <span>{format(theme.deadline, "PPP")}</span>
+                          <span>
+                            {format(theme.deadline, "PPP", {
+                              locale: ru,
+                            })}
+                            {/* {(format(theme.deadline, "PPP"), { locale: ru })} */}
+                          </span>
                         </div>
                       </UseTooltip>
                     )}
@@ -183,7 +190,7 @@ const TestList = () => {
             <UseTooltip text="Добавить тему">
               <div
                 className="flex flex-col justify-center items-center"
-                onClick={() => openForm(FormQuery.ADD_TEST)}
+                onClick={() => openForm(FormQuery.CHOOSE_TEST)}
               >
                 <LuPlus size={35} className="text-muted-foreground" />
                 <p>Добавьте новый тест</p>

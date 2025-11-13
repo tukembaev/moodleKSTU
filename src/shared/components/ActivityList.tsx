@@ -1,7 +1,7 @@
 import {
-  ArrowRight,
   ArrowUpRight,
   CreditCard,
+  MessageCircle,
   ShoppingCart,
   Wallet,
   type LucideIcon,
@@ -17,6 +17,7 @@ interface Activity {
   icon: LucideIcon;
   timestamp: string;
   status: "completed" | "pending" | "failed";
+  isCurrent?: boolean;
 }
 
 interface List02Props {
@@ -30,6 +31,8 @@ const categoryStyles = {
   file: "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100",
   analytics:
     "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-100",
+  message:
+    "bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-100",
 };
 
 const ACTIVITIES: Activity[] = [
@@ -42,6 +45,7 @@ const ACTIVITIES: Activity[] = [
     icon: Wallet,
     timestamp: "Сегодня, 10:00",
     status: "completed",
+    isCurrent: false,
   },
   {
     id: "2",
@@ -52,6 +56,7 @@ const ACTIVITIES: Activity[] = [
     icon: CreditCard,
     timestamp: "Сегодня, 12:15",
     status: "completed",
+    isCurrent: false,
   },
   {
     id: "3",
@@ -62,6 +67,7 @@ const ACTIVITIES: Activity[] = [
     icon: ShoppingCart,
     timestamp: "Вчера, 18:30",
     status: "pending",
+    isCurrent: false,
   },
   {
     id: "4",
@@ -72,6 +78,7 @@ const ACTIVITIES: Activity[] = [
     icon: ArrowUpRight,
     timestamp: "Сегодня, 15:40",
     status: "completed",
+    isCurrent: false,
   },
   {
     id: "5",
@@ -82,22 +89,27 @@ const ACTIVITIES: Activity[] = [
     icon: CreditCard,
     timestamp: "3 дня назад",
     status: "completed",
+    isCurrent: false,
   },
   {
     id: "6",
     title: "Добавлен файл 'Лекция по React.memo'",
     amount: "",
     type: "incoming",
-    category: "file",
-    icon: ShoppingCart,
+    category: "message",
+    icon: MessageCircle,
     timestamp: "На прошлой неделе",
     status: "completed",
+    isCurrent: false,
   },
 ];
 
-export default function ActivityList({ activities = ACTIVITIES }: List02Props) {
+export default function ActivityList({
+  activities = ACTIVITIES,
+  className,
+}: List02Props) {
   return (
-    <>
+    <div className={cn(className)}>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
           Недавние активности
@@ -105,9 +117,6 @@ export default function ActivityList({ activities = ACTIVITIES }: List02Props) {
             (23 активности)
           </span>
         </h2>
-        <span className="text-xs text-zinc-600 dark:text-zinc-400">
-          Этот месяц
-        </span>
       </div>
 
       <div className="space-y-1">
@@ -117,7 +126,6 @@ export default function ActivityList({ activities = ACTIVITIES }: List02Props) {
             className={cn(
               "group flex items-center gap-3",
               "p-2 rounded-lg",
-              "hover:bg-zinc-100 dark:hover:bg-zinc-800/50",
               "transition-all duration-200"
             )}
           >
@@ -151,54 +159,10 @@ export default function ActivityList({ activities = ACTIVITIES }: List02Props) {
                   </span>
                 </div>
               </div>
-              {/* <div className="flex items-center gap-1.5 pl-3">
-                  <span
-                    className={cn(
-                      "text-xs font-medium",
-                      transaction.type === "incoming"
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-red-600 dark:text-red-400"
-                    )}
-                  >
-                    {transaction.type === "incoming" ? "+" : "-"}
-                    {transaction.amount}
-                  </span>
-                  {transaction.type === "incoming" ? (
-                    <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  ) : (
-                    <ArrowUpRight className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                  )}
-                </div> */}
             </div>
           </div>
         ))}
       </div>
-
-      <div className="pt-4  border-zinc-100 dark:border-zinc-800">
-        <button
-          type="button"
-          className={cn(
-            "w-full flex items-center justify-center gap-2",
-            "py-2 px-3 rounded-lg",
-            "text-xs font-medium",
-            "bg-gradient-to-r from-zinc-900 to-zinc-800",
-            "dark:from-zinc-50 dark:to-zinc-200",
-            "text-zinc-50 dark:text-zinc-900",
-            "hover:from-zinc-800 hover:to-zinc-700",
-            "dark:hover:from-zinc-200 dark:hover:to-zinc-300",
-            "shadow-sm hover:shadow",
-            "transform transition-all duration-200",
-            "hover:-translate-y-0.5",
-            "active:translate-y-0",
-            "focus:outline-none focus:ring-2",
-            "focus:ring-zinc-500 dark:focus:ring-zinc-400",
-            "focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
-          )}
-        >
-          <span>Открыть все активности</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </>
+    </div>
   );
 }

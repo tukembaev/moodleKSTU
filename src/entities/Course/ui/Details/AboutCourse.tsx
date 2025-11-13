@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
+import ChatMessages from "../../../../features/Chat/ui/ChatMessages";
 
 const Section: FC<{
   field: string;
@@ -108,7 +109,7 @@ const InstructorBlock: FC<{ course_owner: CourseOwner | undefined }> = ({
           </div>
         </div>
       </div>
-      <span className="mt-8">{course_owner?.bio}</span>
+      {/* <span className="mt-8">{course_owner?.bio}</span> */}
     </div>
   );
 };
@@ -124,17 +125,16 @@ const AboutCourse = ({
   audience?: string;
   course_owner?: CourseOwner | undefined;
 }) => {
-  const { id } = useAuth();
+  const { id, isStudent } = useAuth();
   const isOwner = course_owner?.user_id === id;
   const [requirements, setRequirements] = useState(initialRequirements);
   const [description, setDescription] = useState(initialDescription);
   const [audience, setAudience] = useState(initialAudience);
 
   return (
-    <div className="flex py-2">
-      <div className="pr-8 flex flex-col gap-4 w-full">
+    <div className="flex py-2 gap-2 w-full">
+      <div className="pr-8 flex flex-col gap-4 min-w-[45%]">
         {/* <BuyCourse /> */}
-
         <Section
           field="description"
           title="Описание"
@@ -158,15 +158,16 @@ const AboutCourse = ({
           onChange={setRequirements}
           isEdit={isOwner}
         />
-        {/* 
-        <Section
-          title="Участники"
-          value={participants}
-          onChange={setParticipants}
-        /> */}
-
-        <InstructorBlock course_owner={course_owner} />
+        {/* <div>
+          <h1 className="text-3xl font-regular tracking-tight pt-1 mb-4">
+            Преподаватели курса
+          </h1>
+          <div className="flex gap-8 items-center">
+            <InstructorBlock course_owner={course_owner} />
+          </div>
+        </div> */}
       </div>
+      {!isStudent && <ChatMessages idChat={1} />}
     </div>
   );
 };

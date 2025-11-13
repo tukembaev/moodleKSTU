@@ -1,14 +1,14 @@
-import { ModeToggle } from "shared/components/ModeToggle";
 import { useAuth } from "shared/hooks";
 import { Button } from "shared/shadcn/ui/button";
 import { CommandSearchBar } from "widgets/CommandSearchBar";
 
 import { useLocation, useNavigate } from "react-router-dom";
-import { Separator } from "shared/shadcn/ui/separator";
+
 import { SidebarTrigger } from "shared/shadcn/ui/sidebar";
-import UserNotification from "widgets/User/ui/UserNotification";
+
 import GuestNavigationMenu from "./lib/GuestNavigationMenu";
 import logo from "/src/assets/logo.svg";
+import { ModeToggle } from "shared/components/ModeToggle";
 
 const Header = () => {
   const auth = useAuth();
@@ -25,13 +25,12 @@ const Header = () => {
             <GuestNavigationMenu />
           </div>
         ) : (
-          <div className="max-h-[35px] flex">
-            <div className="flex gap-3 items-center">
+          <div className="max-h-[35px] flex items-center">
+            <div className="flex gap-1 items-center">
               {" "}
               <SidebarTrigger className="cursor-pointer relative" />
-              <Separator orientation="vertical" className="min-h-6 mr-3" />
+              {/* <Separator orientation="vertical" className="min-h-6 mr-2" /> */}
             </div>
-            <CommandSearchBar />
           </div>
         )}
 
@@ -45,7 +44,10 @@ const Header = () => {
 
           {auth ? (
             <>
-              <UserNotification />
+              {/* <UserNotification /> */}
+              <div className="max-h-[35px] flex">
+                <CommandSearchBar />
+              </div>
 
               <ModeToggle />
               {/* <UserBasket /> */}

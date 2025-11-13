@@ -61,7 +61,8 @@ const Add_Course = () => {
           </div>
           <div className="flex flex-col">
             <Label htmlFor="control" className="pb-2">
-              Категории (несколько штук)
+              Категории
+              {/* (несколько штук) */}
             </Label>
             <Select
               onValueChange={(value) => {
@@ -95,7 +96,8 @@ const Add_Course = () => {
 
           <div className="flex flex-col">
             <Label htmlFor="credit" className="pb-2">
-              Кредит ( опционный для частных)
+              Кредит
+              {/* ( опционный для частных) */}
             </Label>
             <Select
               onValueChange={(value) => {
@@ -124,7 +126,8 @@ const Add_Course = () => {
           </div>
           <div className="flex flex-col">
             <Label htmlFor="control" className="pb-2">
-              Форма контроля (Убрать возможно)
+              Форма контроля
+              {/* (Убрать возможно) */}
             </Label>
             <Select
               onValueChange={(value) => {
@@ -155,7 +158,8 @@ const Add_Course = () => {
 
           <div className="flex flex-col ">
             <Label htmlFor="hours" className="pb-2">
-              Часы (Поговорить с начальством чтобы убрать)
+              Часы
+              {/* (Поговорить с начальством чтобы убрать) */}
             </Label>
             <Input
               type="number"

@@ -1,8 +1,8 @@
 import UserCardSkeleton from "entities/User/lib/UserCardSkeleton";
 import { userQueries } from "entities/User/model/userQueryFactory";
 import { UserProfileData } from "entities/User/types/user";
-import { ArrowUpRight, Flame, MapPin, Shield, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { MapPin, User } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { LuPencil, LuPhone, LuSend } from "react-icons/lu";
 import { PhoneInput } from "shared/components/PhoneInput";
 
@@ -22,7 +22,6 @@ import {
 } from "shared/shadcn/ui/dialog";
 import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
-import { Progress } from "shared/shadcn/ui/progress";
 
 const UserCard = ({
   data,
@@ -65,27 +64,27 @@ const UserCard = ({
     }
   };
 
-  const menuItems = [
-    {
-      icon: <ArrowUpRight className="w-4 h-4 text-amber-500" />,
-      label: "Current Level",
-      value: 42,
-      desc: `${2000} / ${4000} XP`,
-      progress: (2000 / 4000) * 100,
-    },
-    {
-      icon: <Flame className="w-4 h-4 text-red-500" />,
-      label: "Daily Streak",
-      value: "7 days",
-      desc: "🔥 Keep it up!",
-    },
-    {
-      icon: <Shield className="w-4 h-4 text-emerald-500" />,
-      label: "Achievements",
-      value: "12/30",
-      desc: "Master III",
-    },
-  ];
+  // const menuItems = [
+  //   {
+  //     icon: <ArrowUpRight className="w-4 h-4 text-amber-500" />,
+  //     label: "Current Level",
+  //     value: 42,
+  //     desc: `${2000} / ${4000} XP`,
+  //     progress: (2000 / 4000) * 100,
+  //   },
+  //   {
+  //     icon: <Flame className="w-4 h-4 text-red-500" />,
+  //     label: "Daily Streak",
+  //     value: "7 days",
+  //     desc: "🔥 Keep it up!",
+  //   },
+  //   {
+  //     icon: <Shield className="w-4 h-4 text-emerald-500" />,
+  //     label: "Achievements",
+  //     value: "12/30",
+  //     desc: "Master III",
+  //   },
+  // ];
 
   if (isLoading) return <UserCardSkeleton />;
   return (
@@ -211,7 +210,7 @@ const UserCard = ({
         </div>
       </div>
 
-      <div className="space-y-4 w-[35%] ">
+      {/* <div className="space-y-4 w-[35%] ">
         {menuItems.map((item) => (
           <div
             key={item.label}
@@ -235,7 +234,7 @@ const UserCard = ({
             )}
           </div>
         ))}
-      </div>
+      </div> */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>

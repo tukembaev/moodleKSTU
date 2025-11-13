@@ -2,7 +2,7 @@ import { Course } from "entities/Course";
 import { FavoritePayload } from "features/User";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
-import { AchievementList, Favorites, UserFilesList, UserGroupList, UserProfileData } from "../types/user";
+import { AchievementList, Favorites, Notification, UserFilesList, UserGroupList, UserProfileData } from "../types/user";
 
 
 export const getUserInfo = async (id: number | null):Promise<UserProfileData> => {
@@ -35,6 +35,11 @@ export const registerToCourse = async (courseId: string) => {
 export const getUserAchievements = async ():Promise<AchievementList> => {
   const response = await $api_users.get('api/v1/achievements/')
   return response.data
+};
+
+export const getUserNotifications = async (): Promise<Notification[]> => {
+  const response = await $api_users.get("notifications/");
+  return response.data;
 };
 
 export const getUserFavorites = async ():Promise<Favorites> => {

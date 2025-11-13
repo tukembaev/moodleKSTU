@@ -20,22 +20,15 @@ import {
   SpringPopupList,
   UseTooltip,
 } from "shared/components";
-import { AppRoutes, AppSubRoutes } from "shared/config/routeConfig/routeConfig";
 import { FormQuery } from "shared/config/formConfig/formConfig";
+import { AppRoutes, AppSubRoutes } from "shared/config/routeConfig/routeConfig";
 import { useAuth, useForm } from "shared/hooks";
+import { cn } from "shared/lib/utils";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "shared/shadcn/ui/select";
 import CourseCardSkeleton from "../lib/skeletons/CourseCardSkeleton";
 import { courseQueries } from "../model/services/courseQueryFactory";
-import { cn } from "shared/lib/utils";
 
 const CourseList = () => {
   const { isStudent } = useAuth();
@@ -48,16 +41,7 @@ const CourseList = () => {
   return (
     <div className="min-h-screen flex py-3 ">
       <div className="w-full">
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col">
-            <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight text-left">
-              Мои курсы
-            </h2>
-            <p className="mt-1.5 text-lg text-muted-foreground">
-              Все курсы, которые вы сохраняли или загружали
-            </p>
-          </div>
-
+        {/* <div className="flex justify-between items-center">
           <Select defaultValue="recommended">
             <SelectTrigger className="w-[180px]">
               <SelectValue />
@@ -67,10 +51,10 @@ const CourseList = () => {
               <SelectItem value="popular">Все курсы</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
         {/* {id && <UserFavorites />} */}
 
-        <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto">
+        <div className="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto">
           {isLoading ? (
             <SpringPopupList>
               {Array.from({ length: 5 }).map((_, index) => (

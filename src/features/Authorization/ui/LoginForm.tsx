@@ -63,7 +63,7 @@ const LoginForm = ({
         window.dispatchEvent(new Event("storage"));
         setTimeout(() => {
           // navigate("/main");
-          window.location.href = "/main";
+          window.location.href = "/courses";
         }, 2000);
       }
     } catch (error: any) {

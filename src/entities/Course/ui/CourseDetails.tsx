@@ -2,14 +2,18 @@ import {
   LuBookA,
   LuClock,
   LuHandCoins,
+  LuHandshake,
   LuInfo,
+  LuMessageCircle,
   LuTarget,
 } from "react-icons/lu";
 import { UseTabs, UseTooltip } from "shared/components";
 import { CourseThemes } from "../model/types/course";
 import AboutCourse from "./Details/AboutCourse";
 
+import CourseInvolvement from "./Details/OwnerDetails/CourseInvolvement";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
+import { ChatContainer } from "features/Chat";
 
 const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
   const tabs = [
@@ -32,18 +36,25 @@ const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
       content: <CourseResultTable />,
       icon: <LuBookA />,
     },
+    {
+      name: "Чаты",
+      value: "chats",
+      content: <ChatContainer />,
+      icon: <LuMessageCircle />,
+    },
     // {
     //   name: "Графики",
     //   value: "charts",
     //   content: <CourseStatistic />,
     //   icon: <LuChartBar />,
     // },
-    // {
-    //   name: "Вовлеченность",
-    //   value: "attendance",
-    //   content: <CourseInvolvement />,
-    //   icon: <LuHandshake />,
-    // },
+    {
+      name: "Вовлеченность",
+      value: "attendance",
+      content: <CourseInvolvement />,
+      icon: <LuHandshake />,
+    },
+
     // {
     //   name: "Отзывы",
     //   value: "rules",
@@ -53,10 +64,14 @@ const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
   ];
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-col gap-4">
-        <span className="text-4xl sm:text-5xl font-bold tracking-tight">
+      <div className="flex flex-col gap-2">
+        <span className="text-xl tracking-tight">
+          {data?.course_owner[0].owner_name}
+        </span>
+        <span className="text-3xl sm:text-4xl font-bold tracking-tight pb-2">
           {data?.discipline_name}
         </span>
+
         <div className="flex gap-6 text-md text-foreground/80 pl-2">
           <UseTooltip text="Количество часов на изучение">
             <div className="flex items-center gap-2">

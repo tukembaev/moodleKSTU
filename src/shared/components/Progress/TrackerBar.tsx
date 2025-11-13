@@ -46,7 +46,7 @@ const Block = ({
         )}
       />
       {typeof points === "number" && (
-        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-black opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-black opacity-100 pointer-events-none">
           {points}
         </span>
       )}
@@ -90,7 +90,7 @@ const Tracker = React.forwardRef<HTMLDivElement, TrackerProps>(
     return (
       <div
         ref={forwardedRef}
-        className={cx("group flex h-8 w-14 items-center", className)}
+        className={cx("group flex h-8 gap-1 items-center", className)}
         {...props}
       >
         {data.map((props, index) => (

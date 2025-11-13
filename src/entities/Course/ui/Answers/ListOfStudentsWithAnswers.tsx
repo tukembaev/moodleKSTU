@@ -3,6 +3,7 @@ import { ru } from "date-fns/locale";
 import { makeIsRead } from "entities/Course/model/services/courseAPI";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentsAnswers } from "entities/Course/model/types/course";
+import { SetChat } from "features/Course/hooks/SetChat";
 import { SetComment } from "features/Course/hooks/SetComment";
 import { SetMark } from "features/Course/hooks/SetMark";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -14,7 +15,9 @@ import {
   LuLaugh,
   LuLock,
   LuMeh,
+  LuMessageCircle,
   LuMessageCircleWarning,
+  LuThumbsUp,
   LuX,
 } from "react-icons/lu";
 import { GetFileIcon, HoverLift, UseTooltip } from "shared/components";
@@ -38,7 +41,6 @@ import {
   TableHeader,
   TableRow,
 } from "shared/shadcn/ui/table";
-import BriefUserProgress from "./lib/BriefUserProgress";
 
 const ListOfStudentsWithAnswers = ({
   data,
@@ -49,7 +51,6 @@ const ListOfStudentsWithAnswers = ({
   data: StudentsAnswers[];
   isLoading?: boolean;
   refetch: () => void;
-
   error?: Error | null;
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -70,10 +71,7 @@ const ListOfStudentsWithAnswers = ({
   };
 
   const toggleSelectAll = () => {
-    // Получаем ID студентов, которые видны сейчас (отфильтрованы)
     const visibleStudentIds = filteredData.map((s) => s.user_id);
-
-    // Проверяем, все ли *видимые* студенты уже выбраны
     const allVisibleSelected =
       visibleStudentIds.length > 0 &&
       visibleStudentIds.every((id) => selectedStudents.has(id));
@@ -105,6 +103,7 @@ const ListOfStudentsWithAnswers = ({
         selectedGroup === "Все группы" ||
         student.group === selectedGroup)
   );
+
   const { mutate: change_permission } = courseQueries.edit_permission();
 
   const handlePermission = (student: StudentsAnswers) => {
@@ -116,6 +115,7 @@ const ListOfStudentsWithAnswers = ({
       },
     });
   };
+
   const handleMultiplePermission = (lock: boolean) => {
     change_permission({
       id: filteredData[0]?.task,
@@ -136,7 +136,6 @@ const ListOfStudentsWithAnswers = ({
                 <Skeleton className="h-4 w-4 rounded-sm" />
               </TableHead>
               <TableHead className="w-[300px]">Имя студента</TableHead>
-              <TableHead className="w-[100px]">Группа</TableHead>
               <TableHead className="w-[100px]">Баллы</TableHead>
               <TableHead>Статус сдачи</TableHead>
             </TableRow>
@@ -167,14 +166,15 @@ const ListOfStudentsWithAnswers = ({
       </div>
     );
   }
+
   if (error) {
     return <p className="text-center">{error.message}</p>;
   }
+
   if (!data.length) {
     return null;
   }
 
-  //IMPORTANT Добавить возможность предпросмотра, настроить чтобы работало
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between">
@@ -186,23 +186,24 @@ const ListOfStudentsWithAnswers = ({
             onChange={handleSearch}
             className="max-w-[350px]"
           />
-          {selectedStudents.size === data.length ? (
-            <Button
-              onClick={() => handleMultiplePermission(true)}
-              variant="outline"
-            >
-              <LuLock className="text-red-400" />
-              Закрыть доступ
-            </Button>
-          ) : null}
-          {selectedStudents.size === data.length ? (
-            <Button
-              onClick={() => handleMultiplePermission(false)}
-              variant="outline"
-            >
-              <LuKeyRound className="text-green-400" />
-              Открыть доступ
-            </Button>
+          {selectedStudents.size === filteredData.length &&
+          filteredData.length > 0 ? (
+            <>
+              <Button
+                onClick={() => handleMultiplePermission(true)}
+                variant="outline"
+              >
+                <LuLock className="text-red-400" />
+                Закрыть доступ
+              </Button>
+              <Button
+                onClick={() => handleMultiplePermission(false)}
+                variant="outline"
+              >
+                <LuKeyRound className="text-green-400" />
+                Открыть доступ
+              </Button>
+            </>
           ) : null}
         </div>
         <DropdownMenu>
@@ -227,56 +228,66 @@ const ListOfStudentsWithAnswers = ({
       <div className="rounded-md border">
         <Table>
           <TableHeader className="bg-muted">
-            <TableRow className="hover:bg-transparent ">
+            <TableRow className="hover:bg-transparent">
               <TableHead className="w-10">
                 <Checkbox
-                  checked={selectedStudents.size === data.length}
+                  checked={
+                    filteredData.length > 0 &&
+                    filteredData.every((student) =>
+                      selectedStudents.has(student.user_id)
+                    )
+                  }
                   onCheckedChange={toggleSelectAll}
                   className="cursor-pointer"
+                  disabled={filteredData.length === 0}
                 />
               </TableHead>
-              <TableHead className="w-[300px]">Имя студента</TableHead>
-              <TableHead className="w-[100px]">Группа</TableHead>
-
+              <TableHead className="w-[150px]">Студент</TableHead>
               <TableHead className="w-[130px]">Статус сдачи</TableHead>
               <TableHead className="w-[130px]">Доступ</TableHead>
-              <TableHead>Замечания</TableHead>
+              <TableHead className="w-[130px]">Замечания</TableHead>
+              <TableHead>Чат</TableHead>
+
               <TableHead />
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {filteredData.map((student) => (
-              <>
+              <React.Fragment key={student.id}>
                 <TableRow
-                  key={student.id}
                   className={`${expandedId === student.id ? "border-b-0" : ""}`}
+                  key={student.id + student.fullname}
                 >
                   <TableCell>
                     <Checkbox
-                      checked={
-                        filteredData.length > 0 &&
-                        filteredData.every((student) =>
-                          selectedStudents.has(student.user_id)
-                        )
-                      }
-                      onCheckedChange={toggleSelectAll}
+                      checked={selectedStudents.has(student.user_id)}
+                      onCheckedChange={() => {
+                        setSelectedStudents((prev) => {
+                          const newSet = new Set(prev);
+                          if (newSet.has(student.user_id)) {
+                            newSet.delete(student.user_id);
+                          } else {
+                            newSet.add(student.user_id);
+                          }
+                          return newSet;
+                        });
+                      }}
                       className="cursor-pointer"
-                      disabled={filteredData.length === 0}
                     />
                   </TableCell>
                   <TableCell className="font-medium flex items-center gap-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="flex items-center gap-2">
-                        <Avatar>
-                          <AvatarImage src={student.avatar} />
-                        </Avatar>
-                        <p>{student.fullname}</p>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent side="right">
-                        <BriefUserProgress user_id={student.user_id} />
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-2">
+                      <Avatar>
+                        <AvatarImage src={student.avatar} />
+                      </Avatar>
+
+                      <p>{student.fullname}</p>
+                      <Badge className="bg-primary/5 text-primary shadow-none text-xs">
+                        {student.group}
+                      </Badge>
+                    </div>
+
                     {student.files.some((file) => !file.is_read) ? (
                       <UseTooltip text="Новый не просмотренный файл!">
                         <LuMessageCircleWarning className="text-orange-500" />
@@ -287,7 +298,6 @@ const ListOfStudentsWithAnswers = ({
                       </UseTooltip>
                     )}
                   </TableCell>
-                  <TableCell>{student.group}</TableCell>
                   <TableCell>
                     <HoverLift>
                       <SetMark
@@ -298,10 +308,10 @@ const ListOfStudentsWithAnswers = ({
                       >
                         <Badge
                           variant="outline"
-                          className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer "
+                          className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer"
                         >
                           {student.status ? (
-                            <LuCheckCheck className="text-green-500 dark:text-green-400" />
+                            <LuThumbsUp className="text-green-500 dark:text-green-400" />
                           ) : (
                             <LuX />
                           )}
@@ -338,8 +348,9 @@ const ListOfStudentsWithAnswers = ({
                     <HoverLift>
                       <Badge
                         variant="outline"
-                        className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer "
+                        className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer"
                       >
+                        {/* //TODO: Сделать множество замечаний и отображать в SetComment */}
                         {!student.comment ? (
                           <SetComment text="Добавить замечание" id={student.id}>
                             <span className="flex gap-1 items-center cursor-pointer">
@@ -358,19 +369,38 @@ const ListOfStudentsWithAnswers = ({
                       </Badge>
                     </HoverLift>
                   </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
+                    >
+                      {student.locked ? (
+                        <LuMessageCircleWarning className="text-yellow-500 dark:text-yellow-400" />
+                      ) : (
+                        <LuMessageCircle className="text-green-500 dark:text-green-400" />
+                      )}
+
+                      <SetChat text="Добавить замечание" id={student.id}>
+                        <span className="flex gap-1 items-center cursor-pointer">
+                          Открыть чат
+                        </span>
+                      </SetChat>
+                    </Badge>
+                  </TableCell>
 
                   <TableCell
-                    colSpan={6}
                     className="flex justify-end cursor-pointer"
                     onClick={() => toggleExpand(student.id)}
                   >
-                    <span>
-                      {expandedId === student.id ? (
-                        <ChevronDown strokeWidth={1} />
-                      ) : (
-                        <ChevronRight strokeWidth={1} />
-                      )}
-                    </span>
+                    {student.files.length > 0 && (
+                      <span>
+                        {expandedId === student.id ? (
+                          <ChevronDown strokeWidth={1} />
+                        ) : (
+                          <ChevronRight strokeWidth={1} />
+                        )}
+                      </span>
+                    )}
                   </TableCell>
                 </TableRow>
 
@@ -389,7 +419,6 @@ const ListOfStudentsWithAnswers = ({
                             locale: ru,
                           })}
                         </span>
-
                         {item.is_read ? (
                           <UseTooltip text="Все файлы просмотренны">
                             <LuCheckCheck className="text-blue-500" />
@@ -400,7 +429,7 @@ const ListOfStudentsWithAnswers = ({
                           </UseTooltip>
                         )}
                       </TableCell>
-                      <TableCell colSpan={5} className="text-right ">
+                      <TableCell colSpan={6} className="text-right">
                         <a
                           href={item.file}
                           download={item.file_names}
@@ -421,7 +450,7 @@ const ListOfStudentsWithAnswers = ({
                       </TableCell>
                     </TableRow>
                   ))}
-              </>
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>

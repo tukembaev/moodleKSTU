@@ -19,7 +19,7 @@ export const refreshUser = async () => {
   if (!auth_data || !auth_data.refresh) {
     throw new Error("No refresh token available");
   }
-  const response = await axios.post("https://utask.kstu.kg/user/api/v1/users/refresh/", {
+  const response = await axios.post("https://utask.kstu.kg/educations/api/v1/users/refresh/", {
     refresh: auth_data.refresh,
   });
   return response.data;

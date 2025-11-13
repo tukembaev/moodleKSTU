@@ -82,6 +82,7 @@ export interface CourseProgress {
 
  export type Course = {
     id: string;
+    icon?:string;
     title: string;
     discipline: string;
     discipline_name: string;

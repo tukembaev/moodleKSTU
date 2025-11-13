@@ -40,7 +40,13 @@ const Layout: FC<LayoutProps> = ({ children }) => {
             <GlobalDrawer />
           </>
         )}
-        <Toaster richColors closeButton expand={false} className="z-80" />
+        <Toaster
+          richColors
+          closeButton
+          position="top-center"
+          expand={false}
+          className="z-80"
+        />
       </div>
     </SidebarProvider>
   );

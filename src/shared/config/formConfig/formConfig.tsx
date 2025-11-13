@@ -8,7 +8,8 @@ import {
   Add_Theme_FAQ,
   End_Course,
 } from "features/Course";
-import { Add_Test } from "features/Test";
+import { Add_Test, Choose_test } from "features/Test";
+import Add_Quiz from "features/Course/forms/add-quiz";
 
 export enum FormQuery {
   //course
@@ -18,9 +19,11 @@ export enum FormQuery {
   ADD_MATERIAL = "add_material",
   ADD_ANSWER = "add_answer",
   END_COURSE = "end_course",
+  ADD_QUIZ = "add_quiz",
   GOOGLE_AUTH = "google-auth",
   //testing
   ADD_TEST = "add-test",
+  CHOOSE_TEST = "choose-test",
 }
 
 export interface FormConfig {
@@ -71,6 +74,18 @@ export const forms: FormConfig[] = [
     query: FormQuery.END_COURSE,
     title: "Итоговый балл",
     form: <End_Course />,
+    is_student_allow: true,
+  },
+  {
+    query: FormQuery.ADD_QUIZ,
+    title: "Создание теста по усвоению материала",
+    form: <Add_Quiz />,
+    is_student_allow: true,
+  },
+  {
+    query: FormQuery.CHOOSE_TEST,
+    title: "Создание Теста",
+    form: <Choose_test />,
     is_student_allow: true,
   },
   // {
