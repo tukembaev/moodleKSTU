@@ -6,17 +6,17 @@ import { AchievementList, Favorites, Notification, UserFilesList, UserGroupList,
 
 
 export const getUserInfo = async (id: number | null):Promise<UserProfileData> => {
-  const response = await $api_users.get(`user/${id}`)
+  const response = await $api_users.get(`user/${id}/`)
   return response.data
 };
 
 export const getUserFiles = async (id:number|null):Promise<UserFilesList[]> => {
-  const response = await $api_users.get(`files/${id}`)
+  const response = await $api_users.get(`files/${id}/`)
   return response.data
 };
 
 export const getUserTeam = async (group:string|null):Promise<UserGroupList[]> => {
-  const response = await $api_users.get(`my-team/${group}`)
+  const response = await $api_users.get(`my-team/${group}/`)
   return response.data
 };
 
@@ -43,7 +43,7 @@ export const getUserNotifications = async (): Promise<Notification[]> => {
 };
 
 export const getUserFavorites = async ():Promise<Favorites> => {
-  const response = await $api_users.get('favorites')
+  const response = await $api_users.get('favorites/')
   return response.data
 };
 

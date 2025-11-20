@@ -44,19 +44,19 @@ const UserProfile = () => {
     },
 
     {
-      name: "Друзья",
+      name: "Коллеги",
       value: "group",
       content: <TeamTab data={my_student_friends || []} />,
       count: my_student_friends?.length,
       icon: <LuUsersRound />,
     },
-    {
-      name: "Достижения",
-      value: "achivements",
-      content: <AchievementTab />,
-      count: 9,
-      icon: <LuAward />,
-    },
+    // {
+    //   name: "Достижения",
+    //   value: "achivements",
+    //   content: <AchievementTab />,
+    //   count: 9,
+    //   icon: <LuAward />,
+    // },
   ];
 
   return (

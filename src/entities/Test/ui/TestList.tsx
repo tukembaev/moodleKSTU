@@ -11,8 +11,8 @@ import {
   SpringPopupList,
   UseTooltip,
 } from "shared/components";
-import { AppSubRoutes, FormQuery } from "shared/config";
-import { useAuth, useForm } from "shared/hooks";
+import { AppSubRoutes } from "shared/config";
+import { useAuth } from "shared/hooks";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
@@ -44,9 +44,8 @@ import { CourseCardSkeleton } from "entities/Course";
 // ];
 const TestList = () => {
   const { isStudent } = useAuth();
-  const { data: test_list, isLoading } = useQuery(testQueries.allTest(""));
+  const { data: test_list, isLoading } = useQuery(testQueries.allTest("/"));
   const navigate = useNavigate();
-  const openForm = useForm();
 
   return (
     <div>
@@ -187,10 +186,10 @@ const TestList = () => {
 
         <FadeIn className="flex border rounded-xl py-4 px-5 min-w-1/3 justify-center items-center min-h-48">
           <HoverLift>
-            <UseTooltip text="Добавить тему">
+            <UseTooltip text="Добавить тест">
               <div
-                className="flex flex-col justify-center items-center"
-                onClick={() => openForm(FormQuery.CHOOSE_TEST)}
+                className="flex flex-col justify-center items-center cursor-pointer"
+                onClick={() => navigate("/test/add-quiz")}
               >
                 <LuPlus size={35} className="text-muted-foreground" />
                 <p>Добавьте новый тест</p>

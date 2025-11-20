@@ -19,7 +19,6 @@ export const courseQueries = {
         queryKey: ['course','course-theme',id],
         queryFn: () => getCourseAllTasks(id as string),
         enabled: !!id,
-        
       }),
     allTaskMaterials: (id: string | null) =>
         queryOptions({

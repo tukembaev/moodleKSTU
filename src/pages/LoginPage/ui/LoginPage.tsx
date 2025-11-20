@@ -6,11 +6,11 @@ import { useAuth } from "shared/hooks";
 const LoginPage = () => {
   const auth = useAuth();
   const navigate = useNavigate();
-  useEffect(() => {
-    if (auth) {
-      navigate("/main");
-    }
-  }, [auth]);
+  // useEffect(() => {
+  //   if (auth) {
+  //     navigate("/courses");
+  //   }
+  // }, [auth]);
   return (
     <div className="flex justify-center items-center pt-32">
       <LoginForm />

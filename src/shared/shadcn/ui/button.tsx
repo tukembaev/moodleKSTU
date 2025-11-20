@@ -39,7 +39,7 @@ function Button({
   className,
   variant,
   size,
-  isAnimated = true,
+  isAnimated = false,
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> &

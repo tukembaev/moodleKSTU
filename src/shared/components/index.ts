@@ -13,7 +13,7 @@ import { getPointColor, Tracker } from "./Progress/TrackerBar";
 import TestimonialSection from "./TestimonialSection";
 import UseConfirmationDialog from "./UseConfirmationDialog";
 import { UseMultiSelect } from "./UseMultiSelect";
-import ModalPreview from "./ModalPreview";
+
 import MemberListPreview from "./MemberListPreview";
 import UseConfirmation from "./UseConfirmation";
 
@@ -21,7 +21,7 @@ import UseConfirmation from "./UseConfirmation";
 
 
 export {UserList ,listVariants,
-ModalPreview,
+
 UseTabs,
 itemVariants,GetFileIcon ,CourseStatisticTooltip ,UseTooltip ,CategoryBar,GlobalDrawer,UseDatePicker,Tracker,TestimonialSection,
 UseConfirmationDialog,UseMultiSelect,

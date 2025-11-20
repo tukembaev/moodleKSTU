@@ -110,10 +110,10 @@ export default function ActivityList({
 }: List02Props) {
   return (
     <div className={cn(className)}>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
+        <h2 className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100">
           Недавние активности
-          <span className="text-xs font-normal text-zinc-600 dark:text-zinc-400 ml-1">
+          <span className="text-[10px] sm:text-xs font-normal text-zinc-600 dark:text-zinc-400 ml-1">
             (23 активности)
           </span>
         </h2>
@@ -124,32 +124,32 @@ export default function ActivityList({
           <div
             key={activity.id}
             className={cn(
-              "group flex items-center gap-3",
-              "p-2 rounded-lg",
+              "group flex items-center gap-2 sm:gap-3",
+              "p-1.5 sm:p-2 rounded-lg",
               "transition-all duration-200"
             )}
           >
             <div
               className={cn(
-                "p-2 rounded-lg",
+                "p-1.5 sm:p-2 rounded-lg shrink-0",
                 categoryStyles[activity.category as keyof typeof categoryStyles]
               )}
             >
-              <activity.icon className="w-4 h-4" />
+              <activity.icon className="w-3 h-3 sm:w-4 sm:h-4" />
             </div>
 
             <div className="flex-1 flex items-center justify-between min-w-0">
-              <div className="space-y-0.5">
-                <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
                   {activity.title}
                 </h3>
-                <div className="flex items-center gap-2">
-                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <p className="text-[10px] sm:text-[11px] text-zinc-600 dark:text-zinc-400">
                     {activity.timestamp}
                   </p>
                   <span
                     className={cn(
-                      "px-2 py-0.5 rounded text-[10px] font-medium",
+                      "px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium shrink-0",
                       categoryStyles[
                         activity.category as keyof typeof categoryStyles
                       ]

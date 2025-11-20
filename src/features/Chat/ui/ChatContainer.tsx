@@ -1,9 +1,16 @@
 // ChatContainer.tsx
 import { useState } from "react";
+import { useAuth } from "shared/hooks";
 import { ChatSelect } from "./ChatSelect";
 import ChatMessages from "./ChatMessages";
 
+interface ChatContainerProps {
+  idChat?: number;
+}
+
 const ChatContainer = () => {
+  const auth = useAuth();
+  const isStudent = auth?.isStudent;
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
 
   const handleSelectChat = (chatId: number) => {
@@ -11,15 +18,10 @@ const ChatContainer = () => {
   };
 
   return (
-    <div className="flex gap-4">
-      {/* <h1 className="text-3xl">
-        Бекс дает если студент в api course новый ключ с id чата его с преподом
-        Если препод то я просто беру id курса и вывожу список Если это мои
-        личные переписки я тяну по id всех переписок
-      </h1> */}
+    <div className="flex flex-col sm:flex-row gap-4">
       <ChatSelect onSelectChat={handleSelectChat} />
       {selectedChatId && (
-        <div className="w-3/5">
+        <div className="w-full sm:w-3/5">
           <ChatMessages idChat={selectedChatId} />
         </div>
       )}

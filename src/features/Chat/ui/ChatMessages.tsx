@@ -63,27 +63,27 @@ const ChatMessages = ({ idChat }: ChatMessagesProps) => {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="mb-2 text-center flex gap-2">
+      <div className="mb-2 text-center flex gap-2 items-center">
         <img
           src={"https://bundui-images.netlify.app/avatars/01.png"}
-          className="size-10 rounded-full mt-1 object-cover"
+          className="size-8 sm:size-10 rounded-full object-cover shrink-0"
         />
-        <div className="flex flex-col text-left">
-          <h2 className="text-lg flex gap-4">
-            Ариф Тукембаев
+        <div className="flex flex-col text-left min-w-0 flex-1">
+          <h2 className="text-base sm:text-lg flex flex-wrap gap-2 sm:gap-4 items-center">
+            <span className="truncate">Ариф Тукембаев</span>
             <Badge
               variant="outline"
-              className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
+              className="flex gap-1 px-1 sm:px-1.5 text-muted-foreground [&_svg]:size-3 text-xs shrink-0"
             >
               ПИ-2-18
             </Badge>
           </h2>
-          <h4 className="text-xs text-muted-foreground">
+          <h4 className="text-[10px] sm:text-xs text-muted-foreground truncate">
             tukembaev.arif@gmail.com
           </h4>
         </div>
       </div>
-      <div className="h-96 overflow-y-auto space-y-2 p-2 pr-4 border rounded-xl">
+      <div className="h-64 sm:h-96 overflow-y-auto space-y-2 p-2 sm:p-2 sm:pr-4 border rounded-xl">
         {initialMessages[idChat].map((item, index) => (
           <div
             key={index}
@@ -94,16 +94,16 @@ const ChatMessages = ({ idChat }: ChatMessagesProps) => {
           >
             <div
               className={cn(
-                "max-w-[70%] rounded-lg p-2 text-sm",
+                "max-w-[85%] sm:max-w-[70%] rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm",
                 item.author === "me"
                   ? "bg-gray-700 text-white"
                   : "bg-gray-200 text-black"
               )}
             >
-              <p>{item.text}</p>
+              <p className="break-words">{item.text}</p>
               <div
                 className={cn(
-                  "text-xs mt-1 flex gap-1",
+                  "text-[10px] sm:text-xs mt-1 flex gap-1 items-center",
                   item.author === "me" ? "justify-end" : "justify-start"
                 )}
               >
@@ -111,9 +111,9 @@ const ChatMessages = ({ idChat }: ChatMessagesProps) => {
                 {item.author === "me" && (
                   <span>
                     {item.status === "read" ? (
-                      <LucideCheckCheck className="w-4 h-4 text-blue-500" />
+                      <LucideCheckCheck className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
                     ) : (
-                      <LucideCheck className="w-4 h-4 text-gray-500" />
+                      <LucideCheck className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                     )}
                   </span>
                 )}
@@ -129,9 +129,10 @@ const ChatMessages = ({ idChat }: ChatMessagesProps) => {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Написать сообщение..."
+          className="text-sm sm:text-base"
         />
-        <Button onClick={handleSubmit} variant="outline">
-          <LuSend />
+        <Button onClick={handleSubmit} variant="outline" size="icon" className="shrink-0">
+          <LuSend className="h-4 w-4" />
         </Button>
       </div>
     </div>

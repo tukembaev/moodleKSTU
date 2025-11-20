@@ -14,8 +14,10 @@ import AboutCourse from "./Details/AboutCourse";
 import CourseInvolvement from "./Details/OwnerDetails/CourseInvolvement";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
 import { ChatContainer } from "features/Chat";
+import { useAuth } from "shared/hooks";
 
 const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
+  const {isStudent} = useAuth();
   const tabs = [
     {
       name: "О курсе",
@@ -30,14 +32,14 @@ const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
       ),
       icon: <LuInfo />,
     },
+    ...(!isStudent ? [{
+        name: "Успеваемость студентов",
+        value: "students_progress",
+        content: <CourseResultTable />,
+        icon: <LuBookA />,
+    }] : []),
     {
-      name: "Успеваемость студентов",
-      value: "students_progress",
-      content: <CourseResultTable />,
-      icon: <LuBookA />,
-    },
-    {
-      name: "Чаты",
+      name: isStudent ? "Чат с преподователем" : "Чаты с студентами",
       value: "chats",
       content: <ChatContainer />,
       icon: <LuMessageCircle />,
@@ -48,12 +50,12 @@ const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
     //   content: <CourseStatistic />,
     //   icon: <LuChartBar />,
     // },
-    {
+    ...(!isStudent ? [{
       name: "Вовлеченность",
       value: "attendance",
       content: <CourseInvolvement />,
       icon: <LuHandshake />,
-    },
+    }] : []),
 
     // {
     //   name: "Отзывы",
@@ -65,20 +67,20 @@ const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-2">
-        <span className="text-xl tracking-tight">
+        <span className="text-lg sm:text-xl tracking-tight">
           {data?.course_owner[0].owner_name}
         </span>
-        <span className="text-3xl sm:text-4xl font-bold tracking-tight pb-2">
+        <span className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight pb-2">
           {data?.discipline_name}
         </span>
 
-        <div className="flex gap-6 text-md text-foreground/80 pl-2">
-          <UseTooltip text="Количество часов на изучение">
+        <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-md text-foreground/80 pl-0 sm:pl-2">
+          {/* <UseTooltip text="Количество часов на изучение">
             <div className="flex items-center gap-2">
               <LuClock className="h-4 w-4" />
               <span>{data?.count_hours}</span>
             </div>
-          </UseTooltip>
+          </UseTooltip> */}
 
           <UseTooltip text="Кредитов за курс">
             <div className="flex items-center gap-2">

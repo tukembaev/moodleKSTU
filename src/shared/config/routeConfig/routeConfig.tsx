@@ -1,15 +1,12 @@
 import { ReactNode } from "react";
 
+// Импорты страниц (уже имеют встроенную ленивую загрузку через .async.tsx файлы)
 import { CoursePage } from "pages/CoursePage";
-
 import { GroupPage } from "pages/GroupPage";
 import { LoginPage } from "pages/LoginPage";
 import { MainPage } from "pages/MainPage";
-
 import { NotFoundPage } from "pages/NotFoundPage";
-// import { RegistrationPage } from "pages/RegistrationPage";
 import { UniversitiesPage } from "pages/UniversitiesPage";
-
 import { UserBilling, UserProfile } from "entities/User";
 import CourseThemes from "entities/Course/ui/CourseThemes";
 import { TestingPage } from "pages/TestingPage";
@@ -17,9 +14,12 @@ import { TestFrame, TestResults } from "entities/Test";
 import { AboutUsPage } from "pages/AboutUsPage";
 import { CollaboratePage } from "pages/CollaboratePage";
 import { CategoryPage } from "pages/CategoryPage";
-import NotificationPage from "pages/NotificationPage/ui/NotificationPage";
+import { NotificationPage } from "pages/NotificationPage";
 import { StatisticPage } from "pages/StatisticPage";
 import { ChatPage } from "pages/ChatPage";
+import AddQuizPage from "features/Quiz/ui/AddQuizPage";
+import { QuizTestPage } from "pages/QuizTestPage";
+import { QuizResultsPage } from "pages/QuizResultsPage";
 
 export interface AppRoutesProps {
   path: string;
@@ -57,6 +57,9 @@ export enum AppSubRoutes {
 
   TEST_RESULTS = "result",
   TEST_PASS = "pass",
+  TEST_ADD_QUIZ = "add-quiz",
+  TEST_QUIZ = "quiz",
+  TEST_QUIZ_RESULT = "quiz-result",
 }
 
 export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
@@ -80,6 +83,9 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppRoutes.TEST]: "/test",
   [AppSubRoutes.TEST_RESULTS]: "/test/result/:id",
   [AppSubRoutes.TEST_PASS]: "/test/pass",
+  [AppSubRoutes.TEST_ADD_QUIZ]: "/test/add-quiz",
+  [AppSubRoutes.TEST_QUIZ]: "/test/quiz/:id",
+  [AppSubRoutes.TEST_QUIZ_RESULT]: "/test/quiz-result/:id",
 
   [AppRoutes.GROUPS]: "/groups",
   [AppRoutes.BILLING]: "/billing",
@@ -184,6 +190,21 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
       {
         path: RoutePath[AppSubRoutes.TEST_RESULTS],
         element: <TestResults />,
+        breadcrumbName: "Результаты теста",
+      },
+      {
+        path: RoutePath[AppSubRoutes.TEST_ADD_QUIZ],
+        element: <AddQuizPage />,
+        breadcrumbName: "Создание теста",
+      },
+      {
+        path: RoutePath[AppSubRoutes.TEST_QUIZ],
+        element: <QuizTestPage />,
+        breadcrumbName: "Тест",
+      },
+      {
+        path: RoutePath[AppSubRoutes.TEST_QUIZ_RESULT],
+        element: <QuizResultsPage />,
         breadcrumbName: "Результаты теста",
       },
     ],

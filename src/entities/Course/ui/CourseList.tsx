@@ -104,18 +104,7 @@ const CourseList = () => {
                             />
                             {course.category}
                           </Badge>
-                          <UseTooltip
-                            text="Количество отзывов: 500"
-                            side="right"
-                          >
-                            <span className="text-muted-foreground text-sm flex gap-1 items-center max-w-10 ">
-                              <LuStar
-                                className="fill-amber-200 text-amber-200 "
-                                size={18}
-                              />{" "}
-                              4.3
-                            </span>
-                          </UseTooltip>
+                         
                         </div>
 
                         <HoverScale>
@@ -165,9 +154,9 @@ const CourseList = () => {
                           />
                         </div>
                       </div>
-                      <p className="mt-1 text-foreground/80 text-[15px]">
+                      {/* <p className="mt-1 text-foreground/80 text-[15px]">
                         Количество часов : {course.count_hours}
-                      </p>
+                      </p> */}
                       <p className="mt-1 text-foreground/80 text-[15px]">
                         Кредитов : {course.credit}
                       </p>

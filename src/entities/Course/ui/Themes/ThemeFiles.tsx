@@ -10,13 +10,15 @@ import {
   LuList,
   LuMessageSquareText,
   LuTrash2,
+  LuClipboardList,
 } from "react-icons/lu";
-import { HoverLift, ModalPreview, UseTabs } from "shared/components";
+import { HoverLift, UseTabs } from "shared/components";
+import PdfViewer from "shared/components/PdfPreview";
 import { FormQuery } from "shared/config";
 import { useAuth, useForm } from "shared/hooks";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
-import { Dialog, DialogTrigger } from "shared/shadcn/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "shared/shadcn/ui/dialog";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import {
   Table,
@@ -31,6 +33,7 @@ import ThemeAnswers from "../Answers/ThemeAnswers";
 import ThemeFAQ from "./ThemeFAQ";
 import { ThemeFeed } from "./ThemeFeed";
 import ThemeQuiz from "./ThemeQuiz";
+import { StudentComments } from "features/Course/hooks/StudentComments";
 
 const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   const { data, isLoading, error } = useQuery(
@@ -39,7 +42,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   const { data: comments, isLoading: isLoadingComments } = useQuery(
     courseQueries.allThemeFeed(id)
   );
-
+  console.log(id)
   const auth_data = useAuth();
   const openForm = useForm();
 
@@ -78,6 +81,16 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
       content: <ThemeFAQ theme_id={id} />,
       icon: <LuGlasses />,
     },
+    ...(auth_data.isStudent
+      ? [
+          {
+            name: "Замечания",
+            value: "comments",
+            content: <StudentComments theme_id={id} />,
+            icon: <LuClipboardList />,
+          },
+        ]
+      : []),
   ];
 
   // Объединяем материалы с файлами и URL в один массив
@@ -95,7 +108,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   return (
     <div className="flex flex-col gap-3 pt-6">
       <div className="flex flex-col gap-3">
-        <p className="text-lg font-semibold">Учебный материал</p>
+        <p className="text-lg font-semibold">Учебный материалы</p>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -182,7 +195,12 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
                               )}
                             </Button>
                           </DialogTrigger>
-                          <ModalPreview data={material} />
+                          <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
+                            <DialogHeader className="px-6 pt-6 pb-0">
+                              <DialogTitle>{material.file_name || "Документ PDF"}</DialogTitle>
+                            </DialogHeader>
+                            <PdfViewer url={material.file || ""} inDialog={true} />
+                          </DialogContent>
                         </Dialog>
                       )}
                       {material.file && (

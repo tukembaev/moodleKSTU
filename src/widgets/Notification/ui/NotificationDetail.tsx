@@ -74,34 +74,34 @@ const NotificationDetail = () => {
 
   return (
     <Card className="h-full border-0 shadow-none py-0">
-      <CardContent className="flex flex-col p-4">
-        <div className="flex items-start">
-          <Avatar>
-            <AvatarFallback>{getInitials(notification.sender)}</AvatarFallback>
+      <CardContent className="flex flex-col p-3 sm:p-4">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+            <AvatarFallback className="text-xs sm:text-sm">{getInitials(notification.sender)}</AvatarFallback>
           </Avatar>
-          <div className="ml-4 flex-1">
-            <div className="flex items-center justify-between">
-              <div className="font-semibold">{notification.sender}</div>
+          <div className="ml-0 sm:ml-4 flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+              <div className="font-semibold text-sm sm:text-base">{notification.sender}</div>
               <div className="text-xs text-muted-foreground">
                 {format(notification.date, "d MMMM yyyy, HH:mm", {
                   locale: ru,
                 })}
               </div>
             </div>
-            <div className="text-sm font-medium mt-1">{notification.title}</div>
+            <div className="text-xs sm:text-sm font-medium mt-1">{notification.title}</div>
           </div>
         </div>
-        <Separator className="my-4" />
+        <Separator className="my-3 sm:my-4" />
         <div
-          className="group flex items-center gap-4 p-2 rounded-xl 
+          className="group flex items-center gap-2 sm:gap-4 p-2 rounded-xl 
                     hover:bg-zinc-50 dark:hover:bg-zinc-800/50
                     transition-colors duration-200 cursor-pointer"
         >
-          <div className="flex-none p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10">
-            <LuCable className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div className="flex-none p-1.5 sm:p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10">
+            <LuCable className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <p className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">
               Курс №1
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
@@ -110,8 +110,8 @@ const NotificationDetail = () => {
           </div>
         </div>
 
-        <Separator className="my-4" />
-        <div className="text-sm flex-1">{notification.message}</div>
+        <Separator className="my-3 sm:my-4" />
+        <div className="text-xs sm:text-sm flex-1 break-words whitespace-pre-wrap">{notification.message}</div>
         {/* <Separator className="my-4" />
         <p className="mb-2 text-center">Выставить баллы</p>
         <Separator />

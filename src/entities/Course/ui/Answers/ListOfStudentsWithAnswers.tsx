@@ -3,7 +3,6 @@ import { ru } from "date-fns/locale";
 import { makeIsRead } from "entities/Course/model/services/courseAPI";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentsAnswers } from "entities/Course/model/types/course";
-import { SetChat } from "features/Course/hooks/SetChat";
 import { SetComment } from "features/Course/hooks/SetComment";
 import { SetMark } from "features/Course/hooks/SetMark";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -15,16 +14,25 @@ import {
   LuLaugh,
   LuLock,
   LuMeh,
-  LuMessageCircle,
   LuMessageCircleWarning,
   LuThumbsUp,
   LuX,
+  LuEye,
+  LuEyeClosed,
 } from "react-icons/lu";
 import { GetFileIcon, HoverLift, UseTooltip } from "shared/components";
+import PdfViewer from "shared/components/PdfPreview";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Checkbox } from "shared/shadcn/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "shared/shadcn/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,9 +69,21 @@ const ListOfStudentsWithAnswers = ({
   const [selectedStudents, setSelectedStudents] = useState<Set<number>>(
     new Set()
   );
+  const [previewFileId, setPreviewFileId] = useState<string | null>(null);
 
   const toggleExpand = (studentId: string) => {
     setExpandedId(expandedId === studentId ? null : studentId);
+  };
+
+  const handleOpenPreview = (fileId: string) => {
+    if (previewFileId === fileId) {
+      setPreviewFileId(null);
+    } else {
+      setPreviewFileId(fileId);
+      // Помечаем файл как прочитанный при открытии предпросмотра
+      makeIsRead(fileId);
+      refetch();
+    }
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,7 +266,7 @@ const ListOfStudentsWithAnswers = ({
               <TableHead className="w-[130px]">Статус сдачи</TableHead>
               <TableHead className="w-[130px]">Доступ</TableHead>
               <TableHead className="w-[130px]">Замечания</TableHead>
-              <TableHead>Чат</TableHead>
+
 
               <TableHead />
             </TableRow>
@@ -288,7 +308,7 @@ const ListOfStudentsWithAnswers = ({
                       </Badge>
                     </div>
 
-                    {student.files.some((file) => !file.is_read) ? (
+                    {student.files.some((file) => !file.is_read.is_read) ? (
                       <UseTooltip text="Новый не просмотренный файл!">
                         <LuMessageCircleWarning className="text-orange-500" />
                       </UseTooltip>
@@ -369,7 +389,7 @@ const ListOfStudentsWithAnswers = ({
                       </Badge>
                     </HoverLift>
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <Badge
                       variant="outline"
                       className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
@@ -386,7 +406,7 @@ const ListOfStudentsWithAnswers = ({
                         </span>
                       </SetChat>
                     </Badge>
-                  </TableCell>
+                  </TableCell> */}
 
                   <TableCell
                     className="flex justify-end cursor-pointer"
@@ -419,34 +439,70 @@ const ListOfStudentsWithAnswers = ({
                             locale: ru,
                           })}
                         </span>
-                        {item.is_read ? (
-                          <UseTooltip text="Все файлы просмотренны">
+                        {item.is_read.is_read ? <UseTooltip text={
+                            <>
+                              <div>Файл просмотрен</div>
+                              <div>{format(item.is_read.read, "PPP 'в' p", {
+                                locale: ru,
+                              })}</div>
+                            </>
+                          }>
                             <LuCheckCheck className="text-blue-500" />
                           </UseTooltip>
-                        ) : (
-                          <UseTooltip text="Новый не просмотренный файл!">
+                        : <UseTooltip text="Новый не просмотренный файл!">
                             <LuMessageCircleWarning className="text-orange-500" />
-                          </UseTooltip>
-                        )}
+                          </UseTooltip>}
                       </TableCell>
                       <TableCell colSpan={6} className="text-right">
-                        <a
-                          href={item.file}
-                          download={item.file_names}
-                          className="text-blue-500 hover:text-blue-700"
-                          onClick={() => {
-                            makeIsRead(item.id);
-                            refetch();
-                          }}
-                        >
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="cursor-pointer"
+                        <div className="flex gap-2 justify-end">
+                          {item.file_names.toLowerCase().endsWith('.pdf') && (
+                            <Dialog
+                              onOpenChange={(isOpen) => {
+                                if (!isOpen) {
+                                  setPreviewFileId(null);
+                                }
+                              }}
+                              open={previewFileId === item.id}
+                            >
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleOpenPreview(item.id)}
+                                >
+                                  {previewFileId === item.id ? (
+                                    <LuEyeClosed />
+                                  ) : (
+                                    <LuEye />
+                                  )}
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
+                                <DialogHeader className="px-6 pt-6 pb-0">
+                                  <DialogTitle>{item.file_names}</DialogTitle>
+                                </DialogHeader>
+                                <PdfViewer url={item.file || ""} inDialog={true} />
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                          <a
+                            href={item.file}
+                            download={item.file_names}
+                            className="text-blue-500 hover:text-blue-700"
+                            onClick={() => {
+                              makeIsRead(item.id);
+                              refetch();
+                            }}
                           >
-                            <LuFolderDown />
-                          </Button>
-                        </a>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="cursor-pointer"
+                            >
+                              <LuFolderDown />
+                            </Button>
+                          </a>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

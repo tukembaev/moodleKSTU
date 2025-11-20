@@ -66,10 +66,10 @@ const FavoriteCourses = ({
                     </UseTooltip>
                   </HoverScale>
                 </div>
-
+{/* 
                 <p className="mt-1 text-foreground/80 text-[15px]">
                   Количество часов : {course.count_hours}
-                </p>
+                </p> */}
                 <p className="mt-1 text-foreground/80 text-[15px]">
                   Кредитов : {course.credit}
                 </p>

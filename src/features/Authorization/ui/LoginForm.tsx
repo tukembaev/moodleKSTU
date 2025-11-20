@@ -64,7 +64,7 @@ const LoginForm = ({
         setTimeout(() => {
           // navigate("/main");
           window.location.href = "/courses";
-        }, 2000);
+        }, 100);
       }
     } catch (error: any) {
       toast.error(

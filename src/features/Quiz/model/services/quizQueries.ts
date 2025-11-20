@@ -37,7 +37,7 @@ export const useCreateQuiz = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: QuizPayload) => {
-      const mutationPromise = axios.post('https://utask.kstu.kg/educations/api/v1/quizzes/', data);
+      const mutationPromise = axios.post('https://uadmin.kstu.kg/educations/api/v1/quizzes/', data);
       toast.promise(mutationPromise, {
         loading: 'Создание викторины...',
         success: 'Викторина успешно создана!',

@@ -1,110 +1,17 @@
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { Wallet } from "lucide-react";
 import React, { useState } from "react";
 import { LuSend } from "react-icons/lu";
-import { cn } from "shared/lib/utils";
 import { Button } from "shared/shadcn/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "shared/shadcn/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "shared/shadcn/ui/dialog";
 import { Input } from "shared/shadcn/ui/input";
-
-const activities = [
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-  {
-    id: "1",
-    title: "Создан новый курс: React для начинающих",
-    amount: "",
-    type: "incoming",
-    icon: Wallet,
-    timestamp: "Сегодня, 10:00",
-    status: "completed",
-    isCurrent: false,
-  },
-];
+import { ScrollArea } from "shared/shadcn/ui/scroll-area";
+import { ReviewThread, mockReviews } from "./ReviewThread";
 
 export function SetComment({
   text,
@@ -117,68 +24,73 @@ export function SetComment({
 }) {
   const { mutate: comment_answer, isPending } = courseQueries.rate_answer();
   const [note, setNote] = useState("");
+  const [open, setOpen] = useState(false);
+
   const handleSubmit = () => {
+    if (!note.trim()) return;
+    
+    // TODO: Отправка нового замечания
     comment_answer({
       answer: id as string,
       comment: note,
     });
+    setNote("");
   };
+
+  const handleApprove = (reviewId: string) => {
+    // TODO: API call для одобрения
+    console.log("Approve review:", reviewId);
+  };
+
+  const handleReject = (reviewId: string, message: string) => {
+    // TODO: API call для отклонения с комментарием
+    console.log("Reject review:", reviewId, "message:", message);
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent className="p-4">
-        <DropdownMenuLabel className="mb-2 text-center">
-          {text}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="max-w-2xl p-0 gap-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
+          <DialogTitle className="text-base font-semibold">{text}</DialogTitle>
+        </DialogHeader>
 
-        <div className="max-h-64 overflow-y-auto space-y-2 ">
-          {activities.map((activity) => (
-            <div
-              key={activity.id}
-              className={cn(
-                "group flex items-center gap-3",
-                "p-2 rounded-lg",
-                "transition-all duration-200"
-              )}
-            >
-              <div className={cn("p-2 rounded-lg")}>
-                <activity.icon className="w-4 h-4" />
-              </div>
-
-              <div className="flex-1 flex items-center justify-between min-w-0">
-                <div className="space-y-0.5">
-                  <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
-                    {activity.title}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                      {activity.timestamp}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex gap-2 items-center mt-1">
-          <Input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Написать замечание..."
-            className="text-sm max-h-11"
+        <ScrollArea className="h-[400px] px-4 pt-2">
+          <ReviewThread
+            reviews={mockReviews}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            showTeacherActions={true}
           />
-          <Button
-            className="w-full flex gap-2"
-            variant={"outline"}
-            disabled={isPending || !note.trim()}
-            onClick={handleSubmit}
-          >
-            <LuSend />
-          </Button>
+        </ScrollArea>
+
+        {/* Форма для добавления нового замечания */}
+        <div className="px-6 py-4 border-t shrink-0">
+          <div className="flex gap-2">
+            <Input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Написать замечание..."
+              className="text-sm h-9"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
+            <Button
+              size="sm"
+              variant="default"
+              disabled={isPending || !note.trim()}
+              onClick={handleSubmit}
+              className="h-9 px-3 shrink-0"
+            >
+              <LuSend className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DialogContent>
+    </Dialog>
   );
 }

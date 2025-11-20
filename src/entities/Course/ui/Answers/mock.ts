@@ -3,14 +3,14 @@ export const test = [
         "id": "98625d61-9b45-41b3-9536-20115a80596d",
         "task": "2a0c25de-60ca-48b1-ac41-5722e66a84c3",
         "fullname": "Нурбеков Бексултан",
-        "avatar": "https://utask.kstu.kg/media/avatars/photo_2024-07-17_12-59-25.jpg",
+        "avatar": "https://uadmin.kstu.kg/media/avatars/photo_2024-07-17_12-59-25.jpg",
         "group": "ПИ-1-23",
         "status": false,
         "points": 0,
         "files": [
             {
                 "id": "bd229991-1223-4617-9292-68090a4e09ac",
-                "file": "https://utask.kstu.kg/educations/educations/media/files/login_h3DuYfj.svg",
+                "file": "https://uadmin.kstu.kg/educations/educations/media/files/login_h3DuYfj.svg",
                 "file_names": "login_h3DuYfj.svg"
             }
         ]
@@ -26,7 +26,7 @@ export const test = [
         "files": [
             {
                 "id": "bd229991-1223-4617-9292-68090a4e09ac",
-                "file": "https://utask.kstu.kg/educations/educations/media/files/login_h3DuYfj.svg",
+                "file": "https://uadmin.kstu.kg/educations/educations/media/files/login_h3DuYfj.svg",
                 "file_names": "login_h3DuYfj.svg"
             }
         ]
