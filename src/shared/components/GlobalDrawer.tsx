@@ -43,7 +43,7 @@ export default function GlobalDrawer() {
             } as React.CSSProperties
           }
         >
-          <div className="bg-zinc-50 h-full w-full grow p-5 flex flex-col rounded-[16px]  overflow-y-auto">
+          <div className="bg-zinc-50 h-full w-full grow p-5 flex flex-col rounded-[16px] overflow-y-auto">
             <Drawer.Title className="font-medium mb-2 text-zinc-900 text-2xl">
               {currentForm?.title}
             </Drawer.Title>

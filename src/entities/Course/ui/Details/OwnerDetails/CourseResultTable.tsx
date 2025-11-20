@@ -1,14 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 
-import { LuCheckCheck, LuSparkles } from "react-icons/lu";
+import { LuCheckCheck } from "react-icons/lu";
 import { useParams } from "react-router-dom";
-import { getPointColor, Tracker, UseTooltip } from "shared/components";
-import { FormQuery } from "shared/config";
-import { useForm } from "shared/hooks";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
-import { Button } from "shared/shadcn/ui/button";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import {
   Table,
@@ -18,59 +14,55 @@ import {
   TableHeader,
   TableRow,
 } from "shared/shadcn/ui/table";
+import StudentDetailDialog from "./StudentCourseDetail";
+
+// Компонент для отображения детальной статистики студента
+
 
 const CourseResultTable = () => {
   const { id } = useParams();
-  const openForm = useForm();
   const { data, isLoading } = useQuery(
     courseQueries.allStudentPerfomance(id as string)
   );
 
   if (isLoading) {
     return (
-      <div className="rounded-md border w-fit mt-4">
+      <div className="rounded-md border mt-4 overflow-x-auto">
         <Table>
           <TableHeader className="bg-muted">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[300px]">Имя студента</TableHead>
-              <TableHead className="w-[100px]">Группа</TableHead>
-              <TableHead className="w-[100px]">Баллы</TableHead>
-              <TableHead className="w-[150px]">Лабораторные</TableHead>
-              <TableHead className="w-[150px]">Практики</TableHead>
-              <TableHead className="w-[150px]">СРС</TableHead>
-              <TableHead className="w-[150px]">Тесты</TableHead>
-              <TableHead className="w-[150px]">Прочее</TableHead>
-              <TableHead />
+              <TableHead className="min-w-[200px] sm:w-[300px]">Имя студента</TableHead>
+              <TableHead className="min-w-[80px] sm:w-[100px]">Группа</TableHead>
+              <TableHead className="min-w-[120px] sm:w-[150px]">Модуль 1</TableHead>
+              <TableHead className="min-w-[120px] sm:w-[150px]">Модуль 2</TableHead>
+              <TableHead className="min-w-[80px] sm:w-[100px]">Баллы</TableHead>
+              <TableHead className="min-w-[60px]" />
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {[...Array(5)].map((_, index) => (
               <TableRow key={index}>
-                <TableCell className="font-medium flex items-center gap-3">
-                  <Skeleton className="h-6 w-6 rounded-full" />
-                  <Skeleton className="h-6 w-24" />
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full shrink-0" />
+                    <Skeleton className="h-4 sm:h-6 w-24 sm:w-32" />
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-4 sm:h-6 w-16 sm:w-20" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-4 sm:h-6 w-16 sm:w-20" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-4 sm:h-6 w-16 sm:w-20" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-4 sm:h-6 w-16 sm:w-20" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-6 w-24" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-6 w-24" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-6 sm:h-8 w-12 sm:w-16" />
                 </TableCell>
               </TableRow>
             ))}
@@ -81,145 +73,102 @@ const CourseResultTable = () => {
   }
 
   return (
-    <div className="rounded-md border w-fit mt-4">
+    <div className="rounded-md border mt-4 overflow-x-auto">
       <Table>
         <TableHeader className="bg-muted">
-          <TableRow className="hover:bg-transparent ">
-            <TableHead className="w-[300px]">Имя студента</TableHead>
-            <TableHead className="w-[100px]">Группа</TableHead>
-            <TableHead className="w-[100px]">Баллы</TableHead>
-            <TableHead className="w-[150px]">Лабораторные</TableHead>
-            <TableHead className="w-[150px]">Практики</TableHead>
-            <TableHead className="w-[150px]">СРС</TableHead>
-            <TableHead className="w-[150px]">Тесты</TableHead>
-            <TableHead className="w-[150px]">Прочее</TableHead>
-            <TableHead />
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="min-w-[200px] sm:w-[300px]">Имя студента</TableHead>
+            <TableHead className="min-w-[80px] sm:w-[100px]">Группа</TableHead>
+            <TableHead className="min-w-[120px] sm:w-[150px]">Модуль 1</TableHead>
+            <TableHead className="min-w-[120px] sm:w-[150px]">Модуль 2</TableHead>
+            <TableHead className="min-w-[80px] sm:w-[100px]">Баллы</TableHead>
+            <TableHead className="min-w-[60px]" />
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {data?.map((student) => {
-            const actual = [
-              ...student.themes.lb,
-              ...student.themes.pr,
-              ...student.themes.srs,
-              ...student.themes.tests.map((t) => ({ stud_points: t.result })), // у tests поле другое
-              ...student.themes.other,
-            ].reduce((sum, item) => sum + (item.stud_points || 0), 0);
+            // Модуль 1: Лабораторные + Практики + Тесты
+            const module1Points = 
+              student.themes.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+              student.themes.pr.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+              student.themes.tests.reduce((sum, item) => sum + (item.result || 0), 0);
+            
+            const module1MaxPoints = 
+              student.themes.lb.reduce((sum, item) => sum + item.max_points, 0) +
+              student.themes.pr.reduce((sum, item) => sum + item.max_points, 0) +
+              student.themes.tests.reduce((sum, item) => sum + item.max_points, 0);
+
+            // Модуль 2: СРС + Прочее
+            const module2Points = 
+              student.themes.srs.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+              student.themes.other.reduce((sum, item) => sum + (item.stud_points || 0), 0);
+            
+            const module2MaxPoints = 
+              student.themes.srs.reduce((sum, item) => sum + item.max_points, 0) +
+              student.themes.other.reduce((sum, item) => sum + item.max_points, 0);
+
+            const totalPoints = module1Points + module2Points;
+
             return (
               <TableRow key={student.id}>
-                <TableCell className="font-medium flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={student.avatar} />
-                  </Avatar>
-                  <p>{`${student.first_name} ${student.last_name}`}</p>
-                  {student.is_end && (
-                    <Badge
-                      variant="outline"
-                      className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer "
-                    >
-                      <LuCheckCheck className="text-green-500 dark:text-green-400" />
-                      Сдано
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
+                      <AvatarImage src={student.avatar} />
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="text-sm sm:text-base truncate">{`${student.first_name} ${student.last_name}`}</p>
+                      {student.is_end && (
+                        <Badge
+                          variant="outline"
+                          className="flex gap-1 px-1 sm:px-1.5 text-muted-foreground [&_svg]:size-3 w-fit mt-1 text-xs"
+                        >
+                          <LuCheckCheck className="text-green-500 dark:text-green-400" />
+                          Сдано
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-sm sm:text-base">{student.group}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className="font-semibold text-xs sm:text-sm">
+                    {module1Points} / {module1MaxPoints}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {module2MaxPoints > 0 ? (
+                    <Badge variant="secondary" className="font-semibold text-xs sm:text-sm">
+                      {module2Points} / {module2MaxPoints}
                     </Badge>
+                  ) : (
+                    <span className="text-muted-foreground text-xs sm:text-sm">—</span>
                   )}
                 </TableCell>
-                <TableCell>{student.group}</TableCell>
                 <TableCell>
-                  {/* Подсчитываем общие баллы */}
-                  {actual} / {student.max_points_course}
+                  <Badge className="font-semibold text-xs sm:text-sm">
+                    {totalPoints} / {student.max_points_course}
+                  </Badge>
                 </TableCell>
                 <TableCell>
-                  <Tracker
-                    data={student.themes.lb.map((item) => ({
-                      title: item.title,
-                      points: item.stud_points || 0,
-                      id: item.id_answer_task ?? undefined,
-                      max_points: item.max_points,
-
-                      color: getPointColor(
-                        item.stud_points as number,
-                        item.max_points
-                      ),
-                    }))}
-                    hoverEffect={true}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Tracker
-                    data={student.themes.pr.map((item) => ({
-                      title: item.title,
-                      points: item.stud_points || 0,
-                      id: item.id_answer_task ?? undefined,
-                      max_points: item.max_points,
-                      color: getPointColor(
-                        item.stud_points as number,
-                        item.max_points
-                      ),
-                    }))}
-                    hoverEffect={true}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Tracker
-                    data={student.themes.srs.map((item) => ({
-                      title: item.title,
-                      id: item.id_answer_task ?? undefined,
-                      points: item.stud_points || 0,
-                      max_points: item.max_points,
-
-                      color: getPointColor(
-                        item.stud_points as number,
-                        item.max_points
-                      ),
-                    }))}
-                    hoverEffect={true}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Tracker
-                    data={student.themes.tests.map((item) => ({
-                      title: item.title,
-                      isTest: item.result,
-                      points: item.result || 0,
-
-                      color: getPointColor(
-                        item.result as number,
-                        item.max_points
-                      ),
-                    }))}
-                    hoverEffect={true}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Tracker
-                    data={student.themes.other.map((item) => ({
-                      title: item.title,
-                      id: item.id_answer_task ?? undefined,
-                      max_points: item.max_points,
-
-                      points: item.stud_points || 0,
-                      color: getPointColor(
-                        item.stud_points as number,
-                        item.max_points
-                      ),
-                    }))}
-                    hoverEffect={true}
-                  />
-                </TableCell>
-                <TableCell>
-                  <UseTooltip text="Поставить итоговую оценку">
-                    <Button
-                      variant={"outline"}
-                      onClick={() =>
-                        openForm(FormQuery.END_COURSE, {
-                          user_id: String(student.user_id),
-                          points: String(actual),
-                        })
-                      }
-                    >
-                      <LuSparkles />
-                    </Button>
-                  </UseTooltip>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <StudentDetailDialog student={student} />
+                    {/* <UseTooltip text="Поставить итоговую оценку">
+                      <Button
+                        variant={"outline"}
+                        size="sm"
+                        onClick={() =>
+                          openForm(FormQuery.END_COURSE, {
+                            user_id: String(student.user_id),
+                            points: String(totalPoints),
+                          })
+                        }
+                      >
+                        <LuSparkles />
+                      </Button>
+                    </UseTooltip> */}
+                  </div>
                 </TableCell>
               </TableRow>
             );

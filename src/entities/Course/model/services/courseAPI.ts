@@ -9,37 +9,37 @@ import $api_base_edu from "shared/api/api_base_edu";
 
 //Все курсы/дисциплины преподавателя
 export const getCoursesOfProfessor = async ():Promise<Course[]> => {
-    const response = await $api_users.get(`my-courses`); 
+    const response = await $api_users.get(`my-courses/`); 
     return response.data;
   };
 //Все задания выбранной дисциплины
   export const getCourseAllTasks = async (id: string | null):Promise<CourseThemes> => {
-    const response = await $api_edu.get(`course-theme/${id}`); 
+    const response = await $api_edu.get(`course-theme/${id}/`); 
     return response.data;
   };
 //Все уроки и материалы выбранного задани
 export const getTaskMaterials = async (id: string | null):Promise<CourseMaterials[]> => {
-  const response = await $api_edu.get(`course-detail/${id}`); 
+  const response = await $api_edu.get(`course-detail/${id}/`); 
   return response.data.data;
 };
 export const getAnswerTask = async (id: string | null):Promise<StudentsAnswers[]> => {
-  const response = await $api_edu.get(`answer-task/${id}`); 
+  const response = await $api_edu.get(`answer-task/${id}/`); 
   return response.data;
 };
 export const getStudentAnswers = async (id: string | null):Promise<FileAnswer[]> => {
-  const response = await $api_edu.get(`student-task-files/${id}`); 
+  const response = await $api_edu.get(`student-task-files/${id}/`); 
   return response.data;
 };
 export const getThemeFAQ = async (theme: string | null):Promise<ThemeFaq[]> => {
-  const response = await $api_edu.get(`faq/${theme}`); 
+  const response = await $api_edu.get(`faq/${theme}/`); 
   return response.data;
 };
 export const getThemeDiscussion = async (theme: string | null):Promise<FeedItem[]> => {
-  const response = await $api_base_edu.get(`v1/chats/discussion/${theme}`); 
+  const response = await $api_base_edu.get(`v1/chats/discussion/${theme}/`); 
   return response.data;
 };
 export const getCourseTablePerfomance = async (id: string | null):Promise<TablePerfomance[]> => {
-  const response = await $api_edu.get(`table-performance/${id}`); 
+  const response = await $api_edu.get(`table-performance/${id}/`); 
   return response.data;
 };
 export const createCourse = async (data:CreateCoursePayload) => {

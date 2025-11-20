@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
+import { Textarea } from "shared/shadcn/ui/textarea";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { useEffect, useState } from "react";
@@ -85,9 +86,10 @@ const Add_Theme = () => {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="title">Название</Label>
-            <Input
-              type="text"
+            <Textarea
               placeholder="Введите название"
+              className="resize-none break-words w-full max-w-full"
+              style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
               {...register("title", { required: true })}
             />
             {errors.title && (
@@ -97,10 +99,12 @@ const Add_Theme = () => {
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="description">Описание</Label>
-            <Input
-              type="text"
+            <Textarea
               placeholder="Введите описание"
+              className="resize-none break-words w-full max-w-full"
+              style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
               {...register("description", { required: true })}
+              rows={4}
             />
             {errors.description && (
               <span className="text-xs text-red-500">Описание обязательно</span>
@@ -168,7 +172,7 @@ const Add_Theme = () => {
           </div>
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
+            {/* <Button
               variant="outline"
               className="w-full mt-4"
               disabled={isPending}
@@ -178,7 +182,7 @@ const Add_Theme = () => {
               }}
             >
               <LuX /> Отменить
-            </Button>
+            </Button> */}
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload /> {isPending ? "Загрузка..." : "Добавить тему"}
             </Button>

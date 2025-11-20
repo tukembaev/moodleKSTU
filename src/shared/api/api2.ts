@@ -1,7 +1,7 @@
 import axios from "axios"
 import { refreshUser } from "features/Authorization/model/services/loginAPI";
 
-export const API_URL = `https://utask.kstu.kg/api/`
+export const API_URL = `https://uadmin.kstu.kg/api/`
 
 const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}"); 
 
@@ -29,7 +29,7 @@ $api2.interceptors.response.use(
         error.config.headers.Authorization = `Bearer ${newTokens.access}`;
         return axios.request(error.config);
       } catch (refreshError) {
-        console.error("Refresh token failed, logging out...");
+        console.error("Refresh token failed, logging out...",refreshError);
         localStorage.setItem("refresh_error", 'Refresh токен устарел, перезайдите в систему');
         // localStorage.removeItem("auth_data");
         // window.location.href = "/";

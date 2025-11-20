@@ -2,10 +2,8 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 import { CourseOwner } from "entities/Course/model/types/course";
 import { LucideEdit } from "lucide-react";
 import { FC, useState } from "react";
-import { LuAward, LuBookA, LuStar } from "react-icons/lu";
 import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
-import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
 
 const Section: FC<{
@@ -38,18 +36,18 @@ const Section: FC<{
   };
   return (
     <div className="flex flex-col">
-      <div className="flex gap-3 items-center">
-        <h1 className="text-3xl font-regular tracking-tight pt-1 mb-4">
+      <div className="flex gap-2 sm:gap-3 items-center">
+        <h1 className="text-2xl sm:text-3xl font-regular tracking-tight pt-1 mb-4">
           {title}
         </h1>
         {isEdit && (
           <Button
             variant="outline"
             size="icon"
-            className="text-muted-foreground"
+            className="text-muted-foreground shrink-0"
             onClick={() => setIsEditing(!isEditing)}
           >
-            <LucideEdit className="h-5 w-5" />
+            <LucideEdit className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         )}
       </div>
@@ -76,42 +74,6 @@ const Section: FC<{
   );
 };
 
-const InstructorBlock: FC<{ course_owner: CourseOwner | undefined }> = ({
-  course_owner,
-}) => {
-  return (
-    <div>
-      <div className="flex flex-col gap-1">
-        <h2 className="text-2xl">{course_owner?.owner_name}</h2>
-        <h3>{course_owner?.position}</h3>
-
-        <div className="flex gap-2 items-center mt-2">
-          <Avatar className="h-24 w-24 rounded-lg">
-            <AvatarImage
-              src={course_owner?.avatar}
-              alt={course_owner?.avatar}
-              className="object-cover"
-            />
-            <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col gap-1">
-            <span className="flex gap-3 items-center">
-              <LuStar /> {course_owner?.review.rate} Рейтинг
-            </span>
-            <span className="flex gap-3 items-center">
-              <LuAward /> {course_owner?.review.count_reviews} отзывов
-            </span>
-
-            <span className="flex gap-3 items-center">
-              <LuBookA /> {course_owner?.review.count_courses} курсов
-            </span>
-          </div>
-        </div>
-      </div>
-      <span className="mt-8">{course_owner?.bio}</span>
-    </div>
-  );
-};
 
 const AboutCourse = ({
   requirements: initialRequirements,
@@ -131,10 +93,9 @@ const AboutCourse = ({
   const [audience, setAudience] = useState(initialAudience);
 
   return (
-    <div className="flex py-2">
-      <div className="pr-8 flex flex-col gap-4 w-full">
+    <div className="flex flex-col sm:flex-row py-2 gap-4 sm:gap-2 w-full">
+      <div className="pr-0 sm:pr-8 flex flex-col gap-4 w-full sm:min-w-[45%]">
         {/* <BuyCourse /> */}
-
         <Section
           field="description"
           title="Описание"
@@ -158,14 +119,14 @@ const AboutCourse = ({
           onChange={setRequirements}
           isEdit={isOwner}
         />
-        {/* 
-        <Section
-          title="Участники"
-          value={participants}
-          onChange={setParticipants}
-        /> */}
-
-        <InstructorBlock course_owner={course_owner} />
+        {/* <div>
+          <h1 className="text-3xl font-regular tracking-tight pt-1 mb-4">
+            Преподаватели курса
+          </h1>
+          <div className="flex gap-8 items-center">
+            <InstructorBlock course_owner={course_owner} />
+          </div>
+        </div> */}
       </div>
     </div>
   );

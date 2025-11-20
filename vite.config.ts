@@ -2,10 +2,23 @@ import path from "path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import tailwindcss from "@tailwindcss/vite"
-import { analyzer } from 'vite-bundle-analyzer'
+// import { analyzer } from 'vite-bundle-analyzer'
 export default defineConfig({
-  plugins: [react(),tailwindcss(),analyzer()],
-
+  plugins: [
+    react(), // Fast Refresh включен по умолчанию для лучшего HMR
+    tailwindcss()
+  ],
+  server: {
+    host: '0.0.0.0',
+    // Оптимизация HMR
+    hmr: {
+      overlay: true, // Показывать ошибки как оверлей
+    },
+    // Улучшенное кэширование
+    fs: {
+      strict: false
+    }
+  },
   resolve: {
     alias: {
       'app': path.resolve("./src/app/"),
@@ -16,9 +29,19 @@ export default defineConfig({
       'widgets': path.resolve("./src/widgets/"),
       '@': path.resolve("./src/@/"),
       'lib': path.resolve("./src/lib"),
-
-
-  }
+    }
+  },
+  // Оптимизация зависимостей для dev режима
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@tanstack/react-query',
+      'lucide-react'
+    ],
+    // Принудительная предварительная сборка для стабильности HMR
+    force: false
   },
   build: {
     chunkSizeWarningLimit: 500,
@@ -27,11 +50,14 @@ export default defineConfig({
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],
+          'react-router': ['react-router-dom'],
+          'react-query': ['@tanstack/react-query'],
           charts: ['recharts'],
           icons: ['lucide-react', 'react-icons'],
         },
       },
     },
   },
-
+  // Кэширование для ускорения пересборки
+  cacheDir: 'node_modules/.vite'
 })

@@ -9,12 +9,12 @@ const getGlobalSearchData = async (search:string):Promise<SearchBar> => {
   const auth = JSON.parse(localStorage.getItem(AUTH_DATA) || "{}");
 
   if (Object.keys(auth).length === 0) { 
-    const response = await axios.get(`https://utask.kstu.kg/educations/api/v1/global-search?search=${search}`);
+    const response = await axios.get(`https://uadmin.kstu.kg/educations/api/v1/global-search?search=${search}`);
 
     return response.data;
   }
 else {    
-  const response = await $api_base_edu.get(`v1/global-search?search=${search}`);
+  const response = await $api_base_edu.get(`v1/global-search/?search=${search}`);
 
   return response.data;
 }

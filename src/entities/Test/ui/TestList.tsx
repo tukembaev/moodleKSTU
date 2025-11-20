@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ChevronRight } from "lucide-react";
 import { LuHandCoins, LuPlus, LuTarget } from "react-icons/lu";
+import { ru } from "date-fns/locale";
+
 import { useNavigate } from "react-router-dom";
 import {
   FadeIn,
@@ -9,8 +11,8 @@ import {
   SpringPopupList,
   UseTooltip,
 } from "shared/components";
-import { AppSubRoutes, FormQuery } from "shared/config";
-import { useAuth, useForm } from "shared/hooks";
+import { AppSubRoutes } from "shared/config";
+import { useAuth } from "shared/hooks";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
@@ -42,9 +44,8 @@ import { CourseCardSkeleton } from "entities/Course";
 // ];
 const TestList = () => {
   const { isStudent } = useAuth();
-  const { data: test_list, isLoading } = useQuery(testQueries.allTest(""));
+  const { data: test_list, isLoading } = useQuery(testQueries.allTest("/"));
   const navigate = useNavigate();
-  const openForm = useForm();
 
   return (
     <div>
@@ -112,7 +113,7 @@ const TestList = () => {
                   </div>
 
                   <span
-                    className={`text-lg font-semibold flex gap-2 py-2 items-center`}
+                    className={`text-lg font-semibold flex gap-2 items-center`}
                   >
                     {theme.title}
                     {!isStudent ? null : theme.status ? (
@@ -125,54 +126,58 @@ const TestList = () => {
                       </Badge>
                     )}
                   </span>
+                  <div className="flex gap-6 text-sm text-foreground/80 items-center py-2">
+                    {theme.max_points && (
+                      <UseTooltip text="Максимальное количество баллов">
+                        <div className="flex items-center gap-2">
+                          <LuHandCoins className="h-4 w-4" />
+                          <span>{theme.max_points}</span>
+                        </div>
+                      </UseTooltip>
+                    )}
+                    {theme.deadline && (
+                      <UseTooltip text="Дедлайн сдачи задания">
+                        <div className="flex items-center gap-2">
+                          <LuTarget className="h-4 w-4" />
+                          <span>
+                            {format(theme.deadline, "PPP", {
+                              locale: ru,
+                            })}
+                            {/* {(format(theme.deadline, "PPP"), { locale: ru })} */}
+                          </span>
+                        </div>
+                      </UseTooltip>
+                    )}
+                  </div>
                   <span className={`text-md text-foreground/80 `}>
                     {theme.description}
                   </span>
-                  <div className="flex justify-between text-sm text-foreground/80 pt-8">
-                    <div className="flex gap-6 text-sm text-foreground/80 items-center">
-                      {theme.max_points && (
-                        <UseTooltip text="Максимальное количество баллов">
-                          <div className="flex items-center gap-2">
-                            <LuHandCoins className="h-4 w-4" />
-                            <span>{theme.max_points}</span>
-                          </div>
-                        </UseTooltip>
-                      )}
-                      {theme.deadline && (
-                        <UseTooltip text="Дедлайн сдачи задания">
-                          <div className="flex items-center gap-2">
-                            <LuTarget className="h-4 w-4" />
-                            <span>{format(theme.deadline, "PPP")}</span>
-                          </div>
-                        </UseTooltip>
-                      )}
-                    </div>
-                    {!isStudent || theme.status ? (
-                      <Button
-                        className="shadow-none"
-                        variant={"outline"}
-                        onClick={() =>
-                          navigate(
-                            "/test/result/" +
-                              theme.id +
-                              `?course_id=${theme.resides.course[0].id}`
-                          )
-                        }
-                      >
-                        Открыть результаты <ChevronRight />
-                      </Button>
-                    ) : (
-                      <Button
-                        className="shadow-none"
-                        variant={"outline"}
-                        onClick={() =>
-                          navigate("/test/pass" + `?url=${theme.link_form}`)
-                        }
-                      >
-                        Пройти тест <ChevronRight />
-                      </Button>
-                    )}
-                  </div>
+
+                  {!isStudent || theme.status ? (
+                    <Button
+                      className="shadow-none w-full mt-4"
+                      variant={"outline"}
+                      onClick={() =>
+                        navigate(
+                          "/test/result/" +
+                            theme.id +
+                            `?course_id=${theme.resides.course[0].id}`
+                        )
+                      }
+                    >
+                      Открыть результаты <ChevronRight />
+                    </Button>
+                  ) : (
+                    <Button
+                      className="shadow-none w-full mt-4"
+                      variant={"outline"}
+                      onClick={() =>
+                        navigate("/test/pass" + `?url=${theme.link_form}`)
+                      }
+                    >
+                      Пройти тест <ChevronRight />
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -181,10 +186,10 @@ const TestList = () => {
 
         <FadeIn className="flex border rounded-xl py-4 px-5 min-w-1/3 justify-center items-center min-h-48">
           <HoverLift>
-            <UseTooltip text="Добавить тему">
+            <UseTooltip text="Добавить тест">
               <div
-                className="flex flex-col justify-center items-center"
-                onClick={() => openForm(FormQuery.ADD_TEST)}
+                className="flex flex-col justify-center items-center cursor-pointer"
+                onClick={() => navigate("/test/add-quiz")}
               >
                 <LuPlus size={35} className="text-muted-foreground" />
                 <p>Добавьте новый тест</p>

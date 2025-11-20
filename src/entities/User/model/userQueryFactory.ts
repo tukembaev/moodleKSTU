@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import { getRegistrationList, getUserAchievements, getUserFavorites, getUserFiles, getUserInfo, getUserTeam } from './userAPI';
+import { getRegistrationList, getUserAchievements, getUserFavorites, getUserFiles, getUserInfo, getUserNotifications, getUserTeam } from './userAPI';
 
 import { useRegistrateCourse } from 'features/Course';
 import { make_favorite } from 'features/User';
@@ -32,6 +32,12 @@ export const userQueries = {
     queryOptions({
       queryKey: ['achievements'],
       queryFn: () => getUserAchievements(),
+    }),
+    
+    user_notifications: () =>
+    queryOptions({
+      queryKey: ["notifications"],
+      queryFn: getUserNotifications,
     }),
 
   user_favorites: () =>

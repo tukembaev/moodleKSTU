@@ -63,8 +63,8 @@ const LoginForm = ({
         window.dispatchEvent(new Event("storage"));
         setTimeout(() => {
           // navigate("/main");
-          window.location.href = "/main";
-        }, 2000);
+          window.location.href = "/courses";
+        }, 100);
       }
     } catch (error: any) {
       toast.error(

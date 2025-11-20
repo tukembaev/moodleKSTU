@@ -87,3 +87,12 @@ export interface Employee {
     themes:CourseDetail[];
     courses:Course[]
   }
+
+  export interface Notification {
+  id: string;
+  sender: string;
+  title: string;
+  message: string;
+  date: Date;
+  tags: string[];
+}

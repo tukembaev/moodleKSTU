@@ -2,21 +2,21 @@ import { Course } from "entities/Course";
 import { FavoritePayload } from "features/User";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
-import { AchievementList, Favorites, UserFilesList, UserGroupList, UserProfileData } from "../types/user";
+import { AchievementList, Favorites, Notification, UserFilesList, UserGroupList, UserProfileData } from "../types/user";
 
 
 export const getUserInfo = async (id: number | null):Promise<UserProfileData> => {
-  const response = await $api_users.get(`user/${id}`)
+  const response = await $api_users.get(`user/${id}/`)
   return response.data
 };
 
 export const getUserFiles = async (id:number|null):Promise<UserFilesList[]> => {
-  const response = await $api_users.get(`files/${id}`)
+  const response = await $api_users.get(`files/${id}/`)
   return response.data
 };
 
 export const getUserTeam = async (group:string|null):Promise<UserGroupList[]> => {
-  const response = await $api_users.get(`my-team/${group}`)
+  const response = await $api_users.get(`my-team/${group}/`)
   return response.data
 };
 
@@ -37,8 +37,13 @@ export const getUserAchievements = async ():Promise<AchievementList> => {
   return response.data
 };
 
+export const getUserNotifications = async (): Promise<Notification[]> => {
+  const response = await $api_users.get("notifications/");
+  return response.data;
+};
+
 export const getUserFavorites = async ():Promise<Favorites> => {
-  const response = await $api_users.get('favorites')
+  const response = await $api_users.get('favorites/')
   return response.data
 };
 

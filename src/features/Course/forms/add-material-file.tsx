@@ -81,17 +81,7 @@ const Add_Material_file = () => {
           )}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
-              variant="outline"
-              className="w-full mt-4"
-              disabled={isPending}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(-1);
-              }}
-            >
-              <LuX /> Отменить
-            </Button>
+            
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload />{" "}
               {isPending ? "Загрузка..." : "Загрузить материал"}

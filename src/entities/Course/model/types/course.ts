@@ -82,6 +82,7 @@ export interface CourseProgress {
 
  export type Course = {
     id: string;
+    icon?:string;
     title: string;
     discipline: string;
     discipline_name: string;
@@ -136,7 +137,10 @@ export interface CourseProgress {
     id: string;
     file: string;
     file_names: string;
-    is_read: boolean;
+    is_read: {
+      is_read: boolean;
+      read: Date
+    };
     created_at: Date;
     resides:{
               course:ResidesCourse[],

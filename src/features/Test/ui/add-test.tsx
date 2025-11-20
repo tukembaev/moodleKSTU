@@ -7,7 +7,7 @@ import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
 
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
-import { ComponentType, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
@@ -35,18 +35,18 @@ const Add_Test = () => {
 
   useEffect(() => {
     setValue("deadline", date!);
-  }, [date]);
+  }, [date, setValue]);
 
   useEffect(() => {
     setValue("opening_date", opening_date!);
-  }, [opening_date]);
+  }, [opening_date, setValue]);
 
   const courseOptions: {
     label: string;
     value: string;
-    icon?: ComponentType<{ className?: string }>;
+    icon?: string;
   }[] =
-    data?.map((course: any) => ({
+    data?.map((course) => ({
       label: course.discipline_name,
       value: String(course.id),
       icon: course.category_icon,
@@ -57,7 +57,7 @@ const Add_Test = () => {
       "course",
       selectedCourses.map((id) => id)
     );
-  }, [selectedCourses]);
+  }, [selectedCourses, setValue]);
 
   const navigate = useNavigate();
 
@@ -70,7 +70,7 @@ const Add_Test = () => {
 
   return (
     <section className="py-4">
-      <Card className="flex flex-col gap-4 p-6">
+      <Card className="flex flex-col gap-4 p-6 h-full overflow-y-auto">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <Label>Название теста</Label>

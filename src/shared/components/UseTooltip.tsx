@@ -15,7 +15,7 @@ const UseTooltip = ({
   side = "top",
 }: {
   children: React.ReactNode;
-  text: string;
+  text: React.ReactNode;
   side?: Side;
 }) => {
   return (
@@ -25,7 +25,7 @@ const UseTooltip = ({
           {children}
         </TooltipTrigger>
         <TooltipContent side={side}>
-          <p>{text}</p>
+          {typeof text === 'string' ? <p>{text}</p> : text}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -1,13 +1,13 @@
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { LucideWandSparkles } from "lucide-react";
+import { AlertCircleIcon, LucideWandSparkles } from "lucide-react";
 import React, { useState } from "react";
 import { GaugeWithSliderSmall } from "shared/components/Progress/GaugeWithSliderSmall";
+import { Alert, AlertTitle } from "shared/shadcn/ui/alert";
 import { Button } from "shared/shadcn/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "shared/shadcn/ui/dropdown-menu";
 
@@ -27,7 +27,6 @@ export function SetMark({
   const { mutate: rate_answer, isPending } = courseQueries.rate_answer();
   const [score, setScore] = useState(points as number);
   const handleSubmit = () => {
-    debugger;
     rate_answer({
       answer: id as string,
       points: score,
@@ -40,8 +39,11 @@ export function SetMark({
         <DropdownMenuLabel className="mb-2 text-center">
           {text}
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
 
+        <Alert variant="warning">
+          <AlertCircleIcon />
+          <AlertTitle>Студент имеет 3 замечания</AlertTitle>
+        </Alert>
         <GaugeWithSliderSmall
           score={score}
           maxScore={Number(max_points)}
