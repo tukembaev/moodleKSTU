@@ -80,7 +80,7 @@ const Add_Course = () => {
                 <SelectItem value="Политика">Политика</SelectItem>
                 <SelectItem value="Наука">Наука</SelectItem>
                 <SelectItem value="Спорт">Спорт</SelectItem>
-                <SelectItem value="Лайфстайл">Лайфстайл</SelectItem>
+              
               </SelectContent>
             </Select>
             <input
@@ -156,44 +156,9 @@ const Add_Course = () => {
             )}
           </div>
 
-          <div className="flex flex-col ">
-            <Label htmlFor="hours" className="pb-2">
-              Часы
-              {/* (Поговорить с начальством чтобы убрать) */}
-            </Label>
-            <Input
-              type="number"
-              placeholder="Введите количество часов"
-              {...register("count_hours", {
-                required: true,
-                valueAsNumber: true,
-                validate: (value) => {
-                  if (value > 60) {
-                    return "Максимальное количество часов на предмет - 60";
-                  }
-                  return true;
-                },
-              })}
-            />
-            {errors.count_hours && (
-              <span className="text-xs text-red-500 pt-1">
-                Количество часов обязательно
-              </span>
-            )}
-          </div>
+        
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
-              variant={"outline"}
-              className="w-full mt-4"
-              disabled={isPending}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(-1);
-              }}
-            >
-              <LuX />
-              Отменить
-            </Button>
+           
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload />
               {isPending ? "Загрузка..." : "Добавить курс"}

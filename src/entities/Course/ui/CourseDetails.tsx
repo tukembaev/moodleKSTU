@@ -17,6 +17,7 @@ import { useAuth } from "shared/hooks";
 
 const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
   const {isStudent} = useAuth();
+  console.log(data);
   const tabs = [
     {
       name: "О курсе",
@@ -74,13 +75,7 @@ const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
         </span>
 
         <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-md text-foreground/80 pl-0 sm:pl-2">
-          {/* <UseTooltip text="Количество часов на изучение">
-            <div className="flex items-center gap-2">
-              <LuClock className="h-4 w-4" />
-              <span>{data?.count_hours}</span>
-            </div>
-          </UseTooltip> */}
-
+       
           <UseTooltip text="Кредитов за курс">
             <div className="flex items-center gap-2">
               <LuHandCoins className="h-4 w-4" />

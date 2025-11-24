@@ -33,15 +33,7 @@ export default function CourseStatisticTooltip({
             <p>Количество студентов : {count_stud}</p>
           ) : (
             <div className="flex flex-col gap-2">
-              {/* <p className="mt-1 text-foreground/80 text-[15px]">
-                      Количество часов : {course.count_hours}
-                    </p>
-                    <p className="mt-1 text-foreground/80 text-[15px]">
-                      Кредитов : {course.credit}
-                    </p>
-                    <p className="mt-1 text-foreground/80 text-[15px]">
-                      Форма контроля : {course.control_form}
-                    </p> */}
+          
               <p>
                 Общий прогресс : {progress?.success}/{progress?.failure}
               </p>

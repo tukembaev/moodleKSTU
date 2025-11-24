@@ -4,7 +4,7 @@ import { AppRouter } from "./providers/router";
 import { ThemeProvider } from "./providers/ThemeProvider/ThemeProvider";
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <div className="w-full ">
         <Layout>
           <AppRouter />

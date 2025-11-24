@@ -273,7 +273,7 @@ const ListOfStudentsWithAnswers = ({
               <TableHead className="w-[130px]">Статус сдачи</TableHead>
               <TableHead className="w-[130px]">Доступ</TableHead>
               <TableHead className="w-[130px]">Замечания</TableHead>
-
+        
 
               <TableHead />
             </TableRow>
@@ -284,7 +284,7 @@ const ListOfStudentsWithAnswers = ({
               <React.Fragment key={student.id}>
                 <TableRow
                   className={`${expandedId === student.id ? "border-b-0" : ""}`}
-                  key={student.id + student.fullname}
+                  // key={student.id + student.fullname}
                 >
                   <TableCell>
                     <Checkbox

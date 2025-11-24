@@ -8,7 +8,7 @@ import { SidebarTrigger } from "shared/shadcn/ui/sidebar";
 
 import GuestNavigationMenu from "./lib/GuestNavigationMenu";
 import logo from "/src/assets/logo.svg";
-import { ModeToggle } from "shared/components/ModeToggle";
+
 
 const Header = () => {
   const auth = useAuth();
@@ -49,7 +49,7 @@ const Header = () => {
                 <CommandSearchBar />
               </div>
 
-              <ModeToggle />
+
               {/* <UserBasket /> */}
               {/* <Balance value={100.99} prefix="$" className="mr-6" /> */}
             </>

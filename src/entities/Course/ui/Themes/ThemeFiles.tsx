@@ -35,14 +35,14 @@ import { ThemeFeed } from "./ThemeFeed";
 import ThemeQuiz from "./ThemeQuiz";
 import { StudentComments } from "features/Course/hooks/StudentComments";
 
-const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
+const ThemeFiles = ({ id, isOwner , course_id, course_name }: { id: string; isOwner: boolean; course_id: string; course_name: string }) => {
   const { data, isLoading, error } = useQuery(
     courseQueries.allTaskMaterials(id)
   );
   const { data: comments, isLoading: isLoadingComments } = useQuery(
     courseQueries.allThemeFeed(id)
   );
-  console.log(id)
+
   const auth_data = useAuth();
   const openForm = useForm();
 
@@ -235,7 +235,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
           </Table>
         </div>
       </div>
-      <ThemeQuiz />
+      <ThemeQuiz course_id={course_id} course_name={course_name} theme_id={id}/>
       <UseTabs tabs={tabs} />
     </div>
   );

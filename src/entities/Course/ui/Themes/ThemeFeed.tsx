@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
 import { Textarea } from "shared/shadcn/ui/textarea";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 
 type FeedProps = {
   items: FeedItem[];
@@ -88,7 +90,9 @@ export const ThemeFeed: React.FC<FeedProps> = ({
                     {item.user.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {String(item.created_at)}
+                    {format(new Date(item.created_at), "PPP p", {
+                      locale: ru,
+                    })}
                   </span>
                 </div>
                 <p className="text-sm mt-1 whitespace-pre-wrap">{item.text}</p>

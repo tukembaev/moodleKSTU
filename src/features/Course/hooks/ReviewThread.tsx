@@ -217,7 +217,7 @@ export function ReviewThread({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 ">
       {reviews.map((review, reviewIndex) => (
         <div key={review.id}>
           {reviewIndex > 0 && <Separator className="my-2" />}

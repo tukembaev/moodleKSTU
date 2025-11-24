@@ -39,7 +39,7 @@ const test_list = [
   },
 ];
 
-const ThemeQuiz = () => {
+const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; course_name: string; theme_id: string }) => {
   const { isStudent } = useAuth();
   const openForm = useForm();
 
@@ -69,7 +69,7 @@ const ThemeQuiz = () => {
 
       <div className="flex flex-col gap-3">
         <p className="text-lg font-semibold">
-          Мини-тесты для закрепления материала
+          Тесты для закрепления материала
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {test_list?.map((theme) => {
@@ -77,7 +77,7 @@ const ThemeQuiz = () => {
               return (
                 <Card key={theme.id_quiz}>
                   <CardHeader>
-                    <CardTitle>Результаты мини-теста: {theme.title}</CardTitle>
+                    <CardTitle>Результаты теста: {theme.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-lg">
@@ -152,13 +152,17 @@ const ThemeQuiz = () => {
           {!isStudent && (
             <FadeIn className="flex border rounded-xl py-4 px-5 min-w-1/3 justify-center items-center min-h-48 text-center">
               <HoverLift>
-                <UseTooltip text="Добавить мини-тест">
+                <UseTooltip text="Добавить тест">
                   <div
                     className="flex flex-col justify-center items-center"
-                    onClick={() => openForm(FormQuery.ADD_QUIZ)}
+                    onClick={() => openForm(FormQuery.ADD_QUIZ, {
+                      course_id: course_id, 
+                      course_name: course_name,
+                      theme_id: theme_id
+                    })}
                   >
                     <LuPlus size={35} className="text-muted-foreground" />
-                    <p>Добавьте новый мини-тест</p>
+                    <p>Добавьте новый тест</p>
                   </div>
                 </UseTooltip>
               </HoverLift>

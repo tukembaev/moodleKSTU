@@ -90,22 +90,22 @@ const CourseList = () => {
                   hover:border-zinc-300/50 dark:hover:border-zinc-700/50"
                   >
                     <div>
-                      <div className="flex justify-between">
-                        <div className="flex gap-2 items-center pb-2">
+                      <div className="flex justify-end items-end">
+                        {/* <div className="flex gap-2 items-center pb-2">
                           <Badge
                             variant={"outline"}
                             className="max-h-6 flex gap-2 pr-3"
                           >
                             <img
                               src={course.category_icon}
-                              className="w-4"
+                              className="w-4"я
                               alt=""
                             />
                             {course.category}
                           </Badge>
                          
-                        </div>
-
+                        </div> */}
+  
                         <HoverScale>
                           {course.is_favorite ? (
                             <UseTooltip text="Убрать из избранного">
@@ -153,9 +153,7 @@ const CourseList = () => {
                           />
                         </div>
                       </div>
-                      {/* <p className="mt-1 text-foreground/80 text-[15px]">
-                        Количество часов : {course.count_hours}
-                      </p> */}
+                 
                       <p className="mt-1 text-foreground/80 text-[15px]">
                         Кредитов : {course.credit}
                       </p>
@@ -232,7 +230,7 @@ const CourseList = () => {
                         }
                       >
                         <Avatar>
-                          <AvatarImage src={course.course_owner[0].avatar} />
+                          <AvatarImage src={course.course_owner[0].avatar} className="object-cover"/>
                         </Avatar>
 
                         <span className="text-muted-foreground font-semibold flex flex-col text-md py-2">

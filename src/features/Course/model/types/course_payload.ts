@@ -3,7 +3,7 @@ export interface CreateCoursePayload {
     category: string;
     credit: number;
     control_form: string;
-    count_hours: number;
+
   }
 
   export interface FinishCourseFormPayload {
@@ -71,7 +71,7 @@ export interface CreateCoursePayload {
       type_less: string;
       max_points: number;
       deadline: string;
-      count_hours: number;
+
       locked: boolean;
       open_date: string;
       description: string;

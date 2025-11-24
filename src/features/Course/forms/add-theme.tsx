@@ -142,23 +142,7 @@ const Add_Theme = () => {
             )}
           </div> */}
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="count_hours">Часы</Label>
-            <Input
-              type="number"
-              placeholder="Введите часы"
-              {...register("count_hours", {
-                required: true,
-                valueAsNumber: true,
-                validate: (v) => v <= 60 || "Максимум 60 часов",
-              })}
-            />
-            {errors.count_hours && (
-              <span className="text-xs text-red-500">
-                {errors.count_hours.message}
-              </span>
-            )}
-          </div>
+         
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="locked">Дополнительно</Label>

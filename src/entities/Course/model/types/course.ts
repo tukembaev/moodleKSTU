@@ -23,7 +23,7 @@ export type CourseOwner = {
     title: string;
     deadline: Date;
     max_points: number;
-    count_hours: number;
+
     status:boolean;
     result:number
     locked: boolean;
@@ -93,7 +93,7 @@ export interface CourseProgress {
     is_end:boolean;
     additional_points:AdditionalCoursePoints[]
     course_owner: CourseOwner[];
-    count_hours:number;
+
     count_lb_pr: CourseLessonsStatusCounter;
     progress: CourseProgress;
     course_points:number;
@@ -109,7 +109,7 @@ export interface CourseProgress {
     discipline_name: string;
     credit: number;
     control_form: string;
-    count_hours:number;
+
     courses_hours_left:number;
     max_points:number;
     theme_points:number;

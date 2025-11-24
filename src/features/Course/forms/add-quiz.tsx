@@ -2,15 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { LuBookDashed, LuX, LuImage } from "react-icons/lu";
+import { LuBookDashed, LuImage, LuX } from "react-icons/lu";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { UseMultiSelect } from "shared/components";
 import CheckboxCard from "shared/components/CheckboxCard";
 import { Button } from "shared/shadcn/ui/button";
 import { Card } from "shared/shadcn/ui/card";
+import { Checkbox } from "shared/shadcn/ui/checkbox";
 import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
-import { Checkbox } from "shared/shadcn/ui/checkbox";
 
 interface QuestionForm {
   question: string;
@@ -35,10 +35,11 @@ interface QuizFormData {
   course: string[];
   required: boolean;
   timeLimit: number;
+  theme_id?: string;
   questions: QuestionForm[];
 }
 
-const Add_Quiz = ({ chooseCourse = false }: { chooseCourse?: boolean } ) => {
+const Add_Quiz = () => {
   const navigate = useNavigate();
   const {
     register,
@@ -110,8 +111,13 @@ const Add_Quiz = ({ chooseCourse = false }: { chooseCourse?: boolean } ) => {
     setValue("opening_date", opening_date!);
   }, [opening_date, setValue]);
 
+  const params = new URLSearchParams(location.search);
+
+  const course_id = params.get("course_id");
+  const course_name = params.get("course_name");
+  console.log(course_id, course_name);
   const courseOptions =
-    data?.map((course) => ({
+   data?.map((course) => ({
       label: course.discipline_name,
       value: String(course.id),
       icon: course.category_icon,
@@ -133,7 +139,18 @@ const Add_Quiz = ({ chooseCourse = false }: { chooseCourse?: boolean } ) => {
     name: "questions",
   });
 
+  const theme_id = params.get("theme_id");
   const onSubmit = (data: QuizFormData) => {
+  //   const jsonToSend = {
+  //   course_id: course_id,
+  //   theme_id: theme_id,
+  //   questions: data.questions,
+  //   timeLimit: data.timeLimit * 60,
+  //   description: data.description,
+  
+  // };
+  // console.log("JSON отправляется:", JSON.stringify(jsonToSend, null, 2));
+  
     const formData = new FormData();
 
     // Основные поля
@@ -141,6 +158,7 @@ const Add_Quiz = ({ chooseCourse = false }: { chooseCourse?: boolean } ) => {
     formData.append("description", data.description || "");
     formData.append("timeLimit", String(data.timeLimit * 60));
     formData.append("required", String(data.required || false));
+    formData.append("theme_id", String(theme_id || ""));
     
     if (data.opening_date) {
       formData.append("opening_date", data.opening_date.toISOString());
@@ -290,22 +308,24 @@ const Add_Quiz = ({ chooseCourse = false }: { chooseCourse?: boolean } ) => {
             <span className="text-xs text-red-500">Описание обязательно</span>
           )}
         </div>
-        {chooseCourse && (
+      
           <div className="flex flex-col gap-2 w-full">
             <Label htmlFor="deadline">
-              Выберите курсы для закрепления теста
+               Курсы для закрепления теста
             </Label>
             <UseMultiSelect
               options={courseOptions}
               onValueChange={setSelectedCourses}
-              defaultValue={selectedCourses}
+              defaultValue={course_id ? [course_id] : selectedCourses}
               placeholder="Выберите курсы"
+              disabled={!!course_id}
               variant="default"
               animation={2}
               maxCount={3}
             />
           </div>
-        )}
+          
+       
 
         <div>
           <Label className="pb-2">Время на прохождение (в минутах)</Label>

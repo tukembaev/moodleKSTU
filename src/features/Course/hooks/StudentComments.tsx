@@ -29,14 +29,14 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
         </div>
       </div>
 
-      {themeReviews.length === 0 ? (
+      {mockReviews.length === 0 ? (
         <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
           <p className="text-muted-foreground">Замечаний пока нет</p>
         </div>
       ) : (
-        <ScrollArea className="h-[500px] rounded-md border p-4">
+        <ScrollArea className="h-[500px] rounded-md border p-2">
           <ReviewThread
-            reviews={themeReviews}
+            reviews={mockReviews}
             onReply={handleReply}
             showStudentActions={true}
           />

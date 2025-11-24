@@ -87,18 +87,7 @@ const FavoriteThemes = ({
 
                     <div className="flex justify-between text-sm text-foreground/80 pt-6">
                       <div className="flex gap-4">
-                        <UseTooltip text="Время на выполнение">
-                          <div className="flex items-center gap-2 cursor-pointer">
-                            <LuClock className="h-4 w-4" />
-                            <span
-                              className={
-                                theme.locked ? "blur-sm select-none" : ""
-                              }
-                            >
-                              {theme.count_hours}
-                            </span>
-                          </div>
-                        </UseTooltip>
+                        
                         {theme.max_points && (
                           <UseTooltip text="Максимальное количество баллов">
                             <div className="flex items-center gap-2 cursor-pointer">

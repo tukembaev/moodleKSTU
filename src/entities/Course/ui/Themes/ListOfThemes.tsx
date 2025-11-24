@@ -2,7 +2,7 @@ import {
   CourseThemes,
   CourseThemesTypes,
 } from "entities/Course/model/types/course";
-import { ChevronDown, ChevronRight, Grid, List } from "lucide-react";
+import { BookDown, ChevronDown, ChevronRight, Grid, List } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import empty from "/src/assets/empty.svg";
@@ -10,25 +10,24 @@ import empty from "/src/assets/empty.svg";
 import {
   LuBookmark,
   LuBookOpen,
-  LuClock,
   LuFlaskConical,
   LuHammer,
   LuHandCoins,
   LuNotebookPen,
   LuPlus,
   LuPuzzle,
-  LuShapes,
+  LuShapes
 } from "react-icons/lu";
 import { FadeIn, HoverLift, HoverScale, UseTooltip } from "shared/components";
-import { Badge } from "shared/shadcn/ui/badge";
-import { Button } from "shared/shadcn/ui/button";
-import { Card, CardContent } from "shared/shadcn/ui/card";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "shared/shadcn/ui/accordion";
+import { Badge } from "shared/shadcn/ui/badge";
+import { Button } from "shared/shadcn/ui/button";
+import { Card, CardContent } from "shared/shadcn/ui/card";
 
 import { TestCard } from "entities/Test";
 import { Test } from "entities/Test/model/types/test";
@@ -38,6 +37,13 @@ import UseTabs from "shared/components/UseTabs";
 import { FormQuery } from "shared/config";
 import { useAuth, useForm } from "shared/hooks";
 import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyMedia,
+  EmptyTitle,
+} from "shared/shadcn/ui/empty";
 import ThemeFiles from "./ThemeFiles";
 
 const categories: {
@@ -64,7 +70,7 @@ const ListOfThemes = ({
 
   const { id: id_theme } = useParams();
   const isOwner = id === data?.course_owner[0]?.user_id;
-  console.log(isStudent );
+  
   const [searchParams] = useSearchParams();
   const theme_id = searchParams.get("themeId");
   const themeRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -107,8 +113,8 @@ const ListOfThemes = ({
     if (theme_id && themeRefs.current[theme_id]) {
       // Проверяем, не заблокирована ли тема
       const allThemes = Object.values(data?.detail || {}).flat();
-      const theme = allThemes.find(t => t.id === theme_id);
-      
+      const theme = allThemes.find((t) => t.id === theme_id);
+
       if (theme && !theme.locked) {
         const element = themeRefs.current[theme_id];
         element?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -124,10 +130,35 @@ const ListOfThemes = ({
   const renderGridThemes = (key: keyof CourseThemesTypes) => {
     if (key === "test") {
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4">
-          {tests?.map((item) => (
-            <TestCard key={item.id} {...item} />
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4 w-full">
+          {tests.length > 0 ? (
+            tests.map((item) => <TestCard key={item.id} {...item} />)
+          ) : (
+            <Empty className="border border-dashed border-border bg-background rounded-lg w-full">
+              <EmptyContent>
+                <EmptyMedia variant="icon">
+                  <BookDown size={24} />
+                </EmptyMedia>
+                <EmptyTitle>Добавить новый тест</EmptyTitle>
+                <EmptyDescription>
+                  Нажмите кнопку ниже, чтобы добавить новый тест к учебному
+                  плану
+                </EmptyDescription>
+                
+                <button
+                  onClick={() =>
+                    openForm(FormQuery.ADD_QUIZ, {
+                      course_id: data.id, 
+                      course_name: data.discipline_name,
+                    })
+                  }
+                  className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                >
+                  Создать тест
+                </button>
+              </EmptyContent>
+            </Empty>
+          )}
         </div>
       );
     }
@@ -137,8 +168,14 @@ const ListOfThemes = ({
         <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
           <HoverLift>
             <div className="flex flex-col justify-center items-center gap-2 sm:gap-3 text-center px-2">
-              <img src={empty} alt="" className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22" />
-              <p className="text-sm sm:text-base">Преподаватель еще не добавил темы</p>
+              <img
+                src={empty}
+                alt=""
+                className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22"
+              />
+              <p className="text-sm sm:text-base">
+                Преподаватель еще не добавил темы
+              </p>
             </div>
           </HoverLift>
         </FadeIn>
@@ -147,7 +184,7 @@ const ListOfThemes = ({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4">
         {themes.map((theme) => {
-          console.log(theme)
+          console.log(theme);
           const isThemeExpanded = expandedId === theme.id;
           return (
             <Card
@@ -175,7 +212,9 @@ const ListOfThemes = ({
                       Сдано на {theme.result}
                     </Badge>
                   ) : (
-                    <Badge className="text-xs sm:text-sm h-5 sm:h-6">Не сдано</Badge>
+                    <Badge className="text-xs sm:text-sm h-5 sm:h-6">
+                      Не сдано
+                    </Badge>
                   )}
                 </div>
                 <div className="flex items-start justify-between gap-2 pb-2">
@@ -229,12 +268,6 @@ const ListOfThemes = ({
                 </span>
                 <div className="flex justify-between items-center flex-wrap gap-2 sm:gap-0">
                   <div className="flex gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-foreground/80">
-                    <UseTooltip text="Время на выполнение">
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <LuClock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span>{theme.count_hours}</span>
-                      </div>
-                    </UseTooltip>
                     {theme.max_points && (
                       <UseTooltip text="Максимальное количество баллов">
                         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -262,7 +295,7 @@ const ListOfThemes = ({
                   )}
                 </div>
                 {isThemeExpanded && (
-                  <ThemeFiles id={theme.id} isOwner={isOwner} />
+                  <ThemeFiles id={theme.id} isOwner={isOwner} course_id={data.id} course_name = {data.discipline_name} />
                 )}
               </CardContent>
             </Card>
@@ -281,7 +314,10 @@ const ListOfThemes = ({
                     })
                   }
                 >
-                  <LuPlus size={isMobile ? 28 : 35} className="text-muted-foreground" />
+                  <LuPlus
+                    size={isMobile ? 28 : 35}
+                    className="text-muted-foreground"
+                  />
                   <p className="text-sm sm:text-base">Добавьте новую тему</p>
                 </button>
               </UseTooltip>
@@ -308,23 +344,29 @@ const ListOfThemes = ({
         <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
           <HoverLift>
             <div className="flex flex-col justify-center items-center gap-2 sm:gap-3 text-center px-2">
-              <img src={empty} alt="" className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22" />
-              <p className="text-sm sm:text-base">Преподаватель еще не добавил темы</p>
+              <img
+                src={empty}
+                alt=""
+                className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22"
+              />
+              <p className="text-sm sm:text-base">
+                Преподаватель еще не добавил темы
+              </p>
             </div>
           </HoverLift>
         </FadeIn>
       );
 
     return (
-      <Accordion 
-        type="single" 
-        collapsible 
+      <Accordion
+        type="single"
+        collapsible
         className="w-full pt-3 sm:pt-4 py-8"
         value={expandedId || undefined}
         onValueChange={(value) => {
           // Не позволяем открывать заблокированные темы
           if (value) {
-            const theme = themes.find(t => t.id === value);
+            const theme = themes.find((t) => t.id === value);
             if (theme && !theme.locked) {
               setExpandedId(value);
             }
@@ -343,9 +385,11 @@ const ListOfThemes = ({
               themeRefs.current[theme.id] = el;
             }}
           >
-            <AccordionTrigger 
+            <AccordionTrigger
               className={`px-3 sm:px-5 py-3 sm:py-4 hover:no-underline items-center touch-manipulation ${
-                theme.locked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                theme.locked
+                  ? "cursor-not-allowed opacity-60"
+                  : "cursor-pointer"
               }`}
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-2 sm:gap-4">
@@ -381,24 +425,22 @@ const ListOfThemes = ({
                           Сдано на {theme.result}
                         </Badge>
                       ) : (
-                        <Badge className="text-xs sm:text-sm h-5 sm:h-6 shrink-0">Не сдано</Badge>
+                        <Badge className="text-xs sm:text-sm h-5 sm:h-6 shrink-0">
+                          Не сдано
+                        </Badge>
                       )}
                     </>
                   )}
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
                   <div className="flex gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-foreground/80">
-                    <UseTooltip text="Время на выполнение">
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <LuClock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span className="whitespace-nowrap">{theme.count_hours}</span>
-                      </div>
-                    </UseTooltip>
                     {theme.max_points && (
                       <UseTooltip text="Максимальное количество баллов">
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           <LuHandCoins className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          <span className="whitespace-nowrap">{theme.max_points}</span>
+                          <span className="whitespace-nowrap">
+                            {theme.max_points}
+                          </span>
                         </div>
                       </UseTooltip>
                     )}
@@ -452,7 +494,7 @@ const ListOfThemes = ({
                     {theme.description}
                   </span>
                 )}
-                <ThemeFiles id={theme.id} isOwner={isOwner} />
+                <ThemeFiles id={theme.id} isOwner={isOwner} course_id={data.id} course_name = {data.discipline_name} />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -470,7 +512,10 @@ const ListOfThemes = ({
                     })
                   }
                 >
-                  <LuPlus size={isMobile ? 28 : 35} className="text-muted-foreground" />
+                  <LuPlus
+                    size={isMobile ? 28 : 35}
+                    className="text-muted-foreground"
+                  />
                   <p className="text-sm sm:text-base">Добавьте новую тему</p>
                 </button>
               </UseTooltip>
