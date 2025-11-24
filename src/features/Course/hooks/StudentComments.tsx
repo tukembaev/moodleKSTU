@@ -1,4 +1,3 @@
-import React from "react";
 import { ScrollArea } from "shared/shadcn/ui/scroll-area";
 import { ReviewThread, mockReviews } from "./ReviewThread";
 
@@ -12,9 +11,11 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
   //   courseQueries.themeReviews(theme_id)
   // );
 
+  const themeReviews = mockReviews.filter((review) => review.theme_id === theme_id);
+
   const handleReply = (reviewId: string, message: string) => {
     // TODO: API call для ответа студента
-    console.log("Student reply to review:", reviewId, "message:", message);
+    console.log("Student reply to review:", reviewId, "message:", message, "theme:", theme_id);
   };
 
   return (
@@ -28,14 +29,14 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
         </div>
       </div>
 
-      {mockReviews.length === 0 ? (
+      {themeReviews.length === 0 ? (
         <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
           <p className="text-muted-foreground">Замечаний пока нет</p>
         </div>
       ) : (
         <ScrollArea className="h-[500px] rounded-md border p-4">
           <ReviewThread
-            reviews={mockReviews}
+            reviews={themeReviews}
             onReply={handleReply}
             showStudentActions={true}
           />

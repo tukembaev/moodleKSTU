@@ -1,16 +1,10 @@
 // ChatContainer.tsx
 import { useState } from "react";
-import { useAuth } from "shared/hooks";
-import { ChatSelect } from "./ChatSelect";
 import ChatMessages from "./ChatMessages";
+import { ChatSelect } from "./ChatSelect";
 
-interface ChatContainerProps {
-  idChat?: number;
-}
 
 const ChatContainer = () => {
-  const auth = useAuth();
-  const isStudent = auth?.isStudent;
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
 
   const handleSelectChat = (chatId: number) => {

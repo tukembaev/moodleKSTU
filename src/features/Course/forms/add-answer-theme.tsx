@@ -3,8 +3,8 @@ import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { LuCloudUpload, LuX } from "react-icons/lu";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { LuCloudUpload } from "react-icons/lu";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
 import { UploadAnswerPayload } from "../model/types/course_payload";
@@ -19,7 +19,6 @@ const Add_Answer_Theme = () => {
     watch,
   } = useForm<UploadAnswerPayload>();
   const { mutate: add_answer, isPending } = courseQueries.create_answer();
-  const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");

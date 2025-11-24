@@ -3,7 +3,7 @@ import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { LuCloudUpload, LuX } from "react-icons/lu";
+import { LuCloudUpload } from "react-icons/lu";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";

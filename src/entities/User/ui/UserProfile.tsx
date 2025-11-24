@@ -2,13 +2,12 @@ import { Separator } from "shared/shadcn/ui/separator";
 import UserCard from "./components/UserCard";
 
 import { useQuery } from "@tanstack/react-query";
-import { LuAward, LuFileBox, LuUsersRound } from "react-icons/lu";
+import { LuFileBox, LuUsersRound } from "react-icons/lu";
 import { useParams } from "react-router-dom";
 import { UseTabs } from "shared/components";
 import { useAuth } from "shared/hooks";
 import { userQueries } from "../model/userQueryFactory";
 import UserCompletedCourses from "./components/UserCompletedCourses";
-import AchievementTab from "./components/userTabs/AchievementTab";
 import FileTab from "./components/userTabs/FileTab";
 import TeamTab from "./components/userTabs/TeamTab";
 

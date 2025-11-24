@@ -1,5 +1,5 @@
 import { AlertCircle, Check, MessageCircle, X } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { LuSend } from "react-icons/lu";
 import { cn } from "shared/lib/utils";
 import { Button } from "shared/shadcn/ui/button";

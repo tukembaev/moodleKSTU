@@ -99,7 +99,7 @@ const SingleStudentAnswers = ({
               : data?.map((material) => (
                   <TableRow key={material.id}>
                     <TableCell className="font-medium">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap">
                       {material.file_names}
                       {material.is_read.is_read ? (
                           <UseTooltip text={

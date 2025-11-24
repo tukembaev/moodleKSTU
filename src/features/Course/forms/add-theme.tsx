@@ -5,8 +5,8 @@ import { Textarea } from "shared/shadcn/ui/textarea";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { useEffect, useState } from "react";
-import { LuCaptionsOff, LuCloudUpload, LuX } from "react-icons/lu";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { LuCaptionsOff, LuCloudUpload } from "react-icons/lu";
+import { useSearchParams } from "react-router-dom";
 import CheckboxCard from "shared/components/CheckboxCard";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
@@ -41,8 +41,6 @@ const Add_Theme = () => {
 
   const type = searchParams.get("type");
   const id = searchParams.get("id");
-
-  const navigate = useNavigate();
 
   const { mutate: add_theme, isPending } = courseQueries.create_theme();
 

@@ -115,8 +115,15 @@ const ListOfStudentsWithAnswers = ({
     "Все группы",
     ...new Set(data.map((student) => student.group)),
   ];
-
-  const filteredData = data.filter(
+  const uniqueData:StudentsAnswers[] = React.useMemo(() => {
+    const map = new Map();
+    data.forEach((s) => {
+      if (!map.has(s.user_id)) map.set(s.user_id, s);
+    });
+    return [...map.values()];
+  }, [data]);
+  
+  const filteredData = uniqueData.filter(
     (student) =>
       student.fullname.toLowerCase().includes(searchQuery) &&
       (selectedGroup === "" ||
@@ -370,7 +377,6 @@ const ListOfStudentsWithAnswers = ({
                         variant="outline"
                         className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer"
                       >
-                        {/* //TODO: Сделать множество замечаний и отображать в SetComment */}
                         {!student.comment ? (
                           <SetComment text="Добавить замечание" id={student.id}>
                             <span className="flex gap-1 items-center cursor-pointer">
@@ -431,9 +437,11 @@ const ListOfStudentsWithAnswers = ({
                       className="border-b-1 hover:bg-transparent"
                     >
                       <TableCell />
-                      <TableCell className="font-medium flex gap-3 pt-3 pl-3 items-center">
+                      <TableCell className="font-medium flex gap-3 pt-3 pl-3 items-center max-w-[350px] overflow-hidden text-ellipsis whitespace-nowrap">
                         <GetFileIcon file_names={item.file_names} />
-                        <p>{item.file_names}</p>
+                        <UseTooltip text={item.file_names}>
+                          <p>{item.file_names}</p>
+                        </UseTooltip>
                         <span className="text-xs text-foreground/50">
                           {format(item.created_at, "PPP", {
                             locale: ru,

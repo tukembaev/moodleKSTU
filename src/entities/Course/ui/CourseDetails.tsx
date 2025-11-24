@@ -1,6 +1,5 @@
 import {
   LuBookA,
-  LuClock,
   LuHandCoins,
   LuHandshake,
   LuInfo,

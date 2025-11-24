@@ -1,15 +1,13 @@
 
 import { useState, useRef, useEffect } from "react";
-import { 
-  FileText, 
-  Download, 
-  ZoomIn, 
-  ZoomOut, 
-  ChevronLeft, 
+import {
+  FileText,
+  Download,
+  ZoomIn,
+  ZoomOut,
+  ChevronLeft,
   ChevronRight,
-  Maximize2,
-  Minimize2,
-  ExternalLink
+  ExternalLink,
 } from "lucide-react";
 
 // Импортируем react-pdf для просмотра PDF
@@ -34,7 +32,6 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(0.8);
   const [containerWidth, setContainerWidth] = useState<number>(600);
-  const [isFullWidth, setIsFullWidth] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Update width on resize
@@ -78,11 +75,7 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
     setPageNumber(prev => Math.min(prev + 1, numPages || 1));
   };
 
-  const toggleFullWidth = () => {
-    setIsFullWidth(prev => !prev);
-  };
-
-  const pageWidth = isFullWidth ? containerWidth : Math.min(containerWidth, 600);
+  const pageWidth = Math.min(containerWidth, 600);
 
   const content = (
     <div className={inDialog ? "px-6 pb-6" : "p-4"} ref={containerRef}>
@@ -161,18 +154,6 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
           >
             <ZoomIn className="h-4 w-4" />
           </Button>
-          {/* <Button
-            onClick={toggleFullWidth}
-            variant="outline"
-            size="sm"
-            title={isFullWidth ? "Обычная ширина" : "На всю ширину"}
-          >
-            {isFullWidth ? (
-              <Minimize2 className="h-4 w-4" />
-            ) : (
-              <Maximize2 className="h-4 w-4" />
-            )}
-          </Button> */}
         </div>
       </div>
       

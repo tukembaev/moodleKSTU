@@ -12,7 +12,7 @@ import {
   LuTrash2,
   LuClipboardList,
 } from "react-icons/lu";
-import { HoverLift, UseTabs } from "shared/components";
+import { HoverLift, UseTabs, UseTooltip } from "shared/components";
 import PdfViewer from "shared/components/PdfPreview";
 import { FormQuery } from "shared/config";
 import { useAuth, useForm } from "shared/hooks";
@@ -148,16 +148,20 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
               ) : (
                 allMaterials.map((material) => (
                   <TableRow key={material.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap">
                       {material.url ? (
-                        <a
+                        <UseTooltip text={material.url_name || "Ссылка на материал"}>
+                         <a
                           href={material.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
+                          className="text-blue-500 hover:underline "
                         >
                           {material.url_name || "Ссылка на материал"}
                         </a>
+
+                        </UseTooltip>
+                    
                       ) : (
                         material.file_name || "Без названия"
                       )}

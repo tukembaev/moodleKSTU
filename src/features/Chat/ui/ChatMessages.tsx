@@ -9,19 +9,19 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
-// interface Message {
-//   text: string;
-//   author: string;
-//   avatar: string;
-//   date: Date;
-//   status: "sent" | "read";
-// }
-
-interface ChatMessagesProps {
-  idChat: any;
+interface Message {
+  text: string;
+  author: string;
+  avatar: string;
+  date: Date;
+  status: "sent" | "read";
 }
 
-const initialMessages = {
+interface ChatMessagesProps {
+  idChat: number;
+}
+
+const initialMessages: Record<number, Message[]> = {
   1: [
     {
       text: "Привет, как дела с курсом?",
@@ -84,7 +84,7 @@ const ChatMessages = ({ idChat }: ChatMessagesProps) => {
         </div>
       </div>
       <div className="h-64 sm:h-96 overflow-y-auto space-y-2 p-2 sm:p-2 sm:pr-4 border rounded-xl">
-        {initialMessages[idChat].map((item, index) => (
+        {(initialMessages[idChat] ?? []).map((item, index) => (
           <div
             key={index}
             className={cn(
