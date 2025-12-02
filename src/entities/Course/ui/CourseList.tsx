@@ -24,7 +24,6 @@ import { AppRoutes, AppSubRoutes } from "shared/config/routeConfig/routeConfig";
 import { useAuth, useForm } from "shared/hooks";
 import { cn } from "shared/lib/utils";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
-import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import CourseCardSkeleton from "../lib/skeletons/CourseCardSkeleton";
 import { courseQueries } from "../model/services/courseQueryFactory";

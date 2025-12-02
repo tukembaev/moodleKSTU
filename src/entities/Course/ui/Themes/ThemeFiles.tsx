@@ -3,6 +3,7 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 import { CourseMaterials } from "entities/Course/model/types/course";
 import { useState } from "react";
 import {
+  LuClipboardList,
   LuEye,
   LuEyeClosed,
   LuFolderDown,
@@ -10,7 +11,6 @@ import {
   LuList,
   LuMessageSquareText,
   LuTrash2,
-  LuClipboardList,
 } from "react-icons/lu";
 import { HoverLift, UseTabs, UseTooltip } from "shared/components";
 import PdfViewer from "shared/components/PdfPreview";
@@ -30,12 +30,11 @@ import {
 } from "shared/shadcn/ui/table";
 import ThemeAnswers from "../Answers/ThemeAnswers";
 
+import { StudentComments } from "features/Course/hooks/StudentComments";
 import ThemeFAQ from "./ThemeFAQ";
 import { ThemeFeed } from "./ThemeFeed";
-import ThemeQuiz from "./ThemeQuiz";
-import { StudentComments } from "features/Course/hooks/StudentComments";
 
-const ThemeFiles = ({ id, isOwner , course_id, course_name }: { id: string; isOwner: boolean; course_id: string; course_name: string }) => {
+const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   const { data, isLoading, error } = useQuery(
     courseQueries.allTaskMaterials(id)
   );
@@ -83,13 +82,13 @@ const ThemeFiles = ({ id, isOwner , course_id, course_name }: { id: string; isOw
     },
     ...(auth_data.isStudent
       ? [
-          {
-            name: "Замечания",
-            value: "comments",
-            content: <StudentComments theme_id={id} />,
-            icon: <LuClipboardList />,
-          },
-        ]
+        {
+          name: "Замечания",
+          value: "comments",
+          content: <StudentComments theme_id={id} />,
+          icon: <LuClipboardList />,
+        },
+      ]
       : []),
   ];
 
@@ -151,17 +150,17 @@ const ThemeFiles = ({ id, isOwner , course_id, course_name }: { id: string; isOw
                     <TableCell className="font-medium max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap">
                       {material.url ? (
                         <UseTooltip text={material.url_name || "Ссылка на материал"}>
-                         <a
-                          href={material.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline "
-                        >
-                          {material.url_name || "Ссылка на материал"}
-                        </a>
+                          <a
+                            href={material.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline "
+                          >
+                            {material.url_name || "Ссылка на материал"}
+                          </a>
 
                         </UseTooltip>
-                    
+
                       ) : (
                         material.file_name || "Без названия"
                       )}
@@ -235,7 +234,7 @@ const ThemeFiles = ({ id, isOwner , course_id, course_name }: { id: string; isOw
           </Table>
         </div>
       </div>
-      <ThemeQuiz course_id={course_id} course_name={course_name} theme_id={id}/>
+      {/* <ThemeQuiz course_id={course_id} course_name={course_name} theme_id={id}/> */}
       <UseTabs tabs={tabs} />
     </div>
   );

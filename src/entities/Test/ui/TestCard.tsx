@@ -1,9 +1,9 @@
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ChevronRight } from "lucide-react";
 import { LuCalendarDays, LuHandCoins } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { UseTooltip } from "shared/components";
+import { AppSubRoutes, RoutePath } from "shared/config";
 import { useAuth } from "shared/hooks";
 import { getFormattedDate } from "shared/lib";
 import { Badge } from "shared/shadcn/ui/badge";
@@ -63,7 +63,14 @@ const TestCard = (item: Test) => {
               </div>
             </UseTooltip> */}
           </div>
-          {!isStudent ? (
+          <Button
+            onClick={() => navigate(`${RoutePath[AppSubRoutes.TEST_QUIZ]}`.replace(":id", "quiz_123456789"))}
+            variant="outline"
+            className="w-full mt-4"
+          >
+            Пройти тест
+          </Button>
+          {/* {!isStudent ? (
             <Button
               className="shadow-none w-full mt-4"
               variant={"outline"}
@@ -86,7 +93,7 @@ const TestCard = (item: Test) => {
             >
               Пройти тест <ChevronRight />
             </Button>
-          ) : null}
+          ) : null} */}
         </CardContent>
       </div>
     </Card>

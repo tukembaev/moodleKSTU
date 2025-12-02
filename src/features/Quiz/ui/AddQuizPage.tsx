@@ -9,7 +9,7 @@ const AddQuizPage = () => {
           <p className="mt-1.5 text-lg text-muted-foreground pb-6">
             Создайте тест по усвоению материала для вашего курса
           </p>
-      <Add_Quiz chooseCourse={true}/>
+      <Add_Quiz />
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { CourseCardSkeleton, CourseDetail } from "entities/Course";
 import { userQueries } from "entities/User";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { LuBookmark, LuClock, LuHandCoins, LuTarget } from "react-icons/lu";
+import { LuBookmark, LuHandCoins, LuTarget } from "react-icons/lu";
 import {
   FadeInList,
   HoverScale,

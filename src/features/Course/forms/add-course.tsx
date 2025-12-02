@@ -3,8 +3,7 @@ import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { LuCloudUpload, LuX } from "react-icons/lu";
-import { useNavigate } from "react-router-dom";
+import { LuCloudUpload } from "react-icons/lu";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
 import {
@@ -24,7 +23,7 @@ const Add_Course = () => {
     watch,
   } = useForm<CreateCoursePayload>();
 
-  const navigate = useNavigate();
+
   const selectedCredit = watch("credit");
   const selectedControlForm = watch("control_form");
   const selectedCategory = watch("category");

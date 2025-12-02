@@ -295,7 +295,7 @@ const ListOfThemes = ({
                   )}
                 </div>
                 {isThemeExpanded && (
-                  <ThemeFiles id={theme.id} isOwner={isOwner} course_id={data.id} course_name = {data.discipline_name} />
+                  <ThemeFiles id={theme.id} isOwner={isOwner} />
                 )}
               </CardContent>
             </Card>
@@ -494,7 +494,7 @@ const ListOfThemes = ({
                     {theme.description}
                   </span>
                 )}
-                <ThemeFiles id={theme.id} isOwner={isOwner} course_id={data.id} course_name = {data.discipline_name} />
+                <ThemeFiles id={theme.id} isOwner={isOwner} />
               </div>
             </AccordionContent>
           </AccordionItem>
