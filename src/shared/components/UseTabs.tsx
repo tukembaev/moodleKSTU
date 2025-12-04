@@ -17,11 +17,12 @@ interface UseTabsProps {
   }[];
   classNames?: string;
   children?: React.ReactNode;
+  defaultValue?: string;
 }
 
-export default function UseTabs({ tabs, classNames, children }: UseTabsProps) {
+export default function UseTabs({ tabs, classNames, children, defaultValue }: UseTabsProps) {
   return (
-    <Tabs defaultValue={tabs[0].value} className={`w-full ${classNames}`}>
+    <Tabs defaultValue={defaultValue || tabs[0].value} className={`w-full ${classNames}`}>
       <div className="flex justify-between">
         <div className="overflow-x-auto flex-1 scrollbar-hide">
           <TabsList className="p-0 bg-background justify-start rounded-none gap-1 min-w-max">
@@ -33,7 +34,7 @@ export default function UseTabs({ tabs, classNames, children }: UseTabsProps) {
               >
                 <p className="text-xs sm:text-[13px] flex gap-1 sm:gap-2 items-center">
                   {tab.icon}
-                  <span className="hidden sm:inline">{tab.name}</span>
+                  <span>{tab.name}</span>
                 </p>
                 {!!tab.count && (
                   <Badge
