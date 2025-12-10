@@ -257,17 +257,7 @@ const CourseList = () => {
               })}
             </FadeInList>
           )}
-          {data && !isStudent && (
-            <FadeIn className="flex border rounded-xl py-4 px-5 min-w-1/3 justify-center items-center min-h-52">
-              <HoverLift>
-                <UseTooltip text="Создать новый курс">
-                  <button onClick={() => openForm(FormQuery.ADD_COURSE)}>
-                    <LuPlus size={28} className="text-muted-foreground w-24" />
-                  </button>
-                </UseTooltip>
-              </HoverLift>
-            </FadeIn>
-          )}
+       
         </div>
       </div>
     </div>

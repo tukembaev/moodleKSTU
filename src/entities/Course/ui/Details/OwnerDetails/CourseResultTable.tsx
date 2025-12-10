@@ -88,27 +88,42 @@ const CourseResultTable = () => {
 
         <TableBody>
           {data?.map((student) => {
-            // Модуль 1: Лабораторные + Практики + Тесты
-            const module1Points = 
-              student.themes.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-              student.themes.pr.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-              student.themes.tests.reduce((sum, item) => sum + (item.result || 0), 0);
+            // Модуль 1: первый модуль (если есть) - все типы заданий
+            const module1 = student.modules[0];
+            const module1Points = module1
+              ? module1.thems.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+                module1.thems.pr.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+                module1.thems.srs.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+                module1.thems.other.reduce((sum, item) => sum + (item.stud_points || 0), 0)
+              : 0;
             
-            const module1MaxPoints = 
-              student.themes.lb.reduce((sum, item) => sum + item.max_points, 0) +
-              student.themes.pr.reduce((sum, item) => sum + item.max_points, 0) +
-              student.themes.tests.reduce((sum, item) => sum + item.result || 0, 0);
+            const module1MaxPoints = module1
+              ? module1.thems.lb.reduce((sum, item) => sum + item.max_points, 0) +
+                module1.thems.pr.reduce((sum, item) => sum + item.max_points, 0) +
+                module1.thems.srs.reduce((sum, item) => sum + item.max_points, 0) +
+                module1.thems.other.reduce((sum, item) => sum + item.max_points, 0)
+              : 0;
 
-            // Модуль 2: СРС + Прочее
-            const module2Points = 
-              student.themes.srs.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-              student.themes.other.reduce((sum, item) => sum + (item.stud_points || 0), 0);
+            // Модуль 2: второй модуль (если есть) - все типы заданий
+            const module2 = student.modules[1];
+            const module2Points = module2
+              ? module2.thems.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+                module2.thems.pr.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+                module2.thems.srs.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+                module2.thems.other.reduce((sum, item) => sum + (item.stud_points || 0), 0)
+              : 0;
             
-            const module2MaxPoints = 
-              student.themes.srs.reduce((sum, item) => sum + item.max_points, 0) +
-              student.themes.other.reduce((sum, item) => sum + item.max_points, 0);
+            const module2MaxPoints = module2
+              ? module2.thems.lb.reduce((sum, item) => sum + item.max_points, 0) +
+                module2.thems.pr.reduce((sum, item) => sum + item.max_points, 0) +
+                module2.thems.srs.reduce((sum, item) => sum + item.max_points, 0) +
+                module2.thems.other.reduce((sum, item) => sum + item.max_points, 0)
+              : 0;
 
-            const totalPoints = module1Points + module2Points;
+            // Дополнительные баллы
+            const extraPoints = student.extra_points.reduce((sum, item) => sum + (item.points || 0), 0);
+
+            const totalPoints = module1Points + module2Points + extraPoints;
 
             return (
               <TableRow key={student.id}>
@@ -131,7 +146,7 @@ const CourseResultTable = () => {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm sm:text-base">{student.group}</TableCell>
+                <TableCell className="text-sm sm:text-base">{student.group || '—'}</TableCell>
                 <TableCell>
                   <Badge variant="secondary" className="font-semibold text-xs sm:text-sm">
                     {module1Points} / {module1MaxPoints}

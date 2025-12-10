@@ -96,7 +96,7 @@ export const courseQueries = {
 
 
   deleteCourse: (id: number) => deleteCourse(id),
-  delete_material,
+  delete_material: () => delete_material(),
 
 
 };

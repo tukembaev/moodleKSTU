@@ -23,9 +23,11 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
 }) => {
   const isMobile = useIsMobile();
 
-  const { data: modules, isLoading, error } = useQuery(
+  const { data: courseModulesData, isLoading, error } = useQuery(
     courseQueries.courseModules(course_id)
   );
+
+  const modules = courseModulesData?.modules;
 
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
@@ -97,7 +99,7 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
               <span>Навигация по модулям</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-semibold leading-tight">
-              {course_name || "Модули курса"}
+              {course_name || courseModulesData?.discipline_name || "Модули курса"}
             </h2>
             <p className="text-sm text-foreground/70">
               Выберите модуль, чтобы изучить его недели и темы. Для удобства
@@ -145,7 +147,7 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className="text-sm font-semibold line-clamp-1">
-                    {module.title}
+                    {module.title} модуль
                   </span>
                   <Badge variant={isActive ? "default" : "secondary"}>
                     {weeksCount} нед.
@@ -165,9 +167,9 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
           module={activeModule}
           tests={tests}
           course_id={course_id}
-          course_name={course_name || ""}
+          course_name={course_name || courseModulesData?.discipline_name || ""}
           viewMode={viewMode}
-          course_owner={course_owner}
+          course_owner={course_owner || courseModulesData?.course_owner}
         />
       ) : (
         <div className="py-6 text-center text-muted-foreground">

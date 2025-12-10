@@ -1,31 +1,11 @@
-import { ResidesCourse, ResidesTheme } from "entities/User"
-
-
 export interface Test {
-  id: string,
-  title: string,
-  description: string,
-  status: boolean,
-  max_points: number,
-  result: number,
-  opening_date: Date
-  resides: {
-    course: ResidesCourse[],
-    theme: ResidesTheme[]
-  }
-  test_owner: {
-    id: string,
-    user_id: number,
-    first_name: string,
-    last_name: string,
-    middle_name: string,
-    avatar: string,
-    is_employee: true,
-    position: string,
-    group: string
-  },
-  link_form: string,
-  link_doc: string
+  id: string;
+  title: string;
+  description: string;
+  opening_date: string; // ISO string
+  max_points: number;
+  status: boolean;
+  result: number | null;
 }
 export interface TestResult {
   id: string,

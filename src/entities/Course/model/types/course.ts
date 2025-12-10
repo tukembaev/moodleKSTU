@@ -177,29 +177,42 @@ export interface CourseProgress {
     result: number ;
   }
   
- export interface TablePerfomance {
+ export interface ModuleThemes {
+    pr: ThemeItem[];
+    lb: ThemeItem[];
+    srs: ThemeItem[];
+    other: ThemeItem[];
+  }
+
+ export interface CourseModule {
+    module_id: string;
+    title: string;
+    thems: ModuleThemes;
+  }
+
+ export interface ExtraPoint {
     id: string;
-    user_id: number;
+    points: number;
+    reason: string;
+  }
+
+ export interface TablePerfomance {
+    id: number;
     first_name: string;
     last_name: string;
     middle_name: string;
     avatar: string;
-    is_employee: boolean;
+    role: string;
     position: string | null;
-    group: string;
     email: string;
-    bio: string;
-    number_phone: string;
-    telegram_username: string;
-    max_points_course:number;
-    is_end:boolean;
-    themes: {
-      pr: ThemeItem[];
-      lb: ThemeItem[];
-      srs: ThemeItem[];
-      other: ThemeItem[];
-      tests: TestItem[];
-    };
+    bio: string | null;
+    number_phone: string | null;
+    telegram_username: string | null;
+    group: string | null;
+    is_end: boolean;
+    max_points_course: number;
+    modules: CourseModule[];
+    extra_points: ExtraPoint[];
   }
 
   export interface Week {
@@ -228,5 +241,17 @@ export interface CourseProgress {
     discipline_name: string;
     is_favorite: boolean;
     result: string;
+  }
+
+  export interface CourseModulesResponse {
+    id: string;
+    discipline_name: string;
+    category: string;
+    category_icon: string;
+    audience: string;
+    requirements: string;
+    description: string;
+    course_owner: CourseOwner[];
+    modules: Module[];
   }
   

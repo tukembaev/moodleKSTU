@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { Button } from "shared/shadcn/ui/button";
 
-const Section: FC<{
+export const Section: FC<{
   field: string;
   title: string;
   value: string;

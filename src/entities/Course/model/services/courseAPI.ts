@@ -1,7 +1,7 @@
 import { CreateCoursePayload, CreateFAQPayload, CreateThemePayload, editPermissionPayload } from "features/Course";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
-import { Course, CourseMaterials, CourseThemes, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, Module, WeekTheme } from "../types/course";
+import { Course, CourseMaterials, CourseThemes, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme, CourseModulesResponse } from "../types/course";
 import { ExtraPointPayload, FinishCoursePayload, RateAnswerPayload } from "features/Course/model/types/course_payload";
 import $api_base_edu from "shared/api/api_base_edu";
 
@@ -42,7 +42,7 @@ export const getCourseTablePerfomance = async (id: string | null):Promise<TableP
     const response = await $api_edu.get(`table-performance/${id}/`); 
     return response.data;
   };
-export const getCourseModules = async (course_id: string):Promise<Module[]> => {
+export const getCourseModules = async (course_id: string):Promise<CourseModulesResponse> => {
     const response = await $api_edu.get(`modules/${course_id}/`); 
     return response.data;
   };

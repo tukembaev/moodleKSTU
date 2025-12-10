@@ -66,14 +66,15 @@ export interface CreateCoursePayload {
     answer: string;
   }
   export interface CreateThemePayload {
-      course: string;
-      title: string;
+      week: string;
+      title?: string;
       type_less: string;
-      max_points: number;
+      max_points?: number;
       deadline: string;
 
       locked: boolean;
       open_date: string;
-      description: string;
+      description?: string;
+      test_id?: string;
   }
   

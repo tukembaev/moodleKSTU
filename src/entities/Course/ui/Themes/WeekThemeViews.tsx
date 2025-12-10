@@ -63,7 +63,7 @@ interface WeekThemeViewProps {
   themeRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
   openForm: any;
   isMobile: boolean | undefined;
-  id_theme?: string;
+  id_week?: string;
   course_id: string;
   course_name: string;
 }
@@ -78,7 +78,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
   themeRefs,
   openForm,
   isMobile,
-  id_theme,
+  id_week,
   course_id,
 }) => {
   if (themes.length === 0 && tests.length === 0) {
@@ -136,9 +136,10 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                   !isStudent ? "justify-between" : "justify-between flex-wrap"
                 }`}
               >
+                
                 <Badge variant="outline" className="gap-2 text-muted-foreground">
                   {category?.icon}
-                  <span>{category?.title}</span>
+                  <span>{category?.title} </span>
                 </Badge>
                 {theme.locked && (
                   <Badge className="bg-gray-300 text-primary text-xs sm:text-sm h-5 sm:h-6">
@@ -154,17 +155,23 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                 >
                   {theme.title}
                 </span>
-                <div className="flex items-center">
-                  {theme.status ? (
-                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
-                      {theme.result} балла
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="text-muted-foreground">
-                      Не сдано
-                    </Badge>
-                  )}
-                </div>
+                {isStudent && (
+                  <div className="flex items-center">
+                    {theme.status ? (
+                      <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 shrink-0">
+                        {theme.result} балла
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="secondary"
+                        className="text-muted-foreground shrink-0"
+                      >
+                        Не сдано
+                      </Badge>
+                    )}
+                  </div>
+                )}
+          
               </div>
               <span
                 className={`text-sm sm:text-base text-foreground/80 mb-2 sm:mb-3 line-clamp-2 sm:line-clamp-none ${
@@ -210,13 +217,13 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
       {isOwner && (
         <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
           <HoverLift>
-            <UseTooltip text="Добавить тему">
+            <UseTooltip text="Добавить задание">
               <button
                 className="flex flex-col justify-center items-center gap-2 sm:gap-3 touch-manipulation min-h-[44px] w-full"
                 onClick={() =>
                   openForm(FormQuery.ADD_THEME, {
-                    type: "other",
-                    id: id_theme || "",
+                   
+                    id: id_week || "",
                   })
                 }
               >
@@ -224,7 +231,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                   size={isMobile ? 28 : 35}
                   className="text-muted-foreground"
                 />
-                <p className="text-sm sm:text-base">Добавьте новую тему</p>
+                <p className="text-sm sm:text-base">Добавьте новое задание</p>
               </button>
             </UseTooltip>
           </HoverLift>
@@ -244,7 +251,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
   themeRefs,
   openForm,
   isMobile,
-  id_theme,
+  id_week,
   course_id,
 }) => {
   if (themes.length === 0 && tests.length === 0) {
@@ -407,13 +414,13 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
       {isOwner && (
         <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48 mt-4">
           <HoverLift>
-            <UseTooltip text="Добавить тему">
+            <UseTooltip text="Добавить задание">
               <button
                 className="flex flex-col justify-center items-center gap-2 sm:gap-3 touch-manipulation min-h-[44px] w-full"
                 onClick={() =>
                   openForm(FormQuery.ADD_THEME, {
-                    type: "other",
-                    id: id_theme || "",
+                   
+                    id: id_week || "",
                   })
                 }
               >
@@ -421,7 +428,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                   size={isMobile ? 28 : 35}
                   className="text-muted-foreground"
                 />
-                <p className="text-sm sm:text-base">Добавьте новую тему</p>
+                <p className="text-sm sm:text-base">Добавьте новое задание</p>
               </button>
             </UseTooltip>
           </HoverLift>

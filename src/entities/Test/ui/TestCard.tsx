@@ -20,7 +20,7 @@ import { ChevronRight } from "lucide-react";
     <Card className="min-h-68 flex flex-col justify-between">
       <div className="flex flex-col w-full">
         <CardHeader className="text-lg font-semibold w-full break-all">
-          {!isStudent ? null : item.status ? (
+          {!isStudent ? null : item.status && item.result !== null ? (
             <Badge className={"bg-green-300 text-primary max-h-6"}>
               Сдано на {item.result} балла
             </Badge>
@@ -42,14 +42,14 @@ import { ChevronRight } from "lucide-react";
               </div>
             </UseTooltip>
             <UseTooltip
-              text={`Дата открытия : ${format(item.opening_date, "PPP", {
+              text={`Дата открытия : ${format(new Date(item.opening_date), "PPP", {
                 locale: ru,
               })}`}
               side="top"
             >
               <div className="flex items-center gap-2 w-fit">
                 <LuCalendarDays className="h-4 w-4" />
-                <span>{getFormattedDate(item.opening_date)}</span>
+                <span>{getFormattedDate(new Date(item.opening_date))}</span>
               </div>
             </UseTooltip>
             {/* <UseTooltip

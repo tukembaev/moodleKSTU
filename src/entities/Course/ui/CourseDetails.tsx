@@ -1,23 +1,29 @@
 import {
   LuBookA,
-  LuHandCoins,
   LuHandshake,
   LuInfo,
   LuMessageCircle,
-  LuTarget,
 } from "react-icons/lu";
-import { UseTabs, UseTooltip } from "shared/components";
-import { CourseThemes } from "../model/types/course";
+import { UseTabs } from "shared/components";
 import AboutCourse from "./Details/AboutCourse";
 
 import CourseInvolvement from "./Details/OwnerDetails/CourseInvolvement";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
 import { ChatContainer } from "features/Chat";
 import { useAuth } from "shared/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { courseQueries } from "../model/services/courseQueryFactory";
 
-const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
+const CourseDetails = () => {
+  const { id } = useParams();
   const {isStudent} = useAuth();
-  console.log(isStudent);
+  const safeId = id || "";
+  
+  const { data: courseModulesData, isLoading } = useQuery(
+    courseQueries.courseModules(safeId)
+  );
+
   const tabs = [
     {
       name: "О курсе",
@@ -25,10 +31,10 @@ const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
       content:
        (
         <AboutCourse
-          requirements={data?.requirements}
-          description={data?.description}
-          audience={data?.audience}
-          course_owner={data?.course_owner[0]}
+          requirements={courseModulesData?.requirements}
+          description={courseModulesData?.description}
+          audience={courseModulesData?.audience}
+          course_owner={courseModulesData?.course_owner?.[0]}
         />
       ),
       icon: <LuInfo />,
@@ -65,31 +71,35 @@ const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
     //   icon: <LuSpeech />,
     // },
   ];
+  if (isLoading) {
+    return <div className="py-8 text-center text-muted-foreground">Загрузка...</div>;
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-2">
         <span className="text-lg sm:text-xl tracking-tight">
-          {data?.course_owner[0].owner_name}
+          {courseModulesData?.course_owner?.[0]?.owner_name}
         </span>
         <span className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight pb-2">
-          {data?.discipline_name}
+          {courseModulesData?.discipline_name}
         </span>
 
         <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-md text-foreground/80 pl-0 sm:pl-2">
        
-          <UseTooltip text="Кредитов за курс">
+          {/* <UseTooltip text="Кредитов за курс">
             <div className="flex items-center gap-2">
               <LuHandCoins className="h-4 w-4" />
-              <span>{data?.credit}</span>
+              <span>{courseModulesData?.credit}</span>
             </div>
           </UseTooltip>
 
           <UseTooltip text={"Форма контроля"}>
             <div className="flex items-center gap-2">
               <LuTarget className="h-4 w-4" />
-              <span>{data?.control_form}</span>
+              <span>{courseModulesData?.control_form}</span>
             </div>
-          </UseTooltip>
+          </UseTooltip> */}
         </div>
         {/* <p className="mt-1.5 text-lg text-muted-foreground w-2/4">
           {" "}

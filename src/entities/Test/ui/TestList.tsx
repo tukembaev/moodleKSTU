@@ -46,7 +46,7 @@ const TestList = () => {
   const { isStudent } = useAuth();
   const { data: test_list, isLoading } = useQuery(testQueries.allTest("/"));
   const navigate = useNavigate();
-
+  console.log(test_list)
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -63,7 +63,7 @@ const TestList = () => {
                 <CardContent className="flex flex-col p-4 gap-2">
                   <span className="text-lg font-semibold flex gap-2 items-center flex-wrap">
                     {theme.title}
-                    {!isStudent ? null : theme.status ? (
+                    {!isStudent ? null : theme.status && theme.result !== null ? (
                       <Badge className="bg-green-300 text-primary  text-md px-1.5">
                         Сдано на {theme.result}
                       </Badge>
@@ -88,19 +88,9 @@ const TestList = () => {
                     {theme.description}
                   </span>
                   {!isStudent || theme.status ? (
-                    <Button
-                      className="shadow-none w-full mt-2 h-8 text-md"
-                      variant="outline"
-                      onClick={() =>
-                        navigate(
-                          "/test/result" +
-                          `?test_id=${theme.id}` +
-                          `&course_id=${theme.resides.course[0].id}`
-                        )
-                      }
-                    >
-                      Открыть результаты <ChevronRight className="h-3 w-3" />
-                    </Button>
+                    // Note: Results button removed as course_id is not available in TestList context
+                    // Use TestCard component within course context to access results
+                    null
                   ) : (
                     <Button
                       className="shadow-none w-full mt-2 h-8 text-md"
