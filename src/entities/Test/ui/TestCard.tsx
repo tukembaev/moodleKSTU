@@ -1,20 +1,21 @@
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ChevronRight } from "lucide-react";
 import { LuCalendarDays, LuHandCoins } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { UseTooltip } from "shared/components";
+import { AppSubRoutes } from "shared/config";
 import { useAuth } from "shared/hooks";
 import { getFormattedDate } from "shared/lib";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent, CardHeader } from "shared/shadcn/ui/card";
 import { Test } from "../model/types/test";
+import { ChevronRight } from "lucide-react";
 
-const TestCard = (item: Test) => {
+  const TestCard = ({item, course_id}: {item: Test, course_id: string}) => {
   const { isStudent } = useAuth();
   const navigate = useNavigate();
-
+  
   return (
     <Card className="min-h-68 flex flex-col justify-between">
       <div className="flex flex-col w-full">
@@ -63,16 +64,17 @@ const TestCard = (item: Test) => {
               </div>
             </UseTooltip> */}
           </div>
+       
           {!isStudent ? (
             <Button
               className="shadow-none w-full mt-4"
               variant={"outline"}
               onClick={() =>
                 navigate(
-                  "/test/result/" +
-                    item.id +
-                    `?course_id=${item.resides.course[0].id}` +
-                    `?max_points=${item.max_points}`
+                  "/test/result" +
+                  `?test_id=${item.id}` +
+                    `&course_id=${course_id}` 
+                    
                 )
               }
             >
@@ -82,11 +84,18 @@ const TestCard = (item: Test) => {
             <Button
               className="shadow-none w-full mt-4"
               variant={"outline"}
-              onClick={() => navigate("/test/pass" + `?url=${item.link_form}`)}
+              onClick={() => navigate("/test/" + AppSubRoutes.TEST_PASS + "/" + item.id)}
             >
               Пройти тест <ChevronRight />
             </Button>
           ) : null}
+           {/* <Button
+              className="shadow-none w-full mt-4"
+              variant={"outline"}
+              onClick={() => navigate("/test/" + AppSubRoutes.TEST_PASS + "/" + item.id)}
+            >
+              Пройти тест <ChevronRight />
+            </Button> */}
         </CardContent>
       </div>
     </Card>

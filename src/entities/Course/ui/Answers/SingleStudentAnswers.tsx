@@ -39,7 +39,7 @@ const SingleStudentAnswers = ({
 }) => {
   const openForm = useForm();
   const [previewFileId, setPreviewFileId] = useState<string | null>(null);
-
+  console.log(data)
   const handleOpenPreview = (fileId: string) => {
     if (previewFileId === fileId) {
       setPreviewFileId(null);
@@ -87,85 +87,94 @@ const SingleStudentAnswers = ({
             )}
             {isLoading
               ? Array.from({ length: 2 }).map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[200px]" />
-                    </TableCell>
-                    <TableCell className="flex justify-end gap-3">
-                      <Skeleton className="h-8 w-8 rounded" />
-                    </TableCell>
-                  </TableRow>
-                ))
+                <TableRow key={index}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-[200px]" />
+                  </TableCell>
+                  <TableCell className="flex justify-end gap-3">
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </TableCell>
+                </TableRow>
+              ))
               : data?.map((material) => (
-                  <TableRow key={material.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-3 max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap">
+                <TableRow key={material.id}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-3 max-w-[500px] overflow-hidden text-ellipsis whitespace-nowrap">
+
                       {material.file_names}
+                      <span className="text-xs text-foreground/50">
+                        {format(material.created_at, "PPP", {
+                          locale: ru,
+                        })}
+                      </span>
                       {material.is_read.is_read ? (
-                          <UseTooltip text={
-                            <>
-                              <div>Файл просмотрен</div>
-                              <div>{format(material.is_read.read, "PPP 'в' p", {
-                                locale: ru,
-                              })}</div>
-                            </>
-                          }>
-                            <LuCheckCheck className="text-blue-500" />
-                          </UseTooltip>
-                        ) : (
-                          <UseTooltip text="Файл не просмотрен">
-                            <LuMessageCircleWarning className="text-orange-500" />
-                          </UseTooltip>
-                        )}
-                      </div>
-                      
-                    </TableCell>
-                    <TableCell className="justify-end flex gap-3">
-                      {material.file_names.toLowerCase().endsWith('.pdf') && (
-                        <Dialog
-                          onOpenChange={(isOpen) => {
-                            if (!isOpen) {
-                              setPreviewFileId(null);
-                            }
-                          }}
-                          open={previewFileId === material.id}
-                        >
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleOpenPreview(material.id)}
-                            >
-                              {previewFileId === material.id ? (
-                                <LuEyeClosed />
-                              ) : (
-                                <LuEye />
-                              )}
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
-                            <DialogHeader className="px-6 pt-6 pb-0">
-                              <DialogTitle>{material.file_names}</DialogTitle>
-                            </DialogHeader>
-                            <PdfViewer url={material.file || ""} inDialog={true} />
-                          </DialogContent>
-                        </Dialog>
+                        <UseTooltip text={
+                          <>
+                            <div>Файл просмотрен</div>
+                            <div>{format(material.is_read.read, "PPP 'в' p", {
+                              locale: ru,
+                            })}</div>
+                          </>
+                        }>
+                          <LuCheckCheck className="text-blue-500" />
+                        </UseTooltip>
+                      ) : (
+                        <UseTooltip text="Файл не просмотрен">
+                          <LuMessageCircleWarning className="text-orange-500" />
+                        </UseTooltip>
                       )}
-                      <a
-                        href={material.file}
-                        download={material.file_names}
-                        className="text-blue-500 hover:text-blue-700"
+
+
+
+                    </div>
+
+                  </TableCell>
+                  <TableCell className="justify-end flex gap-3">
+                    {material.file_names.toLowerCase().endsWith('.pdf') && (
+                      <Dialog
+                        onOpenChange={(isOpen) => {
+                          if (!isOpen) {
+                            setPreviewFileId(null);
+                          }
+                        }}
+                        open={previewFileId === material.id}
                       >
-                        <Button variant="outline" size="icon">
-                          <LuFolderDown />
-                        </Button>
-                      </a>
-                      <Button variant="destructive" size="icon">
-                        <LuEraser />
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleOpenPreview(material.id)}
+                          >
+                            {previewFileId === material.id ? (
+                              <LuEyeClosed />
+                            ) : (
+                              <LuEye />
+                            )}
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
+                          <DialogHeader className="px-6 pt-6 pb-0">
+                            <DialogTitle>{material.file_names}</DialogTitle>
+                          </DialogHeader>
+                          <PdfViewer url={material.file || ""} inDialog={true} />
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                    <a
+                      href={material.file}
+                      download={material.file_names}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      <Button variant="outline" size="icon">
+                        <LuFolderDown />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                    </a>
+                    <Button variant="destructive" size="icon">
+                      <LuEraser />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </div>

@@ -49,16 +49,6 @@ const TestList = () => {
 
   return (
     <div>
-      <div className="flex flex-col pt-3 pb-4">
-        <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-left">
-          Мои тесты
-        </h2>
-        <p className="mt-1.5 text-lg text-muted-foreground">
-          {isStudent
-            ? "Все актуальные тесты, которые вам надо пройти"
-            : "Все тесты, которые вы создавали "}
-        </p>
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {isLoading ? (
           <SpringPopupList>
@@ -69,115 +59,72 @@ const TestList = () => {
         ) : (
           test_list?.map((theme) => {
             return (
-              <Card key={theme.id} className={`transition-all duration-300 `}>
-                <CardContent className="flex flex-col justify-between">
-                  <div className="flex items-center justify-between mb-2">
-                    <HoverLift>
-                      {test_list?.[0]?.resides.theme.length ? (
-                        <UseTooltip
-                          text={theme?.resides?.course[0]?.discipline_name}
-                        >
-                          <Badge
-                            variant="outline"
-                            className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
-                            onClick={() =>
-                              navigate(
-                                "/courses/" +
-                                  AppSubRoutes.COURSE_THEMES +
-                                  "/" +
-                                  theme.resides?.course[0]?.id +
-                                  `?themeId=${theme.resides?.theme[0]?.id}`
-                              )
-                            }
-                          >
-                            {theme?.resides?.theme[0]?.title}
-                          </Badge>
-                        </UseTooltip>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
-                          onClick={() =>
-                            navigate(
-                              "/courses/" +
-                                AppSubRoutes.COURSE_THEMES +
-                                "/" +
-                                theme.resides?.course[0]?.id
-                            )
-                          }
-                        >
-                          {theme?.resides?.course[0]?.discipline_name}
-                        </Badge>
-                      )}
-                    </HoverLift>
-                  </div>
-
-                  <span
-                    className={`text-lg font-semibold flex gap-2 items-center`}
-                  >
+              <Card key={theme.id} className="transition-all duration-300">
+                <CardContent className="flex flex-col p-4 gap-2">
+                  <span className="text-lg font-semibold flex gap-2 items-center flex-wrap">
                     {theme.title}
                     {!isStudent ? null : theme.status ? (
-                      <Badge className={"bg-green-300 text-primary max-h-6"}>
-                        Сдано на 52 балла
+                      <Badge className="bg-green-300 text-primary  text-md px-1.5">
+                        Сдано на {theme.result}
                       </Badge>
                     ) : (
-                      <Badge variant={"outline"} className={"max-h-6"}>
+                      <Badge variant="outline" className=" text-md px-1.5">
                         Не сдано
                       </Badge>
                     )}
                   </span>
-                  <div className="flex gap-6 text-sm text-foreground/80 items-center py-2">
+                  <div className="flex gap-4 text-md text-foreground/80 items-center">
                     {theme.max_points && (
                       <UseTooltip text="Максимальное количество баллов">
-                        <div className="flex items-center gap-2">
-                          <LuHandCoins className="h-4 w-4" />
+                        <div className="flex items-center gap-1.5">
+                          <LuHandCoins className="h-3.5 w-3.5" />
                           <span>{theme.max_points}</span>
                         </div>
                       </UseTooltip>
                     )}
-                    {theme.deadline && (
-                      <UseTooltip text="Дедлайн сдачи задания">
-                        <div className="flex items-center gap-2">
-                          <LuTarget className="h-4 w-4" />
-                          <span>
-                            {format(theme.deadline, "PPP", {
-                              locale: ru,
-                            })}
-                            {/* {(format(theme.deadline, "PPP"), { locale: ru })} */}
-                          </span>
-                        </div>
-                      </UseTooltip>
-                    )}
+                  
                   </div>
-                  <span className={`text-md text-foreground/80 `}>
+                  <span className="text-md text-foreground/80 line-clamp-2">
                     {theme.description}
                   </span>
-
                   {!isStudent || theme.status ? (
                     <Button
-                      className="shadow-none w-full mt-4"
-                      variant={"outline"}
+                      className="shadow-none w-full mt-2 h-8 text-md"
+                      variant="outline"
                       onClick={() =>
                         navigate(
-                          "/test/result/" +
-                            theme.id +
-                            `?course_id=${theme.resides.course[0].id}`
+                          "/test/result" +
+                          `?test_id=${theme.id}` +
+                          `&course_id=${theme.resides.course[0].id}`
                         )
                       }
                     >
-                      Открыть результаты <ChevronRight />
+                      Открыть результаты <ChevronRight className="h-3 w-3" />
                     </Button>
                   ) : (
                     <Button
-                      className="shadow-none w-full mt-4"
-                      variant={"outline"}
+                      className="shadow-none w-full mt-2 h-8 text-md"
+                      variant="outline"
                       onClick={() =>
-                        navigate("/test/pass" + `?url=${theme.link_form}`)
+                        navigate(
+                          "/test/" + AppSubRoutes.TEST_PASS + "/" + theme.id
+                        )
                       }
                     >
-                      Пройти тест <ChevronRight />
+                      Пройти тест <ChevronRight className="h-3 w-3" />
                     </Button>
                   )}
+                   {/* <Button
+                      className="shadow-none w-full mt-2 h-8 text-md"
+                      variant="outline"
+                      onClick={() =>
+                        navigate(
+                          "/test/" + AppSubRoutes.TEST_PASS + "/" + theme.id
+                        )
+                      }
+                    >
+                      Пройти тест <ChevronRight className="h-3 w-3" />
+                    </Button> */}
                 </CardContent>
               </Card>
             );

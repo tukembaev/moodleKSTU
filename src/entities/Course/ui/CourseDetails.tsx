@@ -17,12 +17,13 @@ import { useAuth } from "shared/hooks";
 
 const CourseDetails = ({ data }: { data: CourseThemes | undefined }) => {
   const {isStudent} = useAuth();
-  console.log(data);
+  console.log(isStudent);
   const tabs = [
     {
       name: "О курсе",
       value: "about_course",
-      content: (
+      content:
+       (
         <AboutCourse
           requirements={data?.requirements}
           description={data?.description}

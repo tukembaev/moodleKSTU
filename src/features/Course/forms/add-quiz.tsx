@@ -1,10 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { LuBookDashed, LuImage, LuX } from "react-icons/lu";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { UseMultiSelect } from "shared/components";
 import CheckboxCard from "shared/components/CheckboxCard";
 import { Button } from "shared/shadcn/ui/button";
 import { Card } from "shared/shadcn/ui/card";
@@ -32,9 +30,10 @@ interface QuizFormData {
   description: string;
   opening_date: Date;
   deadline: Date;
-  course: string[];
   required: boolean;
   timeLimit: number;
+  maxPoints: number;
+  showCorrectAnswers: boolean;
   theme_id?: string;
   questions: QuestionForm[];
 }
@@ -50,6 +49,8 @@ const Add_Quiz = () => {
     formState: { errors },
   } = useForm<QuizFormData>({
     defaultValues: {
+      maxPoints: 100,
+      showCorrectAnswers: false,
       questions: [
         {
           question: "",
@@ -77,13 +78,10 @@ const Add_Quiz = () => {
     },
   });
 
-  const { data } = useQuery(courseQueries.allCourses());
   const [searchParams] = useSearchParams();
   const formParam = searchParams.get("form");
 
-  // const { mutate: add_test, isPending } = testQueries.create_test();
-
-  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const { mutate: createTest, isPending } = testQueries.create_test_with_formdata();
 
   const options = [
     {
@@ -113,23 +111,6 @@ const Add_Quiz = () => {
 
   const params = new URLSearchParams(location.search);
 
-  const course_id = params.get("course_id");
-  const course_name = params.get("course_name");
-  console.log(course_id, course_name);
-  const courseOptions =
-   data?.map((course) => ({
-      label: course.discipline_name,
-      value: String(course.id),
-      icon: course.category_icon,
-    })) || [];
-
-  useEffect(() => {
-    setValue(
-      "course",
-      selectedCourses.map((id) => id)
-    );
-  }, [selectedCourses, setValue]);
-
   const {
     fields: questionFields,
     append,
@@ -140,73 +121,61 @@ const Add_Quiz = () => {
   });
 
   const theme_id = params.get("theme_id");
-  const onSubmit = (data: QuizFormData) => {
-  //   const jsonToSend = {
-  //   course_id: course_id,
-  //   theme_id: theme_id,
-  //   questions: data.questions,
-  //   timeLimit: data.timeLimit * 60,
-  //   description: data.description,
-  
-  // };
-  // console.log("JSON отправляется:", JSON.stringify(jsonToSend, null, 2));
-  
-    const formData = new FormData();
+  const onSubmit = (formData: QuizFormData) => {
+    // Подготовка JSON данных согласно спецификации API
+    const testData = {
+      title: formData.title,
+      description: formData.description || "",
+      opening_date: formData.opening_date.toISOString(),
+      deadline: formData.deadline.toISOString(),
+      required: formData.required || false,
+      timeLimit: formData.timeLimit,
+      maxPoints: formData.maxPoints || 0,
+      showCorrectAnswers: formData.showCorrectAnswers || false,
+      ...(theme_id ? { theme_id: theme_id } : {}),
+      questions: formData.questions.map((question) => ({
+        question: question.question,
+        multipleAnswers: question.multipleAnswers || false,
+        correctAnswer: question.multipleAnswers && Array.isArray(question.correctAnswer)
+          ? question.correctAnswer
+          : typeof question.correctAnswer === "string"
+          ? question.correctAnswer
+          : "",
+        options: question.options
+          .filter((opt) => opt.text.trim() !== "")
+          .map((option) => ({
+            text: option.text,
+          })),
+      })),
+    };
 
-    // Основные поля
-    formData.append("title", data.title);
-    formData.append("description", data.description || "");
-    formData.append("timeLimit", String(data.timeLimit * 60));
-    formData.append("required", String(data.required || false));
-    formData.append("theme_id", String(theme_id || ""));
+    // Создание FormData
+    const formDataToSend = new FormData();
     
-    if (data.opening_date) {
-      formData.append("opening_date", data.opening_date.toISOString());
-    }
-    if (data.deadline) {
-      formData.append("deadline", data.deadline.toISOString());
-    }
-    
-    // Курсы
-    if (data.course && Array.isArray(data.course)) {
-      data.course.forEach((courseId, index) => {
-        formData.append(`course[${index}]`, courseId);
-      });
-    }
+    // Добавление JSON данных в поле 'data'
+    formDataToSend.append("data", JSON.stringify(testData));
 
-    // Вопросы
-    data.questions.forEach((question, qIndex) => {
-      formData.append(`questions[${qIndex}][question]`, question.question);
-      formData.append(`questions[${qIndex}][multipleAnswers]`, String(question.multipleAnswers || false));
-      
+    // Добавление медиа файлов
+    formData.questions.forEach((question, qIndex) => {
       // Изображение вопроса
       if (question.questionImage) {
-        formData.append(`questions[${qIndex}][questionImage]`, question.questionImage);
+        formDataToSend.append(`questions[${qIndex}][questionImage]`, question.questionImage);
       }
 
-      // Правильный ответ (может быть строкой или массивом)
-      if (question.multipleAnswers && Array.isArray(question.correctAnswer)) {
-        question.correctAnswer.forEach((answer, aIndex) => {
-          formData.append(`questions[${qIndex}][correctAnswer][${aIndex}]`, answer);
-        });
-      } else if (typeof question.correctAnswer === "string") {
-        formData.append(`questions[${qIndex}][correctAnswer]`, question.correctAnswer);
-      }
-
-      // Варианты ответов
+      // Изображения вариантов ответов
       question.options.forEach((option, oIndex) => {
-        formData.append(`questions[${qIndex}][options][${oIndex}][text]`, option.text);
-        
-        // Изображение варианта ответа
         if (option.image) {
-          formData.append(`questions[${qIndex}][options][${oIndex}][image]`, option.image);
+          formDataToSend.append(`questions[${qIndex}][options][${oIndex}][image]`, option.image);
         }
       });
     });
 
-    console.log("FormData создан, готов к отправке" + formData);
-    // Здесь можно добавить вызов API для отправки formData
-    // Например: addQuiz(formData);
+    // Отправка данных
+    createTest(formDataToSend, {
+      onSuccess: () => {
+        navigate(-1);
+      },
+    });
   };
 
   const handleQuestionImageChange = (
@@ -308,24 +277,6 @@ const Add_Quiz = () => {
             <span className="text-xs text-red-500">Описание обязательно</span>
           )}
         </div>
-      
-          <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="deadline">
-               Курсы для закрепления теста
-            </Label>
-            <UseMultiSelect
-              options={courseOptions}
-              onValueChange={setSelectedCourses}
-              defaultValue={course_id ? [course_id] : selectedCourses}
-              placeholder="Выберите курсы"
-              disabled={!!course_id}
-              variant="default"
-              animation={2}
-              maxCount={3}
-            />
-          </div>
-          
-       
 
         <div>
           <Label className="pb-2">Время на прохождение (в минутах)</Label>
@@ -337,6 +288,30 @@ const Add_Quiz = () => {
           {errors.timeLimit && (
             <p className="text-destructive">Минимум 1 минута</p>
           )}
+        </div>
+        <div>
+          <Label className="pb-2">Максимальное количество баллов</Label>
+          <Input
+            type="number"
+            {...register("maxPoints", { required: true, min: 0, valueAsNumber: true })}
+            placeholder="Например, 100"
+          />
+          {errors.maxPoints && (
+            <p className="text-destructive">Минимум 0 баллов</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="showCorrectAnswers"
+            {...register("showCorrectAnswers")}
+            onCheckedChange={(checked) => setValue("showCorrectAnswers", !!checked)}
+          />
+          <Label
+            htmlFor="showCorrectAnswers"
+            className="text-sm font-normal cursor-pointer"
+          >
+            Показывать правильные ответы после отправки
+          </Label>
         </div>
         {!formParam?.includes("choose-test") && (
           <div className="flex flex-col gap-2">
@@ -644,10 +619,12 @@ const Add_Quiz = () => {
         </div>
 
         <div className="flex gap-4">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+          <Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={isPending}>
             Назад
           </Button>
-          <Button type="submit">Создать тест</Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Создание..." : "Создать тест"}
+          </Button>
         </div>
       </form>
     </Card>

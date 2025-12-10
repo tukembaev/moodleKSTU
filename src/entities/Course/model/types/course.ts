@@ -174,7 +174,7 @@ export interface CourseProgress {
     title: string;
     max_points:number;
     id_result: string | null;
-    result: number | null;
+    result: number ;
   }
   
  export interface TablePerfomance {
@@ -200,5 +200,33 @@ export interface CourseProgress {
       other: ThemeItem[];
       tests: TestItem[];
     };
+  }
+
+  export interface Week {
+    id: string;
+    module: string;
+    title: string;
+  }
+
+  export interface Module {
+    id: string;
+    title: string;
+    weeks: Week[];
+  }
+
+  export interface WeekTheme {
+    id: string;
+    week: string;
+    title: string;
+    type_less: string;
+    max_points: number;
+    deadline: string;
+    status: boolean;
+    locked: boolean;
+    open_date: string;
+    description: string;
+    discipline_name: string;
+    is_favorite: boolean;
+    result: string;
   }
   

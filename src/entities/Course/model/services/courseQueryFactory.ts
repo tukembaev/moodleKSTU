@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 
-import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ } from './courseAPI';
+import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes } from './courseAPI';
 
 import { delete_material, useAddComment, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment } from 'features/Course/model/services/course_queries';
 
@@ -56,6 +56,18 @@ export const courseQueries = {
                   queryKey: ['discussion',theme],
                   queryFn: () => getThemeDiscussion(theme as string),
                   enabled: !!theme,
+                }),
+      courseModules: (course_id: string | null) =>
+                queryOptions({
+                  queryKey: ['course', 'modules', course_id],
+                  queryFn: () => getCourseModules(course_id as string),
+                  enabled: !!course_id,
+                }),
+      weekThemes: (week_id: string | null) =>
+                queryOptions({
+                  queryKey: ['week', 'themes', week_id],
+                  queryFn: () => getWeekThemes(week_id as string),
+                  enabled: !!week_id,
                 }),
   
   //----------POST QUERIES------------

@@ -10,7 +10,7 @@ import { UniversitiesPage } from "pages/UniversitiesPage";
 import { UserBilling, UserProfile } from "entities/User";
 import CourseThemes from "entities/Course/ui/CourseThemes";
 import { TestingPage } from "pages/TestingPage";
-import { TestFrame, TestResults } from "entities/Test";
+import { TestResults } from "entities/Test";
 import { AboutUsPage } from "pages/AboutUsPage";
 import { CollaboratePage } from "pages/CollaboratePage";
 import { CategoryPage } from "pages/CategoryPage";
@@ -81,8 +81,8 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
 
   [AppRoutes.PROFILE]: "/profile",
   [AppRoutes.TEST]: "/test",
-  [AppSubRoutes.TEST_RESULTS]: "/test/result/:id",
-  [AppSubRoutes.TEST_PASS]: "/test/pass",
+  [AppSubRoutes.TEST_RESULTS]: "/test/result",
+  [AppSubRoutes.TEST_PASS]: "/test/pass/:id",
   [AppSubRoutes.TEST_ADD_QUIZ]: "/test/add-quiz",
   [AppSubRoutes.TEST_QUIZ]: "/test/quiz/:id",
   [AppSubRoutes.TEST_QUIZ_RESULT]: "/test/quiz-result/:id",
@@ -183,11 +183,6 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
 
     children: [
       {
-        path: RoutePath[AppSubRoutes.TEST_PASS],
-        element: <TestFrame />,
-        breadcrumbName: "Прохождение теста",
-      },
-      {
         path: RoutePath[AppSubRoutes.TEST_RESULTS],
         element: <TestResults />,
         breadcrumbName: "Результаты теста",
@@ -198,7 +193,7 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
         breadcrumbName: "Создание теста",
       },
       {
-        path: RoutePath[AppSubRoutes.TEST_QUIZ],
+        path: RoutePath[AppSubRoutes.TEST_PASS],
         element: <QuizTestPage />,
         breadcrumbName: "Тест",
       },

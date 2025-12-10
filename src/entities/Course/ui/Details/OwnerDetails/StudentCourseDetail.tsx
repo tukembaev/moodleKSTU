@@ -18,7 +18,9 @@ import {
 
 const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
     const [open, setOpen] = useState(false);
-  
+    
+
+     console.log(student);
     // Подсчитываем баллы по модулям (здесь мы группируем все как один модуль)
     const module1Points = {
       lb: student.themes.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0),
@@ -29,7 +31,7 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
     const module1MaxPoints = {
       lb: student.themes.lb.reduce((sum, item) => sum + item.max_points, 0),
       pr: student.themes.pr.reduce((sum, item) => sum + item.max_points, 0),
-      tests: student.themes.tests.reduce((sum, item) => sum + item.max_points, 0),
+      tests: student.themes.tests.reduce((sum, item) => sum + item.result, 0),
     };
   
     const totalModule1 = module1Points.lb + module1Points.pr + module1Points.tests;

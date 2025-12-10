@@ -1,0 +1,146 @@
+export const mockWeek = { detail: { 
+    "lc": [
+        {
+            "id": "f013e478-f739-4d97-a725-9a5b9572a0b7",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Лекция 1: Введение в БЖД. Концепция риска",
+            "type_less": "Лк",
+            "max_points": null,
+            "deadline": null,
+            "status": false,
+            "locked": false,
+            "open_date": null,
+            "description": "Эта лекция закладывает фундаментальные понятия дисциплины \"Безопасность жизнедеятельности\"",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": null
+        },
+        {
+            "id": "6b79f22a-d05f-4b4d-989d-8151ae739bc5",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Лекция 2: Правовые и организационные основы охраны труда",
+            "type_less": "Лк",
+            "max_points": null,
+            "deadline": null,
+            "status": false,
+            "locked": false,
+            "open_date": null,
+            "description": "Основы законодательства КР в сфере ОТ (ТК РФ, ФЗ).",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": null
+        },
+        {
+            "id": "f043f248-c03a-4c09-92ed-15c4e4c2cf54",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Лекция 3: Гигиена труда и производственная санитария.",
+            "type_less": "Лк",
+            "max_points": null,
+            "deadline": null,
+            "status": false,
+            "locked": true,
+            "open_date": null,
+            "description": "Классификация вредных производственных факторов (ВПФ). Нормирование (ПДК).",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": null
+        }
+    ],
+    "pr": [
+        {
+            "id": "2dee3c45-a8f9-4d88-9ed9-1a5dcb2242b5",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Практическое занятие 1: Количественная оценка и управление риском",
+            "type_less": "Пр",
+            "max_points": 8,
+            "deadline": null,
+            "status": false,
+            "locked": false,
+            "open_date": null,
+            "description": "Освоить методику количественной оценки индивидуального и социального риска",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": null
+        },
+        {
+            "id": "7814c9aa-885a-4517-ac1f-47104e6291d5",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Практическое занятие 2: Оформление документации по охране труда",
+            "type_less": "Пр",
+            "max_points": 9,
+            "deadline": null,
+            "status": false,
+            "locked": false,
+            "open_date": null,
+            "description": "Получение навыков заполнения основной документации",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": 0
+        },
+        {
+            "id": "81459352-4c84-4a34-ab16-de931367b465",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Практическое занятие 3: Практика СЛР и остановка кровотечений",
+            "type_less": "Пр",
+            "max_points": 15,
+            "deadline": null,
+            "status": false,
+            "locked": false,
+            "open_date": null,
+            "description": "Отработка полного алгоритма Сердечно-легочной реанимации (СЛР)",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": null
+        }
+    ],
+    "lb": [
+        {
+            "id": "24c8520c-a449-4405-9859-e9bf8987e454",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Лабораторная работа 1: Анализ электробезопасности",
+            "type_less": "Лб",
+            "max_points": 10,
+            "deadline": null,
+            "status": true,
+            "locked": false,
+            "open_date": null,
+            "description": "Изучение действия тока на человека",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": 6
+        },
+        {
+            "id": "ad138c35-ef2f-43d2-92d9-8a82d8e12c22",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Лабораторная работа 2: Оценка производственного освещения",
+            "type_less": "Лб",
+            "max_points": 10,
+            "deadline": null,
+            "status": false,
+            "locked": true,
+            "open_date": null,
+            "description": "Освоение методики измерения освещенности с помощью люксметра",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": null
+        },
+        {
+            "id": "5175d61e-5293-4c5e-8231-38420830548c",
+            "course": "7f11a285-d60b-49bd-80d6-082ac3759709",
+            "title": "Лабораторная работа 3: Исследование шумового загрязнения",
+            "type_less": "Лб",
+            "max_points": 9,
+            "deadline": null,
+            "status": false,
+            "locked": false,
+            "open_date": null,
+            "description": "Измерение уровня шума на рабочем месте с помощью шумомера",
+            "discipline_name": "Безопасность жизнедеятельности (БЖД и Экология)",
+            "is_favorite": false,
+            "result": 0
+        }
+    ],
+    "srs": [],
+    "other": []
+}
+}

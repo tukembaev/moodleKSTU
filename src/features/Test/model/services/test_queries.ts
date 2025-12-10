@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TestPayload } from "../types/test_payload";
 import { toast } from "sonner";
-import { createTest } from "entities/Test/model/services/testAPI";
+import { createTest, createTestWithFormData } from "entities/Test/model/services/testAPI";
 
 export const useCreateTest = () =>{
     const queryClient = useQueryClient();
@@ -25,3 +25,23 @@ export const useCreateTest = () =>{
       },
     });
     }
+
+export const useCreateTestWithFormData = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (formData: FormData) => {
+        const mutationPromise = createTestWithFormData(formData);
+        toast.promise(mutationPromise, {
+          loading: "Публикуем тест...",
+          success: "Публикация теста прошла успешно!",
+        });
+        return mutationPromise;
+      },
+      onError: (error: any) => {
+        toast.error(`Ошибка: ${error?.response?.data?.message || error?.message || "Что-то пошло не так"}`);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['test'] });
+      },
+    });
+}

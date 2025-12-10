@@ -3,7 +3,7 @@ import { CourseCardSkeleton, CourseDetail } from "entities/Course";
 import { userQueries } from "entities/User";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { LuBookmark, LuClock, LuHandCoins, LuTarget } from "react-icons/lu";
+import { LuBookmark, LuHandCoins, LuTarget } from "react-icons/lu";
 import {
   FadeInList,
   HoverScale,
@@ -13,7 +13,8 @@ import {
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
-import ThemeFiles from "../Themes/ThemeFiles";
+import ThemeFiles from "../Themes/ThemeDetail/ThemeFiles";
+
 
 const FavoriteThemes = ({
   data,

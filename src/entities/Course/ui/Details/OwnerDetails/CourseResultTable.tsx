@@ -97,7 +97,7 @@ const CourseResultTable = () => {
             const module1MaxPoints = 
               student.themes.lb.reduce((sum, item) => sum + item.max_points, 0) +
               student.themes.pr.reduce((sum, item) => sum + item.max_points, 0) +
-              student.themes.tests.reduce((sum, item) => sum + item.max_points, 0);
+              student.themes.tests.reduce((sum, item) => sum + item.result || 0, 0);
 
             // Модуль 2: СРС + Прочее
             const module2Points = 

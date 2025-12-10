@@ -3,13 +3,13 @@ import { refreshUser } from "features/Authorization/model/services/loginAPI";
 
 export const API_URL = `https://uadmin.kstu.kg/api/`
 
-const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}"); 
+const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}");
 
 export const $api2 = axios.create({
-    // withCredentials: true,
-    baseURL: API_URL,
-  })
-  
+  // withCredentials: true,
+  baseURL: API_URL,
+})
+
 $api2.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${auth_data.access}`
   return config
@@ -29,7 +29,7 @@ $api2.interceptors.response.use(
         error.config.headers.Authorization = `Bearer ${newTokens.access}`;
         return axios.request(error.config);
       } catch (refreshError) {
-        console.error("Refresh token failed, logging out...",refreshError);
+        console.error("Refresh token failed, logging out...", refreshError);
         localStorage.setItem("refresh_error", 'Refresh токен устарел, перезайдите в систему');
         // localStorage.removeItem("auth_data");
         // window.location.href = "/";

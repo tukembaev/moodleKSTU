@@ -3,11 +3,11 @@ import { QuizResult } from '../types/quiz';
 
 
 export const fetchQuiz = async (quizId: string) => {
-  const response = await axios.get(`https://uadmin.kstu.kg/educations/api/v1/quizzes/${quizId}/`);
+  const response = await axios.get(`https://uadmin.kstu.kg/api/v1/quizzes/${quizId}/`);
   return response.data;
 };
 
 export const submitQuizResult = async (data: QuizResult) => {
-  const response = await axios.post('https://uadmin.kstu.kg/educations/api/v1/quiz-results/', data);
+  const response = await axios.post('https://uadmin.kstu.kg/api/v1/quiz-results/', data);
   return response.data;
 };

@@ -11,7 +11,7 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
   //   courseQueries.themeReviews(theme_id)
   // );
 
-  const themeReviews = mockReviews.filter((review) => review.theme_id === theme_id);
+  // const themeReviews = mockReviews.filter((review) => review.theme_id === theme_id);
 
   const handleReply = (reviewId: string, message: string) => {
     // TODO: API call для ответа студента

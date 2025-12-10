@@ -11,7 +11,7 @@ import FavoriteCourses from "./ui/FavoriteSubjects/FavoriteCourses";
 import { createCourse, createTheme, makeIsRead } from "./model/services/courseAPI";
 import FavoriteThemes from "./ui/FavoriteSubjects/FavoriteThemes";
 import GlobalCourseCarousel from "./ui/GlobalCourses/GlobalCourseCarousel";
-import { ThemeFeed } from "./ui/Themes/ThemeFeed";
+import { ThemeFeed } from "./ui/Themes/ThemeDetail/ThemeFeed";
 
 
 export {

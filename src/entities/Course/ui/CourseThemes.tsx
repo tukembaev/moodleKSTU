@@ -1,24 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { courseQueries } from "../model/services/courseQueryFactory";
-import ListOfThemes from "./Themes/ListOfThemes";
+import ModuleThemesList from "./Themes/ModuleThemesList";
 
 import { testQueries } from "entities/Test";
 import { LuLock } from "react-icons/lu";
 import { Separator } from "shared/shadcn/ui/separator";
 import CourseThemeSkeleton from "../lib/skeletons/CourseThemeSkeleton";
-import CourseDetails from "./CourseDetails";
-import { toast } from "sonner";
 
 const CourseThemes = () => {
   const { id } = useParams();
 
   const safeId = id || "default_id";
 
-  const { data, isLoading, error } = useQuery(courseQueries.allTasks(safeId));
-  if (error) {
-    toast.error("Ошибка при загрузке курса: " + error.message);
-  }
+  // Fetch course data to get course_owner and course name
+  // const { data: courseData, isLoading: isLoadingCourse } = useQuery(
+  //   courseQueries.allTasks(safeId)
+  // );
   const {
     data: course_tests,
     // error: errorTest,
@@ -26,13 +24,15 @@ const CourseThemes = () => {
 
   const isLocked = false;
 
-  if (isLoading) return <CourseThemeSkeleton />;
-  if (error) return <div>Something went wrong {error.message}</div>;
+  // if (isLoadingCourse) return <CourseThemeSkeleton />;
+
+  // const course_name = courseData?.discipline_name || "";
+  // const course_owner = courseData?.course_owner;
 
   return (
     <div className="min-h-screen flex py-3">
       <div className="w-full flex flex-col gap-4">
-        <CourseDetails data={data} />
+        {/* <CourseDetails data={courseData} /> */}
 
         <Separator />
         <div className="flex flex-col gap-4 relative">
@@ -46,7 +46,12 @@ const CourseThemes = () => {
           )}
 
           <div className={`flex flex-col gap-4 ${isLocked ? "blur-xs" : ""}`}>
-            {data && <ListOfThemes data={data} tests={course_tests || []} />}
+            <ModuleThemesList
+              course_id={safeId}
+              // course_name={course_name}
+              tests={course_tests || []}
+              // course_owner={course_owner}
+            />
           </div>
         </div>
       </div>

@@ -6,11 +6,11 @@ export interface PersonData {
   email: string;
   password: string;
 }
-const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}"); 
+const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}");
 
 
 export const authUser = async (data: PersonData) => {
-  const response = await axios.post('https://uadmin.kstu.kg/educations/api/v1/users/auth/', data); 
+  const response = await axios.post('https://uadmin.kstu.kg/educations/api/v1/users/auth/', data);
   return response.data;
 };
 
