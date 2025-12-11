@@ -13,11 +13,11 @@ import TestTable from "./lib/TestTable";
 const TestResults = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const course_id = searchParams.get("course_id");
+  const weekId = searchParams.get("weekId");
   const test_id = searchParams.get("test_id");
 
   const { data: test_list, isLoading: isLoadingResults } = useQuery(
-    testQueries.TestResult(test_id, course_id)
+    testQueries.TestResult(test_id, weekId)
   );
   const { data: testDetails, isLoading: isLoadingDetails } = useQuery(
     testQueries.TestQuestions(test_id)

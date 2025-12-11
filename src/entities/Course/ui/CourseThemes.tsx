@@ -1,8 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import ModuleThemesList from "./Themes/ModuleThemesList";
 
-import { testQueries } from "entities/Test";
 import { LuLock } from "react-icons/lu";
 import { Separator } from "shared/shadcn/ui/separator";
 import CourseDetails from "./CourseDetails";
@@ -10,11 +8,6 @@ import CourseDetails from "./CourseDetails";
 const CourseThemes = () => {
   const { id } = useParams();
   const safeId = id || "default_id";
-  const {
-    data: course_tests,
-  
-    // error: errorTest,
-  } = useQuery(testQueries.allTest(`?course=${safeId}`));
 
   const isLocked = false;
 
@@ -40,7 +33,6 @@ const CourseThemes = () => {
             <ModuleThemesList
               course_id={safeId}
               // course_name={course_name}
-              tests={course_tests || []}
               // course_owner={course_owner}
             />
           </div>

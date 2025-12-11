@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 
 
-import { useCreateTest, useCreateTestWithFormData } from 'features/Test/model/services/test_queries';
+import { useCreateTest, useCreateTestWithFormData, useAttachTestToWeek } from 'features/Test/model/services/test_queries';
 import { getAllTest, getTestQuestions, getTestResults } from './testAPI';
 
 export const testQueries = {
@@ -26,4 +26,5 @@ export const testQueries = {
   //----------POST QUERIES------------
   create_test: () => useCreateTest(),
   create_test_with_formdata: () => useCreateTestWithFormData(),
+  attach_test_to_week: () => useAttachTestToWeek(),
 };

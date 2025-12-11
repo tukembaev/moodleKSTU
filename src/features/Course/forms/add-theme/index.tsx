@@ -2,6 +2,7 @@ import { Button } from "shared/shadcn/ui/button";
 import { LuCloudUpload } from "react-icons/lu";
 import { Card } from "shared/shadcn/ui/card";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { CreateThemePayload } from "../../model/types/course_payload";
 import { useAddThemeForm } from "./use-add-theme-form";
 import { AddThemeTypeSelect } from "./add-theme-type-select";
@@ -22,14 +23,27 @@ const Add_Theme = () => {
     userTests,
   } = useAddThemeForm();
 
-  const { mutate: add_theme, isPending } = courseQueries.create_theme();
+  const { mutate: add_theme, isPending: isThemePending } = courseQueries.create_theme();
+  const { mutate: attach_test, isPending: isTestPending } = testQueries.attach_test_to_week();
+
+  const isPending = isThemePending || isTestPending;
 
   const onSubmit = async (data: CreateThemePayload) => {
     // Validate test_id when test type is selected
     if (isTestType && !data.test_id) {
       return;
     }
-    add_theme(data);
+
+    if (isTestType && data.test_id) {
+      // Use the new API for attaching test to week
+      attach_test({
+        week_id: data.week,
+        test_id: data.test_id,
+      });
+    } else {
+      // Use the old API for regular themes
+      add_theme(data);
+    }
   };
 
   return (

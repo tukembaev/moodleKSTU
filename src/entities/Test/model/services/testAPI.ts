@@ -41,3 +41,19 @@ export const submitTestAnswers = async (
   const response = await $api_edu.post(`tests/${testId}/submit/`, data);
   return response.data;
 };
+
+export interface AttachTestToWeekPayload {
+  week_id: string;
+  test_id: string;
+}
+
+export interface AttachTestToWeekResponse {
+  message: string;
+  week_id: string;
+  test_id: string;
+}
+
+export const attachTestToWeek = async (data: AttachTestToWeekPayload): Promise<AttachTestToWeekResponse> => {
+  const response = await $api_edu.post(`tests/attach-to-week/`, data);
+  return response.data;
+};

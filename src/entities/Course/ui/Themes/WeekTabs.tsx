@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Week } from "entities/Course/model/types/course";
-import { Test } from "entities/Test/model/types/test";
 import React, { useRef, useState } from "react";
 import { useAuth, useForm } from "shared/hooks";
 import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { GridWeekThemes, ListWeekThemes } from "./WeekThemeViews";
 import { useSearchParams } from "react-router-dom";
 import { HoverLift, UseTooltip } from "shared/components";
@@ -18,7 +18,6 @@ interface WeekTabsProps {
     title: string;
     weeks: Week[];
   };
-  tests: Test[];
   course_id: string;
   course_name: string;
   viewMode: "grid" | "list";
@@ -27,7 +26,6 @@ interface WeekTabsProps {
 
 const WeekTabs: React.FC<WeekTabsProps> = ({
   module,
-  tests,
   course_id,
   course_name,
   viewMode,
@@ -63,6 +61,11 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
   const WeekContent = ({ week }: { week: Week }) => {
     const { data: weekThemes, isLoading, error, refetch } = useQuery(
       courseQueries.weekThemes(week.id)
+    );
+
+    // Fetch tests for this specific week
+    const { data: weekTests } = useQuery(
+      testQueries.allTest(`?week=${week.id}`)
     );
 
     // Loading state with skeleton
@@ -207,7 +210,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
 
     const commonProps = {
       themes: weekThemes,
-      tests: tests,
+      tests: weekTests || [],
       isStudent: isStudent,
       isOwner: isOwner,
       expandedId: expandedId,
@@ -216,7 +219,6 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
       openForm: openForm,
       isMobile: isMobile,
       id_week: week.id,
-      course_id: course_id,
       course_name: course_name,
     };
 

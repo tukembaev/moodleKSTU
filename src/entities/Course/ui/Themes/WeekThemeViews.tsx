@@ -32,13 +32,51 @@ export const categories: {
   key: string;
   title: string;
   icon: React.ReactNode;
+  badgeClass: string;
+  iconClass: string;
 }[] = [
-  { key: "lb", title: "Лабораторные", icon: <LuFlaskConical /> },
-  { key: "pr", title: "Практика", icon: <LuHammer /> },
-  { key: "lc", title: "Лекции", icon: <LuBookOpen /> },
-  { key: "srs", title: "СРС", icon: <LuNotebookPen /> },
-  { key: "test", title: "Тесты", icon: <LuShapes /> },
-  { key: "other", title: "Прочее", icon: <LuPuzzle /> },
+  { 
+    key: "lb", 
+    title: "Лабораторные", 
+    icon: <LuFlaskConical />,
+    badgeClass: "bg-purple-50 text-purple-600/80 border-purple-200/50 dark:bg-purple-950/30 dark:text-purple-400/80 dark:border-purple-800/30",
+    iconClass: "text-purple-600 dark:text-purple-400"
+  },
+  { 
+    key: "pr", 
+    title: "Практика", 
+    icon: <LuHammer />,
+    badgeClass: "bg-blue-50 text-blue-600/80 border-blue-200/50 dark:bg-blue-950/30 dark:text-blue-400/80 dark:border-blue-800/30",
+    iconClass: "text-blue-600 dark:text-blue-400"
+  },
+  { 
+    key: "lc", 
+    title: "Лекции", 
+    icon: <LuBookOpen />,
+    badgeClass: "bg-emerald-50 text-emerald-600/80 border-emerald-200/50 dark:bg-emerald-950/30 dark:text-emerald-400/80 dark:border-emerald-800/30",
+    iconClass: "text-emerald-600 dark:text-emerald-400"
+  },
+  { 
+    key: "srs", 
+    title: "СРС", 
+    icon: <LuNotebookPen />,
+    badgeClass: "bg-amber-50 text-amber-600/80 border-amber-200/50 dark:bg-amber-950/30 dark:text-amber-400/80 dark:border-amber-800/30",
+    iconClass: "text-amber-600 dark:text-amber-400"
+  },
+  { 
+    key: "test", 
+    title: "Тесты", 
+    icon: <LuShapes />,
+    badgeClass: "bg-rose-50 text-rose-600/80 border-rose-200/50 dark:bg-rose-950/30 dark:text-rose-400/80 dark:border-rose-800/30",
+    iconClass: "text-rose-600 dark:text-rose-400"
+  },
+  { 
+    key: "other", 
+    title: "Прочее", 
+    icon: <LuPuzzle />,
+    badgeClass: "bg-slate-50 text-slate-600/80 border-slate-200/50 dark:bg-slate-950/30 dark:text-slate-400/80 dark:border-slate-800/30",
+    iconClass: "text-slate-600 dark:text-slate-400"
+  },
 ];
 
 // Map type_less values to category keys
@@ -64,7 +102,7 @@ interface WeekThemeViewProps {
   openForm: any;
   isMobile: boolean | undefined;
   id_week?: string;
-  course_id: string;
+
   course_name: string;
 }
 
@@ -79,7 +117,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
   openForm,
   isMobile,
   id_week,
-  course_id,
+  
 }) => {
   if (themes.length === 0 && tests.length === 0) {
     if (isStudent) {
@@ -111,7 +149,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4 pb-10">
       {/* Render all tests first */}
       {tests.map((item) => (
-        <TestCard key={item.id} item={item} course_id={course_id} />
+        <TestCard key={item.id} item={item} id_week={id_week || ""} viewMode="grid" />
       ))}
       
       {/* Render all themes */}
@@ -137,8 +175,8 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                 }`}
               >
                 
-                <Badge variant="outline" className="gap-2 text-muted-foreground">
-                  {category?.icon}
+                <Badge className={`gap-2 ${category?.badgeClass || ""}`}>
+                  <span className={category?.iconClass}>{category?.icon}</span>
                   <span>{category?.title} </span>
                 </Badge>
                 {theme.locked && (
@@ -252,7 +290,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
   openForm,
   isMobile,
   id_week,
-  course_id,
+  
 }) => {
   if (themes.length === 0 && tests.length === 0) {
     if (isStudent) {
@@ -282,11 +320,11 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
 
   return (
     <div className="w-full pt-3 sm:pt-4 py-8 pb-10">
-      {/* Render test cards in grid if any */}
+      {/* Render test cards in list view if any */}
       {tests.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
+        <div className="w-full mb-4">
           {tests.map((item) => (
-            <TestCard key={item.id} item={item} course_id={course_id} />
+            <TestCard key={item.id} item={item} id_week={id_week || ""} viewMode="list" />
           ))}
         </div>
       )}
@@ -346,15 +384,12 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                         {theme.description}
                       </span>
                     )}
-                    {isStudent && (
-                      <Badge
-                        variant="outline"
-                        className="gap-2 text-muted-foreground shrink-0"
-                      >
-                        {category?.icon}
-                        <span>{category?.title}</span>
-                      </Badge>
-                    )}
+                    <Badge
+                      className={`gap-2 shrink-0 ${category?.badgeClass || ""}`}
+                    >
+                      <span className={category?.iconClass}>{category?.icon}</span>
+                      <span>{category?.title}</span>
+                    </Badge>
                   </div>
                 <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
                   <div className="flex gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-foreground/80">

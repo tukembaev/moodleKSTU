@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Test } from "entities/Test/model/types/test";
 import { Grid, List, Sparkles } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Badge } from "shared/shadcn/ui/badge";
@@ -11,14 +10,12 @@ import WeekTabs from "./WeekTabs";
 interface ModuleThemesListProps {
   course_id: string;
   course_name?: string;
-  tests: Test[];
   course_owner?: { user_id: number }[];
 }
 
 const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
   course_id,
   course_name,
-  tests,
   course_owner,
 }) => {
   const isMobile = useIsMobile();
@@ -165,7 +162,6 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
       {activeModule ? (
         <WeekTabs
           module={activeModule}
-          tests={tests}
           course_id={course_id}
           course_name={course_name || courseModulesData?.discipline_name || ""}
           viewMode={viewMode}
