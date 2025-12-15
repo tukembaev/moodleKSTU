@@ -45,24 +45,19 @@ const CourseDetails = () => {
         content: <CourseResultTable />,
         icon: <LuBookA />,
     }] : []),
-    {
-      name: isStudent ? "Чат с преподователем" : "Чаты с студентами",
-      value: "chats",
-      content: <ChatContainer />,
-      icon: <LuMessageCircle />,
-    },
+ 
     // {
     //   name: "Графики",
     //   value: "charts",
     //   content: <CourseStatistic />,
     //   icon: <LuChartBar />,
     // },
-    ...(!isStudent ? [{
-      name: "Вовлеченность",
-      value: "attendance",
-      content: <CourseInvolvement />,
-      icon: <LuHandshake />,
-    }] : []),
+    // ...(!isStudent ? [{
+    //   name: "Вовлеченность",
+    //   value: "attendance",
+    //   content: <CourseInvolvement />,
+    //   icon: <LuHandshake />,
+    // }] : []),
 
     // {
     //   name: "Отзывы",
