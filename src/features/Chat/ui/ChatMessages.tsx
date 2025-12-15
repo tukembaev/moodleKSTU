@@ -9,9 +9,10 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 import { useWebSocket } from "../lib/useWebSocket";
-import { getMessages, getCurrentUserId } from "../model/services/chatAPI";
+import { getMessages } from "../model/services/chatAPI";
 import type { Message } from "../model/types/chat";
 import { toast } from "sonner";
+import { useAuth } from "shared/hooks/useAuthData";
 
 interface ChatMessagesProps {
   conversationId: string;
@@ -22,7 +23,8 @@ const ChatMessages = ({ conversationId }: ChatMessagesProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const currentUserId = getCurrentUserId();
+  const auth = useAuth();
+  const currentUserId = auth?.id;
 
   // Автоматическая прокрутка к последнему сообщению
   const scrollToBottom = () => {
@@ -39,7 +41,11 @@ const ChatMessages = ({ conversationId }: ChatMessagesProps) => {
       try {
         setLoading(true);
         const data = await getMessages(conversationId, 100, 0);
-        setMessages(data);
+        // Сортируем сообщения по дате создания (старые сверху, новые снизу)
+        const sortedMessages = [...data].sort((a, b) => {
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        });
+        setMessages(sortedMessages);
       } catch (error) {
         console.error("Error loading messages:", error);
         toast.error("Ошибка загрузки сообщений");
@@ -146,34 +152,44 @@ const ChatMessages = ({ conversationId }: ChatMessagesProps) => {
               <div
                 key={message.id}
                 className={cn(
-                  "flex gap-2",
+                  "flex gap-2 items-end",
                   isMyMessage ? "justify-end" : "justify-start"
                 )}
               >
+                {/* Аватар для сообщений собеседника */}
+                {!isMyMessage && (
+                  <img
+                    src={"https://bundui-images.netlify.app/avatars/01.png"}
+                    className="size-6 sm:size-8 rounded-full object-cover shrink-0"
+                    alt="Avatar"
+                  />
+                )}
+                
+                {/* Сообщение */}
                 <div
                   className={cn(
-                    "max-w-[85%] sm:max-w-[70%] rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm",
+                    "max-w-[85%] sm:max-w-[70%] rounded-2xl p-2 sm:p-3 text-xs sm:text-sm shadow-sm",
                     isMyMessage
-                      ? "bg-gray-700 text-white"
-                      : "bg-gray-200 text-black"
+                      ? "bg-blue-500 text-white rounded-br-md"
+                      : "bg-gray-100 text-gray-900 rounded-bl-md"
                   )}
                 >
-                  <p className="break-words">{message.text}</p>
+                  <p className="break-words leading-relaxed">{message.text}</p>
                   <div
                     className={cn(
-                      "text-[10px] sm:text-xs mt-1 flex gap-1 items-center",
-                      isMyMessage ? "justify-end" : "justify-start"
+                      "text-[10px] sm:text-xs mt-1.5 flex gap-1 items-center",
+                      isMyMessage ? "justify-end text-blue-100" : "justify-start text-gray-500"
                     )}
                   >
                     <span>
-                      {format(messageDate, "dd MMM HH:mm", { locale: ru })}
+                      {format(messageDate, "HH:mm", { locale: ru })}
                     </span>
                     {isMyMessage && (
-                      <span>
+                      <span className="ml-0.5">
                         {message.is_edited ? (
-                          <LucideCheckCheck className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                          <LucideCheckCheck className="w-3 h-3 sm:w-4 sm:h-4" />
                         ) : (
-                          <LucideCheck className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                          <LucideCheck className="w-3 h-3 sm:w-4 sm:h-4" />
                         )}
                       </span>
                     )}

@@ -1,3 +1,6 @@
+import { $api2 } from 'shared/api/api2';
+import { $api_base_edu } from 'shared/api/api_base_edu';
+import { $api_edu } from 'shared/api/api_edu';
 // chatAPI.ts - REST API сервис для чата
 import axios from "axios";
 import { refreshUser } from "features/Authorization/model/services/loginAPI";
@@ -178,7 +181,7 @@ export const createAttachment = async (
  * Получить список пользователей для чата
  */
 export const getChatUsers = async (): Promise<ChatUser[]> => {
-  const response = await chatApiInstance.get<ChatUser[]>("users/chat-users/");
+  const response = await $api2.get<ChatUser[]>("v1/users/chat-users/");
   return response.data;
 };
 
