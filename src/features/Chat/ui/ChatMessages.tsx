@@ -61,17 +61,22 @@ const ChatMessages = ({ conversationId }: ChatMessagesProps) => {
     });
   }, []);
 
+  // Обработчики WebSocket
+  const handleWsError = useCallback((error: Event) => {
+    console.error("WebSocket error:", error);
+    toast.error("Ошибка подключения к чату");
+  }, []);
+
+  const handleWsOpen = useCallback(() => {
+    console.log("Connected to chat");
+  }, []);
+
   // WebSocket подключение
   const { isConnected, sendMessage: sendWsMessage, error: wsError } = useWebSocket({
     conversationId,
     onMessage: handleNewMessage,
-    onError: (error) => {
-      console.error("WebSocket error:", error);
-      toast.error("Ошибка подключения к чату");
-    },
-    onOpen: () => {
-      console.log("Connected to chat");
-    },
+    onError: handleWsError,
+    onOpen: handleWsOpen,
   });
 
   // Отправка сообщения

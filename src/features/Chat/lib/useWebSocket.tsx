@@ -33,11 +33,31 @@ export const useWebSocket = ({
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 5;
+  
+  // Используем refs для колбэков чтобы избежать пересоздания connect функции
+  const onMessageRef = useRef(onMessage);
+  const onErrorRef = useRef(onError);
+  const onOpenRef = useRef(onOpen);
+  const onCloseRef = useRef(onClose);
+  
+  // Обновляем refs при изменении колбэков
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onErrorRef.current = onError;
+    onOpenRef.current = onOpen;
+    onCloseRef.current = onClose;
+  });
 
   // Функция подключения к WebSocket
   const connect = useCallback(() => {
     if (!conversationId) {
       console.error("conversationId is required for WebSocket connection");
+      return;
+    }
+    
+    // Предотвращаем создание нового соединения если уже есть активное
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.CONNECTING || wsRef.current.readyState === WebSocket.OPEN)) {
+      console.log("WebSocket already connected or connecting");
       return;
     }
 
@@ -50,7 +70,7 @@ export const useWebSocket = ({
 
     try {
       // Создаем WebSocket URL с токеном в query параметре
-      const wsUrl = `${WS_BASE_URL}/conversations/${conversationId}/?WWW-Authenticate=Bearer%20${encodeURIComponent(
+      const wsUrl = `${WS_BASE_URL}/conversations/${conversationId}/?Authorization=Bearer%20${encodeURIComponent(
         token
       )}`;
 
@@ -63,7 +83,7 @@ export const useWebSocket = ({
         setIsConnected(true);
         setError(null);
         reconnectAttemptsRef.current = 0;
-        onOpen?.();
+        onOpenRef.current?.();
       };
 
       ws.onmessage = (event) => {
@@ -74,7 +94,7 @@ export const useWebSocket = ({
           if (data.type === "message:new" && data.payload) {
             // Проверяем, что payload это полное сообщение, а не запрос
             if ("id" in data.payload && "conversation_id" in data.payload) {
-              onMessage?.(data.payload as Message);
+              onMessageRef.current?.(data.payload as Message);
             }
           }
         } catch (err) {
@@ -85,7 +105,7 @@ export const useWebSocket = ({
       ws.onerror = (event) => {
         console.error("WebSocket error:", event);
         setError("WebSocket connection error");
-        onError?.(event);
+        onErrorRef.current?.(event);
       };
 
       ws.onclose = (event) => {
@@ -110,7 +130,7 @@ export const useWebSocket = ({
           setError("Max reconnection attempts reached");
         }
 
-        onClose?.();
+        onCloseRef.current?.();
       };
 
       wsRef.current = ws;
@@ -118,7 +138,7 @@ export const useWebSocket = ({
       console.error("Error creating WebSocket:", err);
       setError("Failed to create WebSocket connection");
     }
-  }, [conversationId, onMessage, onError, onOpen, onClose]);
+  }, [conversationId]);
 
   // Подключение при монтировании
   useEffect(() => {

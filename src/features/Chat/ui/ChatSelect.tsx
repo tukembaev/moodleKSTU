@@ -1,8 +1,8 @@
 // ChatSelect.tsx
 
-import { Plus, Loader2, Users, User } from "lucide-react";
+import { Plus, Loader2, Users, User, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "shared/shadcn/ui/avatar";
+import { Avatar, AvatarFallback } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
 import {
   Card,
@@ -33,6 +33,9 @@ import type { Conversation } from "../model/types/chat";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { cn } from "shared/lib/utils";
+import { UserAsyncSelect } from "./UserAsyncSelect";
+import { UserAsyncMultiSelect } from "./UserAsyncMultiSelect";
+import UseConfirmationDialog from "shared/components/UseConfirmationDialog";
 
 interface ChatSelectProps {
   onSelectChat: (chatId: string) => void;
@@ -43,6 +46,7 @@ interface ChatSelectProps {
     title?: string,
     participantIds?: number[]
   ) => Promise<Conversation | null>;
+  onDeleteConversation: (chatId: string) => Promise<void>;
   selectedChatId: string | null;
 }
 
@@ -51,13 +55,17 @@ export function ChatSelect({
   conversations,
   loading,
   onCreateConversation,
+  onDeleteConversation,
   selectedChatId,
 }: ChatSelectProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newChatType, setNewChatType] = useState<"private" | "group">("group");
   const [newChatTitle, setNewChatTitle] = useState("");
+  const [selectedUser, setSelectedUser] = useState<number | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [creating, setCreating] = useState(false);
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
 
   // Фильтрация бесед по поисковому запросу
   const filteredConversations = conversations.filter((conv) => {
@@ -71,16 +79,44 @@ export function ChatSelect({
       return;
     }
 
+    if (newChatType === "private" && !selectedUser) {
+      return;
+    }
+
+    if (newChatType === "group" && selectedUsers.length === 0) {
+      return;
+    }
+
     setCreating(true);
     try {
+      const participantIds =
+        newChatType === "private"
+          ? selectedUser
+            ? [selectedUser]
+            : []
+          : selectedUsers;
+
       await onCreateConversation(
         newChatType,
-        newChatTitle.trim() || undefined
+        newChatTitle.trim() || undefined,
+        participantIds
       );
       setIsCreateDialogOpen(false);
       setNewChatTitle("");
+      setSelectedUser(null);
+      setSelectedUsers([]);
     } finally {
       setCreating(false);
+    }
+  };
+
+  // Удаление беседы
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      setDeletingChatId(chatId);
+      await onDeleteConversation(chatId);
+    } finally {
+      setDeletingChatId(null);
     }
   };
 
@@ -155,24 +191,50 @@ export function ChatSelect({
                   </SelectContent>
                 </Select>
               </div>
+              {newChatType === "group" && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="title" className="text-right">
+                    Название
+                  </Label>
+                  <Input
+                    id="title"
+                    value={newChatTitle}
+                    onChange={(e) => setNewChatTitle(e.target.value)}
+                    placeholder="Название беседы"
+                    className="col-span-3"
+                  />
+                </div>
+              )}
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
-                  Название
+                <Label htmlFor="participants" className="text-right">
+                  {newChatType === "private" ? "Участник" : "Участники"}
                 </Label>
-                <Input
-                  id="title"
-                  value={newChatTitle}
-                  onChange={(e) => setNewChatTitle(e.target.value)}
-                  placeholder="Название беседы"
-                  className="col-span-3"
-                />
+                <div className="col-span-3">
+                  {newChatType === "private" ? (
+                    <UserAsyncSelect
+                      value={selectedUser}
+                      onChange={setSelectedUser}
+                      placeholder="Выберите пользователя"
+                    />
+                  ) : (
+                    <UserAsyncMultiSelect
+                      value={selectedUsers}
+                      onChange={setSelectedUsers}
+                      placeholder="Выберите участников"
+                    />
+                  )}
+                </div>
               </div>
             </div>
             <DialogFooter>
               <Button
                 type="button"
                 onClick={handleCreateChat}
-                disabled={creating || (newChatType === "group" && !newChatTitle.trim())}
+                disabled={
+                  creating ||
+                  (newChatType === "group" && (!newChatTitle.trim() || selectedUsers.length === 0)) ||
+                  (newChatType === "private" && !selectedUser)
+                }
               >
                 {creating ? (
                   <>
@@ -222,36 +284,62 @@ export function ChatSelect({
                 return (
                   <div
                     key={conversation.id}
-                    onClick={() => onSelectChat(conversation.id)}
                     className={cn(
-                      "group hover:bg-muted/50 cursor-pointer flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3",
+                      "group hover:bg-muted/50 cursor-pointer flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 relative",
                       isSelected && "bg-muted/50"
                     )}
                   >
-                    <Avatar className="size-7 sm:size-8 shrink-0">
-                      <AvatarFallback>
-                        {conversation.type === "group" ? (
-                          <Users className="h-4 w-4" />
-                        ) : (
-                          <User className="h-4 w-4" />
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 grow">
-                      <div className="flex justify-between gap-2">
-                        <span className="text-xs sm:text-sm font-medium truncate">
-                          {displayTitle}
-                        </span>
-                        <span className="text-muted-foreground text-xs shrink-0">
-                          {formatTime(conversation.created_at)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground truncate text-start text-xs sm:text-sm">
-                          {conversation.type === "group" ? "Групповой чат" : "Приватная беседа"}
-                        </span>
+                    <div
+                      onClick={() => onSelectChat(conversation.id)}
+                      className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0"
+                    >
+                      <Avatar className="size-7 sm:size-8 shrink-0">
+                        <AvatarFallback>
+                          {conversation.type === "group" ? (
+                            <Users className="h-4 w-4" />
+                          ) : (
+                            <User className="h-4 w-4" />
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 grow">
+                        <div className="flex justify-between gap-2">
+                          <span className="text-xs sm:text-sm font-medium truncate">
+                            {displayTitle}
+                          </span>
+                          <span className="text-muted-foreground text-xs shrink-0">
+                            {formatTime(conversation.created_at)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground truncate text-start text-xs sm:text-sm">
+                            {conversation.type === "group"
+                              ? "Групповой чат"
+                              : "Приватная беседа"}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <UseConfirmationDialog
+                      title="Удалить беседу?"
+                      description="Это действие нельзя отменить. Беседа и все сообщения будут удалены."
+                      onConfirm={() => handleDeleteChat(conversation.id)}
+                      trigger={
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          disabled={deletingChatId === conversation.id}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {deletingChatId === conversation.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          )}
+                        </Button>
+                      }
+                    />
                   </div>
                 );
               })}

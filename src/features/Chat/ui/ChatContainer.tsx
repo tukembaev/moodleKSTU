@@ -2,7 +2,11 @@
 import { useState, useEffect } from "react";
 import ChatMessages from "./ChatMessages";
 import { ChatSelect } from "./ChatSelect";
-import { getConversations, createConversation } from "../model/services/chatAPI";
+import {
+  getConversations,
+  createConversation,
+  deleteConversation,
+} from "../model/services/chatAPI";
 import type { Conversation } from "../model/types/chat";
 import { toast } from "sonner";
 
@@ -55,6 +59,20 @@ const ChatContainer = () => {
     }
   };
 
+  const handleDeleteConversation = async (chatId: string) => {
+    try {
+      await deleteConversation(chatId);
+      setConversations((prev) => prev.filter((conv) => conv.id !== chatId));
+      if (selectedChatId === chatId) {
+        setSelectedChatId(null);
+      }
+      toast.success("Беседа удалена");
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast.error("Ошибка удаления беседы");
+    }
+  };
+
   return (
     <div className="flex flex-col sm:flex-row gap-4">
       <ChatSelect
@@ -62,6 +80,7 @@ const ChatContainer = () => {
         conversations={conversations}
         loading={loading}
         onCreateConversation={handleCreateConversation}
+        onDeleteConversation={handleDeleteConversation}
         selectedChatId={selectedChatId}
       />
       {selectedChatId && (

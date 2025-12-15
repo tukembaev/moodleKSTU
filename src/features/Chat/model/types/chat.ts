@@ -4,6 +4,21 @@ export type ConversationType = "private" | "group";
 export type ParticipantRole = "admin" | "member";
 export type FileType = "image" | "video" | "file";
 
+export interface ChatUser {
+  id: number;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  avatar: string;
+  role: string;
+  position: string;
+  email: string;
+  bio: string;
+  number_phone: string;
+  telegram_username: string;
+  group: string;
+}
+
 export interface Conversation {
   id: string;
   type: ConversationType;

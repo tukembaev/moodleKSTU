@@ -11,6 +11,7 @@ import type {
   EditMessageRequest,
   AddParticipantRequest,
   CreateAttachmentRequest,
+  ChatUser,
 } from "../types/chat";
 
 export const CHAT_API_URL = `https://uadmin.kstu.kg/api/unet-chat/`;
@@ -20,10 +21,12 @@ const chatApiInstance = axios.create({
   baseURL: CHAT_API_URL,
 });
 
+
+
 // Интерсептор для добавления токена
 chatApiInstance.interceptors.request.use((config) => {
   const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}");
-  config.headers["WWW-Authenticate"] = `Bearer ${auth_data.access}`;
+  config.headers.Authorization = `Bearer ${auth_data.access}`
   return config;
 });
 
@@ -39,7 +42,7 @@ chatApiInstance.interceptors.response.use(
         const updatedAuthData = { ...authData, access: newTokens.access };
         localStorage.setItem("auth_data", JSON.stringify(updatedAuthData));
         window.dispatchEvent(new Event("storage"));
-        error.config.headers["WWW-Authenticate"] = `Bearer ${newTokens.access}`;
+        error.config.headers["Authorization"] = `Bearer ${newTokens.access}`;
         return axios.request(error.config);
       } catch (refreshError) {
         console.error("Refresh token failed, logging out...", refreshError);
@@ -166,6 +169,16 @@ export const createAttachment = async (
   data: CreateAttachmentRequest
 ): Promise<Attachment> => {
   const response = await chatApiInstance.post<Attachment>("attachments/", data);
+  return response.data;
+};
+
+// ========== Users API ==========
+
+/**
+ * Получить список пользователей для чата
+ */
+export const getChatUsers = async (): Promise<ChatUser[]> => {
+  const response = await chatApiInstance.get<ChatUser[]>("users/chat-users/");
   return response.data;
 };
 
