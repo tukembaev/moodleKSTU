@@ -21,7 +21,7 @@ const courses = [
         user_id: "1",
         owner_name: "Александр Петров",
         avatar:
-          "https://uadmin.kstu.kg/educations/media/2025-02-13_21_Srmdo8Z.49.39.jpg",
+          "http://localhost:8000/media/2025-02-13_21_Srmdo8Z.49.39.jpg",
         author_fill:
           "https://a.storyblok.com/f/191576/1176x882/0707bde47c/make_signature_hero_after.webp",
       },

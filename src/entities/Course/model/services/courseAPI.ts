@@ -4,6 +4,7 @@ import $api_users from "shared/api/api_users";
 import { Course, CourseMaterials, CourseThemes, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme, CourseModulesResponse } from "../types/course";
 import { ExtraPointPayload, FinishCoursePayload, RateAnswerPayload } from "features/Course/model/types/course_payload";
 import $api_base_edu from "shared/api/api_base_edu";
+import { StudentDashboard, StudentCourseDetail, TeacherDashboard, TeacherCourseDetail } from "../types/statistics";
 
 
 
@@ -134,4 +135,72 @@ export const finishCourse = async (data:FinishCoursePayload) => {
 export const setExtraPoints = async (data:ExtraPointPayload) => {
   const response = await $api_edu.post(`extra-points/`,data); 
   return response.data;
+};
+
+// Статистика для студентов
+export const getStudentDashboard = async (): Promise<StudentDashboard> => {
+  try {
+    const response = await $api_edu.get(`statistics/student/dashboard/`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 403) {
+      throw new Error("Нет доступа к статистике студента. Убедитесь, что вы авторизованы как студент.");
+    }
+    if (error.response?.status === 404) {
+      throw new Error("Статистика не найдена.");
+    }
+    throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики студента");
+  }
+};
+
+export const getStudentCourseDetail = async (courseId: string): Promise<StudentCourseDetail> => {
+  if (!courseId) {
+    throw new Error("ID курса обязателен");
+  }
+  try {
+    const response = await $api_edu.get(`statistics/student/course/${courseId}/`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 403) {
+      throw new Error("Нет доступа к статистике курса. Убедитесь, что вы зарегистрированы на этот курс.");
+    }
+    if (error.response?.status === 404) {
+      throw new Error("Курс не найден или нет доступа к статистике.");
+    }
+    throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики курса");
+  }
+};
+
+// Статистика для учителей
+export const getTeacherDashboard = async (): Promise<TeacherDashboard> => {
+  try {
+    const response = await $api_edu.get(`statistics/teacher/dashboard/`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 403) {
+      throw new Error("Нет доступа к статистике учителя. Убедитесь, что вы авторизованы как учитель.");
+    }
+    if (error.response?.status === 404) {
+      throw new Error("Статистика не найдена.");
+    }
+    throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики учителя");
+  }
+};
+
+export const getTeacherCourseDetail = async (courseId: string): Promise<TeacherCourseDetail> => {
+  if (!courseId) {
+    throw new Error("ID курса обязателен");
+  }
+  try {
+    const response = await $api_edu.get(`statistics/teacher/course/${courseId}/`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 403) {
+      throw new Error("Нет доступа к статистике курса. Убедитесь, что вы являетесь владельцем этого курса.");
+    }
+    if (error.response?.status === 404) {
+      throw new Error("Курс не найден или нет доступа к статистике.");
+    }
+    throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики курса");
+  }
 };
