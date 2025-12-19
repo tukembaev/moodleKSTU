@@ -27,6 +27,12 @@ export interface Conversation {
   created_at: string;
   service: string | null;
   service_id: string | null;
+  last_message?: {
+    id: string;
+    sender_id: number;
+    text: string | null;
+    created_at: string;
+  } | null;
 }
 
 export interface Message {
@@ -94,7 +100,6 @@ export interface WebSocketMessage {
 
 // Расширенные типы для UI
 export interface ConversationWithLastMessage extends Conversation {
-  last_message?: Message;
   unread_count?: number;
   participants?: Participant[];
 }

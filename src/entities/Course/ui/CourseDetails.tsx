@@ -1,15 +1,14 @@
 import {
   LuBookA,
-  LuHandshake,
   LuInfo,
-  LuMessageCircle,
+  LuChartBar,
 } from "react-icons/lu";
 import { UseTabs } from "shared/components";
 import AboutCourse from "./Details/AboutCourse";
 
-import CourseInvolvement from "./Details/OwnerDetails/CourseInvolvement";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
-import { ChatContainer } from "features/Chat";
+import { CourseStatisticsTab } from "./Details/OwnerDetails/CourseStatisticsTab";
+import { StudentCourseStatisticsTab } from "./Details/OwnerDetails/StudentCourseStatisticsTab";
 import { useAuth } from "shared/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
@@ -39,19 +38,21 @@ const CourseDetails = () => {
       ),
       icon: <LuInfo />,
     },
-    ...(!isStudent ? [{
+    ...(!isStudent ? [
+      {
         name: "Успеваемость студентов",
         value: "students_progress",
         content: <CourseResultTable />,
         icon: <LuBookA />,
-    }] : []),
- 
-    // {
-    //   name: "Графики",
-    //   value: "charts",
-    //   content: <CourseStatistic />,
-    //   icon: <LuChartBar />,
-    // },
+      },
+     
+    ] : []),
+    {
+      name: "Статистика",
+      value: "course_statistics",
+      content: isStudent ? <StudentCourseStatisticsTab /> : <CourseStatisticsTab />,
+      icon: <LuChartBar />,
+    },
     // ...(!isStudent ? [{
     //   name: "Вовлеченность",
     //   value: "attendance",

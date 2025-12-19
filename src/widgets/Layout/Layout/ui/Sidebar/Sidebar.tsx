@@ -107,13 +107,13 @@ const Sidebar = () => {
           onCollapsibleClick={handleCollapsibleClick}
           activeCollapsible={activeCollapsible}
         /> */}
-
+    
         <SidebarGroup>
           <SidebarGroupLabel>Навигация</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems
-                .filter((item) => !((item.title === "Тестирование" || item.title === "Статистика работы") && isStudent))
+                .filter((item) => !((item.title === "Тестирование" ) && isStudent))
                 .map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
