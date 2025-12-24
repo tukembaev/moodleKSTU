@@ -49,6 +49,9 @@ export interface Participant {
   user_id: number;
   role: ParticipantRole;
   joined_at: string;
+  first_name?: string;
+  last_name?: string;
+  avatar?: string;
 }
 
 export interface Attachment {

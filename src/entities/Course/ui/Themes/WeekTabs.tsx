@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { Week } from "entities/Course/model/types/course";
-import React, { useRef, useState } from "react";
-import { useAuth, useForm } from "shared/hooks";
-import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { Week } from "entities/Course/model/types/course";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
-import { GridWeekThemes, ListWeekThemes } from "./WeekThemeViews";
+import React, { useRef, useState } from "react";
+import { LuPlus } from "react-icons/lu";
 import { useSearchParams } from "react-router-dom";
 import { HoverLift, UseTooltip } from "shared/components";
 import { FormQuery } from "shared/config";
-import { LuPlus } from "react-icons/lu";
+import { useAuth, useForm } from "shared/hooks";
+import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
+import { GridWeekThemes, ListWeekThemes } from "./WeekThemeViews";
 import empty from "/src/assets/empty.svg";
 
 interface WeekTabsProps {
@@ -26,7 +26,7 @@ interface WeekTabsProps {
 
 const WeekTabs: React.FC<WeekTabsProps> = ({
   module,
-  course_id,
+
   course_name,
   viewMode,
   course_owner,
@@ -306,13 +306,12 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
                     {week.title} неделя
                   </span>
                   <span
-                    className={`text-xs px-1.5 py-0.5 rounded ${
-                      isActive
-                        ? "bg-primary-foreground/20"
-                        : "bg-muted text-muted-foreground"
-                    }`}
+                    className={`text-xs px-1.5 py-0.5 rounded ${isActive
+                      ? "bg-primary-foreground/20"
+                      : "bg-muted text-muted-foreground"
+                      }`}
                   >
-                    #{index + 1} 
+                    #{index + 1}
                   </span>
                 </div>
               </button>

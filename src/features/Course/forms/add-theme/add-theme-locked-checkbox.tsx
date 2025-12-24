@@ -1,6 +1,6 @@
 import { UseFormSetValue, UseFormWatch } from "react-hook-form";
-import { Label } from "shared/shadcn/ui/label";
 import CheckboxCard from "shared/components/CheckboxCard";
+import { Label } from "shared/shadcn/ui/label";
 import { CreateThemePayload } from "../../model/types/course_payload";
 import { LOCKED_OPTIONS } from "./add-theme-constants";
 
@@ -15,7 +15,7 @@ export const AddThemeLockedCheckbox = ({
 }: AddThemeLockedCheckboxProps) => {
   const selectedValues = watch("locked") ? ["locked"] : [];
 
-  const handleCheckboxChange = (value: string, checked: boolean) => {
+  const handleCheckboxChange = (_value: string, checked: boolean) => {
     setValue("locked", checked);
   };
 

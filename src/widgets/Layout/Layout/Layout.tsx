@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { Toaster } from "shared/shadcn/ui/sonner";
 import { GlobalDrawer } from "shared/components";
+import { NotificationWebSocket } from "widgets/Notification/ui/NotificationWebSocket";
 
 interface LayoutProps {
   children: ReactNode;
@@ -59,12 +60,13 @@ const Layout: FC<LayoutProps> = ({ children }) => {
         {auth && (
           <>
             <GlobalDrawer />
+            <NotificationWebSocket />
           </>
         )}
         <Toaster
           richColors
           closeButton
-          position="top-center"
+          position="top-right"
           expand={false}
           className="z-80"
         />

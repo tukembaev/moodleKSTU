@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
-import { Skeleton } from "shared/shadcn/ui/skeleton";
-import { Progress } from "shared/shadcn/ui/progress";
+import { LuClock } from "react-icons/lu";
+import { useParams } from "react-router-dom";
 import { Badge } from "shared/shadcn/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
+import { Progress } from "shared/shadcn/ui/progress";
+import { Skeleton } from "shared/shadcn/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -14,9 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "shared/shadcn/ui/table";
-import { LuBookOpen, LuCheckCircle2, LuClock, LuTrendingUp } from "react-icons/lu";
-import { format } from "date-fns";
-import { ru } from "date-fns/locale";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
 
 export const StudentCourseStatisticsTab = () => {
   const { id } = useParams();
@@ -55,8 +55,7 @@ export const StudentCourseStatisticsTab = () => {
   }
 
   const {
-    course,
-    course_students,
+
     overall_statistics,
     tasks_statistics,
     tests_statistics,
@@ -106,36 +105,36 @@ export const StudentCourseStatisticsTab = () => {
         </Card>
 
         {tasksOverall && (
-        <Card>
-          <CardHeader>
-            <CardDescription>Задания</CardDescription>
-            <CardTitle className="text-3xl font-semibold">
-              {tasksOverall.completed || 0} / {tasksOverall.total || 0}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={tasksOverall.completion_percentage || 0} className="h-2" />
-            <p className="text-sm text-muted-foreground mt-2">
-              {(tasksOverall.completion_percentage || 0).toFixed(1)}% выполнено
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardDescription>Задания</CardDescription>
+              <CardTitle className="text-3xl font-semibold">
+                {tasksOverall.completed || 0} / {tasksOverall.total || 0}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Progress value={tasksOverall.completion_percentage || 0} className="h-2" />
+              <p className="text-sm text-muted-foreground mt-2">
+                {(tasksOverall.completion_percentage || 0).toFixed(1)}% выполнено
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         {testsOverall && (
-        <Card>
-          <CardHeader>
-            <CardDescription>Тесты</CardDescription>
-            <CardTitle className="text-3xl font-semibold">
-              {testsOverall.completed || 0} / {testsOverall.total || 0}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Средний балл: {(testsOverall.average_score || 0).toFixed(1)}
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardDescription>Тесты</CardDescription>
+              <CardTitle className="text-3xl font-semibold">
+                {testsOverall.completed || 0} / {testsOverall.total || 0}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Средний балл: {(testsOverall.average_score || 0).toFixed(1)}
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
 
@@ -263,19 +262,19 @@ export const StudentCourseStatisticsTab = () => {
                                   task.status === "completed"
                                     ? "default"
                                     : task.status === "on_review"
-                                    ? "secondary"
-                                    : task.status === "overdue"
-                                    ? "destructive"
-                                    : "outline"
+                                      ? "secondary"
+                                      : task.status === "overdue"
+                                        ? "destructive"
+                                        : "outline"
                                 }
                               >
                                 {task.status === "completed"
                                   ? "Выполнено"
                                   : task.status === "on_review"
-                                  ? "На проверке"
-                                  : task.status === "overdue"
-                                  ? "Просрочено"
-                                  : "Не начато"}
+                                    ? "На проверке"
+                                    : task.status === "overdue"
+                                      ? "Просрочено"
+                                      : "Не начато"}
                               </Badge>
                             </TableCell>
                             <TableCell>

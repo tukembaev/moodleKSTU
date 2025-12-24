@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Copy, Link2, Loader2, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "shared/lib/utils";
-import { Avatar, AvatarFallback } from "shared/shadcn/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
 import { ScrollArea } from "shared/shadcn/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
-import { getConversationById } from "../model/services/chatAPI";
+import { getConversationById, getParticipants, removeParticipant, getCurrentUserId } from "../model/services/chatAPI";
 import type { Conversation, Participant } from "../model/types/chat";
+import { Trash2 } from "lucide-react";
 
 type ConversationDetails = Conversation & {
   participants?: Participant[];
@@ -29,7 +30,10 @@ export function ChatGroupDetails({
   className,
 }: ChatGroupDetailsProps) {
   const [loading, setLoading] = useState(true);
+  const [participantsLoading, setParticipantsLoading] = useState(true);
   const [details, setDetails] = useState<ConversationDetails | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const currentUserId = getCurrentUserId();
 
   useEffect(() => {
     let cancelled = false;
@@ -47,16 +51,48 @@ export function ChatGroupDetails({
       }
     }
 
+    async function loadParticipants() {
+      try {
+        setParticipantsLoading(true);
+        const data = await getParticipants(conversationId);
+        if (!cancelled) setParticipants(data);
+      } catch (e) {
+        console.error(e);
+        toast.error("Не удалось загрузить список участников");
+      } finally {
+        if (!cancelled) setParticipantsLoading(false);
+      }
+    }
+
     load();
+    loadParticipants();
     return () => {
       cancelled = true;
     };
   }, [conversationId]);
 
+  const isAdmin = useMemo(() => {
+    if (!currentUserId || !participants.length) return false;
+    const me = participants.find(p => p.user_id === currentUserId);
+    return me?.role === 'admin';
+  }, [currentUserId, participants]);
+
+  const handleRemoveParticipant = async (userId: number) => {
+    if (!window.confirm("Вы уверены, что хотите удалить этого участника?")) return;
+
+    try {
+      await removeParticipant(conversationId, userId);
+      setParticipants(prev => prev.filter(p => p.user_id !== userId));
+      toast.success("Участник удален");
+    } catch (e) {
+      console.error(e);
+      toast.error("Не удалось удалить участника");
+    }
+  };
+
   const title =
     conversation.title || (conversation.type === "group" ? "Групповой чат" : "Беседа");
 
-  const participants = details?.participants ?? [];
   const membersCount = participants.length;
 
   const shareLink = useMemo(() => {
@@ -134,7 +170,7 @@ export function ChatGroupDetails({
           <section className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="text-xs font-medium text-muted-foreground">Member</div>
-              {loading ? (
+              {participantsLoading ? (
                 <span className="text-xs text-muted-foreground">...</span>
               ) : (
                 <span className="text-xs text-muted-foreground">{membersCount}</span>
@@ -142,7 +178,7 @@ export function ChatGroupDetails({
             </div>
 
             <div className="rounded-xl border bg-muted/20 p-3">
-              {loading ? (
+              {participantsLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Loader2 className="size-4 animate-spin" />
                   Загружаем участников...
@@ -150,36 +186,65 @@ export function ChatGroupDetails({
               ) : membersCount === 0 ? (
                 <div className="text-sm text-muted-foreground">Нет данных об участниках</div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <div className="flex -space-x-2">
                     {participants.slice(0, 6).map((p) => (
                       <Avatar key={p.user_id} className="size-7 border">
+                        <AvatarImage src={p.avatar} />
                         <AvatarFallback className="text-[10px] bg-background">
-                          {String(p.user_id).slice(-2)}
+                          {p.first_name?.[0] || String(p.user_id).slice(-2)}
                         </AvatarFallback>
                       </Avatar>
                     ))}
                     {membersCount > 6 && (
-                      <div className="ml-3 text-xs text-muted-foreground">
-                        +{membersCount - 6}
+                      <div className="flex items-center ml-4 text-xs text-muted-foreground">
+                        +{membersCount - 6} еще
                       </div>
                     )}
                   </div>
                   <div className="divide-y rounded-lg border bg-background">
-                    {participants.slice(0, 20).map((p) => (
+                    {participants.map((p) => (
                       <div
                         key={p.user_id}
-                        className="flex items-center justify-between px-3 py-2 text-sm"
+                        className="flex items-center justify-between px-3 py-2.5 text-sm hover:bg-muted/30 transition-colors"
                       >
-                        <span className="text-muted-foreground">ID {p.user_id}</span>
-                        <span className="text-xs text-muted-foreground">{p.role}</span>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="size-8">
+                            <AvatarImage src={p.avatar} />
+                            <AvatarFallback>
+                              {p.first_name?.[0] || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium whitespace-nowrap">
+                                {p.first_name} {p.last_name}
+                              </span>
+                              {p.role === "admin" && (
+                                <span className="text-[10px] font-bold uppercase text-blue-500 bg-blue-50 dark:bg-blue-950/30 px-1.5 py-0.5 rounded leading-none">
+                                  admin
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">
+                              ID {p.user_id}
+                            </span>
+                          </div>
+                        </div>
+
+                        {isAdmin && p.user_id !== currentUserId && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => handleRemoveParticipant(p.user_id)}
+                            title="Удалить из группы"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        )}
                       </div>
                     ))}
-                    {membersCount > 20 && (
-                      <div className="px-3 py-2 text-xs text-muted-foreground">
-                        Показаны первые 20 участников…
-                      </div>
-                    )}
                   </div>
                 </div>
               )}

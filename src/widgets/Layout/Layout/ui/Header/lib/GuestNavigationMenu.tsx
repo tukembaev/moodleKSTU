@@ -58,7 +58,7 @@ export default function GuestNavigationMenu() {
                   <div className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-4 no-underline outline-none focus:shadow-md">
                     <img src={logo} className="h-8 w-8" />
                     <div className="mb-2 mt-4 text-lg font-medium">
-                      IQ Academy
+                      Unet LMS
                     </div>
                     <p className="text-sm leading-tight text-muted-foreground">
                       Образовательная платформа нового поколения.

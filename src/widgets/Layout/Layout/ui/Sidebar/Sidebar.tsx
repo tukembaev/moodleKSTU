@@ -75,24 +75,17 @@ const navigationItems: {
     // },
   ];
 
+import { useQuery } from "@tanstack/react-query";
+import { userQueries } from "entities/User";
+
 const Sidebar = () => {
   const url = useLocation();
   const { isStudent } = useAuth();
   const { state } = useSidebar();
-  // const [activeCollapsible, setActiveCollapsible] = useState<string | null>(
-  //   null
-  // );
 
-  // const handleCollapsibleClick = (collapsibleTitle: string) => {
-  //   if (state === "collapsed") {
-  //     setOpen(true);
-  //     setActiveCollapsible(collapsibleTitle);
-  //     setActiveCollapsible((prev) =>
-  //       prev === collapsibleTitle ? null : collapsibleTitle
-  //     );
-  //   }
-  // };
-  const notificationCount = 1;
+  const { data: notifications } = useQuery(userQueries.user_notifications());
+  const unreadCount = notifications?.filter(n => !n.status).length || 0;
+
   return (
     <ShadcnSidebar collapsible="icon">
       <SidebarHeader className="border-b">
@@ -101,19 +94,15 @@ const Sidebar = () => {
         ) : (
           <img src={logo} alt="kstuLogo" className="h-8 w-auto mx-auto" />
         )}
+
       </SidebarHeader>
       <SidebarContent>
-        {/* <PlatformNavigation
-          onCollapsibleClick={handleCollapsibleClick}
-          activeCollapsible={activeCollapsible}
-        /> */}
-    
         <SidebarGroup>
           <SidebarGroupLabel>Навигация</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems
-                .filter((item) => !((item.title === "Тестирование" ) && isStudent))
+                .filter((item) => !((item.title === "Тестирование") && isStudent))
                 .map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
@@ -125,23 +114,13 @@ const Sidebar = () => {
                         <item.icon />
                         <span>{item.title}</span>
 
-                        {item.title === "Уведомления" &&
-                          notificationCount > 0 && (
-                            <span
-                              className={`
-                            absolute 
-                            ${state === "expanded"
-                                  ? "right-2 top-2"
-                                  : "right-0 top-0"
-                                }
-                            flex items-center justify-center
-                          `}
-                            ></span>
-                          )}
+                        {item.title === "Уведомления" && unreadCount > 0 && state === "collapsed" && (
+                          <span className="absolute top-1 right-0.5 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-background" />
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
-                    {item.title === "Уведомления" && (
-                      <SidebarMenuBadge>{notificationCount}</SidebarMenuBadge>
+                    {item.title === "Уведомления" && unreadCount > 0 && (
+                      <SidebarMenuBadge>{unreadCount}</SidebarMenuBadge>
                     )}
                   </SidebarMenuItem>
                 ))}

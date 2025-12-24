@@ -79,14 +79,14 @@ const LoginForm = ({
         <div className="absolute inset-0 bg-zinc-900" />
         {/* Decorative elements could go here */}
         <div className="relative z-10 flex items-center gap-2">
-           <img
-              src={logo.src}
-              alt={logo.alt}
-              className="h-10 w-auto invert brightness-0" 
-            />
-           <span className="text-xl font-bold">IQ Academy</span>
+          <img
+            src={logo.src}
+            alt={logo.alt}
+            className="h-10 w-auto invert brightness-0"
+          />
+          <span className="text-xl font-bold">Unet LMS</span>
         </div>
-        
+
         <div className="relative z-10 max-w-md">
           <h2 className="text-3xl font-bold mb-4">
             Образовательная платформа нового поколения
@@ -105,13 +105,13 @@ const LoginForm = ({
       <div className="flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-[400px] space-y-8">
           <div className="flex flex-col space-y-2 text-center">
-             {/* Mobile Logo */}
+            {/* Mobile Logo */}
             <div className="lg:hidden flex justify-center mb-4">
-               <img
-                  src={logo.src}
-                  alt={logo.alt}
-                  className="h-12 w-auto"
-                />
+              <img
+                src={logo.src}
+                alt={logo.alt}
+                className="h-12 w-auto"
+              />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight">
               {heading}
@@ -134,8 +134,8 @@ const LoginForm = ({
                     autoComplete="email"
                     autoCorrect="off"
                     disabled={loading}
-                    {...register("email", { 
-                      required: "Логин обязателен" 
+                    {...register("email", {
+                      required: "Логин обязателен"
                     })}
                   />
                   {errors.email && (
@@ -144,7 +144,7 @@ const LoginForm = ({
                     </p>
                   )}
                 </div>
-                
+
                 <div className="grid gap-2">
                   <Label htmlFor="password">Пароль</Label>
                   <div className="relative">
@@ -155,8 +155,8 @@ const LoginForm = ({
                       autoComplete="current-password"
                       disabled={loading}
                       className="pr-10"
-                      {...register("password", { 
-                        required: "Пароль обязателен" 
+                      {...register("password", {
+                        required: "Пароль обязателен"
                       })}
                     />
                     <Button
@@ -176,7 +176,7 @@ const LoginForm = ({
                       </span>
                     </Button>
                   </div>
-                   {errors.password && (
+                  {errors.password && (
                     <p className="text-sm text-destructive">
                       {errors.password.message}
                     </p>

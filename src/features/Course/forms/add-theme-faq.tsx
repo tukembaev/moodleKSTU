@@ -4,8 +4,8 @@ import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { useEffect } from "react";
-import { LuCloudUpload, LuX } from "react-icons/lu";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { LuCloudUpload } from "react-icons/lu";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
 import { CreateFAQPayload } from "../model/types/course_payload";
@@ -18,7 +18,6 @@ const Add_Theme_FAQ = () => {
     setValue,
   } = useForm<CreateFAQPayload>();
   const { mutate: add_theme_faq, isPending } = courseQueries.create_faq();
-  const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -60,17 +59,7 @@ const Add_Theme_FAQ = () => {
           </div>
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
-              variant="outline"
-              className="w-full mt-4"
-              disabled={isPending}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(-1);
-              }}
-            >
-              <LuX /> Отменить
-            </Button>
+
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload /> {isPending ? "Загрузка..." : "Добавить FAQ"}
             </Button>

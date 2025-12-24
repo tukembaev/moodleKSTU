@@ -105,7 +105,7 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
           </div>
 
           {!isMobile && (
-            <div className="flex gap-2 rounded-full border border-border/70 bg-background/70 backdrop-blur px-2 py-1 shadow-sm">
+            <div className="flex gap-2 rounded-full px-2 py-1">
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="icon"
@@ -136,11 +136,10 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
               <button
                 key={module.id}
                 onClick={() => setActiveModuleId(module.id)}
-                className={`snap-start min-w-[240px] rounded-2xl border transition-all duration-200 text-left px-4 py-3 bg-gradient-to-br ${
-                  isActive
-                    ? "from-primary/10 via-primary/5 to-background border-primary/60 shadow-md shadow-primary/10"
-                    : "from-muted/10 via-background to-background border-border/60 hover:border-primary/30 hover:shadow-sm"
-                }`}
+                className={`snap-start min-w-[240px] rounded-2xl border transition-all duration-200 text-left px-4 py-3 bg-gradient-to-br ${isActive
+                  ? "from-primary/10 via-primary/5 to-background border-primary/60 shadow-md shadow-primary/10"
+                  : "from-muted/10 via-background to-background border-border/60 hover:border-primary/30 hover:shadow-sm"
+                  }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className="text-sm font-semibold line-clamp-1">

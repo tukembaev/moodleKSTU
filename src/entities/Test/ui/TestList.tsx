@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { ChevronRight } from "lucide-react";
-import { LuHandCoins, LuPlus, LuTarget } from "react-icons/lu";
-import { ru } from "date-fns/locale";
+import { LuHandCoins, LuPlus } from "react-icons/lu";
 
+import { CourseCardSkeleton } from "entities/Course";
 import { useNavigate } from "react-router-dom";
 import {
   FadeIn,
@@ -17,7 +16,6 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
 import { testQueries } from "../model/services/testQueryFactory";
-import { CourseCardSkeleton } from "entities/Course";
 
 // const data = [
 //   {∏∏
@@ -46,7 +44,6 @@ const TestList = () => {
   const { isStudent } = useAuth();
   const { data: test_list, isLoading } = useQuery(testQueries.allTest("/"));
   const navigate = useNavigate();
-  console.log(test_list)
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -82,7 +79,7 @@ const TestList = () => {
                         </div>
                       </UseTooltip>
                     )}
-                  
+
                   </div>
                   <span className="text-md text-foreground/80 line-clamp-2">
                     {theme.description}
@@ -104,7 +101,7 @@ const TestList = () => {
                       Пройти тест <ChevronRight className="h-3 w-3" />
                     </Button>
                   )}
-                   {/* <Button
+                  {/* <Button
                       className="shadow-none w-full mt-2 h-8 text-md"
                       variant="outline"
                       onClick={() =>

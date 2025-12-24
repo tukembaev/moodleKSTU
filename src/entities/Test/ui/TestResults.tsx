@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { LuCalendarDays, LuCheckCheck, LuHandCoins, LuTarget, LuTrendingUp, LuUsers, LuX } from "react-icons/lu";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { LuCalendarDays, LuCheckCheck, LuHandCoins, LuTrendingUp, LuUsers, LuX } from "react-icons/lu";
+import { useSearchParams } from "react-router-dom";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Separator } from "shared/shadcn/ui/separator";
@@ -12,7 +12,7 @@ import TestTable from "./lib/TestTable";
 
 const TestResults = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+
   const weekId = searchParams.get("weekId");
   const test_id = searchParams.get("test_id");
 
@@ -30,8 +30,8 @@ const TestResults = () => {
   const passedPercentage = totalStudents > 0 ? Math.round((passedCount / totalStudents) * 100) : 0;
   const averageScore = passedCount > 0
     ? Math.round(
-        (passedStudents.reduce((sum, s) => sum + (s.result || 0), 0) / passedCount) * 10
-      ) / 10
+      (passedStudents.reduce((sum, s) => sum + (s.result || 0), 0) / passedCount) * 10
+    ) / 10
     : 0;
   const maxScore = testDetails?.maxPoints || 0;
 
@@ -56,7 +56,7 @@ const TestResults = () => {
     <div className="min-h-screen flex flex-col gap-6 py-6 px-4 mx-auto">
       {/* Заголовок и навигация */}
       <div className="flex flex-col gap-4">
-     
+
 
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
@@ -77,7 +77,7 @@ const TestResults = () => {
               <span>Максимум: {maxScore} баллов</span>
             </Badge>
           )}
-       
+
           {openingDate && (
             <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
               <LuCalendarDays className="h-4 w-4" />
@@ -157,11 +157,11 @@ const TestResults = () => {
         <h2 className="text-base sm:text-lg ">
           Результаты студентов
         </h2>
-      <TestTable data={test_list || []} />
+        <TestTable data={test_list || []} />
 
       </div>
 
-     
+
     </div>
   );
 };

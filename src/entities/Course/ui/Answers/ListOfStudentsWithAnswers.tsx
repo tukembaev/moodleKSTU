@@ -115,14 +115,14 @@ const ListOfStudentsWithAnswers = ({
     "Все группы",
     ...new Set(data.map((student) => student.group)),
   ];
-  const uniqueData:StudentsAnswers[] = React.useMemo(() => {
+  const uniqueData: StudentsAnswers[] = React.useMemo(() => {
     const map = new Map();
     data.forEach((s) => {
       if (!map.has(s.user_id)) map.set(s.user_id, s);
     });
     return [...map.values()];
   }, [data]);
-  
+
   const filteredData = uniqueData.filter(
     (student) =>
       student.fullname.toLowerCase().includes(searchQuery) &&
@@ -214,7 +214,7 @@ const ListOfStudentsWithAnswers = ({
             className="max-w-[350px]"
           />
           {selectedStudents.size === filteredData.length &&
-          filteredData.length > 0 ? (
+            filteredData.length > 0 ? (
             <>
               <Button
                 onClick={() => handleMultiplePermission(true)}
@@ -273,7 +273,7 @@ const ListOfStudentsWithAnswers = ({
               <TableHead className="w-[130px]">Статус сдачи</TableHead>
               <TableHead className="w-[130px]">Доступ</TableHead>
               <TableHead className="w-[130px]">Замечания</TableHead>
-        
+
 
               <TableHead />
             </TableRow>
@@ -284,7 +284,7 @@ const ListOfStudentsWithAnswers = ({
               <React.Fragment key={student.id}>
                 <TableRow
                   className={`${expandedId === student.id ? "border-b-0" : ""}`}
-                  // key={student.id + student.fullname}
+                // key={student.id + student.fullname}
                 >
                   <TableCell>
                     <Checkbox
@@ -310,9 +310,9 @@ const ListOfStudentsWithAnswers = ({
                       </Avatar>
 
                       <p>{student.fullname}</p>
-                      <Badge className="bg-primary/5 text-primary shadow-none text-xs">
+                      {/* <Badge className="bg-primary/5 text-primary shadow-none text-xs">
                         {student.group}
-                      </Badge>
+                      </Badge> */}
                     </div>
 
                     {student.files.some((file) => !file.is_read.is_read) ? (
@@ -437,7 +437,7 @@ const ListOfStudentsWithAnswers = ({
                       className="border-b-1 hover:bg-transparent"
                     >
                       <TableCell />
-                      <TableCell className="font-medium flex gap-3 pt-3 pl-3 items-center max-w-[350px] overflow-hidden text-ellipsis whitespace-nowrap">
+                      <TableCell className="font-medium flex gap-3 pt-3 pl-3 items-center max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
                         <GetFileIcon file_names={item.file_names} />
                         <UseTooltip text={item.file_names}>
                           <p>{item.file_names}</p>
@@ -448,16 +448,16 @@ const ListOfStudentsWithAnswers = ({
                           })}
                         </span>
                         {item.is_read.is_read ? <UseTooltip text={
-                            <>
-                              <div>Файл просмотрен</div>
-                              <div>{format(item.is_read.read, "PPP 'в' p", {
-                                locale: ru,
-                              })}</div>
-                            </>
-                          }>
-                            <LuCheckCheck className="text-blue-500" />
-                          </UseTooltip>
-                        : <UseTooltip text="Новый не просмотренный файл!">
+                          <>
+                            <div>Файл просмотрен</div>
+                            <div>{format(item.is_read.read, "PPP 'в' p", {
+                              locale: ru,
+                            })}</div>
+                          </>
+                        }>
+                          <LuCheckCheck className="text-blue-500" />
+                        </UseTooltip>
+                          : <UseTooltip text="Новый не просмотренный файл!">
                             <LuMessageCircleWarning className="text-orange-500" />
                           </UseTooltip>}
                       </TableCell>

@@ -8,7 +8,7 @@ export const testQueries = {
   //----------GET QUERIES------------
   allTest: (query: string) =>
     queryOptions({
-      queryKey: ['test'],
+      queryKey: ['test', query],
       queryFn: () => getAllTest(query),
     }),
   TestResult: (testId: string | null, courseId: string | null) =>
@@ -19,7 +19,7 @@ export const testQueries = {
     }),
   TestQuestions: (id: string | null) =>
     queryOptions({
-      queryKey: ['test', 'questions'],
+      queryKey: ['test', 'questions', id],
       queryFn: () => getTestQuestions(id as string),
       enabled: !!id,
     }),

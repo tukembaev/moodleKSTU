@@ -130,7 +130,7 @@ const ChatContainer = () => {
 
   return (
     <div className="mt-4 w-full rounded-2xl border bg-background shadow-sm overflow-hidden">
-      <div className="flex h-[72vh] min-h-[520px]">
+      <div className="flex h-[72vh] min-h-[780px]">
         {/* Left (chat list) */}
         <aside
           className={cn(

@@ -238,13 +238,13 @@ const ChatMessages = ({
                   )}
                 >
                   {/* Avatar for other side */}
-                  {!isMyMessage && (
+                  {/* {!isMyMessage && (
                     <img
                       src={"https://bundui-images.netlify.app/avatars/01.png"}
                       className="size-7 sm:size-8 rounded-full object-cover shrink-0"
                       alt="Avatar"
                     />
-                  )}
+                  )} */}
 
                   <div className={cn("max-w-[88%] sm:max-w-[70%]")}>
                     {/* Sender label for group chats */}

@@ -28,10 +28,9 @@ const CheckboxCard: React.FC<CheckboxCardProps> = ({
         const isChecked = selectedValues.includes(option.value);
 
         return (
-          <HoverScale>
+          <HoverScale key={option.value}>
             <UseTooltip text={option.description}>
               <CheckboxPrimitive.Root
-                key={option.value}
                 checked={isChecked}
                 onCheckedChange={(checked) => {
                   onChange(option.value, !!checked);

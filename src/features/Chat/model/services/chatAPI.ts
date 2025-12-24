@@ -1,20 +1,18 @@
 import { $api2 } from 'shared/api/api2';
-import { $api_base_edu } from 'shared/api/api_base_edu';
-import { $api_edu } from 'shared/api/api_edu';
 // chatAPI.ts - REST API сервис для чата
 import axios from "axios";
 import { refreshUser } from "features/Authorization/model/services/loginAPI";
 import type {
+  AddParticipantRequest,
+  Attachment,
+  ChatUser,
   Conversation,
+  CreateAttachmentRequest,
+  CreateConversationRequest,
+  EditMessageRequest,
   Message,
   Participant,
-  Attachment,
-  CreateConversationRequest,
   SendMessageRequest,
-  EditMessageRequest,
-  AddParticipantRequest,
-  CreateAttachmentRequest,
-  ChatUser,
 } from "../types/chat";
 
 export const CHAT_API_URL = `https://uadmin.kstu.kg/api/unet-chat/`;
@@ -138,6 +136,16 @@ export const deleteMessage = async (messageId: string): Promise<void> => {
 };
 
 // ========== Participants API ==========
+
+/**
+ * Получить список участников беседы
+ */
+export const getParticipants = async (conversationId: string): Promise<Participant[]> => {
+  const response = await chatApiInstance.get<Participant[]>(
+    `conversations/${conversationId}/participants`
+  );
+  return response.data;
+};
 
 /**
  * Добавить участника в беседу

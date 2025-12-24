@@ -202,10 +202,10 @@ const QuizTestPage = () => {
                       <span>Начало:</span>
                       <span>{format(new Date(quizData.opening_date), "dd MMM", { locale: ru })}</span>
                     </div>
-                    <div className="flex justify-between mt-1">
+                    {/* <div className="flex justify-between mt-1">
                       <span>Конец:</span>
                       <span>{format(new Date(quizData.deadline), "dd MMM", { locale: ru })}</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </CardContent>

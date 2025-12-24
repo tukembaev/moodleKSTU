@@ -5,23 +5,18 @@ import {
   LuBookCheck,
   LuBookmark,
   LuFlaskConical,
-  LuHammer,
-  LuPlus
+  LuHammer
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import {
   CategoryBar,
   CourseStatisticTooltip,
-  FadeIn,
   FadeInList,
-  HoverLift,
   HoverScale,
   SpringPopupList,
-  UseTooltip,
+  UseTooltip
 } from "shared/components";
-import { FormQuery } from "shared/config/formConfig/formConfig";
 import { AppRoutes, AppSubRoutes } from "shared/config/routeConfig/routeConfig";
-import { useAuth, useForm } from "shared/hooks";
 import { cn } from "shared/lib/utils";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
@@ -29,9 +24,9 @@ import CourseCardSkeleton from "../lib/skeletons/CourseCardSkeleton";
 import { courseQueries } from "../model/services/courseQueryFactory";
 
 const CourseList = () => {
-  const { isStudent } = useAuth();
+
   const navigate = useNavigate();
-  const openForm = useForm();
+
   const { data, isLoading, error } = useQuery(courseQueries.allCourses());
   const { mutate: make_favorite } = userQueries.make_favorite();
   const { mutate: delete_favorite } = userQueries.delete_favorite();
@@ -104,33 +99,8 @@ const CourseList = () => {
                           </Badge>
                          
                         </div> */}
-  
-                        <HoverScale>
-                          {course.is_favorite ? (
-                            <UseTooltip text="Убрать из избранного">
-                              <LuBookmark
-                                size={24}
-                                className="fill-primary hover:fill-none"
-                                onClick={() =>
-                                  delete_favorite({
-                                    id: course.id,
-                                    type: "course",
-                                  })
-                                }
-                              />
-                            </UseTooltip>
-                          ) : (
-                            <UseTooltip text="Добавить в избранное">
-                              <LuBookmark
-                                size={24}
-                                className=" hover:fill-primary "
-                                onClick={() =>
-                                  make_favorite({ course: course.id })
-                                }
-                              />
-                            </UseTooltip>
-                          )}
-                        </HoverScale>
+
+
                       </div>
 
                       <div className="flex justify-between">
@@ -145,14 +115,10 @@ const CourseList = () => {
                               </UseTooltip>
                             )}
                           </span>
-                          <CourseStatisticTooltip
-                            progress={course.progress}
-                            count_lb_pr={course.count_lb_pr}
-                            count_stud={course.count_stud}
-                          />
+
                         </div>
                       </div>
-                 
+
                       <p className="mt-1 text-foreground/80 text-[15px]">
                         Кредитов : {course.credit}
                       </p>
@@ -222,14 +188,14 @@ const CourseList = () => {
                         onClick={() =>
                           navigate(
                             "/" +
-                              AppRoutes.PROFILE +
-                              "/" +
-                              course.course_owner[0].user_id
+                            AppRoutes.PROFILE +
+                            "/" +
+                            course.course_owner[0].user_id
                           )
                         }
                       >
                         <Avatar>
-                          <AvatarImage src={course.course_owner[0].avatar} className="object-cover"/>
+                          <AvatarImage src={course.course_owner[0].avatar} className="object-cover" />
                         </Avatar>
 
                         <span className="text-muted-foreground font-semibold flex flex-col text-md py-2">
@@ -257,7 +223,7 @@ const CourseList = () => {
               })}
             </FadeInList>
           )}
-       
+
         </div>
       </div>
     </div>

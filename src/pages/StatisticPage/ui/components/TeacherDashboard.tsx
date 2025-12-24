@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { LuBookOpen, LuCheckCircle2, LuClock, LuUsers, LuFileCheck } from "react-icons/lu";
+import { LuBookOpen, LuFileCheck, LuUsers } from "react-icons/lu";
+import { Link } from "react-router-dom";
+import { AppSubRoutes, RoutePath } from "shared/config";
+import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
-import { Badge } from "shared/shadcn/ui/badge";
-import { Link } from "react-router-dom";
-import { RoutePath, AppSubRoutes } from "shared/config";
-import { Alert, AlertDescription, AlertTitle } from "shared/shadcn/ui/alert";
 
 export const TeacherDashboard = () => {
   const { data, isLoading, error } = useQuery(courseQueries.teacherDashboard());
@@ -43,10 +42,10 @@ export const TeacherDashboard = () => {
     return <div className="text-center text-muted-foreground">Нет данных для отображения</div>;
   }
 
-  const { 
-    overall_statistics, 
-    courses = [], 
-    recent_activity 
+  const {
+    overall_statistics,
+    courses = [],
+    recent_activity
   } = data;
 
   return (
