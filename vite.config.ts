@@ -2,14 +2,17 @@ import path from "path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import tailwindcss from "@tailwindcss/vite"
+// import basicSsl from "@vitejs/plugin-basic-ssl"
 // import { analyzer } from 'vite-bundle-analyzer'
 export default defineConfig({
   plugins: [
     react(), // Fast Refresh включен по умолчанию для лучшего HMR
-    tailwindcss()
+    tailwindcss(),
+    // basicSsl() // Отключено - используем ngrok для HTTPS
   ],
   server: {
     host: '0.0.0.0',
+    allowedHosts: true, // Разрешаем ngrok и другие хосты
     // Оптимизация HMR
     hmr: {
       overlay: true, // Показывать ошибки как оверлей

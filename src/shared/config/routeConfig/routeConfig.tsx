@@ -8,7 +8,7 @@ import { MainPage } from "pages/MainPage";
 import { NotFoundPage } from "pages/NotFoundPage";
 import { UniversitiesPage } from "pages/UniversitiesPage";
 import { UserBilling, UserProfile } from "entities/User";
-import CourseThemes from "entities/Course/ui/CourseThemes";
+
 import { TestingPage } from "pages/TestingPage";
 import { TestResults } from "entities/Test";
 import { AboutUsPage } from "pages/AboutUsPage";
@@ -20,6 +20,7 @@ import { ChatPage } from "pages/ChatPage";
 import AddQuizPage from "features/Quiz/ui/AddQuizPage";
 import { QuizTestPage } from "pages/QuizTestPage";
 import { QuizResultsPage } from "pages/QuizResultsPage";
+import CourseDetails from "entities/Course/ui/CourseDetails";
 
 export interface AppRoutesProps {
   path: string;
@@ -121,7 +122,11 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
     children: [
       {
         path: RoutePath[AppSubRoutes.COURSE_THEMES],
-        element: <CourseThemes />,
+        element:  <div className="min-h-screen flex py-3">
+      <div className="w-full flex flex-col gap-4">
+        <CourseDetails />   
+      </div>
+    </div>,
         breadcrumbName: "Опр курс",
       },
     ],

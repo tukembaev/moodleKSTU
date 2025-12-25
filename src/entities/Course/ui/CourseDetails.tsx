@@ -1,29 +1,55 @@
 import {
   LuBookA,
-  LuInfo,
   LuChartBar,
+  LuInfo,
+  LuLock,
 } from "react-icons/lu";
 import { UseTabs } from "shared/components";
 import AboutCourse from "./Details/AboutCourse";
 
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { useAuth } from "shared/hooks";
+import { courseQueries } from "../model/services/courseQueryFactory";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
 import { CourseStatisticsTab } from "./Details/OwnerDetails/CourseStatisticsTab";
 import { StudentCourseStatisticsTab } from "./Details/OwnerDetails/StudentCourseStatisticsTab";
-import { useAuth } from "shared/hooks";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-import { courseQueries } from "../model/services/courseQueryFactory";
+import ModuleThemesList from "./Themes/ModuleThemesList";
 
 const CourseDetails = () => {
   const { id } = useParams();
   const {isStudent} = useAuth();
   const safeId = id || "";
-  
+  const isLocked = false;
   const { data: courseModulesData, isLoading } = useQuery(
     courseQueries.courseModules(safeId)
   );
 
   const tabs = [
+    {
+      name: "Учебный процесс",
+      value: "study_proccess",
+      content:
+       (
+      <div className="flex flex-col gap-4 relative pt-2">
+          {isLocked && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80">
+              <LuLock className="w-12 h-12 text-gray-700" />
+              <p className="text-lg font-semibold text-gray-800 mt-2">
+                Доступ запрещен, купите курс
+              </p>
+            </div>
+          )}
+
+          <div className={`flex flex-col gap-4 ${isLocked ? "blur-xs" : ""}`}>
+            <ModuleThemesList
+              course_id={safeId}
+            />
+          </div>
+        </div>
+      ),
+      icon: <LuInfo />,
+    },
     {
       name: "О курсе",
       value: "about_course",
@@ -80,30 +106,6 @@ const CourseDetails = () => {
         <span className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight pb-2">
           {courseModulesData?.discipline_name}
         </span>
-
-        <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-md text-foreground/80 pl-0 sm:pl-2">
-       
-          {/* <UseTooltip text="Кредитов за курс">
-            <div className="flex items-center gap-2">
-              <LuHandCoins className="h-4 w-4" />
-              <span>{courseModulesData?.credit}</span>
-            </div>
-          </UseTooltip>
-
-          <UseTooltip text={"Форма контроля"}>
-            <div className="flex items-center gap-2">
-              <LuTarget className="h-4 w-4" />
-              <span>{courseModulesData?.control_form}</span>
-            </div>
-          </UseTooltip> */}
-        </div>
-        {/* <p className="mt-1.5 text-lg text-muted-foreground w-2/4">
-          {" "}
-          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Error optio,
-          perferendis provident laudantium magnam numquam aut harum consequatur.
-          Obcaecati necessitatibus maiores dolor veniam tempora impedit error
-          commodi sapiente sit aut.
-        </p> */}
       </div>
       <UseTabs tabs={tabs}></UseTabs>
     </div>

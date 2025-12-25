@@ -87,17 +87,17 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full">
+    <div className="flex flex-col gap-2 w-full max-w-full">
       <div className="flex flex-col gap-3">
         <div className="flex items-start sm:items-center justify-between gap-3">
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span>Навигация по модулям</span>
+              <span className="text-xl sm:text-2xl font-semibold leading-tight">Навигация по модулям</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-semibold leading-tight">
+            {/* <h2 className="text-xl sm:text-2xl font-semibold leading-tight">
               {course_name || courseModulesData?.discipline_name || "Модули курса"}
-            </h2>
+            </h2> */}
             <p className="text-sm text-foreground/70">
               Выберите модуль, чтобы изучить его недели и темы. Для удобства
               переключайтесь между сеткой и списком просмотра.

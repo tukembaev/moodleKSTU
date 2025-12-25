@@ -21,6 +21,7 @@ import {
   useSidebar,
 } from "shared/shadcn/ui/sidebar";
 import { FooterUserMenu } from "./lib/FooterUserMenu";
+import { SidebarInstallButton } from "./lib/SidebarInstallButton";
 
 import { LuBell, LuChartArea, LuMessageCircle } from "react-icons/lu";
 import logo from "/src/assets/logo.svg";
@@ -129,6 +130,7 @@ const Sidebar = () => {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
+        <SidebarInstallButton />
         <FooterUserMenu />
       </SidebarFooter>
     </ShadcnSidebar>

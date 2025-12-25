@@ -1,18 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { userQueries } from "entities/User/model/userQueryFactory";
+
 import { ChevronRight } from "lucide-react";
 import {
   LuBookCheck,
-  LuBookmark,
   LuFlaskConical,
   LuHammer
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import {
   CategoryBar,
-  CourseStatisticTooltip,
   FadeInList,
-  HoverScale,
   SpringPopupList,
   UseTooltip
 } from "shared/components";
@@ -28,8 +25,7 @@ const CourseList = () => {
   const navigate = useNavigate();
 
   const { data, isLoading, error } = useQuery(courseQueries.allCourses());
-  const { mutate: make_favorite } = userQueries.make_favorite();
-  const { mutate: delete_favorite } = userQueries.delete_favorite();
+
 
   return (
     <div className="min-h-screen flex py-3 ">
