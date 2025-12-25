@@ -35,11 +35,11 @@ const NotificationPage = () => {
     <>
       {/* Desktop view with ResizablePanelGroup */}
       <div className="hidden md:block h-full w-full">
-        <ResizablePanelGroup direction="horizontal" className="min-h-[850px] w-full">
+        <ResizablePanelGroup direction="horizontal" className=" w-full">
           <ResizablePanel
             defaultSize={60}
             minSize={30}
-            className="min-w-[300px] flex flex-col"
+            className="min-w-[300px] max-h-[85vh] flex flex-col"
           >
             <div className="flex-1 overflow-y-auto">
               <NotificationList />

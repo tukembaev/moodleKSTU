@@ -213,7 +213,7 @@ export const getAuthToken = (): string | null => {
 export const getCurrentUserId = (): number | null => {
   try {
     const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}");
-    return auth_data.user_id || null;
+    return auth_data.id || null;
   } catch {
     return null;
   }

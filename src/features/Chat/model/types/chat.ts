@@ -27,6 +27,8 @@ export interface Conversation {
   created_at: string;
   service: string | null;
   service_id: string | null;
+  description?: string | null;
+  link?: string | null;
   last_message?: {
     id: string;
     sender_id: number;

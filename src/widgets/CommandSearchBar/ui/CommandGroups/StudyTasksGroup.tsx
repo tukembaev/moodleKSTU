@@ -19,16 +19,21 @@ const StudyTasksGroup = ({ data }: { data: StudyTask[] }) => {
                         console.log("Selected study task:", item);
                     }}
                 >
-                    <div className="flex items-center gap-2">
-                        <LuListTodo className="h-4 w-4 text-primary" />
-                        <span className="font-medium">{item.title}</span>
+                    <div className="flex items-start gap-2">
+                        <LuListTodo className="h-4 w-4 text-primary mt-1" />
+                        <div className="flex flex-col">
+                            <span className="font-medium leading-none">{item.title}</span>
+                            <span className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">
+                                {item.discipline_name}
+                            </span>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2 ml-6">
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground whitespace-nowrap">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground whitespace-nowrap font-medium">
                             {item.type_less}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                            {item.max_points} баллов
+                            {item.result !== null ? `${item.result} / ` : ""}{item.max_points} баллов
                         </span>
                         {item.deadline && (
                             <span className="text-xs text-muted-foreground">

@@ -257,12 +257,16 @@ export interface CourseModulesResponse {
 
 export interface StudyTask {
   id: string;
-  title: string;
   week: string;
+  title: string;
   type_less: string;
   max_points: number;
   deadline: string | null;
+  status: boolean | null;
   locked: boolean;
   open_date: string | null;
   description: string | null;
+  discipline_name: string;
+  is_favorite: boolean;
+  result: number | null;
 }

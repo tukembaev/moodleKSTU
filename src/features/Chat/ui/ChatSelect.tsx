@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Avatar, AvatarFallback } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
-import { ScrollArea } from "shared/shadcn/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -74,9 +73,9 @@ export function ChatSelect({
       return conv.type === filter;
     })
     .filter((conv) => {
-    const title = conv.title || "Без названия";
-    return title.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+      const title = conv.title || "Без названия";
+      return title.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
   // Создание новой беседы
   const handleCreateChat = async () => {
@@ -295,7 +294,7 @@ export function ChatSelect({
           </p>
         </div>
       ) : (
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <div className="divide-y">
             {filteredConversations.map((conversation) => {
               const isSelected = selectedChatId === conversation.id;
@@ -361,7 +360,7 @@ export function ChatSelect({
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
       )}
     </div>
   );

@@ -11,6 +11,7 @@ import {
   deleteMessage,
   addParticipant,
   removeParticipant,
+  getParticipants,
 } from "./chatAPI";
 import type {
   CreateConversationRequest,
@@ -26,6 +27,8 @@ export const chatKeys = {
   conversation: (id: string) => [...chatKeys.all, "conversation", id] as const,
   messages: (conversationId: string) =>
     [...chatKeys.all, "messages", conversationId] as const,
+  participants: (conversationId: string) =>
+    [...chatKeys.all, "participants", conversationId] as const,
 };
 
 // ========== Conversations Hooks ==========
@@ -148,6 +151,17 @@ export const useDeleteMessage = () => {
   });
 };
 
+/**
+ * Получить список участников беседы
+ */
+export const useParticipants = (conversationId: string) => {
+  return useQuery({
+    queryKey: chatKeys.participants(conversationId),
+    queryFn: () => getParticipants(conversationId),
+    enabled: !!conversationId,
+  });
+};
+
 // ========== Participants Hooks ==========
 
 /**
@@ -188,9 +202,12 @@ export const useRemoveParticipant = () => {
       userId: number;
     }) => removeParticipant(conversationId, userId),
     onSuccess: (_, variables) => {
-      // Инвалидируем конкретную беседу
+      // Инвалидируем конкретную беседу и список участников
       queryClient.invalidateQueries({
         queryKey: chatKeys.conversation(variables.conversationId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: chatKeys.participants(variables.conversationId),
       });
     },
   });
