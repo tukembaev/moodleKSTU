@@ -7,8 +7,8 @@ import { LoginPage } from "pages/LoginPage";
 import { MainPage } from "pages/MainPage";
 import { NotFoundPage } from "pages/NotFoundPage";
 import { UniversitiesPage } from "pages/UniversitiesPage";
-import { UserBilling, UserProfile } from "entities/User";
-
+import { UserBilling,  } from "entities/User";
+import { UserProfileAsync  as UserProfile} from "entities/User/ui/UserProfileAsync";
 import { TestingPage } from "pages/TestingPage";
 import { TestResults } from "entities/Test";
 import { AboutUsPage } from "pages/AboutUsPage";
@@ -17,17 +17,13 @@ import { CategoryPage } from "pages/CategoryPage";
 import { NotificationPage } from "pages/NotificationPage";
 import { StatisticPage } from "pages/StatisticPage";
 import { ChatPage } from "pages/ChatPage";
-import AddQuizPage from "features/Quiz/ui/AddQuizPage";
+import { AddQuizPageAsync as AddQuizPage } from "features/Quiz/ui/AddQuizPage.async";
 import { QuizTestPage } from "pages/QuizTestPage";
 import { QuizResultsPage } from "pages/QuizResultsPage";
-import CourseDetails from "entities/Course/ui/CourseDetails";
 
-export interface AppRoutesProps {
-  path: string;
-  element: ReactNode;
-  breadcrumbName: string;
-  children?: AppRoutesProps[];
-}
+import { ThemeDetailPage } from "pages/ThemeDetailPage";
+
+import CourseDetails from "entities/Course/ui/CourseDetails";
 
 export enum AppRoutes {
   LOGIN = "login",
@@ -55,6 +51,7 @@ export enum AppRoutes {
 
 export enum AppSubRoutes {
   COURSE_THEMES = "course_themes",
+  THEME_DETAIL = "theme_detail",
 
   TEST_RESULTS = "result",
   TEST_PASS = "pass",
@@ -62,6 +59,7 @@ export enum AppSubRoutes {
   TEST_QUIZ = "quiz",
   TEST_QUIZ_RESULT = "quiz-result",
 }
+
 
 export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppRoutes.LOGIN]: "/",
@@ -71,6 +69,7 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppRoutes.MAIN]: "/main",
   [AppRoutes.COURSES]: "/courses",
   [AppSubRoutes.COURSE_THEMES]: "/courses/course_themes/:id",
+  [AppSubRoutes.THEME_DETAIL]: "week/:weekId/theme/:themeId",
 
   [AppRoutes.CATEGORY]: "/category",
 
@@ -93,6 +92,17 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppRoutes.UNIVERSITIES]: "/universities",
   [AppRoutes.NOT_FOUND]: "*",
 };
+
+
+
+
+export interface AppRoutesProps {
+  path: string;
+  element: ReactNode;
+  breadcrumbName: string;
+  children?: AppRoutesProps[];
+}
+
 
 export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
   [AppRoutes.LOGIN]: {
@@ -123,11 +133,16 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
       {
         path: RoutePath[AppSubRoutes.COURSE_THEMES],
         element:  <div className="min-h-screen flex py-3">
-      <div className="w-full flex flex-col gap-4">
+      <div className="w-full flex flex-col gap-4">-
         <CourseDetails />   
       </div>
     </div>,
         breadcrumbName: "Опр курс",
+      },
+      {
+        path: RoutePath[AppSubRoutes.THEME_DETAIL],
+        element: <ThemeDetailPage />,
+        breadcrumbName: "Детали темы",
       },
     ],
   },

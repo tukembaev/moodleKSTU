@@ -2,15 +2,17 @@ import { CourseList } from "entities/Course";
 import { Outlet, useLocation } from "react-router-dom";
 import { AppSubRoutes } from "shared/config";
 
+
 const CoursePage = () => {
   const location = useLocation();
   const isCourseTheme = location.pathname.includes(AppSubRoutes.COURSE_THEMES);
+  const isThemeDetail = location.pathname.includes('/week/');
 
   return (
     <div>
       {" "}
       
-      {!isCourseTheme ? (
+      {!isCourseTheme && !isThemeDetail ? (
         <div className="flex flex-col">
           <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight text-left">
             Мои курсы

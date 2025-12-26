@@ -13,7 +13,7 @@ import {
   SpringPopupList,
   UseTooltip
 } from "shared/components";
-import { AppRoutes, AppSubRoutes } from "shared/config/routeConfig/routeConfig";
+import { AppRoutes, AppSubRoutes } from "shared/config";
 import { cn } from "shared/lib/utils";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";

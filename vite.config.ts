@@ -4,18 +4,25 @@ import { defineConfig } from "vite"
 import tailwindcss from "@tailwindcss/vite"
 // import basicSsl from "@vitejs/plugin-basic-ssl"
 // import { analyzer } from 'vite-bundle-analyzer'
+import {reactClickToComponent} from "vite-plugin-react-click-to-component"
 export default defineConfig({
   plugins: [
     react(), // Fast Refresh включен по умолчанию для лучшего HMR
     tailwindcss(),
+    reactClickToComponent()
+
     // basicSsl() // Отключено - используем ngrok для HTTPS
   ],
   server: {
     host: '0.0.0.0',
+    port: 5173,
     allowedHosts: true, // Разрешаем ngrok и другие хосты
     // Оптимизация HMR
     hmr: {
       overlay: true, // Показывать ошибки как оверлей
+      clientPort: 5173,
+      protocol: 'ws',
+      host: 'localhost'
     },
     // Улучшенное кэширование
     fs: {
@@ -32,7 +39,8 @@ export default defineConfig({
       'widgets': path.resolve("./src/widgets/"),
       '@': path.resolve("./src/@/"),
       'lib': path.resolve("./src/lib"),
-    }
+    },
+    dedupe: ['react', 'react-dom']
   },
   // Оптимизация зависимостей для dev режима
   optimizeDeps: {

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { AppRoutes } from "shared/config";
+
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
 import {
@@ -9,6 +9,7 @@ import {
   CardHeader,
 } from "shared/shadcn/ui/card";
 import brilliants from "/src/assets/diamond.svg";
+import { AppRoutes } from "shared/config";
 
 const courses = [
   {

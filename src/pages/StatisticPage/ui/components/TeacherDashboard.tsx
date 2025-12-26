@@ -3,6 +3,7 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 import { LuBookOpen, LuFileCheck, LuUsers } from "react-icons/lu";
 import { Link } from "react-router-dom";
 import { AppSubRoutes, RoutePath } from "shared/config";
+
 import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Skeleton } from "shared/shadcn/ui/skeleton";

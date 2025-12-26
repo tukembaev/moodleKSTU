@@ -8,8 +8,9 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Link } from "react-router-dom";
-import { RoutePath, AppSubRoutes } from "shared/config";
+
 import { LucideCheckCircle2 } from "lucide-react";
+import { AppSubRoutes, RoutePath } from "shared/config";
 
 export const StudentDashboard = () => {
   const { data, isLoading, error } = useQuery(courseQueries.studentDashboard());

@@ -1,30 +1,16 @@
-import { ReactNode } from "react";
+import { ReactNode, lazy, Suspense } from "react";
+import { FormQuery } from "./formQuery";
+export { FormQuery };
 
-import {
-  Add_Answer_Theme,
-  Add_Course,
-  Add_Material_file,
-  Add_Theme,
-  Add_Theme_FAQ,
-  End_Course,
-} from "features/Course";
-import { Add_Test } from "features/Test";
-import Add_Quiz from "features/Course/forms/add-quiz";
-
-export enum FormQuery {
-  //course
-  ADD_COURSE = "add-course",
-  ADD_THEME = "add-theme",
-  ADD_THEME_FAQ = "add-faq",
-  ADD_MATERIAL = "add_material",
-  ADD_ANSWER = "add_answer",
-  END_COURSE = "end_course",
-  ADD_QUIZ = "add_quiz",
-  GOOGLE_AUTH = "google-auth",
-  //testing
-  ADD_TEST = "add-test",
-  CHOOSE_TEST = "choose-test",
-}
+// Lazy load components from their specific paths to avoid circular dependencies via the features index
+const Add_Course = lazy(() => import("features/Course/forms/add-course"));
+const Add_Theme = lazy(() => import("features/Course/forms/add-theme"));
+const Add_Theme_FAQ = lazy(() => import("features/Course/forms/add-theme-faq"));
+const Add_Material_file = lazy(() => import("features/Course/forms/add-material-file"));
+const Add_Answer_Theme = lazy(() => import("features/Course/forms/add-answer-theme"));
+const End_Course = lazy(() => import("features/Course/forms/end-course"));
+const Add_Test = lazy(() => import("features/Test/ui/add-test"));
+const Add_Quiz = lazy(() => import("features/Course/forms/add-quiz"));
 
 export interface FormConfig {
   query: FormQuery;
@@ -37,61 +23,49 @@ export const forms: FormConfig[] = [
   {
     query: FormQuery.ADD_COURSE,
     title: "Создание курса",
-    form: <Add_Course />,
+    form: <Suspense fallback={null}><Add_Course /></Suspense>,
     is_student_allow: false,
   },
   {
     query: FormQuery.ADD_THEME,
     title: "Создание темы",
-    form: <Add_Theme />,
+    form: <Suspense fallback={null}><Add_Theme /></Suspense>,
     is_student_allow: false,
   },
   {
     query: FormQuery.ADD_THEME_FAQ,
     title: "Создание FAQ",
-    form: <Add_Theme_FAQ />,
+    form: <Suspense fallback={null}><Add_Theme_FAQ /></Suspense>,
     is_student_allow: false,
   },
   {
     query: FormQuery.ADD_TEST,
     title: "Создание теста",
-    form: <Add_Test />,
+    form: <Suspense fallback={null}><Add_Test /></Suspense>,
     is_student_allow: false,
   },
   {
     query: FormQuery.ADD_MATERIAL,
     title: "Загрузка материала",
-    form: <Add_Material_file />,
+    form: <Suspense fallback={null}><Add_Material_file /></Suspense>,
     is_student_allow: true,
   },
   {
     query: FormQuery.ADD_ANSWER,
     title: "Загрузка материала",
-    form: <Add_Answer_Theme />,
+    form: <Suspense fallback={null}><Add_Answer_Theme /></Suspense>,
     is_student_allow: true,
   },
   {
     query: FormQuery.END_COURSE,
     title: "Итоговый балл",
-    form: <End_Course />,
+    form: <Suspense fallback={null}><End_Course /></Suspense>,
     is_student_allow: true,
   },
   {
     query: FormQuery.ADD_QUIZ,
     title: "Создание теста",
-    form: <Add_Quiz />,
+    form: <Suspense fallback={null}><Add_Quiz /></Suspense>,
     is_student_allow: true,
   },
-  // {
-  //   query: FormQuery.CHOOSE_TEST,
-  //   title: "Создание Теста фыфы",
-  //   form: <Choose_test />,
-  //   is_student_allow: true,
-  // },
-  // {
-  //   query: FormQuery.GOOGLE_AUTH,
-  //   title: "Авторизация Google",
-  //   form: <GoogleAuthForm />,
-  //   is_student_allow: true,
-  // },
 ];

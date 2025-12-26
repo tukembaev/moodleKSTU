@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { routeConfig } from "shared/config/routeConfig/routeConfig";
+import { routeConfig } from "shared/config";
 import {
   Breadcrumb,
   BreadcrumbItem,
