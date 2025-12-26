@@ -20,6 +20,7 @@ import { ChatPage } from "pages/ChatPage";
 import AddQuizPage from "features/Quiz/ui/AddQuizPage";
 import { QuizTestPage } from "pages/QuizTestPage";
 import { QuizResultsPage } from "pages/QuizResultsPage";
+import { RemarksPage } from "pages/RemarksPage";
 import CourseDetails from "entities/Course/ui/CourseDetails";
 
 export interface AppRoutesProps {
@@ -48,6 +49,7 @@ export enum AppRoutes {
 
   GROUPS = "groups",
   BILLING = "billing",
+  REMARKS = "remarks",
 
   UNIVERSITIES = "universities",
   NOT_FOUND = "not_found",
@@ -90,6 +92,7 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
 
   [AppRoutes.GROUPS]: "/groups",
   [AppRoutes.BILLING]: "/billing",
+  [AppRoutes.REMARKS]: "/remarks",
   [AppRoutes.UNIVERSITIES]: "/universities",
   [AppRoutes.NOT_FOUND]: "*",
 };
@@ -214,6 +217,11 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
     path: RoutePath.groups,
     element: <GroupPage />,
     breadcrumbName: "Группы",
+  },
+  [AppRoutes.REMARKS]: {
+    path: RoutePath.remarks,
+    element: <RemarksPage />,
+    breadcrumbName: "Замечания",
   },
   [AppRoutes.UNIVERSITIES]: {
     path: RoutePath.universities,
