@@ -32,7 +32,7 @@ const TestStatusBadge: React.FC<{
   if (status && result !== null) {
     return (
       <Badge className="gap-1.5 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800">
-        <CheckCircle2 className="h-3 w-3" />
+        <Trophy className="h-3 w-3" />
         {result} балла
       </Badge>
     );
@@ -203,7 +203,7 @@ const TestCard = ({
         )}
 
         {/* Stats */}
-        <div className="flex gap-4 text-sm text-muted-foreground pt-2">
+        <div className="flex justify-between text-sm text-muted-foreground pt-2">
           <UseTooltip text="Максимальные баллы">
             <div className="flex items-center gap-1.5 font-medium">
               <div className="p-1 rounded bg-primary/10">
@@ -212,8 +212,31 @@ const TestCard = ({
               <span>{item.max_points} баллов</span>
             </div>
           </UseTooltip>
-
-          <UseTooltip
+          {!isStudent ? (
+            <Button
+              className="shadow-none"
+              variant="outline"
+              onClick={() =>
+                navigate(
+                  "/test/result" +
+                  `?test_id=${item.id}` +
+                  `&weekId=${id_week}`
+                )
+              }
+            >
+              <BarChart3 className="h-4 w-4" />
+              Открыть результаты
+            </Button>
+          ) : isStudent && !item.status ? (
+            <Button
+              className="w-full gap-2 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
+              onClick={() => navigate("/test/" + AppSubRoutes.TEST_PASS + "/" + item.id)}
+            >
+              <PlayCircle className="h-4 w-4" />
+              Пройти тест
+            </Button>
+          ) : null}
+          {/* <UseTooltip
             text={`Дата открытия: ${format(new Date(item.opening_date), "PPP", { locale: ru })}`}
           >
             <div className="flex items-center gap-1.5">
@@ -222,11 +245,11 @@ const TestCard = ({
               </div>
               <span>{getFormattedDate(new Date(item.opening_date))}</span>
             </div>
-          </UseTooltip>
+          </UseTooltip> */}
         </div>
 
         {/* Action button */}
-        <div className="pt-3 mt-auto border-t border-border/50">
+        {/* <div className="pt-3 mt-auto border-t border-border/50">
           {!isStudent ? (
             <Button
               className="w-full gap-2 shadow-none"
@@ -258,7 +281,7 @@ const TestCard = ({
               </span>
             </div>
           ) : null}
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );

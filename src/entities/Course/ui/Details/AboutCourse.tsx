@@ -60,68 +60,134 @@ export const Section: FC<{
   value: string;
   isEdit?: boolean;
   onChange: (value: string) => void;
-}> = ({ field, title, value, onChange, isEdit = false }) => {
-  const { id } = useParams();
-  const { mutate: edit_detail } = courseQueries.edit_details();
+  isEditing?: boolean;
+  onEditChange?: (value: boolean) => void;
+  hideHeader?: boolean;
+}> = ({
+  field,
+  title,
+  value,
+  onChange,
+  isEdit = false,
+  isEditing: controlledIsEditing,
+  onEditChange,
+  hideHeader = false,
+}) => {
+    const { id } = useParams();
+    const { mutate: edit_detail } = courseQueries.edit_details();
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [draftValue, setDraftValue] = useState(value);
-  
-  const handleSave = () => {
-    onChange(draftValue);
-    edit_detail({
-      id: id || "",
-      data: {
-        [field]: draftValue,
-      },
-    });
-    setIsEditing(false);
-  };
+    const [localIsEditing, setLocalIsEditing] = useState(false);
+    const [draftValue, setDraftValue] = useState(value);
 
-  const handleCancel = () => {
-    setDraftValue(value);
-    setIsEditing(false);
-  };
+    const isEditingCurrent =
+      controlledIsEditing !== undefined ? controlledIsEditing : localIsEditing;
+    const setIsEditingCurrent = onEditChange || setLocalIsEditing;
 
-  return (
-    <div className="flex flex-col">
-      <div className="flex gap-2 sm:gap-3 items-center mb-3">
-        <h3 className="text-lg sm:text-xl font-semibold tracking-tight">
-          {title}
-        </h3>
-        {isEdit && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground shrink-0 h-8 w-8"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <LucideEdit className="h-4 w-4" />
-          </Button>
+    const handleSave = () => {
+      onChange(draftValue);
+      edit_detail({
+        id: id || "",
+        data: {
+          [field]: draftValue,
+        },
+      });
+      setIsEditingCurrent(false);
+    };
+
+    const handleCancel = () => {
+      setDraftValue(value);
+      setIsEditingCurrent(false);
+    };
+
+    return (
+      <div className="flex flex-col">
+        {!hideHeader && (
+          <div className="flex gap-2 sm:gap-3 items-center mb-3">
+            <h3 className="text-lg sm:text-xl font-semibold tracking-tight">
+              {title}
+            </h3>
+            {isEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground shrink-0 h-8 w-8"
+                onClick={() => setIsEditingCurrent(!isEditingCurrent)}
+              >
+                <LucideEdit className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
+        {isEditingCurrent ? (
+          <div className="flex flex-col gap-3">
+            <textarea
+              value={draftValue}
+              onChange={(e) => setDraftValue(e.target.value)}
+              className="border rounded-lg p-3 resize-none min-h-[120px] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            />
+            <div className="flex gap-2 items-end">
+              <Button onClick={handleSave} variant="default" size="sm">
+                Сохранить
+              </Button>
+              <Button onClick={handleCancel} variant="outline" size="sm">
+                Отменить
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="whitespace-pre-line text-muted-foreground leading-relaxed">
+            {value}
+          </p>
         )}
       </div>
-      {isEditing ? (
-        <div className="flex flex-col gap-3">
-          <textarea
-            value={draftValue}
-            onChange={(e) => setDraftValue(e.target.value)}
-            className="border rounded-lg p-3 resize-none min-h-[120px] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          />
-          <div className="flex gap-2 items-end">
-            <Button onClick={handleSave} variant="default" size="sm">
-              Сохранить
-            </Button>
-            <Button onClick={handleCancel} variant="outline" size="sm">
-              Отменить
-            </Button>
+    );
+  };
+
+const EditableCard: FC<{
+  icon: React.ElementType;
+  title: string;
+  field: string;
+  value: string;
+  onChange: (value: string) => void;
+  isOwner: boolean;
+  children?: React.ReactNode;
+}> = ({ icon: Icon, title, field, value, onChange, isOwner, children }) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Icon className="h-5 w-5 text-primary" />
+            {title}
           </div>
-        </div>
-      ) : (
-        <p className="whitespace-pre-line text-muted-foreground leading-relaxed">
-          {value}
-        </p>
-      )}
-    </div>
+          {isOwner && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground shrink-0 h-8 w-8"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <LucideEdit className="h-4 w-4" />
+            </Button>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {children}
+        <Section
+          field={field}
+          title={title}
+          value={value}
+          onChange={onChange}
+          isEdit={isOwner}
+          isEditing={isEditing}
+          onEditChange={setIsEditing}
+          hideHeader={true}
+        />
+      </CardContent>
+    </Card>
   );
 };
 
@@ -132,7 +198,7 @@ const FeatureCard: FC<{
   description: string;
 }> = ({ icon, title, description }) => {
   const IconComponent = iconMap[icon] || BookOpen;
-  
+
   return (
     <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-muted/50 to-muted border border-border/50 hover:border-primary/20 hover:shadow-sm transition-all duration-300">
       <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
@@ -166,7 +232,7 @@ const CourseStatsCard: FC<{ stats: CourseAboutData["stats"] }> = ({ stats }) => 
             {stats.totalReviews} отзывов
           </span>
         </div>
-        
+
         <div className="flex flex-col items-center p-3 rounded-lg bg-background/60 backdrop-blur-sm">
           <div className="flex items-center gap-1 text-2xl font-bold text-primary">
             <Users className="h-5 w-5" />
@@ -174,7 +240,7 @@ const CourseStatsCard: FC<{ stats: CourseAboutData["stats"] }> = ({ stats }) => 
           </div>
           <span className="text-xs text-muted-foreground mt-1">студентов</span>
         </div>
-        
+
         <div className="col-span-2 p-3 rounded-lg bg-background/60 backdrop-blur-sm">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium">Завершаемость</span>
@@ -182,7 +248,7 @@ const CourseStatsCard: FC<{ stats: CourseAboutData["stats"] }> = ({ stats }) => 
           </div>
           <Progress value={stats.completionRate} className="h-2" />
         </div>
-        
+
         <div className="col-span-2 flex justify-between text-sm text-muted-foreground">
           <span>Обновлено: {new Date(stats.lastUpdated).toLocaleDateString('ru-RU')}</span>
         </div>
@@ -205,11 +271,11 @@ const InstructorCard: FC<{ instructor: CourseAboutData["instructors"][0] }> = ({
               {instructor.name.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
-          
+
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold text-sm truncate">{instructor.name}</h4>
             <p className="text-xs text-muted-foreground mb-2 truncate">{instructor.position}</p>
-            
+
             <div className="flex flex-wrap gap-1.5">
               {instructor.rating > 0 && (
                 <Badge variant="secondary" className="gap-1 text-xs px-1.5 py-0">
@@ -224,7 +290,7 @@ const InstructorCard: FC<{ instructor: CourseAboutData["instructors"][0] }> = ({
                 </Badge>
               )}
             </div>
-            
+
             {instructor.socialLinks && (
               <div className="flex gap-1 mt-2">
                 {instructor.socialLinks.email && (
@@ -246,32 +312,32 @@ const InstructorCard: FC<{ instructor: CourseAboutData["instructors"][0] }> = ({
   );
 };
 
-// Компонент сертификата
-const CertificateCard: FC<{ certificate: CourseAboutData["certificate"] }> = ({
-  certificate,
+// Компонент условий для сдачи
+const RulesCard: FC<{ rules: CourseAboutData["rules"] }> = ({
+  rules,
 }) => {
-  if (!certificate.available) return null;
-  
+  if (!rules.available) return null;
+
   return (
     <Card className="overflow-hidden border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-      <CardContent className="p-6">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-primary/10">
-            <GraduationCap className="h-8 w-8 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h4 className="text-lg font-semibold mb-1">{certificate.title}</h4>
-            <p className="text-sm text-muted-foreground mb-4">
-              {certificate.description}
-            </p>
-            <div className="space-y-2">
-              {certificate.requirements.map((req, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                  <span>{req}</span>
-                </div>
-              ))}
-            </div>
+      <CardContent>
+        <div className="flex flex-col items-center gap-2">
+          <GraduationCap className="h-12 w-12 text-primary" />
+          <h4 className="text-lg font-semibold ">Условия для прохождения теста</h4>
+          <p className="text-sm text-muted-foreground mb-3 text-center">
+            Чтобы завершить курс вам потребуется выполнить следующие условия:
+          </p>
+
+
+
+          <div className="space-y-2">
+            {rules.requirements.map((req, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                <span>{req}</span>
+              </div>
+            ))}
+
           </div>
         </div>
       </CardContent>
@@ -303,47 +369,23 @@ const AboutCourse = ({
   return (
     <div className="py-4 space-y-8">
       {/* Характеристики курса */}
-      <section>
-        <h2 className="text-2xl font-bold tracking-tight mb-4 flex items-center gap-2">
-          <BookOpen className="h-6 w-6 text-primary" />
-          Характеристики курса
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {courseData.features.map((feature) => (
-            <FeatureCard
-              key={feature.id}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-            />
-          ))}
-        </div>
-      </section>
-
-      <Separator />
 
       {/* Основная информация и статистика */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Левая колонка - основная информация */}
         <div className="lg:col-span-2 space-y-6">
           {/* Описание */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                Описание курса
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Section
-                field="description"
-                title=""
-                value={description || "Автор еще не добавил описание курса. Здесь будет подробное описание того, что вы изучите."}
-                onChange={setDescription}
-                isEdit={isOwner}
-              />
-            </CardContent>
-          </Card>
+          <EditableCard
+            icon={FileText}
+            title="Описание курса"
+            field="description"
+            value={
+              description ||
+              "Автор еще не добавил описание курса. Здесь будет подробное описание того, что вы изучите."
+            }
+            onChange={setDescription}
+            isOwner={isOwner || false}
+          />
 
           {/* Чему вы научитесь */}
           <Card className="border-green-200/50 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-900/10">
@@ -379,60 +421,49 @@ const AboutCourse = ({
           </Card>
 
           {/* Для кого этот курс */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                Для кого этот курс?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Badge className={getLevelColor(courseData.level.level)}>
-                  {courseData.level.label}
+          <EditableCard
+            icon={Users}
+            title="Для кого этот курс?"
+            field="audience"
+            value={
+              audience ||
+              "Курс предназначен для студентов, которые хотят получить практические навыки в данной области."
+            }
+            onChange={setAudience}
+            isOwner={isOwner || false}
+          >
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Badge className={getLevelColor(courseData.level.level)}>
+                {courseData.level.label}
+              </Badge>
+              <Badge variant="outline">{courseData.language}</Badge>
+              {courseData.tags.map((tag) => (
+                <Badge key={tag} variant="secondary">
+                  {tag}
                 </Badge>
-                <Badge variant="outline">{courseData.language}</Badge>
-                {courseData.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <Section
-                field="audience"
-                title=""
-                value={audience || "Курс предназначен для студентов, которые хотят получить практические навыки в данной области."}
-                onChange={setAudience}
-                isEdit={isOwner}
-              />
-            </CardContent>
-          </Card>
+              ))}
+            </div>
+          </EditableCard>
 
           {/* Требования */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                Требования
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Section
-                field="requirements"
-                title=""
-                value={requirements || "Базовые знания по предмету. Желание учиться и развиваться."}
-                onChange={setRequirements}
-                isEdit={isOwner}
-              />
-            </CardContent>
-          </Card>
+          <EditableCard
+            icon={FileText}
+            title="Требования"
+            field="requirements"
+            value={
+              requirements ||
+              "Базовые знания по предмету. Желание учиться и развиваться."
+            }
+            onChange={setRequirements}
+            isOwner={isOwner || false}
+          />
         </div>
 
         {/* Правая колонка - статистика и дополнительная информация */}
         <div className="space-y-6">
           <CourseStatsCard stats={courseData.stats} />
-          <CertificateCard certificate={courseData.certificate} />
-          
+          <RulesCard rules={courseData.rules} />
+
           {/* Преподаватели курса */}
           <div>
             <h3 className="text-lg font-semibold tracking-tight mb-3 flex items-center gap-2">
@@ -475,7 +506,7 @@ const AboutCourse = ({
           Часто задаваемые вопросы
         </h2>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <Accordion type="single" collapsible className="w-full">
               {courseData.faq.map((item) => (
                 <AccordionItem key={item.id} value={item.id}>

@@ -54,7 +54,7 @@ const navigationItems: {
       icon: LuBug,
     },
     {
-      title: "Переписка",
+      title: "Переписки",
       url: RoutePath.chat,
       icon: LuMessageCircle,
     },
@@ -64,11 +64,11 @@ const navigationItems: {
       icon: LuBell,
     },
 
-    {
-      title: "Статистика работы",
-      url: RoutePath.statistic,
-      icon: LuChartArea,
-    },
+    // {
+    //   title: "Статистика работы",
+    //   url: RoutePath.statistic,
+    //   icon: LuChartArea,
+    // },
     // {
     //   title: "Мои группы",
     //   url: RoutePath.groups,

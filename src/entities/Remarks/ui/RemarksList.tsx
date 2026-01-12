@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MessageCircle, FileText, File } from "lucide-react";
+import { MessageCircle, FileText, File, Clock, MessageSquare, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
 import { Remark, RemarkStatus, RemarkType } from "../model/types/remarks";
 import { RemarksModal } from "./RemarksModal";
 
@@ -37,25 +37,15 @@ export const RemarksList: React.FC<RemarksListProps> = ({
     const getStatusIcon = (status: RemarkStatus) => {
         switch (status) {
             case RemarkStatus.PENDING:
-                return <div className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0" />;
+                return <Clock className="w-5 h-5 text-red-500 flex-shrink-0" />;
             case RemarkStatus.RESPONDED:
-                return <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0" />;
+                return <MessageSquare className="w-5 h-5 text-blue-500 flex-shrink-0" />;
             case RemarkStatus.APPROVED:
-                return (
-                    <div className="w-3 h-3 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                            />
-                        </svg>
-                    </div>
-                );
+                return <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />;
             case RemarkStatus.REJECTED:
-                return <div className="w-3 h-3 bg-yellow-500 rounded-full flex-shrink-0" />;
+                return <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0" />;
             default:
-                return <div className="w-3 h-3 bg-gray-400 rounded-full flex-shrink-0" />;
+                return <HelpCircle className="w-5 h-5 text-gray-400 flex-shrink-0" />;
         }
     };
 

@@ -5,7 +5,7 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 import { StudentsAnswers } from "entities/Course/model/types/course";
 import { SetComment } from "features/Course/hooks/SetComment";
 import { SetMark } from "features/Course/hooks/SetMark";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Search } from "lucide-react";
 import React, { useState } from "react";
 import {
   LuCheckCheck,
@@ -19,7 +19,6 @@ import {
   LuX,
   LuEye,
   LuEyeClosed,
-  LuUser,
   LuUsers,
   LuCalendarDays,
   LuFile,
@@ -126,9 +125,30 @@ const ListOfStudentsWithAnswers = ({
     ...new Set(data.map((student) => student.group)),
   ];
   const uniqueData: StudentsAnswers[] = React.useMemo(() => {
-    const map = new Map();
+    const map = new Map<string, StudentsAnswers>();
     data.forEach((s) => {
-      if (!map.has(s.user_id)) map.set(s.user_id, s);
+      const key = String(s.user_id);
+      if (!map.has(key)) {
+        map.set(key, s);
+      } else {
+        const existing = map.get(key)!;
+
+        // Logic to keep the most relevant entry
+        const existingHasFiles = existing.files?.length > 0;
+        const newHasFiles = s.files?.length > 0;
+
+        if (newHasFiles && !existingHasFiles) {
+          map.set(key, s);
+        } else if (newHasFiles === existingHasFiles) {
+          if (s.status && !existing.status) {
+            map.set(key, s);
+          } else if (s.status === existing.status) {
+            if (s.points > existing.points) {
+              map.set(key, s);
+            }
+          }
+        }
+      }
     });
     return [...map.values()];
   }, [data]);
@@ -190,9 +210,9 @@ const ListOfStudentsWithAnswers = ({
   );
 
   // Render student file card for mobile
-  const renderFileCard = (item: StudentsAnswers['files'][0], student: StudentsAnswers) => (
-    <Card 
-      key={item.id} 
+  const renderFileCard = (item: StudentsAnswers['files'][0]) => (
+    <Card
+      key={item.id}
       className="overflow-hidden hover:shadow-sm transition-all duration-300 bg-muted/30"
     >
       <CardContent className="p-3">
@@ -300,16 +320,15 @@ const ListOfStudentsWithAnswers = ({
           {filteredData.map((student) => {
             const hasUnreadFiles = student.files.some((file) => !file.is_read.is_read);
             const isExpanded = expandedId === student.id;
-            
+
             return (
               <Collapsible
                 key={student.id}
                 open={isExpanded}
                 onOpenChange={() => toggleExpand(student.id)}
               >
-                <Card className={`overflow-hidden transition-all duration-300 ${
-                  isExpanded ? "ring-2 ring-primary/20 shadow-md" : "hover:shadow-sm"
-                }`}>
+                <Card className={`overflow-hidden transition-all duration-300 ${isExpanded ? "ring-2 ring-primary/20 shadow-md" : "hover:shadow-sm"
+                  }`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-3">
                       {/* Student info */}
@@ -339,7 +358,7 @@ const ListOfStudentsWithAnswers = ({
                           <p className="text-xs text-muted-foreground">{student.group}</p>
                         </div>
                       </div>
-                      
+
                       {/* Expand button */}
                       {student.files.length > 0 && (
                         <CollapsibleTrigger asChild>
@@ -353,7 +372,7 @@ const ListOfStudentsWithAnswers = ({
                         </CollapsibleTrigger>
                       )}
                     </div>
-                    
+
                     {/* Status badges */}
                     <div className="flex flex-wrap gap-2 mt-2">
                       {/* Submission status */}
@@ -365,11 +384,10 @@ const ListOfStudentsWithAnswers = ({
                       >
                         <Badge
                           variant="outline"
-                          className={`gap-1 text-xs cursor-pointer ${
-                            student.status 
-                              ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800" 
-                              : ""
-                          }`}
+                          className={`gap-1 text-xs cursor-pointer ${student.status
+                            ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800"
+                            : ""
+                            }`}
                         >
                           {student.status ? (
                             <>
@@ -384,16 +402,15 @@ const ListOfStudentsWithAnswers = ({
                           )}
                         </Badge>
                       </SetMark>
-                      
+
                       {/* Access status */}
                       <UseTooltip text={student.locked ? "Открыть доступ" : "Закрыть доступ"}>
                         <Badge
                           variant="outline"
-                          className={`gap-1 text-xs cursor-pointer ${
-                            student.locked
-                              ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
-                              : "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800"
-                          }`}
+                          className={`gap-1 text-xs cursor-pointer ${student.locked
+                            ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
+                            : "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800"
+                            }`}
                           onClick={() => handlePermission(student)}
                         >
                           {student.locked ? (
@@ -409,16 +426,15 @@ const ListOfStudentsWithAnswers = ({
                           )}
                         </Badge>
                       </UseTooltip>
-                      
+
                       {/* Comments status */}
                       <SetComment text="Добавить замечание" id={student.id}>
                         <Badge
                           variant="outline"
-                          className={`gap-1 text-xs cursor-pointer ${
-                            student.comment
-                              ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
-                              : ""
-                          }`}
+                          className={`gap-1 text-xs cursor-pointer ${student.comment
+                            ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
+                            : ""
+                            }`}
                         >
                           {student.comment ? (
                             <>
@@ -435,7 +451,7 @@ const ListOfStudentsWithAnswers = ({
                       </SetComment>
                     </div>
                   </CardHeader>
-                  
+
                   {/* Files section */}
                   <CollapsibleContent>
                     <CardContent className="pt-0 pb-3">
@@ -445,7 +461,7 @@ const ListOfStudentsWithAnswers = ({
                           Файлы ({student.files.length})
                         </p>
                         <div className="space-y-2">
-                          {student.files.map((item) => renderFileCard(item, student))}
+                          {student.files.map((item) => renderFileCard(item))}
                         </div>
                       </div>
                     </CardContent>
@@ -780,34 +796,38 @@ const ListOfStudentsWithAnswers = ({
       {/* Search and filters */}
       <div className="flex flex-col sm:flex-row justify-between gap-3">
         <div className="flex flex-col sm:flex-row gap-3 flex-1">
-          <Input
-            type="text"
-            placeholder="Поиск по имени..."
-            value={searchQuery}
-            onChange={handleSearch}
-            className="max-w-full sm:max-w-[350px]"
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              type="text"
+              placeholder="Поиск по имени..."
+              value={searchQuery}
+              onChange={handleSearch}
+              className="pl-9 max-w-full sm:max-w-[350px]"
+            />
+          </div>
+
           {selectedStudents.size === filteredData.length &&
             filteredData.length > 0 && (
-            <div className="hidden lg:flex gap-2">
-              <Button
-                onClick={() => handleMultiplePermission(true)}
-                variant="outline"
-                size="sm"
-              >
-                <LuLock className="text-red-400" />
-                Закрыть доступ
-              </Button>
-              <Button
-                onClick={() => handleMultiplePermission(false)}
-                variant="outline"
-                size="sm"
-              >
-                <LuKeyRound className="text-green-400" />
-                Открыть доступ
-              </Button>
-            </div>
-          )}
+              <div className="hidden lg:flex gap-2">
+                <Button
+                  onClick={() => handleMultiplePermission(true)}
+                  variant="outline"
+                  size="sm"
+                >
+                  <LuLock className="text-red-400" />
+                  Закрыть доступ
+                </Button>
+                <Button
+                  onClick={() => handleMultiplePermission(false)}
+                  variant="outline"
+                  size="sm"
+                >
+                  <LuKeyRound className="text-green-400" />
+                  Открыть доступ
+                </Button>
+              </div>
+            )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

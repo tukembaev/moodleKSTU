@@ -47,7 +47,7 @@ export interface CourseInstructor {
   };
 }
 
-export interface CertificateInfo {
+export interface RulesInfo {
   available: boolean;
   title: string;
   description: string;
@@ -66,7 +66,7 @@ export interface CourseAboutData {
   faq: CourseFAQ[];
   stats: CourseStats;
   instructors: CourseInstructor[];
-  certificate: CertificateInfo;
+  rules: RulesInfo;
   level: CourseLevel;
   language: string;
   tags: string[];
@@ -201,11 +201,10 @@ export const mockCourseAboutData: CourseAboutData = {
       }
     }
   ],
-
-  certificate: {
+  rules: {
     available: true,
-    title: 'Сертификат о прохождении курса',
-    description: 'По завершении курса вы получите официальный сертификат КСТУ, подтверждающий ваши знания и навыки.',
+    title: 'Условия для прохождения',
+    description: 'Чтобы завершить курс вам потребуется выполнить следующие условия:',
     requirements: [
       'Выполнить все обязательные задания',
       'Набрать минимум 60% от максимального балла',

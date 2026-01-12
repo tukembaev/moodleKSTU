@@ -11,7 +11,7 @@ import {
 } from "shared/shadcn/ui/dialog";
 import { Input } from "shared/shadcn/ui/input";
 import { ScrollArea } from "shared/shadcn/ui/scroll-area";
-import { ReviewThread, mockReviews } from "./ReviewThread";
+
 
 export function SetComment({
   text,
@@ -28,7 +28,7 @@ export function SetComment({
 
   const handleSubmit = () => {
     if (!note.trim()) return;
-    
+
     // TODO: Отправка нового замечания
     comment_answer({
       answer: id as string,
@@ -55,14 +55,6 @@ export function SetComment({
           <DialogTitle className="text-base font-semibold">{text}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="h-[400px] px-4 pt-2">
-          <ReviewThread
-            reviews={mockReviews}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            showTeacherActions={true}
-          />
-        </ScrollArea>
 
         {/* Форма для добавления нового замечания */}
         <div className="px-6 py-4 border-t shrink-0">

@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "../../../shared/shadcn/ui/select";
 import { Input } from "../../../shared/shadcn/ui/input";
+import { useAuth } from "shared/hooks";
 
 interface Filters {
   search: string;
@@ -26,6 +27,7 @@ const RemarksPage: React.FC = () => {
   const [currentUserId] = useState(1);
   const [currentUserRole] = useState<"teacher" | "student">("teacher");
   const [activeTab, setActiveTab] = useState<"open" | "archive">("open");
+  const { isStudent } = useAuth();
 
   // Состояние фильтров
   const [filters, setFilters] = useState<Filters>({
@@ -257,12 +259,14 @@ const RemarksPage: React.FC = () => {
 
   return (
     <div className="min-h-screen ">
-      <div className=" px-2 py-8 ">
+      <div>
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Замечания</h1>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Управление замечаниями по работам студентов
+        <div className="mb-4">
+          <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight text-left">
+            Замечания
+          </h2>
+          <p className="mt-1.5 text-lg text-muted-foreground">
+            {isStudent ? 'Управление замечаниями по работам' : 'Управление замечаниями по работам студентов'}
           </p>
         </div>
 

@@ -137,18 +137,17 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
       ) : (
         <SpringPopupList>
           {allMaterials.map((material) => (
-            <Card 
-              key={material.id} 
+            <Card
+              key={material.id}
               className="overflow-hidden hover:shadow-md transition-all duration-300 group"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className={`p-1.5 rounded-lg shrink-0 ${
-                      material.url 
-                        ? "bg-blue-50 dark:bg-blue-950/30" 
-                        : "bg-primary/10"
-                    }`}>
+                    <div className={`p-1.5 rounded-lg shrink-0 ${material.url
+                      ? "bg-blue-50 dark:bg-blue-950/30"
+                      : "bg-primary/10"
+                      }`}>
                       {material.url ? (
                         <LuLink className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                       ) : (
@@ -379,7 +378,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   }
 
   return (
-    <div className="flex flex-col gap-4 pt-6">
+    <div className="flex flex-col gap-4 ">
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <p className="text-lg font-semibold">Учебные материалы</p>
@@ -395,7 +394,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
             </Button>
           )}
         </div>
-        
+
         {/* Mobile and Tablet view (cards) */}
         <div className="block lg:hidden">
           {isLoading ? renderCardSkeleton() : renderMaterialCards()}

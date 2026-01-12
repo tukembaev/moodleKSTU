@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
+  Trophy,
 } from "lucide-react";
 import React from "react";
 import empty from "/src/assets/empty.svg";
@@ -131,7 +132,7 @@ const ThemeStatusBadge: React.FC<{
   if (status) {
     return (
       <Badge className="gap-1.5 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800">
-        <CheckCircle2 className="h-3 w-3" />
+        <Trophy className="h-3 w-3" />
         {result} балла
       </Badge>
     );
@@ -385,7 +386,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
 
               {/* Expanded content */}
               {isThemeExpanded && (
-                <div className="mt-4 pt-4 border-t border-border animate-in slide-in-from-top-2 duration-300">
+                <div className="mt-4 pt-4 border-t animate-in slide-in-from-top-2 duration-300">
                   <ThemeFiles id={theme.id} isOwner={isOwner} />
                 </div>
               )}
