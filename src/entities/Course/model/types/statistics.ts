@@ -100,7 +100,7 @@ export interface StudentDashboard {
   overall_progress: OverallProgress;
   courses: CourseDashboardItem[];
   upcoming_deadlines: UpcomingDeadline[];
-  recent_grades: RecentGrade[];
+
 }
 
 // Статистика по курсу для студента

@@ -2,7 +2,7 @@ import { Layout } from "widgets/Layout";
 
 import { AppRouter } from "./providers/router";
 import { ThemeProvider } from "./providers/ThemeProvider/ThemeProvider";
-import { PWAInstallBanner } from "features/PWAInstallBanner/PWAInstallBanner";
+// import { PWAInstallBanner } from "features/PWAInstallBanner/PWAInstallBanner";
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
@@ -10,7 +10,7 @@ function App() {
         <Layout>
           <AppRouter />
         </Layout>
-        <PWAInstallBanner />
+        {/* <PWAInstallBanner /> */}
       </div>
     </ThemeProvider>
   );

@@ -1,9 +1,9 @@
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { 
-  LuCalendarDays, 
-  LuHandCoins, 
-  LuShapes 
+import {
+  LuCalendarDays,
+  LuHandCoins,
+  LuShapes
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { UseTooltip } from "shared/components";
@@ -14,10 +14,10 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
 import { Test } from "../model/types/test";
-import { 
-  ChevronRight, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  ChevronRight,
+  CheckCircle2,
+  AlertCircle,
   Clock,
   Trophy,
   PlayCircle,
@@ -37,7 +37,7 @@ const TestStatusBadge: React.FC<{
       </Badge>
     );
   }
-  
+
   return (
     <Badge variant="secondary" className="gap-1.5 text-muted-foreground">
       <AlertCircle className="h-3 w-3" />
@@ -47,25 +47,25 @@ const TestStatusBadge: React.FC<{
 };
 
 const TestCard = ({
-  item, 
-  id_week, 
+  item,
+  id_week,
   viewMode = "grid"
 }: {
-  item: Test; 
-  id_week: string; 
+  item: Test;
+  id_week: string;
   viewMode?: "grid" | "list";
 }) => {
   const { isStudent } = useAuth();
   const navigate = useNavigate();
-  
+
   // Category styling for tests
   const testCategory = {
     badgeClass: "bg-rose-50 text-rose-600/80 border-rose-200/50 dark:bg-rose-950/30 dark:text-rose-400/80 dark:border-rose-800/30",
     iconClass: "text-rose-600 dark:text-rose-400",
-    gradientClass: "from-rose-500/10 via-transparent to-transparent",
+
     borderClass: "hover:border-rose-300 dark:hover:border-rose-700"
   };
-  
+
   // List view mode
   if (viewMode === "list") {
     return (
@@ -74,8 +74,8 @@ const TestCard = ({
         hover:shadow-sm ${testCategory.borderClass}
       `}>
         {/* Gradient accent */}
-        <div className={`absolute inset-0 bg-gradient-to-r ${testCategory.gradientClass} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
-        
+        <div className={`absolute inset-0  opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+
         <CardContent className="relative p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3 sm:gap-4">
             {/* Left side */}
@@ -84,7 +84,7 @@ const TestCard = ({
               <div className={`p-2 rounded-lg ${testCategory.badgeClass} shrink-0`}>
                 <LuShapes className={`text-lg ${testCategory.iconClass}`} />
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-base sm:text-lg font-semibold">
@@ -95,7 +95,7 @@ const TestCard = ({
                     Тест
                   </Badge>
                 </div>
-                
+
                 {item.description && (
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-1 hidden md:block">
                     {item.description}
@@ -103,7 +103,7 @@ const TestCard = ({
                 )}
               </div>
             </div>
-            
+
             {/* Right side */}
             <div className="flex items-center gap-3 sm:gap-4 shrink-0 flex-wrap">
               {/* Stats */}
@@ -116,7 +116,7 @@ const TestCard = ({
                     <span>{item.max_points}</span>
                   </div>
                 </UseTooltip>
-                
+
                 <UseTooltip
                   text={`Дата открытия: ${format(new Date(item.opening_date), "PPP", { locale: ru })}`}
                 >
@@ -128,12 +128,12 @@ const TestCard = ({
                   </div>
                 </UseTooltip>
               </div>
-              
+
               {/* Status for student */}
               {isStudent && (
                 <TestStatusBadge status={item.status} result={item.result} />
               )}
-              
+
               {/* Action button */}
               {!isStudent ? (
                 <Button
@@ -167,7 +167,7 @@ const TestCard = ({
       </Card>
     );
   }
-  
+
   // Grid view mode (default)
   return (
     <Card className={`
@@ -175,8 +175,8 @@ const TestCard = ({
       ${testCategory.borderClass}
     `}>
       {/* Gradient accent */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${testCategory.gradientClass} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
-      
+      <div className={`absolute inset-0  opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+
       <CardContent className="relative flex flex-col gap-3 p-4 sm:p-5 h-full">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
@@ -184,24 +184,24 @@ const TestCard = ({
             <LuShapes className={testCategory.iconClass} />
             <span>Тестирование</span>
           </Badge>
-          
+
           {isStudent && (
             <TestStatusBadge status={item.status} result={item.result} />
           )}
         </div>
-        
+
         {/* Title */}
         <h3 className="text-lg sm:text-xl font-semibold line-clamp-2">
           {item.title}
         </h3>
-        
+
         {/* Description */}
         {item.description && (
           <p className="text-sm text-muted-foreground line-clamp-2 flex-1">
             {item.description}
           </p>
         )}
-        
+
         {/* Stats */}
         <div className="flex gap-4 text-sm text-muted-foreground pt-2">
           <UseTooltip text="Максимальные баллы">
@@ -212,7 +212,7 @@ const TestCard = ({
               <span>{item.max_points} баллов</span>
             </div>
           </UseTooltip>
-          
+
           <UseTooltip
             text={`Дата открытия: ${format(new Date(item.opening_date), "PPP", { locale: ru })}`}
           >
@@ -224,7 +224,7 @@ const TestCard = ({
             </div>
           </UseTooltip>
         </div>
-        
+
         {/* Action button */}
         <div className="pt-3 mt-auto border-t border-border/50">
           {!isStudent ? (

@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react(), // Fast Refresh включен по умолчанию для лучшего HMR
     tailwindcss(),
-    
+
     // basicSsl() // Отключено - используем ngrok для HTTPS
   ],
   server: {

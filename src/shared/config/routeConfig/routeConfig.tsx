@@ -74,6 +74,7 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppRoutes.COURSES]: "/courses",
   [AppSubRoutes.COURSE_THEMES]: "/courses/course_themes/:id",
 
+
   [AppRoutes.CATEGORY]: "/category",
 
   [AppRoutes.STATISTIC]: "/statistic",
@@ -125,11 +126,11 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
     children: [
       {
         path: RoutePath[AppSubRoutes.COURSE_THEMES],
-        element:  <div className="min-h-screen flex py-3">
-      <div className="w-full flex flex-col gap-4">
-        <CourseDetails />   
-      </div>
-    </div>,
+        element: <div className="min-h-screen flex py-3">
+          <div className="w-full flex flex-col gap-4">
+            <CourseDetails />
+          </div>
+        </div>,
         breadcrumbName: "Опр курс",
       },
     ],

@@ -23,7 +23,7 @@ import {
 import { FooterUserMenu } from "./lib/FooterUserMenu";
 import { SidebarInstallButton } from "./lib/SidebarInstallButton";
 
-import { LuBell, LuChartArea, LuMessageCircle } from "react-icons/lu";
+import { LuBell, LuBug, LuChartArea, LuMessageCircle } from "react-icons/lu";
 import logo from "/src/assets/logo.svg";
 import { useAuth } from "shared/hooks";
 
@@ -47,6 +47,11 @@ const navigationItems: {
       title: "Тестирование",
       url: RoutePath.test,
       icon: ClipboardList,
+    },
+    {
+      title: "Замечания",
+      url: RoutePath.remarks,
+      icon: LuBug,
     },
     {
       title: "Переписка",

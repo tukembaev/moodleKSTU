@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Download, Smartphone, Apple, Share } from 'lucide-react';
 import { useInstallPrompt } from 'shared/lib/pwa/useInstallPrompt';
-import { 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton 
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
 } from 'shared/shadcn/ui/sidebar';
 import {
   Dialog,
@@ -16,14 +16,30 @@ import {
 
 export const SidebarInstallButton = () => {
   const { promptInstall, isInstalled } = useInstallPrompt();
+  const [isMobile, setIsMobile] = useState(false)
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   useEffect(() => {
     // Проверка на iOS
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(isIOSDevice);
+  }, []);
+
+  useEffect(() => {
+    const ua = navigator.userAgent;
+
+    // Проверка на iOS
+    const isIOSDevice = /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    setIsIOS(isIOSDevice);
+
+    // Проверка на мобильное устройство (общая)
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) ||
+      window.innerWidth <= 768; // Дополнительно проверяем ширину экрана
+
+    setIsMobile(isMobileDevice);
   }, []);
 
   // Если уже установлено, ничего не показываем
@@ -41,21 +57,23 @@ export const SidebarInstallButton = () => {
   // Показываем кнопку если:
   // 1. Это Android и браузер разрешил установку (canInstall)
   // 2. Это iOS (всегда показываем, так как canInstall там всегда false)
-//   if (!canInstall && !isIOS) return null;
+  //   if (!canInstall && !isIOS) return null;
 
   return (
     <>
       <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton 
-            onClick={handleInstallClick}
-            tooltip="Установить приложение"
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium"
-          >
-            {isIOS ? <Apple className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
-            <span>Установить PWA</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        {isMobile && (
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleInstallClick}
+              tooltip="Установить приложение"
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium"
+            >
+              {isIOS ? <Apple className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
+              <span>Установить PWA</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
       </SidebarMenu>
 
       {/* Инструкция для iOS */}
@@ -95,7 +113,7 @@ export const SidebarInstallButton = () => {
               </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={() => setShowIOSInstructions(false)}
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium"
           >

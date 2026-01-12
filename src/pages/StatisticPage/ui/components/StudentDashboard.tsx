@@ -46,7 +46,7 @@ export const StudentDashboard = () => {
     return <div className="text-center text-muted-foreground">Нет данных для отображения</div>;
   }
 
-  const { overall_progress, courses = [], upcoming_deadlines = [], recent_grades = [] } = data;
+  const { overall_progress, courses = [], upcoming_deadlines = [] } = data;
 
   return (
     <div className="flex flex-col gap-6">
@@ -210,55 +210,7 @@ export const StudentDashboard = () => {
         </Card>
       )}
 
-      {/* Последние оценки */}
-      {recent_grades.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Последние оценки</CardTitle>
-            <CardDescription>Недавно проверенные работы</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recent_grades.map((grade) => (
-                <div
-                  key={grade.task_files.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{grade.course_detail.title}</h4>
-                      <Badge variant="outline">{grade.course_detail.type_less}</Badge>
-                      {grade.task_files.status && (
-                        <Badge variant="default" className="flex items-center gap-1">
-                          <LucideCheckCircle2 className="h-3 w-3" />
-                          Проверено
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {grade.course.discipline_name}
-                    </p>
-                    {grade.task_files.comment && (
-                      <p className="text-sm mt-2 italic text-muted-foreground">
-                        "{grade.task_files.comment}"
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {format(new Date(grade.task_files.created_at), "dd MMMM yyyy, HH:mm", {
-                        locale: ru,
-                      })}
-                    </p>
-                  </div>
-                  <div className="ml-4 text-right">
-                    <p className="text-2xl font-bold">{grade.task_files.points}</p>
-                    <p className="text-sm text-muted-foreground">/ {grade.course_detail.max_points}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
     </div>
   );
 };

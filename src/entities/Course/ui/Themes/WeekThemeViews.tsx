@@ -1,9 +1,9 @@
 import { WeekTheme } from "entities/Course/model/types/course";
-import { 
-  ChevronDown, 
-  ChevronRight, 
-  Clock, 
-  Lock, 
+import {
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  Lock,
   CheckCircle2,
   AlertCircle,
   Sparkles,
@@ -42,64 +42,64 @@ export const categories: {
   icon: React.ReactNode;
   badgeClass: string;
   iconClass: string;
-  gradientClass: string;
+
   borderClass: string;
 }[] = [
-  { 
-    key: "lb", 
-    title: "Лабораторные", 
-    icon: <LuFlaskConical />,
-    badgeClass: "bg-purple-50 text-purple-600/80 border-purple-200/50 dark:bg-purple-950/30 dark:text-purple-400/80 dark:border-purple-800/30",
-    iconClass: "text-purple-600 dark:text-purple-400",
-    gradientClass: "from-purple-500/10 via-transparent to-transparent",
-    borderClass: "hover:border-purple-300 dark:hover:border-purple-700"
-  },
-  { 
-    key: "pr", 
-    title: "Практика", 
-    icon: <LuHammer />,
-    badgeClass: "bg-blue-50 text-blue-600/80 border-blue-200/50 dark:bg-blue-950/30 dark:text-blue-400/80 dark:border-blue-800/30",
-    iconClass: "text-blue-600 dark:text-blue-400",
-    gradientClass: "from-blue-500/10 via-transparent to-transparent",
-    borderClass: "hover:border-blue-300 dark:hover:border-blue-700"
-  },
-  { 
-    key: "lc", 
-    title: "Лекции", 
-    icon: <LuBookOpen />,
-    badgeClass: "bg-emerald-50 text-emerald-600/80 border-emerald-200/50 dark:bg-emerald-950/30 dark:text-emerald-400/80 dark:border-emerald-800/30",
-    iconClass: "text-emerald-600 dark:text-emerald-400",
-    gradientClass: "from-emerald-500/10 via-transparent to-transparent",
-    borderClass: "hover:border-emerald-300 dark:hover:border-emerald-700"
-  },
-  { 
-    key: "srs", 
-    title: "СРС", 
-    icon: <LuNotebookPen />,
-    badgeClass: "bg-amber-50 text-amber-600/80 border-amber-200/50 dark:bg-amber-950/30 dark:text-amber-400/80 dark:border-amber-800/30",
-    iconClass: "text-amber-600 dark:text-amber-400",
-    gradientClass: "from-amber-500/10 via-transparent to-transparent",
-    borderClass: "hover:border-amber-300 dark:hover:border-amber-700"
-  },
-  { 
-    key: "test", 
-    title: "Тесты", 
-    icon: <LuShapes />,
-    badgeClass: "bg-rose-50 text-rose-600/80 border-rose-200/50 dark:bg-rose-950/30 dark:text-rose-400/80 dark:border-rose-800/30",
-    iconClass: "text-rose-600 dark:text-rose-400",
-    gradientClass: "from-rose-500/10 via-transparent to-transparent",
-    borderClass: "hover:border-rose-300 dark:hover:border-rose-700"
-  },
-  { 
-    key: "other", 
-    title: "Прочее", 
-    icon: <LuPuzzle />,
-    badgeClass: "bg-slate-50 text-slate-600/80 border-slate-200/50 dark:bg-slate-950/30 dark:text-slate-400/80 dark:border-slate-800/30",
-    iconClass: "text-slate-600 dark:text-slate-400",
-    gradientClass: "from-slate-500/10 via-transparent to-transparent",
-    borderClass: "hover:border-slate-300 dark:hover:border-slate-700"
-  },
-];
+    {
+      key: "lb",
+      title: "Лабораторные",
+      icon: <LuFlaskConical />,
+      badgeClass: "bg-purple-50 text-purple-600/80 border-purple-200/50 dark:bg-purple-950/30 dark:text-purple-400/80 dark:border-purple-800/30",
+      iconClass: "text-purple-600 dark:text-purple-400",
+
+      borderClass: "hover:border-purple-300 dark:hover:border-purple-700"
+    },
+    {
+      key: "pr",
+      title: "Практика",
+      icon: <LuHammer />,
+      badgeClass: "bg-blue-50 text-blue-600/80 border-blue-200/50 dark:bg-blue-950/30 dark:text-blue-400/80 dark:border-blue-800/30",
+      iconClass: "text-blue-600 dark:text-blue-400",
+
+      borderClass: "hover:border-blue-300 dark:hover:border-blue-700"
+    },
+    {
+      key: "lc",
+      title: "Лекции",
+      icon: <LuBookOpen />,
+      badgeClass: "bg-emerald-50 text-emerald-600/80 border-emerald-200/50 dark:bg-emerald-950/30 dark:text-emerald-400/80 dark:border-emerald-800/30",
+      iconClass: "text-emerald-600 dark:text-emerald-400",
+
+      borderClass: "hover:border-emerald-300 dark:hover:border-emerald-700"
+    },
+    {
+      key: "srs",
+      title: "СРС",
+      icon: <LuNotebookPen />,
+      badgeClass: "bg-amber-50 text-amber-600/80 border-amber-200/50 dark:bg-amber-950/30 dark:text-amber-400/80 dark:border-amber-800/30",
+      iconClass: "text-amber-600 dark:text-amber-400",
+
+      borderClass: "hover:border-amber-300 dark:hover:border-amber-700"
+    },
+    {
+      key: "test",
+      title: "Тесты",
+      icon: <LuShapes />,
+      badgeClass: "bg-rose-50 text-rose-600/80 border-rose-200/50 dark:bg-rose-950/30 dark:text-rose-400/80 dark:border-rose-800/30",
+      iconClass: "text-rose-600 dark:text-rose-400",
+
+      borderClass: "hover:border-rose-300 dark:hover:border-rose-700"
+    },
+    {
+      key: "other",
+      title: "Прочее",
+      icon: <LuPuzzle />,
+      badgeClass: "bg-slate-50 text-slate-600/80 border-slate-200/50 dark:bg-slate-950/30 dark:text-slate-400/80 dark:border-slate-800/30",
+      iconClass: "text-slate-600 dark:text-slate-400",
+
+      borderClass: "hover:border-slate-300 dark:hover:border-slate-700"
+    },
+  ];
 
 // Map type_less values to category keys
 const mapTypeLessToCategory = (type_less: string): string => {
@@ -127,7 +127,7 @@ const ThemeStatusBadge: React.FC<{
       </Badge>
     );
   }
-  
+
   if (status) {
     return (
       <Badge className="gap-1.5 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800">
@@ -136,7 +136,7 @@ const ThemeStatusBadge: React.FC<{
       </Badge>
     );
   }
-  
+
   return (
     <Badge variant="secondary" className="gap-1.5 text-muted-foreground">
       <AlertCircle className="h-3 w-3" />
@@ -181,13 +181,13 @@ const EmptyState: React.FC<{
       </FadeIn>
     );
   }
-  
+
   if (isOwner) {
     return (
       <AddThemeCard openForm={openForm} id_week={id_week} isMobile={isMobile} />
     );
   }
-  
+
   return (
     <div className="py-12 text-center">
       <div className="inline-flex items-center gap-2 text-muted-foreground">
@@ -267,12 +267,12 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
   if (themes.length === 0 && tests.length === 0) {
     return (
       <div className="pt-4 pb-10">
-        <EmptyState 
-          isStudent={isStudent} 
-          isOwner={isOwner} 
-          openForm={openForm} 
-          id_week={id_week} 
-          isMobile={isMobile} 
+        <EmptyState
+          isStudent={isStudent}
+          isOwner={isOwner}
+          openForm={openForm}
+          id_week={id_week}
+          isMobile={isMobile}
         />
       </div>
     );
@@ -284,13 +284,13 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
       {tests.map((item) => (
         <TestCard key={item.id} item={item} id_week={id_week || ""} viewMode="grid" />
       ))}
-      
+
       {/* Render all themes */}
       {themes.map((theme) => {
         const isThemeExpanded = expandedId === theme.id;
         const categoryKey = mapTypeLessToCategory(theme.type_less);
         const category = categories.find((c) => c.key === categoryKey);
-        
+
         return (
           <Card
             key={theme.id}
@@ -306,8 +306,8 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
             `}
           >
             {/* Gradient accent */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${category?.gradientClass || ""} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
-            
+            <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+
             <CardContent className="relative flex flex-col justify-between p-4 sm:p-5">
               {/* Header */}
               <div className="flex items-start justify-between gap-3 mb-3">
@@ -318,10 +318,10 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                   </Badge>
                 </div>
                 {isStudent && (
-                  <ThemeStatusBadge 
-                    status={theme.status} 
-                    result={theme.result} 
-                    locked={theme.locked} 
+                  <ThemeStatusBadge
+                    status={theme.status}
+                    result={theme.result}
+                    locked={theme.locked}
                   />
                 )}
                 {!isStudent && theme.locked && (
@@ -331,23 +331,21 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                   </Badge>
                 )}
               </div>
-              
+
               {/* Title */}
-              <h3 className={`text-lg sm:text-xl font-semibold mb-2 line-clamp-2 ${
-                theme.locked ? "blur-sm pointer-events-none select-none" : ""
-              }`}>
+              <h3 className={`text-lg sm:text-xl font-semibold mb-2 line-clamp-2 ${theme.locked ? "blur-sm pointer-events-none select-none" : ""
+                }`}>
                 {theme.title}
               </h3>
-              
+
               {/* Description */}
               {theme.description && (
-                <p className={`text-sm text-muted-foreground mb-4 line-clamp-2 ${
-                  theme.locked ? "blur-sm pointer-events-none select-none" : ""
-                }`}>
+                <p className={`text-sm text-muted-foreground mb-4 line-clamp-2 ${theme.locked ? "blur-sm pointer-events-none select-none" : ""
+                  }`}>
                   {theme.description}
                 </p>
               )}
-              
+
               {/* Footer */}
               <div className="flex justify-between items-center mt-auto pt-3 border-t border-border/50">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -362,7 +360,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                     </UseTooltip>
                   )}
                 </div>
-                
+
                 {!theme.locked && (
                   <Button
                     variant={isThemeExpanded ? "default" : "outline"}
@@ -384,7 +382,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                   </Button>
                 )}
               </div>
-              
+
               {/* Expanded content */}
               {isThemeExpanded && (
                 <div className="mt-4 pt-4 border-t border-border animate-in slide-in-from-top-2 duration-300">
@@ -395,7 +393,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
           </Card>
         );
       })}
-      
+
       {/* Add theme button for owner */}
       {isOwner && (
         <AddThemeCard openForm={openForm} id_week={id_week} isMobile={isMobile} />
@@ -422,12 +420,12 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
   if (themes.length === 0 && tests.length === 0) {
     return (
       <div className="pt-4 pb-10">
-        <EmptyState 
-          isStudent={isStudent} 
-          isOwner={isOwner} 
-          openForm={openForm} 
-          id_week={id_week} 
-          isMobile={isMobile} 
+        <EmptyState
+          isStudent={isStudent}
+          isOwner={isOwner}
+          openForm={openForm}
+          id_week={id_week}
+          isMobile={isMobile}
         />
       </div>
     );
@@ -465,7 +463,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
           const categoryKey = mapTypeLessToCategory(theme.type_less);
           const category = categories.find((c) => c.key === categoryKey);
           const isExpanded = expandedId === theme.id;
-          
+
           return (
             <AccordionItem
               key={theme.id}
@@ -482,8 +480,8 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
               }}
             >
               {/* Gradient accent */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${category?.gradientClass || ""} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
-              
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+
               <AccordionTrigger
                 className={`
                   relative px-4 sm:px-5 py-4 hover:no-underline
@@ -500,29 +498,27 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                         {category?.icon}
                       </span>
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`text-base sm:text-lg font-semibold ${
-                          theme.locked ? "blur-sm pointer-events-none select-none" : ""
-                        }`}>
+                        <span className={`text-base sm:text-lg font-semibold ${theme.locked ? "blur-sm pointer-events-none select-none" : ""
+                          }`}>
                           {theme.title}
                         </span>
                         <Badge className={`${category?.badgeClass || ""} text-xs`}>
                           {category?.title}
                         </Badge>
                       </div>
-                      
+
                       {!isMobile && theme.description && (
-                        <p className={`text-sm text-muted-foreground mt-1 line-clamp-1 ${
-                          theme.locked ? "blur-sm pointer-events-none select-none" : ""
-                        }`}>
+                        <p className={`text-sm text-muted-foreground mt-1 line-clamp-1 ${theme.locked ? "blur-sm pointer-events-none select-none" : ""
+                          }`}>
                           {theme.description}
                         </p>
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Right side - Stats and status */}
                   <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                     {theme.max_points && (
@@ -535,15 +531,15 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                         </div>
                       </UseTooltip>
                     )}
-                    
+
                     {isStudent && (
-                      <ThemeStatusBadge 
-                        status={theme.status} 
-                        result={theme.result} 
-                        locked={theme.locked} 
+                      <ThemeStatusBadge
+                        status={theme.status}
+                        result={theme.result}
+                        locked={theme.locked}
                       />
                     )}
-                    
+
                     {!isStudent && theme.locked && (
                       <Badge className="gap-1.5 bg-gray-100 text-gray-600 border-gray-200">
                         <Lock className="h-3 w-3" />
@@ -553,18 +549,17 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                   </div>
                 </div>
               </AccordionTrigger>
-              
+
               <AccordionContent className="px-4 sm:px-5 pb-5">
                 <div className="flex flex-col gap-4 pt-2">
                   {/* Mobile description */}
                   {isMobile && theme.description && (
-                    <p className={`text-sm text-muted-foreground ${
-                      theme.locked ? "blur-sm pointer-events-none select-none" : ""
-                    }`}>
+                    <p className={`text-sm text-muted-foreground ${theme.locked ? "blur-sm pointer-events-none select-none" : ""
+                      }`}>
                       {theme.description}
                     </p>
                   )}
-                  
+
                   {/* Progress indicator for student */}
                   {isStudent && theme.status && theme.max_points && (
                     <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
@@ -576,13 +571,13 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                           {theme.result} / {theme.max_points}
                         </span>
                       </div>
-                      <Progress 
-                        value={(Number(theme.result) / theme.max_points) * 100} 
+                      <Progress
+                        value={(Number(theme.result) / theme.max_points) * 100}
                         className="h-2"
                       />
                     </div>
                   )}
-                  
+
                   {/* Theme files */}
                   <ThemeFiles id={theme.id} isOwner={isOwner} />
                 </div>
