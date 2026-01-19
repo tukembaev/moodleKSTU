@@ -1,57 +1,32 @@
+import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+
 import { CourseOwner } from "entities/Course/model/types/course";
+import { CourseFAQ, CourseInstructor, LearningOutcome } from "entities/Course/model/types/courseAbout";
 import {
-  Award,
   BookOpen,
-  CheckCircle2,
-  Clock,
   FileText,
-  FileVideo,
   GraduationCap,
-  Infinity,
   LucideEdit,
   Mail,
   MessageCircle,
-  Star,
-  Trophy,
-  Users,
+  Star
 } from "lucide-react";
 import { FC, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
-import {
-  mockCourseAboutData,
-  getLevelColor,
-  type CourseAboutData,
-} from "shared/mocks/aboutCourseMock";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "shared/shadcn/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "shared/shadcn/ui/card";
-import { Progress } from "shared/shadcn/ui/progress";
-import { Separator } from "shared/shadcn/ui/separator";
+import { FAQ, TestConditions, WhatYouWillLearn } from "./components";
 
-// Маппинг иконок
-const iconMap: Record<string, React.ElementType> = {
-  Clock,
-  BookOpen,
-  FileVideo,
-  FileText,
-  Award,
-  Infinity,
-};
+
 
 // Компонент для редактируемых секций
 export const Section: FC<{
@@ -191,76 +166,12 @@ const EditableCard: FC<{
   );
 };
 
-// Компонент карточки характеристики
-const FeatureCard: FC<{
-  icon: string;
-  title: string;
-  description: string;
-}> = ({ icon, title, description }) => {
-  const IconComponent = iconMap[icon] || BookOpen;
-
-  return (
-    <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-muted/50 to-muted border border-border/50 hover:border-primary/20 hover:shadow-sm transition-all duration-300">
-      <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
-        <IconComponent className="h-5 w-5" />
-      </div>
-      <div className="flex flex-col">
-        <span className="font-semibold text-foreground">{title}</span>
-        <span className="text-xs text-muted-foreground">{description}</span>
-      </div>
-    </div>
-  );
-};
-
-// Компонент статистики курса
-const CourseStatsCard: FC<{ stats: CourseAboutData["stats"] }> = ({ stats }) => {
-  return (
-    <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-primary/5 via-background to-primary/10">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Trophy className="h-5 w-5 text-primary" />
-          Статистика курса
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col items-center p-3 rounded-lg bg-background/60 backdrop-blur-sm">
-          <div className="flex items-center gap-1 text-2xl font-bold text-primary">
-            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-            {stats.averageRating}
-          </div>
-          <span className="text-xs text-muted-foreground mt-1">
-            {stats.totalReviews} отзывов
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center p-3 rounded-lg bg-background/60 backdrop-blur-sm">
-          <div className="flex items-center gap-1 text-2xl font-bold text-primary">
-            <Users className="h-5 w-5" />
-            {stats.totalStudents.toLocaleString()}
-          </div>
-          <span className="text-xs text-muted-foreground mt-1">студентов</span>
-        </div>
-
-        <div className="col-span-2 p-3 rounded-lg bg-background/60 backdrop-blur-sm">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium">Завершаемость</span>
-            <span className="text-sm font-bold text-primary">{stats.completionRate}%</span>
-          </div>
-          <Progress value={stats.completionRate} className="h-2" />
-        </div>
-
-        <div className="col-span-2 flex justify-between text-sm text-muted-foreground">
-          <span>Обновлено: {new Date(stats.lastUpdated).toLocaleDateString('ru-RU')}</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 // Компонент преподавателя (компактный для правой колонки)
-const InstructorCard: FC<{ instructor: CourseAboutData["instructors"][0] }> = ({
+const InstructorCard: FC<{ instructor: CourseInstructor }> = ({
   instructor,
 }) => {
+  console.log(instructor)
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
       <CardContent className="p-4">
@@ -268,7 +179,7 @@ const InstructorCard: FC<{ instructor: CourseAboutData["instructors"][0] }> = ({
           <Avatar className="h-14 w-14 ring-2 ring-primary/10 shrink-0">
             <AvatarImage src={instructor.avatar} alt={instructor.name} />
             <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
-              {instructor.name.split(' ').map(n => n[0]).join('')}
+              {instructor.name.split(' ').map((n: string) => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
 
@@ -296,14 +207,16 @@ const InstructorCard: FC<{ instructor: CourseAboutData["instructors"][0] }> = ({
                 {instructor.socialLinks.email && (
                   <Button variant="ghost" size="icon" className="h-7 w-7">
                     <Mail className="h-3.5 w-3.5" />
+                    <a href={`mailto:${instructor.socialLinks.email}`}> {instructor.socialLinks.email} </a>
                   </Button>
                 )}
                 {instructor.socialLinks.telegram && (
                   <Button variant="ghost" size="icon" className="h-7 w-7">
                     <MessageCircle className="h-3.5 w-3.5" />
+                    <a href={`https://t.me/${instructor.socialLinks.telegram}`}> {instructor.socialLinks.telegram} </a>
                   </Button>
                 )}
-              </div>
+              </div>    
             )}
           </div>
         </div>
@@ -312,38 +225,6 @@ const InstructorCard: FC<{ instructor: CourseAboutData["instructors"][0] }> = ({
   );
 };
 
-// Компонент условий для сдачи
-const RulesCard: FC<{ rules: CourseAboutData["rules"] }> = ({
-  rules,
-}) => {
-  if (!rules.available) return null;
-
-  return (
-    <Card className="overflow-hidden border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-      <CardContent>
-        <div className="flex flex-col items-center gap-2">
-          <GraduationCap className="h-12 w-12 text-primary" />
-          <h4 className="text-lg font-semibold ">Условия для прохождения теста</h4>
-          <p className="text-sm text-muted-foreground mb-3 text-center">
-            Чтобы завершить курс вам потребуется выполнить следующие условия:
-          </p>
-
-
-
-          <div className="space-y-2">
-            {rules.requirements.map((req, idx) => (
-              <div key={idx} className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                <span>{req}</span>
-              </div>
-            ))}
-
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 // Главный компонент
 const AboutCourse = ({
@@ -357,14 +238,59 @@ const AboutCourse = ({
   audience?: string;
   course_owner?: CourseOwner | undefined;
 }) => {
-  const { id } = useAuth();
-  const isOwner = course_owner?.user_id === id;
+  const { id: courseId } = useParams();
+  const { id: userId } = useAuth();
+  const isOwner = course_owner?.user_id === userId;
   const [requirements, setRequirements] = useState(initialRequirements);
   const [description, setDescription] = useState(initialDescription);
-  const [audience, setAudience] = useState(initialAudience);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_audience, _setAudience] = useState(initialAudience);
 
-  // Используем мок данные
-  const courseData = mockCourseAboutData;
+  // Fetch course about data from API
+  const { data: courseData, isLoading } = useQuery(courseQueries.courseAbout(courseId || null));
+  
+  // PATCH mutation for updating course about data
+  const { mutate: updateCourseAbout } = courseQueries.update_course_about();
+
+  // Handler for updating FAQ
+  const handleFaqUpdate = (faq: CourseFAQ[]) => {
+    if (!courseId) return;
+    updateCourseAbout({
+      courseId,
+      data: { faq }
+    });
+  };
+
+  // Handler for updating learning outcomes
+  const handleLearningOutcomesUpdate = (learningOutcomes: LearningOutcome[]) => {
+    if (!courseId) return;
+    updateCourseAbout({
+      courseId,
+      data: { learningOutcomes }
+    });
+  };
+
+  // Handler for updating test conditions
+  const handleRulesUpdate = (requirements: string[]) => {
+    if (!courseId || !courseData) return;
+    updateCourseAbout({
+      courseId,
+      data: {
+        rules: {
+          ...courseData.rules,
+          requirements
+        }
+      }
+    });
+  };
+
+  if (isLoading) {
+    return <div className="py-4 text-center">Загрузка...</div>;
+  }
+
+  if (!courseData) {
+    return <div className="py-4 text-center">Данные не найдены</div>;
+  }
 
   return (
     <div className="py-4 space-y-8">
@@ -387,64 +313,6 @@ const AboutCourse = ({
             isOwner={isOwner || false}
           />
 
-          {/* Чему вы научитесь */}
-          <Card className="border-green-200/50 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-900/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
-                <CheckCircle2 className="h-5 w-5" />
-                Чему вы научитесь
-              </CardTitle>
-              <CardDescription>
-                Навыки и компетенции, которые вы получите
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {courseData.learningOutcomes.map((outcome) => (
-                  <div
-                    key={outcome.id}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-background/60 hover:bg-background transition-colors"
-                  >
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-sm">{outcome.title}</p>
-                      {outcome.description && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {outcome.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Для кого этот курс */}
-          <EditableCard
-            icon={Users}
-            title="Для кого этот курс?"
-            field="audience"
-            value={
-              audience ||
-              "Курс предназначен для студентов, которые хотят получить практические навыки в данной области."
-            }
-            onChange={setAudience}
-            isOwner={isOwner || false}
-          >
-            <div className="flex flex-wrap gap-2 mb-4">
-              <Badge className={getLevelColor(courseData.level.level)}>
-                {courseData.level.label}
-              </Badge>
-              <Badge variant="outline">{courseData.language}</Badge>
-              {courseData.tags.map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </EditableCard>
-
           {/* Требования */}
           <EditableCard
             icon={FileText}
@@ -457,12 +325,30 @@ const AboutCourse = ({
             onChange={setRequirements}
             isOwner={isOwner || false}
           />
+
+          {/* FAQ */}
+          <FAQ
+            faq={courseData.faq}
+            isOwner={isOwner || false}
+            onSave={handleFaqUpdate}
+          />
         </div>
 
         {/* Правая колонка - статистика и дополнительная информация */}
         <div className="space-y-6">
-          <CourseStatsCard stats={courseData.stats} />
-          <RulesCard rules={courseData.rules} />
+       
+          <TestConditions
+            rules={courseData.rules}
+            isOwner={isOwner || false}
+            onSave={handleRulesUpdate}
+          />
+
+          {/* Чему вы научитесь */}
+          <WhatYouWillLearn
+            outcomes={courseData.learningOutcomes}
+            isOwner={isOwner || false}
+            onSave={handleLearningOutcomesUpdate}
+          />
 
           {/* Преподаватели курса */}
           <div>
@@ -488,7 +374,7 @@ const AboutCourse = ({
                   }}
                 />
               ) : (
-                courseData.instructors.map((instructor) => (
+                courseData.instructors.map((instructor: CourseInstructor) => (
                   <InstructorCard key={instructor.id} instructor={instructor} />
                 ))
               )}
@@ -496,32 +382,6 @@ const AboutCourse = ({
           </div>
         </div>
       </div>
-
-      <Separator />
-
-      {/* FAQ */}
-      <section>
-        <h2 className="text-2xl font-bold tracking-tight mb-4 flex items-center gap-2">
-          <MessageCircle className="h-6 w-6 text-primary" />
-          Часто задаваемые вопросы
-        </h2>
-        <Card>
-          <CardContent>
-            <Accordion type="single" collapsible className="w-full">
-              {courseData.faq.map((item) => (
-                <AccordionItem key={item.id} value={item.id}>
-                  <AccordionTrigger className="text-left hover:no-underline">
-                    <span className="font-medium">{item.question}</span>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <p className="text-muted-foreground">{item.answer}</p>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
-      </section>
     </div>
   );
 };

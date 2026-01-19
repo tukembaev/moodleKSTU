@@ -485,7 +485,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
 
               <AccordionTrigger
                 className={`
-                  relative px-4 sm:px-5 py-4 hover:no-underline
+                  relative px-4 sm:px-5 py-4 hover:no-underline items-center
                   ${theme.locked ? "cursor-not-allowed" : "cursor-pointer"}
                   touch-manipulation
                 `}

@@ -134,76 +134,6 @@ export const CourseStatisticsTab = () => {
         </Card>
       </div>
 
-      {/* Распределение баллов */}
-      {students_statistics.score_distribution && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Распределение баллов</CardTitle>
-            <CardDescription>По категориям успеваемости</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {students_statistics.score_distribution.excellent && (
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Отлично</p>
-                  <p className="text-2xl font-bold">
-                    {students_statistics.score_distribution.excellent.count}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {students_statistics.score_distribution.excellent.percentage.toFixed(1)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {students_statistics.score_distribution.excellent.range}
-                  </p>
-                </div>
-              )}
-              {students_statistics.score_distribution.good && (
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Хорошо</p>
-                  <p className="text-2xl font-bold">
-                    {students_statistics.score_distribution.good.count}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {students_statistics.score_distribution.good.percentage.toFixed(1)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {students_statistics.score_distribution.good.range}
-                  </p>
-                </div>
-              )}
-              {students_statistics.score_distribution.satisfactory && (
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Удовлетворительно</p>
-                  <p className="text-2xl font-bold">
-                    {students_statistics.score_distribution.satisfactory.count}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {students_statistics.score_distribution.satisfactory.percentage.toFixed(1)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {students_statistics.score_distribution.satisfactory.range}
-                  </p>
-                </div>
-              )}
-              {students_statistics.score_distribution.unsatisfactory && (
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Неудовлетворительно</p>
-                  <p className="text-2xl font-bold">
-                    {students_statistics.score_distribution.unsatisfactory.count}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {students_statistics.score_distribution.unsatisfactory.percentage.toFixed(1)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {students_statistics.score_distribution.unsatisfactory.range}
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Табы с детальной статистикой */}
       <Tabs defaultValue="tasks" className="w-full">
         <TabsList>
@@ -222,114 +152,114 @@ export const CourseStatisticsTab = () => {
             </CardHeader>
             <CardContent>
               {tasks_statistics?.overall && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Всего заданий</p>
-                  <p className="text-2xl font-bold">{tasks_statistics.overall.total_tasks || 0}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Всего заданий</p>
+                    <p className="text-2xl font-bold">{tasks_statistics.overall.total_tasks || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Проверено</p>
+                    <p className="text-2xl font-bold">
+                      {tasks_statistics.overall.checked_responses || 0} / {tasks_statistics.overall.total_responses || 0}
+                    </p>
+                    {tasks_statistics.overall.total_responses > 0 && (
+                      <Progress
+                        value={
+                          ((tasks_statistics.overall.checked_responses || 0) /
+                            tasks_statistics.overall.total_responses) *
+                          100
+                        }
+                        className="h-2 mt-2"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Средний балл</p>
+                    <p className="text-2xl font-bold">
+                      {(tasks_statistics.overall.average_score || 0).toFixed(1)}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Проверено</p>
-                  <p className="text-2xl font-bold">
-                    {tasks_statistics.overall.checked_responses || 0} / {tasks_statistics.overall.total_responses || 0}
-                  </p>
-                  {tasks_statistics.overall.total_responses > 0 && (
-                  <Progress
-                    value={
-                      ((tasks_statistics.overall.checked_responses || 0) /
-                        tasks_statistics.overall.total_responses) *
-                      100
-                    }
-                    className="h-2 mt-2"
-                  />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Средний балл</p>
-                  <p className="text-2xl font-bold">
-                    {(tasks_statistics.overall.average_score || 0).toFixed(1)}
-                  </p>
-                </div>
-              </div>
               )}
 
               {/* По типам заданий */}
               {Object.keys(tasksByType).length > 0 && (
-              <div className="space-y-4">
-                <h3 className="font-semibold">По типам заданий</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Object.entries(tasksByType).map(([type, stats]) => (
-                    <Card key={type}>
-                      <CardHeader>
-                        <CardTitle className="text-lg">{type}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Всего заданий</span>
-                            <span className="font-medium">{stats.total_tasks}</span>
+                <div className="space-y-4">
+                  <h3 className="font-semibold">По типам заданий</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {Object.entries(tasksByType).map(([type, stats]) => (
+                      <Card key={type}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">{type}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Всего заданий</span>
+                              <span className="font-medium">{stats.total_tasks}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Проверено</span>
+                              <span className="font-medium">
+                                {stats.checked_responses} / {stats.total_responses}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Средний балл</span>
+                              <span className="font-medium">{stats.average_score.toFixed(1)}</span>
+                            </div>
+                            <Progress value={stats.completion_percentage} className="h-2" />
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Проверено</span>
-                            <span className="font-medium">
-                              {stats.checked_responses} / {stats.total_responses}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Средний балл</span>
-                            <span className="font-medium">{stats.average_score.toFixed(1)}</span>
-                          </div>
-                          <Progress value={stats.completion_percentage} className="h-2" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
               )}
 
               {/* Детали по заданиям */}
               {tasksDetail.length > 0 && (
-              <div className="mt-6">
-                <h3 className="font-semibold mb-4">Детали по заданиям</h3>
-                <div className="border rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Задание</TableHead>
-                        <TableHead>Тип</TableHead>
-                        <TableHead>Ответов</TableHead>
-                        <TableHead>Проверено</TableHead>
-                        <TableHead>Средний балл</TableHead>
-                        <TableHead>Просрочено</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {tasksDetail.slice(0, 10).map((task) => (
-                        <TableRow key={task.course_detail.id}>
-                          <TableCell className="font-medium">
-                            {task.course_detail.title}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{task.course_detail.type_less}</Badge>
-                          </TableCell>
-                          <TableCell>{task.responses_count}</TableCell>
-                          <TableCell>
-                            {task.checked_count} / {task.responses_count}
-                          </TableCell>
-                          <TableCell>{task.average_score.toFixed(1)}</TableCell>
-                          <TableCell>
-                            {task.overdue_responses > 0 ? (
-                              <Badge variant="destructive">{task.overdue_responses}</Badge>
-                            ) : (
-                              <span className="text-muted-foreground">0</span>
-                            )}
-                          </TableCell>
+                <div className="mt-6">
+                  <h3 className="font-semibold mb-4">Детали по заданиям</h3>
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Задание</TableHead>
+                          <TableHead>Тип</TableHead>
+                          <TableHead>Ответов</TableHead>
+                          <TableHead>Проверено</TableHead>
+                          <TableHead>Средний балл</TableHead>
+                          <TableHead>Просрочено</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {tasksDetail.slice(0, 10).map((task) => (
+                          <TableRow key={task.course_detail.id}>
+                            <TableCell className="font-medium">
+                              {task.course_detail.title}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{task.course_detail.type_less}</Badge>
+                            </TableCell>
+                            <TableCell>{task.responses_count}</TableCell>
+                            <TableCell>
+                              {task.checked_count} / {task.responses_count}
+                            </TableCell>
+                            <TableCell>{task.average_score.toFixed(1)}</TableCell>
+                            <TableCell>
+                              {task.overdue_responses > 0 ? (
+                                <Badge variant="destructive">{task.overdue_responses}</Badge>
+                              ) : (
+                                <span className="text-muted-foreground">0</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
-              </div>
               )}
             </CardContent>
           </Card>
@@ -343,70 +273,70 @@ export const CourseStatisticsTab = () => {
             </CardHeader>
             <CardContent>
               {tests_statistics?.overall && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Всего тестов</p>
-                  <p className="text-2xl font-bold">{tests_statistics.overall.total_tests || 0}</p>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Всего тестов</p>
+                    <p className="text-2xl font-bold">{tests_statistics.overall.total_tests || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Попыток</p>
+                    <p className="text-2xl font-bold">{tests_statistics.overall.total_attempts || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Средний балл</p>
+                    <p className="text-2xl font-bold">
+                      {(tests_statistics.overall.average_score || 0).toFixed(1)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Процент прохождения</p>
+                    <p className="text-2xl font-bold">
+                      {(tests_statistics.overall.completion_percentage || 0).toFixed(1)}%
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Попыток</p>
-                  <p className="text-2xl font-bold">{tests_statistics.overall.total_attempts || 0}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Средний балл</p>
-                  <p className="text-2xl font-bold">
-                    {(tests_statistics.overall.average_score || 0).toFixed(1)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Процент прохождения</p>
-                  <p className="text-2xl font-bold">
-                    {(tests_statistics.overall.completion_percentage || 0).toFixed(1)}%
-                  </p>
-                </div>
-              </div>
               )}
 
               {/* Детали по тестам */}
               {testsDetail.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="font-semibold">Детали по тестам</h3>
-                {testsDetail.map((test) => (
-                  <Card key={test.testing.id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{test.testing.title}</CardTitle>
-                        <Badge variant="outline">{test.testing.max_points} баллов</Badge>
-                      </div>
-                      <CardDescription>{test.testing.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Попыток</p>
-                          <p className="text-xl font-bold">{test.attempts_count}</p>
+                <div className="space-y-4">
+                  <h3 className="font-semibold">Детали по тестам</h3>
+                  {testsDetail.map((test) => (
+                    <Card key={test.testing.id}>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">{test.testing.title}</CardTitle>
+                          <Badge variant="outline">{test.testing.max_points} баллов</Badge>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Средний балл</p>
-                          <p className="text-xl font-bold">{test.average_score.toFixed(1)}</p>
+                        <CardDescription>{test.testing.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Попыток</p>
+                            <p className="text-xl font-bold">{test.attempts_count}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Средний балл</p>
+                            <p className="text-xl font-bold">{test.average_score.toFixed(1)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Макс / Мин</p>
+                            <p className="text-xl font-bold">
+                              {test.max_score} / {test.min_score}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Правильность</p>
+                            <p className="text-xl font-bold">
+                              {test.average_correct_percentage.toFixed(1)}%
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Макс / Мин</p>
-                          <p className="text-xl font-bold">
-                            {test.max_score} / {test.min_score}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Правильность</p>
-                          <p className="text-xl font-bold">
-                            {test.average_correct_percentage.toFixed(1)}%
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>

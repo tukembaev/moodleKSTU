@@ -71,7 +71,7 @@ const TestCard = ({
     return (
       <Card className={`
         group relative overflow-hidden border rounded-xl transition-all duration-300 
-        hover:shadow-sm ${testCategory.borderClass}
+py-0        hover:shadow-sm ${testCategory.borderClass}
       `}>
         {/* Gradient accent */}
         <div className={`absolute inset-0  opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />

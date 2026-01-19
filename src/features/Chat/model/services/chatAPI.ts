@@ -15,7 +15,7 @@ import type {
   SendMessageRequest,
 } from "../types/chat";
 
-export const CHAT_API_URL = `https://uadmin.kstu.kg/api/unet-chat/`;
+export const CHAT_API_URL = `http://127.0.0.1:8000/api/unet-chat/`;
 
 // Создаем отдельный axios instance для чата
 const chatApiInstance = axios.create({

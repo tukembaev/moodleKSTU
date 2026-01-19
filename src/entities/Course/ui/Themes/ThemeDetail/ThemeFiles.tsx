@@ -33,11 +33,10 @@ import {
   TableRow,
 } from "shared/shadcn/ui/table";
 
-
-import { StudentComments } from "features/Course/hooks/StudentComments";
 import ThemeAnswers from "../../Answers/ThemeAnswers";
 import { ThemeFeed } from "./ThemeFeed";
 import ThemeFAQ from "./ThemeFAQ";
+import { StudentRemarks } from "features/Course/hooks/StudentRemarks";
 
 
 const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
@@ -91,7 +90,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
         {
           name: "Замечания",
           value: "comments",
-          content: <StudentComments theme_id={id} />,
+          content: <StudentRemarks theme_id={id} />,
           icon: <LuClipboardList />,
         },
       ]

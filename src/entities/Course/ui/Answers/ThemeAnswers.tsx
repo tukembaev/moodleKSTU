@@ -12,13 +12,13 @@ const ThemeAnswers = ({ id }: { id: string }) => {
     error: listOfStudentsError,
     refetch,
   } = useQuery(courseQueries.allAnswerTask(isStudent ? null : id));
-  console.log(answersOfAllStudents);
+
   const {
     data: authStudentAnswers,
     isLoading: authStudentAnswersLoading,
     error: authStudentAnswersError,
   } = useQuery(courseQueries.allStudentAnswers(isStudent ? id : null));
-  console.log(authStudentAnswers);
+
 
   return (
     <>

@@ -1,15 +1,22 @@
 import { ReactNode } from "react";
+import { lazy, Suspense } from "react";
 
-import {
-  Add_Answer_Theme,
-  Add_Course,
-  Add_Material_file,
-  Add_Theme,
-  Add_Theme_FAQ,
-  End_Course,
-} from "features/Course";
-import { Add_Test } from "features/Test";
-import Add_Quiz from "features/Course/forms/add-quiz";
+// Ленивые импорты для избежания циклических зависимостей
+const Add_Course = lazy(() => import("features/Course").then(module => ({ default: module.Add_Course })));
+const Add_Theme = lazy(() => import("features/Course").then(module => ({ default: module.Add_Theme })));
+const Add_Theme_FAQ = lazy(() => import("features/Course").then(module => ({ default: module.Add_Theme_FAQ })));
+const Add_Material_file = lazy(() => import("features/Course").then(module => ({ default: module.Add_Material_file })));
+const Add_Answer_Theme = lazy(() => import("features/Course").then(module => ({ default: module.Add_Answer_Theme })));
+const End_Course = lazy(() => import("features/Course").then(module => ({ default: module.End_Course })));
+const Add_Quiz = lazy(() => import("features/Course/forms/add-quiz").then(module => ({ default: module.default })));
+const Add_Test = lazy(() => import("features/Test").then(module => ({ default: module.Add_Test })));
+
+// Компонент-обертка для Suspense
+const LazyWrapper = ({ children }: { children: ReactNode }) => (
+  <Suspense fallback={<div>Loading...</div>}>
+    {children}
+  </Suspense>
+);
 
 export enum FormQuery {
   //course
@@ -37,49 +44,49 @@ export const forms: FormConfig[] = [
   {
     query: FormQuery.ADD_COURSE,
     title: "Создание курса",
-    form: <Add_Course />,
+    form: <LazyWrapper><Add_Course /></LazyWrapper>,
     is_student_allow: false,
   },
   {
     query: FormQuery.ADD_THEME,
     title: "Создание темы",
-    form: <Add_Theme />,
+    form: <LazyWrapper><Add_Theme /></LazyWrapper>,
     is_student_allow: false,
   },
   {
     query: FormQuery.ADD_THEME_FAQ,
     title: "Создание FAQ",
-    form: <Add_Theme_FAQ />,
+    form: <LazyWrapper><Add_Theme_FAQ /></LazyWrapper>,
     is_student_allow: false,
   },
   {
     query: FormQuery.ADD_TEST,
     title: "Создание теста",
-    form: <Add_Test />,
+    form: <LazyWrapper><Add_Test /></LazyWrapper>,
     is_student_allow: false,
   },
   {
     query: FormQuery.ADD_MATERIAL,
     title: "Загрузка материала",
-    form: <Add_Material_file />,
+    form: <LazyWrapper><Add_Material_file /></LazyWrapper>,
     is_student_allow: true,
   },
   {
     query: FormQuery.ADD_ANSWER,
     title: "Загрузка материала",
-    form: <Add_Answer_Theme />,
+    form: <LazyWrapper><Add_Answer_Theme /></LazyWrapper>,
     is_student_allow: true,
   },
   {
     query: FormQuery.END_COURSE,
     title: "Итоговый балл",
-    form: <End_Course />,
+    form: <LazyWrapper><End_Course /></LazyWrapper>,
     is_student_allow: true,
   },
   {
     query: FormQuery.ADD_QUIZ,
     title: "Создание теста",
-    form: <Add_Quiz />,
+    form: <LazyWrapper><Add_Quiz /></LazyWrapper>,
     is_student_allow: true,
   },
   // {

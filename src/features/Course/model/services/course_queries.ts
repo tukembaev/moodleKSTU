@@ -1,10 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import { registerToCourse } from 'entities/User';
 
 import { createCourse, createTheme } from 'entities/Course';
-import { createAnswer, createComment, createFAQ, createMaterial, deleteMaterial, editCourseDetails, editPermissionTheme, finishCourse, likeComment, rateTheAnswerAndComment, replyOnComment, setExtraPoints } from 'entities/Course/model/services/courseAPI';
+import { createComment, createFAQ, createMaterial, deleteMaterial, editCourseDetails, editPermissionTheme, finishCourse, getCourseAbout, likeComment, rateTheAnswerAndComment, replyOnComment, setExtraPoints, updateCourseAbout } from 'entities/Course/model/services/courseAPI';
 import { toast } from 'sonner';
 import { CreateCoursePayload, CreateFAQPayload, CreateThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload } from '../types/course_payload';
+import { UpdateCourseAboutPayload } from 'entities/Course/model/types/courseAbout';
 
 
 
@@ -100,28 +101,6 @@ export const useRegistrateCourse = () => {
     });
   };
 
-  export const useCreateAnswer = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-      mutationFn: (data: FormData) => {
-        const mutationPromise = createAnswer(data);
-        toast.promise(mutationPromise, {
-          loading: "Загружаем вашу работу...",
-          success: "Загрузка работы прошла успешно!",
-          // error: "Ошибка при загрузке материала. Попробуйте снова.",
-        });
-        return mutationPromise;
-      },
-      onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
-
-        console.log(error.message);
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['student-answer-task'] });
-      },
-    });
-  };
     export const useCreateTheme = () =>{
     const queryClient = useQueryClient();
     return useMutation({
@@ -174,6 +153,28 @@ export const useRegistrateCourse = () => {
         },});
       
     };
+
+    export const useUpdateCourseAbout = () => {
+      const queryClient = useQueryClient();
+      return useMutation({
+        mutationFn: ({ courseId, data }: { courseId: string; data: UpdateCourseAboutPayload }) => {
+          const mutationPromise = updateCourseAbout(courseId, data);
+          toast.promise(mutationPromise, {
+            loading: "Сохраняем изменения...",
+            success: "Изменения успешно сохранены!",
+          });
+          return mutationPromise;
+        },
+        onError: (error: any) => {
+          toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+          console.log(error.message);
+        },
+        onSuccess: (_, variables) => {
+          queryClient.invalidateQueries({ queryKey: ['course-about', variables.courseId] });
+        },
+      });
+    }
+
 
       export const useChangePermission = () => {
         const queryClient = useQueryClient();

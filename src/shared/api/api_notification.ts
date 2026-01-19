@@ -1,7 +1,7 @@
 import axios from "axios"
 import { refreshUser } from "features/Authorization/model/services/loginAPI";
 
-export const API_URL = `https://uadmin.kstu.kg/edu-service/`
+export const API_URL = `http://127.0.0.1:8000/edu-service/`
 
 
 export const $api_notification = axios.create({

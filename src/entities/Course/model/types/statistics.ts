@@ -274,12 +274,7 @@ export interface TeacherDashboard {
 }
 
 // Детальная статистика курса для учителя
-export interface ScoreDistribution {
-  excellent?: { range: string; count: number; percentage: number };
-  good?: { range: string; count: number; percentage: number };
-  satisfactory?: { range: string; count: number; percentage: number };
-  unsatisfactory?: { range: string; count: number; percentage: number };
-}
+
 
 export interface TeacherCourseStudentsStatistics {
   total_students: number;
@@ -290,7 +285,7 @@ export interface TeacherCourseStudentsStatistics {
   max_score: number;
   min_score: number;
   median_score?: number;
-  score_distribution?: ScoreDistribution;
+
 }
 
 export interface TaskDetail {
@@ -328,11 +323,6 @@ export interface TeacherCourseTasksStatistics {
       unchecked_responses: number;
       completion_percentage: number;
       average_score: number;
-      score_distribution?: {
-        max: number;
-        min: number;
-        median: number;
-      };
     };
   };
   tasks_detail: TaskDetail[];
@@ -372,9 +362,6 @@ export interface TestDetail {
   median_score: number;
   average_time_spent: number;
   average_correct_percentage: number;
-  score_distribution: {
-    [key: string]: number;
-  };
   questions_analysis: {
     hardest_questions: QuestionAnalysis[];
     easiest_questions: QuestionAnalysis[];
@@ -478,9 +465,7 @@ export interface TeacherCourseDetail {
       average_score: number;
       works_with_comments: number;
       works_with_comments_percentage: number;
-      score_distribution: {
-        [key: string]: number;
-      };
+
     };
     unchecked_works_list: Array<{
       task_files: {

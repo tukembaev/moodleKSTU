@@ -2,7 +2,7 @@
 
 export const CHAT_CONFIG = {
   // API URLs
-  API_BASE_URL: "https://uadmin.kstu.kg/api/unet-chat/",
+  API_BASE_URL: "http://127.0.0.1:8000/api/unet-chat/",
   WS_BASE_URL: "wss://uadmin.kstu.kg/api/unet-chat/ws",
 
   // WebSocket
@@ -45,17 +45,17 @@ export const CHAT_LABELS = {
   LOADING: "Загрузка...",
   LOADING_MESSAGES: "Загрузка сообщений...",
   ERROR: "Ошибка",
-  
+
   // Actions
   CREATE_CONVERSATION: "Создать беседу",
   EDIT_MESSAGE: "Редактировать",
   DELETE_MESSAGE: "Удалить",
   REPLY: "Ответить",
-  
+
   // Conversation types
   PRIVATE_CHAT: "Приватная беседа",
   GROUP_CHAT: "Групповой чат",
-  
+
   // Toast messages
   CONVERSATION_CREATED: "Беседа создана",
   MESSAGE_SENT: "Сообщение отправлено",

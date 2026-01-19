@@ -20,16 +20,6 @@ export interface CourseFAQ {
   answer: string;
 }
 
-export interface CourseStats {
-  totalStudents: number;
-  completionRate: number; // процент
-  averageRating: number; // из 5
-  totalReviews: number;
-  totalHours: number;
-  totalModules: number;
-  totalLessons: number;
-  lastUpdated: Date;
-}
 
 export interface CourseInstructor {
   id: string;
@@ -54,21 +44,14 @@ export interface RulesInfo {
   requirements: string[];
 }
 
-export interface CourseLevel {
-  level: 'beginner' | 'intermediate' | 'advanced';
-  label: string;
-  description: string;
-}
 
 export interface CourseAboutData {
   features: CourseFeature[];
   learningOutcomes: LearningOutcome[];
   faq: CourseFAQ[];
-  stats: CourseStats;
+
   instructors: CourseInstructor[];
   rules: RulesInfo;
-  level: CourseLevel;
-  language: string;
   tags: string[];
 }
 
@@ -173,18 +156,6 @@ export const mockCourseAboutData: CourseAboutData = {
       answer: 'После завершения вы сохраняете доступ ко всем видеоурокам, презентациям и дополнительным материалам курса.'
     }
   ],
-
-  stats: {
-    totalStudents: 1247,
-    completionRate: 78,
-    averageRating: 4.7,
-    totalReviews: 342,
-    totalHours: 40,
-    totalModules: 8,
-    totalLessons: 32,
-    lastUpdated: new Date('2024-12-15')
-  },
-
   instructors: [
     {
       id: '1',
@@ -212,27 +183,6 @@ export const mockCourseAboutData: CourseAboutData = {
     ]
   },
 
-  level: {
-    level: 'intermediate',
-    label: 'Средний уровень',
-    description: 'Требуются базовые знания по предмету'
-  },
-
-  language: 'Русский',
-
   tags: ['Программирование', 'IT', 'Практика', 'Сертификат']
 };
 
-// Функция для получения иконки уровня сложности
-export const getLevelColor = (level: CourseLevel['level']): string => {
-  switch (level) {
-    case 'beginner':
-      return 'bg-green-100 text-green-700 border-green-200';
-    case 'intermediate':
-      return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    case 'advanced':
-      return 'bg-red-100 text-red-700 border-red-200';
-    default:
-      return 'bg-gray-100 text-gray-700 border-gray-200';
-  }
-};

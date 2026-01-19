@@ -157,7 +157,8 @@ export interface StudentsAnswers {
   status: boolean,
   locked: boolean,
   user_id: number,
-  comment: string,
+  remarks: number,
+  pending_remarks: number,
   max_points: number,
   files: FileAnswer[]
 }

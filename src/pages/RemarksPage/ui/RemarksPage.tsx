@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Search } from "lucide-react";
-import { RemarksList } from "../../../entities/Remarks";
-import { mockRemarks, mockArchivedRemarks } from "../../../entities/Remarks/model/mocks/remarksMock";
-import { RemarkStatus, RemarkType } from "../../../entities/Remarks/model/types/remarks";
+import { useQuery } from "@tanstack/react-query";
+import { RemarksList, remarkQueries } from "../../../entities/Remarks";
+import { RemarkStatus } from "../../../entities/Remarks/model/types/remarks";
 import {
   Select,
   SelectContent,
@@ -18,16 +18,20 @@ interface Filters {
   author: string;
   course: string;
   assignment: string;
-  type: RemarkType | "all";
+
   status: RemarkStatus | "all";
 }
 
 const RemarksPage: React.FC = () => {
-  // TODO: Заменить на реальные данные из API
-  const [currentUserId] = useState(1);
-  const [currentUserRole] = useState<"teacher" | "student">("teacher");
   const [activeTab, setActiveTab] = useState<"open" | "archive">("open");
-  const { isStudent } = useAuth();
+  const auth = useAuth();
+
+  const currentUserId = auth?.id || 0;
+  const currentUserRole: "teacher" | "student" = auth?.isStudent ? "student" : "teacher";
+
+  // Получаем все данные с API для обоих типов
+  const { data: actualRemarksData = [] } = useQuery(remarkQueries.allRemarks("actual"));
+  const { data: archiveRemarksData = [] } = useQuery(remarkQueries.allRemarks("archive"));
 
   // Состояние фильтров
   const [filters, setFilters] = useState<Filters>({
@@ -35,12 +39,11 @@ const RemarksPage: React.FC = () => {
     author: "all",
     course: "all",
     assignment: "all",
-    type: "all",
     status: "all",
   });
 
-  // Объединяем все замечания (открытые и архивные)
-  const allRemarks = useMemo(() => [...mockRemarks, ...mockArchivedRemarks], []);
+  // Объединяем все данные для фильтрации
+  const allRemarks = useMemo(() => [...actualRemarksData, ...archiveRemarksData], [actualRemarksData, archiveRemarksData]);
 
   // Извлечение уникальных значений для фильтров
   const filterOptions = useMemo(() => {
@@ -51,7 +54,7 @@ const RemarksPage: React.FC = () => {
     allRemarks.forEach((remark) => {
       authors.add(remark.student_name);
       courses.add(remark.course_name);
-      assignments.add(remark.theme_title);
+      assignments.add(remark.title);
     });
 
     return {
@@ -61,66 +64,81 @@ const RemarksPage: React.FC = () => {
     };
   }, [allRemarks]);
 
-  // Базовая фильтрация (без учета таба)
-  const filteredRemarksBase = useMemo(() => {
-    let result = allRemarks;
+  // Подсчет количества для табов (из всех данных с учетом фильтров)
+  const counts = useMemo(() => {
+    const allFiltered = allRemarks.filter((remark) => {
+      // Применяем базовые фильтры
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        if (!(
+          remark.title.toLowerCase().includes(searchLower) ||
+          remark.student_name.toLowerCase().includes(searchLower) ||
+          remark.course_name.toLowerCase().includes(searchLower)
+        )) {
+          return false;
+        }
+      }
 
-    // Поиск
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      result = result.filter(
-        (r) =>
-          r.theme_title.toLowerCase().includes(searchLower) ||
-          r.student_name.toLowerCase().includes(searchLower) ||
-          r.course_name.toLowerCase().includes(searchLower)
-      );
-    }
+      if (filters.author !== "all" && remark.student_name !== filters.author) {
+        return false;
+      }
 
-    // Фильтр по автору
-    if (filters.author !== "all") {
-      result = result.filter((r) => r.student_name === filters.author);
-    }
+      if (filters.course !== "all" && remark.course_name !== filters.course) {
+        return false;
+      }
 
-    // Фильтр по курсу
-    if (filters.course !== "all") {
-      result = result.filter((r) => r.course_name === filters.course);
-    }
+      if (filters.assignment !== "all" && remark.title !== filters.assignment) {
+        return false;
+      }
 
-    // Фильтр по заданию
-    if (filters.assignment !== "all") {
-      result = result.filter((r) => r.theme_title === filters.assignment);
-    }
+      if (filters.status !== "all" && remark.status !== filters.status) {
+        return false;
+      }
 
-    // Фильтр по типу
-    if (filters.type !== "all") {
-      result = result.filter((r) => r.type === filters.type);
-    }
+      return true;
+    });
 
-    // Фильтр по статусу
-    if (filters.status !== "all") {
-      result = result.filter((r) => r.status === filters.status);
-    }
-
-    return result;
+    return {
+      open: allFiltered.filter((r) => r.status !== RemarkStatus.APPROVED).length,
+      archive: allFiltered.filter((r) => r.status === RemarkStatus.APPROVED).length,
+    };
   }, [allRemarks, filters]);
 
-  // Подсчет количества для табов
-  const counts = useMemo(() => {
-    return {
-      open: filteredRemarksBase.filter((r) => r.status !== RemarkStatus.APPROVED).length,
-      archive: filteredRemarksBase.filter((r) => r.status === RemarkStatus.APPROVED).length,
-    };
-  }, [filteredRemarksBase]);
-
-  // Финальный список для отображения (с учетом таба)
+  // Финальный список для отображения (фильтруем по активному табу)
   const displayedRemarks = useMemo(() => {
-    if (activeTab === "open") {
-      return filteredRemarksBase.filter((r) => r.status !== RemarkStatus.APPROVED);
-    } else {
-      return filteredRemarksBase.filter((r) => r.status === RemarkStatus.APPROVED);
-    }
+    const remarksForTab = activeTab === "open" ? actualRemarksData : archiveRemarksData;
+    return remarksForTab.filter((remark) => {
+      // Применяем базовые фильтры
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        if (!(
+          remark.title.toLowerCase().includes(searchLower) ||
+          remark.student_name.toLowerCase().includes(searchLower) ||
+          remark.course_name.toLowerCase().includes(searchLower)
+        )) {
+          return false;
+        }
+      }
 
-  }, [filteredRemarksBase, activeTab]);
+      if (filters.author !== "all" && remark.student_name !== filters.author) {
+        return false;
+      }
+
+      if (filters.course !== "all" && remark.course_name !== filters.course) {
+        return false;
+      }
+
+      if (filters.assignment !== "all" && remark.title !== filters.assignment) {
+        return false;
+      }
+
+      if (filters.status !== "all" && remark.status !== filters.status) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [activeTab, actualRemarksData, archiveRemarksData, filters]);
 
   // Сброс фильтров
   const resetFilters = () => {
@@ -129,7 +147,6 @@ const RemarksPage: React.FC = () => {
       author: "all",
       course: "all",
       assignment: "all",
-      type: "all",
       status: "all",
     });
   };
@@ -206,21 +223,6 @@ const RemarksPage: React.FC = () => {
           </SelectContent>
         </Select>
 
-        {/* Фильтр по типу */}
-        <Select
-          value={filters.type}
-          onValueChange={(value) => setFilters({ ...filters, type: value as RemarkType | "all" })}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Тип" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все типы</SelectItem>
-            <SelectItem value={RemarkType.TEXT}>Текст</SelectItem>
-            <SelectItem value={RemarkType.FILE}>Файл</SelectItem>
-          </SelectContent>
-        </Select>
-
         {/* Фильтр по статусу */}
         <Select
           value={filters.status}
@@ -243,7 +245,6 @@ const RemarksPage: React.FC = () => {
         filters.author !== "all" ||
         filters.course !== "all" ||
         filters.assignment !== "all" ||
-        filters.type !== "all" ||
         filters.status !== "all") && (
           <div className="flex justify-end">
             <button
@@ -266,11 +267,12 @@ const RemarksPage: React.FC = () => {
             Замечания
           </h2>
           <p className="mt-1.5 text-lg text-muted-foreground">
-            {isStudent ? 'Управление замечаниями по работам' : 'Управление замечаниями по работам студентов'}
+            {auth?.isStudent ? 'Управление замечаниями по работам' : 'Управление замечаниями по работам студентов'}
           </p>
         </div>
 
         {/* Remarks List with Filters */}
+
         <RemarksList
           remarks={displayedRemarks}
           activeTab={activeTab}

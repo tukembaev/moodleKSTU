@@ -3,7 +3,7 @@ import { ru } from "date-fns/locale";
 import { makeIsRead } from "entities/Course/model/services/courseAPI";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentsAnswers } from "entities/Course/model/types/course";
-import { SetComment } from "features/Course/hooks/SetComment";
+
 import { SetMark } from "features/Course/hooks/SetMark";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
 import React, { useState } from "react";
@@ -58,6 +58,8 @@ import {
   TableHeader,
   TableRow,
 } from "shared/shadcn/ui/table";
+import { ThemeRemarks } from "entities/Remarks";
+
 
 const ListOfStudentsWithAnswers = ({
   data,
@@ -160,7 +162,7 @@ const ListOfStudentsWithAnswers = ({
         selectedGroup === "Все группы" ||
         student.group === selectedGroup)
   );
-
+  console.log(filteredData)
   const { mutate: change_permission } = courseQueries.edit_permission();
 
   const handlePermission = (student: StudentsAnswers) => {
@@ -380,6 +382,8 @@ const ListOfStudentsWithAnswers = ({
                         text="Выставить баллы"
                         points={student.points}
                         max_points={student.max_points}
+                        remarks={student.remarks}
+                        pending_remarks={student.pending_remarks}
                         id={student.id}
                       >
                         <Badge
@@ -427,28 +431,7 @@ const ListOfStudentsWithAnswers = ({
                         </Badge>
                       </UseTooltip>
 
-                      {/* Comments status */}
-                      <SetComment text="Добавить замечание" id={student.id}>
-                        <Badge
-                          variant="outline"
-                          className={`gap-1 text-xs cursor-pointer ${student.comment
-                            ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
-                            : ""
-                            }`}
-                        >
-                          {student.comment ? (
-                            <>
-                              <LuMeh className="h-3 w-3" />
-                              Замечание
-                            </>
-                          ) : (
-                            <>
-                              <LuLaugh className="h-3 w-3" />
-                              Ок
-                            </>
-                          )}
-                        </Badge>
-                      </SetComment>
+              
                     </div>
                   </CardHeader>
 
@@ -596,6 +579,8 @@ const ListOfStudentsWithAnswers = ({
                       text="Выставить баллы"
                       points={student.points}
                       max_points={student.max_points}
+                      remarks={student.remarks}
+                      pending_remarks={student.pending_remarks}
                       id={student.id}
                     >
                       <Badge
@@ -642,20 +627,20 @@ const ListOfStudentsWithAnswers = ({
                       variant="outline"
                       className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer"
                     >
-                      {!student.comment ? (
-                        <SetComment text="Добавить замечание" id={student.id}>
+                      {!student.pending_remarks ? (
+                        <ThemeRemarks student_id={student.user_id} theme_id={student.task}>
                           <span className="flex gap-1 items-center cursor-pointer">
                             <LuLaugh className="text-green-500 dark:text-green-400" />
                             Замечаний нет
                           </span>
-                        </SetComment>
+                        </ThemeRemarks>
                       ) : (
-                        <SetComment text="Добавить замечание" id={student.id}>
+                        <ThemeRemarks student_id={student.user_id} theme_id={student.task}>
                           <span className="flex gap-1 items-center">
                             <LuMeh className="text-orange-500 dark:text-orange-400 cursor-pointer" />
-                            {student.comment}
+                            Замечаний : {student.pending_remarks}
                           </span>
-                        </SetComment>
+                        </ThemeRemarks>
                       )}
                     </Badge>
                   </HoverLift>

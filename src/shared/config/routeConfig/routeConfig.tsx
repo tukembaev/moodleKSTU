@@ -7,7 +7,6 @@ import { LoginPage } from "pages/LoginPage";
 import { MainPage } from "pages/MainPage";
 import { NotFoundPage } from "pages/NotFoundPage";
 import { UniversitiesPage } from "pages/UniversitiesPage";
-import { UserBilling, UserProfile } from "entities/User";
 
 import { TestingPage } from "pages/TestingPage";
 import { TestResults } from "entities/Test";
@@ -22,6 +21,19 @@ import { QuizTestPage } from "pages/QuizTestPage";
 import { QuizResultsPage } from "pages/QuizResultsPage";
 import { RemarksPage } from "pages/RemarksPage";
 import CourseDetails from "entities/Course/ui/CourseDetails";
+
+// Ленивые импорты для избежания циклических зависимостей
+import { lazy, Suspense } from "react";
+
+const UserProfile = lazy(() => import("entities/User").then(module => ({ default: module.UserProfile })));
+const UserBilling = lazy(() => import("entities/User").then(module => ({ default: module.UserBilling })));
+
+// Компонент-обертка для Suspense
+const LazyWrapper = ({ children }: { children: ReactNode }) => (
+  <Suspense fallback={<div>Loading...</div>}>
+    {children}
+  </Suspense>
+);
 
 export interface AppRoutesProps {
   path: string;
@@ -169,20 +181,20 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
   },
   [AppRoutes.PROFILE]: {
     path: RoutePath.profile + "/*",
-    element: <UserProfile />,
+    element: <LazyWrapper><UserProfile /></LazyWrapper>,
     breadcrumbName: "Профиль",
 
     children: [
       {
         path: ":id",
-        element: <UserProfile />,
+        element: <LazyWrapper><UserProfile /></LazyWrapper>,
         breadcrumbName: "Чей то профиль",
       },
     ],
   },
   [AppRoutes.BILLING]: {
     path: RoutePath.billing,
-    element: <UserBilling />,
+    element: <LazyWrapper><UserBilling /></LazyWrapper>,
     breadcrumbName: "Оплата",
   },
   [AppRoutes.TEST]: {

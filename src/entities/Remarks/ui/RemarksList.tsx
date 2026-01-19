@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { MessageCircle, FileText, File, Clock, MessageSquare, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
-import { Remark, RemarkStatus, RemarkType } from "../model/types/remarks";
+import { MessageCircle, FileText, File, Clock, MessageSquare, CheckCircle2, AlertCircle, HelpCircle, Plus } from "lucide-react";
+import { Remark, RemarkStatus } from "../model/types/remarks";
 import { RemarksModal } from "./RemarksModal";
+import { AddRemarkForm } from "./AddRemarkForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "shared/shadcn/ui/dialog";
+import { formatDate } from "date-fns";
 
 interface RemarksListProps {
     remarks: Remark[];
@@ -13,6 +16,10 @@ interface RemarksListProps {
     filters?: React.ReactNode; // Слот для фильтров
     openCount?: number;
     archiveCount?: number;
+    withBorder?: boolean;
+    theme_id?: string;
+    student_id?: number;
+    isStudent?: boolean;
 }
 
 export const RemarksList: React.FC<RemarksListProps> = ({
@@ -21,12 +28,16 @@ export const RemarksList: React.FC<RemarksListProps> = ({
     onTabChange,
     showTabs = true,
     currentUserId,
-    currentUserRole,
     filters,
+    theme_id,
+    student_id,
     openCount: propOpenCount,
     archiveCount: propArchiveCount,
+    withBorder = true,
+    isStudent,
 }) => {
     const [selectedRemark, setSelectedRemark] = useState<Remark | null>(null);
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
     // Подсчет количества открытых и архивных замечаний
     // Если пропсы переданы, используем их. Иначе считаем из переданного списка (что может быть неверно если список уже отфильтрован по табу)
@@ -49,8 +60,9 @@ export const RemarksList: React.FC<RemarksListProps> = ({
         }
     };
 
-    // Функция для форматирования даты на русском
-    const formatDate = (date: Date) => {
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
         const months = [
             "янв.",
             "фев.",
@@ -68,24 +80,7 @@ export const RemarksList: React.FC<RemarksListProps> = ({
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     };
 
-    // Функция для получения бейджа типа
-    const getTypeBadge = (type: RemarkType) => {
-        if (type === RemarkType.FILE) {
-            return (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-                    <File className="w-3 h-3" />
-                    <span className="hidden sm:inline">Файл</span>
-                </span>
-            );
-        } else {
-            return (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                    <FileText className="w-3 h-3" />
-                    <span className="hidden sm:inline">Текст</span>
-                </span>
-            );
-        }
-    };
+
 
     return (
         <div className="w-full">
@@ -133,13 +128,29 @@ export const RemarksList: React.FC<RemarksListProps> = ({
             )}
 
             {/* Список замечаний */}
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className={`bg-white ${withBorder ? "border border-gray-200" : ""} rounded-lg overflow-hidden`}>
                 {remarks.length === 0 ? (
-                    <div className="p-6 sm:p-8 text-center text-gray-500">
-                        <FileText className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-gray-300" />
-                        <p className="text-base sm:text-lg font-medium">Замечания не найдены</p>
-                        <p className="text-xs sm:text-sm mt-1">Попробуйте изменить фильтры</p>
+                    <div>
+
+                        <div className="p-6 sm:p-8 text-center text-gray-500">
+                            <FileText className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-gray-300" />
+                            <p className="text-base sm:text-lg font-medium">Замечания не найдены</p>
+                        </div>
+                        {!isStudent && (
+                            <button
+                                onClick={() => setIsAddDialogOpen(true)}
+                                className="p-3 sm:p-4 hover:bg-gray-50 cursor-pointer transition-colors w-full text-left flex items-center gap-3 text-gray-500 border-t border-gray-100 group"
+                            >
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 group-hover:bg-white transition-colors">
+                                    <Plus className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <span className="text-sm sm:text-base font-medium text-gray-600">Добавить новое замечание...</span>
+                                </div>
+                            </button>
+                        )}
                     </div>
+
                 ) : (
                     <div className="divide-y divide-gray-200">
                         {remarks.map((remark) => (
@@ -156,7 +167,7 @@ export const RemarksList: React.FC<RemarksListProps> = ({
                                     <div className="flex-1 min-w-0">
                                         {/* Заголовок */}
                                         <h3 className="text-sm sm:text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors truncate">
-                                            {remark.theme_title}
+                                            {remark.title}
                                         </h3>
 
                                         {/* Метаданные */}
@@ -179,31 +190,62 @@ export const RemarksList: React.FC<RemarksListProps> = ({
                                         </p>
 
                                         {/* Бейдж типа */}
-                                        <div className="mt-2">{getTypeBadge(remark.type)}</div>
+
                                     </div>
 
                                     {/* Счетчик сообщений */}
                                     <div className="flex items-center gap-1 text-gray-600 flex-shrink-0">
                                         <MessageCircle className="w-4 h-4" />
-                                        <span className="text-sm font-medium">{remark.messages.length}</span>
+                                        {/* <span className="text-sm font-medium">{remark.messages.length}</span> */}
                                     </div>
                                 </div>
                             </div>
                         ))}
+                        {/* Кнопка добавления нового замечания */}
+                        {!isStudent && (
+                            <button
+                                onClick={() => setIsAddDialogOpen(true)}
+                                className="p-3 sm:p-4 hover:bg-gray-50 cursor-pointer transition-colors w-full text-left flex items-center gap-3 text-gray-500 border-t border-gray-100 group"
+                            >
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 group-hover:bg-white transition-colors">
+                                    <Plus className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <span className="text-sm sm:text-base font-medium text-gray-600">Добавить новое замечание...</span>
+                                </div>
+                            </button>
+                        )}
+
                     </div>
                 )}
+
             </div>
+
+            {/* Модальное окно создания замечания */}
+
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Новое замечание</DialogTitle>
+                    </DialogHeader>
+                    <AddRemarkForm
+                        theme_id={theme_id || ''}
+                        student_id={student_id || 0}
+                        onSubmit={(data) => {
+                            console.log("New remark data:", data);
+                            setIsAddDialogOpen(false);
+                        }}
+                        onCancel={() => setIsAddDialogOpen(false)}
+                    />
+                </DialogContent>
+            </Dialog>
 
             {/* Модальное окно */}
             {selectedRemark && (
                 <RemarksModal
                     remark={selectedRemark}
-                    currentUserId={currentUserId}
-                    currentUserRole={currentUserRole}
                     onClose={() => setSelectedRemark(null)}
-                    onUpdate={(updatedRemark) => {
-                        setSelectedRemark(updatedRemark);
-                        // TODO: Обновить список замечаний
+                    onUpdate={() => {
                     }}
                 />
             )}

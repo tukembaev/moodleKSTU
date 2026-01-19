@@ -1,8 +1,9 @@
 import { queryOptions } from '@tanstack/react-query';
 
-import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getStudentDashboard, getStudentCourseDetail, getTeacherDashboard, getTeacherCourseDetail } from './courseAPI';
+import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getStudentDashboard, getStudentCourseDetail, getTeacherDashboard, getTeacherCourseDetail, getCourseAbout } from './courseAPI';
 
-import { delete_material, useAddComment, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment } from 'features/Course/model/services/course_queries';
+import { delete_material, useAddComment, useChangeDetails, useChangePermission, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment, useUpdateCourseAbout } from 'features/Course/model/services/course_queries';
+import { useCreateAnswer } from './courseMutations';
 
 
 
@@ -18,6 +19,12 @@ export const courseQueries = {
       queryOptions({
         queryKey: ['course','course-theme',id],
         queryFn: () => getCourseAllTasks(id as string),
+        enabled: !!id,
+      }),
+    courseAbout: (id: string | null) =>
+      queryOptions({
+        queryKey: ['course','course-theme',id],
+        queryFn: () => getCourseAbout(id as string),
         enabled: !!id,
       }),
     allTaskMaterials: (id: string | null) =>
@@ -93,7 +100,7 @@ export const courseQueries = {
                   staleTime: 5 * 60 * 1000, // 5 минут кэширования (как указано в документации)
                   gcTime: 10 * 60 * 1000, // 10 минут хранения в кэше
                 }),
-      teacherCourseDetail: (courseId: string | null) =>
+            teacherCourseDetail: (courseId: string | null) =>
                 queryOptions({
                   queryKey: ['statistics', 'teacher', 'course', courseId],
                   queryFn: () => getTeacherCourseDetail(courseId as string),
@@ -101,6 +108,10 @@ export const courseQueries = {
                   staleTime: 1 * 60 * 1000, // 1 минута кэширования (как указано в документации)
                   gcTime: 2 * 60 * 1000, // 2 минуты хранения в кэше
                 }),
+              
+
+                // Mutation hook for updating course about
+
   
   //----------POST QUERIES------------
       
@@ -111,7 +122,7 @@ export const courseQueries = {
   create_answer: () => useCreateAnswer(),
   rate_answer: () => useRateAnswerAndComment(),
   finish_course: () => useFinishCourse(),
-
+ 
 
   add_comment: () => useAddComment(),
   reply_comment: () => useReplyToComment(),
@@ -121,6 +132,7 @@ export const courseQueries = {
   edit_details: () => useChangeDetails(),
   edit_permission: () => useChangePermission(),
 
+  update_course_about: () => useUpdateCourseAbout(),
 
   
 

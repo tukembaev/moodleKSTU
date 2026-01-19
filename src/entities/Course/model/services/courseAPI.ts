@@ -1,4 +1,5 @@
 import { CreateCoursePayload, CreateFAQPayload, CreateThemePayload, editPermissionPayload } from "features/Course";
+import { CourseAboutData, UpdateCourseAboutPayload } from "../types/courseAbout";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
 import { Course, CourseMaterials, CourseThemes, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme, CourseModulesResponse } from "../types/course";
@@ -51,6 +52,20 @@ export const getWeekThemes = async (week_id: string):Promise<WeekTheme[]> => {
     const response = await $api_edu.get(`thems/${week_id}/`); 
     return response.data;
   };
+
+export const getCourseAbout = async (courseId: string): Promise<CourseAboutData> => {
+  const response = await $api_edu.get(`course-about/${courseId}/`);
+  return response.data;
+};
+
+export const updateCourseAbout = async (
+  courseId: string,
+  data: UpdateCourseAboutPayload
+): Promise<CourseAboutData> => {
+  const response = await $api_edu.patch(`course-about/${courseId}/`, data);
+  return response.data;
+};
+
 export const createCourse = async (data:CreateCoursePayload) => {
   const response = await $api_edu.post(`course/`,data); 
   return response.data;
