@@ -3,7 +3,7 @@ import axios from "axios"
 import { refreshUser } from "features/Authorization/model/services/loginAPI";
 
 
-export const API_URL = `http://127.0.0.1:8000//api/v1/users/`
+export const API_URL = `https://uadmin.kstu.kg/educations//api/v1/users/`
 
 
 const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}");

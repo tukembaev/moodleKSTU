@@ -1,15 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LuBookOpen, LuClock, LuTrendingUp } from "react-icons/lu";
+import { Link } from "react-router-dom";
+import { AppSubRoutes, RoutePath } from "shared/config";
+import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Progress } from "shared/shadcn/ui/progress";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
-import { Badge } from "shared/shadcn/ui/badge";
-import { format } from "date-fns";
-import { ru } from "date-fns/locale";
-import { Link } from "react-router-dom";
-import { RoutePath, AppSubRoutes } from "shared/config";
-import { LucideCheckCircle2 } from "lucide-react";
 
 export const StudentDashboard = () => {
   const { data, isLoading, error } = useQuery(courseQueries.studentDashboard());

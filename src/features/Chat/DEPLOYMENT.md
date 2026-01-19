@@ -191,7 +191,7 @@ const userId = auth_data.user_id;
 
 ### Base URLs
 
-- **REST API**: `http://127.0.0.1:8000/api/unet-chat/`
+- **REST API**: `https://uadmin.kstu.kg/educations/api/unet-chat/`
 - **WebSocket**: `wss://uadmin.kstu.kg/api/unet-chat/ws`
 
 ### Заголовки

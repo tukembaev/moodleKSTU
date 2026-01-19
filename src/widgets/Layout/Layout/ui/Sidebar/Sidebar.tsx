@@ -23,9 +23,9 @@ import {
 import { FooterUserMenu } from "./lib/FooterUserMenu";
 import { SidebarInstallButton } from "./lib/SidebarInstallButton";
 
-import { LuBell, LuBug, LuChartArea, LuMessageCircle } from "react-icons/lu";
-import logo from "/src/assets/logo.svg";
+import { LuBell, LuBug, LuMessageCircle } from "react-icons/lu";
 import { useAuth } from "shared/hooks";
+import logo from "/src/assets/logo.svg";
 
 const navigationItems: {
   title: string;

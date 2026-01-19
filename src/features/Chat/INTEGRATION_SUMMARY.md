@@ -154,7 +154,7 @@
 ## 🔌 API Endpoints
 
 ### Base URLs
-- REST: `http://127.0.0.1:8000/api/unet-chat/`
+- REST: `https://uadmin.kstu.kg/educations/api/unet-chat/`
 - WebSocket: `wss://uadmin.kstu.kg/api/unet-chat/ws`
 
 ### Conversations

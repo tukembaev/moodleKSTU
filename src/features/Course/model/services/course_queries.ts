@@ -1,11 +1,11 @@
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { registerToCourse } from 'entities/User';
 
 import { createCourse, createTheme } from 'entities/Course';
-import { createComment, createFAQ, createMaterial, deleteMaterial, editCourseDetails, editPermissionTheme, finishCourse, getCourseAbout, likeComment, rateTheAnswerAndComment, replyOnComment, setExtraPoints, updateCourseAbout } from 'entities/Course/model/services/courseAPI';
+import { createComment, createFAQ, createMaterial, deleteMaterial, editCourseDetails, editPermissionTheme, finishCourse, likeComment, rateTheAnswerAndComment, replyOnComment, setExtraPoints, updateCourseAbout } from 'entities/Course/model/services/courseAPI';
+import { UpdateCourseAboutPayload } from 'entities/Course/model/types/courseAbout';
 import { toast } from 'sonner';
 import { CreateCoursePayload, CreateFAQPayload, CreateThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload } from '../types/course_payload';
-import { UpdateCourseAboutPayload } from 'entities/Course/model/types/courseAbout';
 
 
 

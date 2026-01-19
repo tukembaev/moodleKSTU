@@ -35,7 +35,7 @@ export const useGoogleToken = ({
       if (access_token) {
         try {
           const response = await axios.post(
-            "http://127.0.0.1:8000//api/employees/auth/google/",
+            "https://uadmin.kstu.kg/educations//api/employees/auth/google/",
             { token: access_token }
           );
           const tokens = {

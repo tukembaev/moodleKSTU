@@ -1,10 +1,9 @@
+import { AlertCircle, CheckCircle2, Clock, FileText, HelpCircle, MessageCircle, MessageSquare, Plus } from "lucide-react";
 import React, { useState } from "react";
-import { MessageCircle, FileText, File, Clock, MessageSquare, CheckCircle2, AlertCircle, HelpCircle, Plus } from "lucide-react";
-import { Remark, RemarkStatus } from "../model/types/remarks";
-import { RemarksModal } from "./RemarksModal";
-import { AddRemarkForm } from "./AddRemarkForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "shared/shadcn/ui/dialog";
-import { formatDate } from "date-fns";
+import { Remark, RemarkStatus } from "../model/types/remarks";
+import { AddRemarkForm } from "./AddRemarkForm";
+import { RemarksModal } from "./RemarksModal";
 
 interface RemarksListProps {
     remarks: Remark[];
@@ -27,7 +26,7 @@ export const RemarksList: React.FC<RemarksListProps> = ({
     activeTab = "open",
     onTabChange,
     showTabs = true,
-    currentUserId,
+    
     filters,
     theme_id,
     student_id,

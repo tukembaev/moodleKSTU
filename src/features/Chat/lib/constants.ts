@@ -2,7 +2,7 @@
 
 export const CHAT_CONFIG = {
   // API URLs
-  API_BASE_URL: "http://127.0.0.1:8000/api/unet-chat/",
+  API_BASE_URL: "https://uadmin.kstu.kg/educations/api/unet-chat/",
   WS_BASE_URL: "wss://uadmin.kstu.kg/api/unet-chat/ws",
 
   // WebSocket

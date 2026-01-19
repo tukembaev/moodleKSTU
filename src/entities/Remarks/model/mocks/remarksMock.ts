@@ -1,4 +1,3 @@
-import { Remark, RemarkStatus } from "../types/remarks";
 
 // Мок-данные для демонстрации функционала замечаний
 

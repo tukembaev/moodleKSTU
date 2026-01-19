@@ -1,16 +1,15 @@
 import { WeekTheme } from "entities/Course/model/types/course";
+import { TestCard } from "entities/Test";
+import { Test } from "entities/Test/model/types/test";
 import {
+  AlertCircle,
   ChevronDown,
   ChevronRight,
   Clock,
   Lock,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
-  Trophy,
+  Trophy
 } from "lucide-react";
 import React from "react";
-import empty from "/src/assets/empty.svg";
 import {
   LuBookOpen,
   LuFlaskConical,
@@ -22,6 +21,7 @@ import {
   LuShapes,
 } from "react-icons/lu";
 import { FadeIn, HoverLift, UseTooltip } from "shared/components";
+import { FormQuery } from "shared/config";
 import {
   Accordion,
   AccordionContent,
@@ -31,11 +31,9 @@ import {
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
-import { TestCard } from "entities/Test";
-import { Test } from "entities/Test/model/types/test";
-import { FormQuery } from "shared/config";
-import ThemeFiles from "./ThemeDetail/ThemeFiles";
 import { Progress } from "shared/shadcn/ui/progress";
+import ThemeFiles from "./ThemeDetail/ThemeFiles";
+import empty from "/src/assets/empty.svg";
 
 export const categories: {
   key: string;
