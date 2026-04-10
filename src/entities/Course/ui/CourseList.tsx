@@ -219,11 +219,10 @@ const CourseList = () => {
               })}
             </FadeInList>
           )}
-
         </div>
       </div>
     </div>
-  );
+  );  
 };
 
 export default CourseList;
