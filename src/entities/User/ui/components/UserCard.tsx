@@ -88,34 +88,35 @@ const UserCard = ({
 
   if (isLoading) return <UserCardSkeleton />;
   return (
-    <Card className="relative w-full p-6 rounded-4xl shadow-md flex flex-row justify-between ">
-      <div className="relative flex items-center gap-16 pl-20 py-6">
+    <Card className="relative w-full p-4 md:p-6 rounded-3xl md:rounded-4xl shadow-md flex flex-col md:flex-row justify-between">
+      <div className="relative flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-16 px-4 md:pl-20 py-4 md:py-6">
         <Dialog>
           <DialogTrigger asChild>
             {data?.id === auth_data?.id ? (
               <div
-                className="relative w-64 h-64 cursor-pointer"
+                className="relative w-32 h-32 md:w-64 md:h-64 cursor-pointer"
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
               >
-                <Avatar className="w-64 h-64 border-4 border-white shadow-md">
+                <Avatar className="w-32 h-32 md:w-64 md:h-64 border-2 md:border-4 border-white shadow-md">
                   <AvatarImage
                     src={data?.avatar}
                     alt="User avatar"
                     className="object-cover"
                   />
-                  <AvatarFallback>M</AvatarFallback>
+                  <AvatarFallback className="text-2xl md:text-5xl">M</AvatarFallback>
                 </Avatar>
                 {hovered && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                    <LuPencil size={40} className="text-white" />
+                    <LuPencil size={24} className="text-white md:hidden" />
+                    <LuPencil size={40} className="text-white hidden md:block" />
                   </div>
                 )}
               </div>
             ) : (
-              <Avatar className="w-64 h-64 border-4 border-white shadow-md">
+              <Avatar className="w-32 h-32 md:w-64 md:h-64 border-2 md:border-4 border-white shadow-md">
                 <AvatarImage src={data?.avatar} alt="User avatar" />
-                <AvatarFallback>M</AvatarFallback>
+                <AvatarFallback className="text-2xl md:text-4xl">M</AvatarFallback>
               </Avatar>
             )}
           </DialogTrigger>
@@ -158,32 +159,32 @@ const UserCard = ({
           </DialogContent>
         </Dialog>
 
-        <div>
-          <span className="text-sm font-bold text-gray-500">{data?.group}</span>
-          <h2 className="text-4xl font-bold flex justify-center gap-2">
-            {data?.first_name} {data?.last_name}
+        <div className="flex flex-col items-center md:items-start text-center md:text-left">
+          <span className="text-xs md:text-sm font-bold text-gray-500">{data?.group}</span>
+          <h2 className="text-2xl md:text-4xl font-bold flex flex-wrap justify-center md:justify-start gap-2">
+            <span>{data?.first_name}</span> <span>{data?.last_name}</span>
           </h2>
-          <p className="text-gray-500">{data?.position}</p>
-          <div className="mt-2 text-sm  space-y-3">
-            <div className="flex items-center gap-2">
-              <User size={20} /> <span>{data?.bio}</span>
+          <p className="text-sm md:text-base text-gray-500">{data?.position}</p>
+          <div className="mt-4 md:mt-2 text-sm space-y-3 w-full">
+            <div className="flex items-center gap-3 md:gap-2">
+              <User size={18} className="shrink-0" /> <span className="line-clamp-2">{data?.bio}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <LuPhone size={20} />
-              <a href={`tel:${data?.number_phone}`} className="hover:underline">
+            <div className="flex items-center gap-3 md:gap-2">
+              <LuPhone size={18} className="shrink-0" />
+              <a href={`tel:${data?.number_phone}`} className="hover:underline break-all">
                 {data?.number_phone}
               </a>
             </div>
 
-            <div className="flex items-center gap-2">
-              <MapPin size={20} />
-              <a href={`mailto:${data?.email}`} className="hover:underline">
+            <div className="flex items-center gap-3 md:gap-2">
+              <MapPin size={18} className="shrink-0" />
+              <a href={`mailto:${data?.email}`} className="hover:underline break-all">
                 {data?.email}
               </a>
             </div>
 
-            <div className="flex items-center gap-2">
-              <LuSend size={20} />
+            <div className="flex items-center gap-3 md:gap-2">
+              <LuSend size={18} className="shrink-0" />
               <a
                 href={`https://t.me/${data?.telegram_username?.replace(
                   "@",
@@ -191,19 +192,19 @@ const UserCard = ({
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:underline"
+                className="hover:underline break-all"
               >
                 {data?.telegram_username}
               </a>
             </div>
             {auth_data?.id === data?.id && (
               <Button
-                className="w-full"
+                className="w-full mt-4"
                 variant={"outline"}
                 onClick={() => setEditOpen(true)}
               >
                 Редактировать профиль
-                <LuPencil />
+                <LuPencil className="ml-2 h-4 w-4" />
               </Button>
             )}
           </div>

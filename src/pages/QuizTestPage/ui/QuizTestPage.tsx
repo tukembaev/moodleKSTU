@@ -1,12 +1,15 @@
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { useEffect, useRef, useState } from "react";
-import { LuClock, LuTrash2 } from "react-icons/lu";
+import { testQueries } from "entities/Test";
+import { submitTestAnswers } from "entities/Test/model/services/testAPI";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { LuTrash2 } from "react-icons/lu";
 import { useNavigate, useParams } from "react-router-dom";
 import { cn } from "shared/lib/utils";
-import { quizData } from "shared/mocks/testMock";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "shared/shadcn/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { Timer } from "./Timer";
 
 interface Answer {
   questionId: string;
@@ -17,59 +20,67 @@ const QuizTestPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isStudent = true;
+  const { data: testQuestionsData, isLoading, isError } = useQuery(testQueries.TestQuestions(id as string));
+  console.log(testQuestionsData);
+  // Берём первый элемент массива, так как API возвращает массив
+  const quizData = testQuestionsData ? testQuestionsData : null;
 
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const answersRef = useRef<Record<string, string[]>>({});
-  const [timeRemaining, setTimeRemaining] = useState(quizData.timeLimit * 60); // в секундах
+  const timeRemainingRef = useRef<number>(0); // в секундах
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Инициализация времени после загрузки данных
+  useEffect(() => {
+    if (quizData?.timeLimit) {
+      timeRemainingRef.current = quizData.timeLimit * 60;
+    }
+  }, [quizData]);
 
   // Синхронизация answers с ref
   useEffect(() => {
     answersRef.current = answers;
   }, [answers]);
 
-  // Таймер
-  useEffect(() => {
-    if (!isStudent || isSubmitted) return;
+  // Функция для отправки ответов на backend
+  const submitAnswers = async (formattedAnswers: Answer[], currentTimeRemaining: number) => {
+    if (!quizData || !id) return;
 
-    timerRef.current = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          // Автоматическая отправка при истечении времени
-          const formattedAnswers: Answer[] = quizData.questions.map((q: typeof quizData.questions[0]) => ({
-            questionId: q.id,
-            selectedOptions: answersRef.current[q.id] || [],
-          }));
-          console.log("Время истекло. Ответы пользователя:", formattedAnswers);
-          setIsSubmitted(true);
-          navigate(`/test/quiz-result/${id}`, {
-            state: {
-              answers: formattedAnswers,
-              quizData,
-              timeRemaining: 0,
-            },
-          });
-          return 0;
-        }
-        return prev - 1;
+    try {
+      setIsSubmitting(true);
+
+      const response = await submitTestAnswers(id, {
+        answers: formattedAnswers,
+        timeRemaining: currentTimeRemaining,
+        showCorrectAnswers: testQuestionsData?.showCorrectAnswers || false,
       });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [isStudent, isSubmitted, id, navigate]);
-
-  // Вычисление процента оставшегося времени
-  const timePercentage = (timeRemaining / (quizData.timeLimit * 60)) * 100;
-  const getTimerColor = () => {
-    if (timePercentage > 50) return "text-emerald-600 bg-emerald-50 border-emerald-200";
-    if (timePercentage > 20) return "text-amber-600 bg-amber-50 border-amber-200";
-    return "text-rose-600 bg-rose-50 border-rose-200 animate-pulse";
+      navigate(`/test/quiz-result/${id}`, {
+        state: {
+          results: response,
+          quizData,
+        },
+      });
+    } catch (error) {
+      console.error("Ошибка при отправке ответов:", error);
+      alert("Произошла ошибка при отправке ответов. Пожалуйста, попробуйте снова.");
+      setIsSubmitting(false);
+      setIsSubmitted(false);
+    }
   };
+
+  // Обработчик истечения времени
+  const handleTimeUp = useCallback(() => {
+    if (!quizData || isSubmitted) return;
+
+    const formattedAnswers: Answer[] = quizData.questions.map((q) => ({
+      questionId: q.id,
+      selectedOptions: answersRef.current[q.id] || [],
+    }));
+
+    setIsSubmitted(true);
+    submitAnswers(formattedAnswers, 0);
+  }, [quizData, isSubmitted, id, navigate]);
 
   // Обработка выбора ответов
   const handleAnswerChange = (questionId: string, optionId: string, multiple: boolean) => {
@@ -87,26 +98,17 @@ const QuizTestPage = () => {
   };
 
   // Отправка ответов
-  const handleSubmit = () => {
-    if (isSubmitted) return;
+  const handleSubmit = async () => {
+    if (isSubmitted || isSubmitting || !quizData) return;
 
-    const formattedAnswers: Answer[] = quizData.questions.map((q: typeof quizData.questions[0]) => ({
+    const formattedAnswers: Answer[] = quizData.questions.map((q) => ({
       questionId: q.id,
       selectedOptions: answers[q.id] || [],
     }));
 
     setIsSubmitted(true);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
 
-    navigate(`/test/quiz-result/${id}`, {
-      state: {
-        answers: formattedAnswers,
-        quizData,
-        timeRemaining,
-      },
-    });
+    await submitAnswers(formattedAnswers, timeRemainingRef.current);
   };
 
   // Удаление теста (для учителя)
@@ -116,12 +118,46 @@ const QuizTestPage = () => {
     }
   };
 
-  // Форматирование времени
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
+
+  // Обработка состояния загрузки
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-gray-600 text-lg">Загрузка теста...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Обработка ошибки
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-red-500 text-6xl">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900">Ошибка загрузки</h2>
+          <p className="text-gray-600">Не удалось загрузить данные теста</p>
+          <Button onClick={() => navigate("/test")}>Вернуться к списку тестов</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Обработка отсутствия данных
+  if (!quizData) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-gray-400 text-6xl">📝</div>
+          <h2 className="text-2xl font-bold text-gray-900">Тест не найден</h2>
+          <p className="text-gray-600">Данные теста отсутствуют</p>
+          <Button onClick={() => navigate("/test")}>Вернуться к списку тестов</Button>
+        </div>
+      </div>
+    );
+  }
 
   // Режим учителя - просмотр информации о тесте
   if (!isStudent) {
@@ -133,9 +169,9 @@ const QuizTestPage = () => {
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">{quizData.title}</h1>
               <p className="text-gray-500 max-w-2xl text-lg">{quizData.description}</p>
             </div>
-            <Button 
-              variant="destructive" 
-              onClick={handleDelete} 
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
               className="shrink-0 shadow-sm hover:shadow transition-all"
             >
               <LuTrash2 className="mr-2 h-4 w-4" />
@@ -166,10 +202,10 @@ const QuizTestPage = () => {
                       <span>Начало:</span>
                       <span>{format(new Date(quizData.opening_date), "dd MMM", { locale: ru })}</span>
                     </div>
-                    <div className="flex justify-between mt-1">
+                    {/* <div className="flex justify-between mt-1">
                       <span>Конец:</span>
                       <span>{format(new Date(quizData.deadline), "dd MMM", { locale: ru })}</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </CardContent>
@@ -192,7 +228,7 @@ const QuizTestPage = () => {
                           {question.multipleAnswers ? "Множественный выбор" : "Один вариант"}
                         </span>
                       </div>
-                      
+
                       {question.questionImage && (
                         <div className="relative rounded-xl overflow-hidden border bg-gray-50 max-w-md">
                           <img
@@ -231,27 +267,24 @@ const QuizTestPage = () => {
 
   // Режим студента - прохождение теста
   return (
-    <div className="min-h-screen bg-slate-50/50 font-sans">
+    <div className="min-h-screen font-sans">
       {/* Sticky Timer Header */}
-      <div className="sticky top-0 z-50 pointer-events-none">
-        <div className="absolute w-full h-24 bg-linear-to-b from-slate-50/90 to-transparent pointer-events-none" />
-        <div className="container max-w-4xl mx-auto px-4 pt-4 flex justify-center relative">
-          <div
-            className={cn(
-              "pointer-events-auto flex items-center gap-3 px-5 py-2.5 rounded-full shadow-lg backdrop-blur-xl border transition-all duration-500",
-              getTimerColor()
-            )}
-          >
-            <LuClock className="w-5 h-5 animate-pulse" />
-            <div className="flex flex-col items-center leading-none">
-              <span className="text-[10px] uppercase tracking-wider font-bold opacity-70">Осталось</span>
-              <span className="font-mono text-lg font-bold tabular-nums">
-                {formatTime(timeRemaining)}
-              </span>
-            </div>
+      {isStudent && quizData?.timeLimit && (
+        <div className="fixed top-[73px] left-0 w-full z-20 pointer-events-none">
+          <div className="absolute w-full h-24 pointer-events-none" />
+          <div className="container max-w-4xl mx-auto px-4 pt-4 flex justify-center relative">
+            <Timer
+              initialTime={quizData.timeLimit * 60}
+              onTimeUp={handleTimeUp}
+              isSubmitted={isSubmitted}
+              timeRef={timeRemainingRef}
+            />
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Spacer for fixed timer */}
+      <div className="h-20" aria-hidden="true" />
 
       <div className="container max-w-3xl mx-auto px-4 pb-24 pt-8">
         {/* Header */}
@@ -264,13 +297,13 @@ const QuizTestPage = () => {
           </p>
         </div>
 
-        <form 
-          onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} 
+        <form
+          onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
           className="space-y-8"
         >
           {quizData.questions.map((question, index) => (
-            <Card 
-              key={question.id} 
+            <Card
+              key={question.id}
               className="overflow-hidden border-0 shadow-sm ring-1 ring-slate-200 sm:rounded-2xl bg-white transition-shadow hover:shadow-md"
             >
               <div className="p-6 sm:p-8 space-y-6">
@@ -353,14 +386,14 @@ const QuizTestPage = () => {
                           onChange={() => handleAnswerChange(question.id, option.id, question.multipleAnswers)}
                           className="sr-only"
                         />
-                        
+
                         <div className="flex w-full gap-4">
                           {/* Custom Checkbox/Radio Indicator */}
                           <div className={cn(
                             "flex-shrink-0 w-5 h-5 mt-0.5 rounded border transition-colors flex items-center justify-center",
                             question.multipleAnswers ? "rounded-md" : "rounded-full",
-                            isChecked 
-                              ? "bg-primary border-primary text-primary-foreground" 
+                            isChecked
+                              ? "bg-primary border-primary text-primary-foreground"
                               : "border-slate-300 group-hover:border-slate-400 bg-white"
                           )}>
                             {isChecked && (
@@ -378,7 +411,7 @@ const QuizTestPage = () => {
                             )}>
                               {option.text}
                             </span>
-                            
+
                             {option.image && (
                               <div className="mt-3 rounded-lg overflow-hidden border border-slate-100 bg-white">
                                 <img
@@ -400,15 +433,15 @@ const QuizTestPage = () => {
 
           {/* Submit Action */}
           <div className="sticky bottom-6 z-40 flex justify-center pt-4">
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isSubmitted}
-                className="min-w-[200px] h-12 text-lg font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-              >
-                {isSubmitted ? "Отправка..." : "Завершить тест"}
-              </Button>
-          
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isSubmitted || isSubmitting}
+              className="min-w-[200px] h-12 text-lg font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+            >
+              {isSubmitting ? "Отправка..." : isSubmitted ? "Отправлено" : "Завершить тест"}
+            </Button>
+
           </div>
         </form>
       </div>

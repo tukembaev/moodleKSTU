@@ -3,7 +3,7 @@ export const test = [
         "id": "98625d61-9b45-41b3-9536-20115a80596d",
         "task": "2a0c25de-60ca-48b1-ac41-5722e66a84c3",
         "fullname": "Нурбеков Бексултан",
-        "avatar": "https://uadmin.kstu.kg/media/avatars/photo_2024-07-17_12-59-25.jpg",
+        "avatar": "https://uadmin.kstu.kg/educations/media/avatars/photo_2024-07-17_12-59-25.jpg",
         "group": "ПИ-1-23",
         "status": false,
         "points": 0,

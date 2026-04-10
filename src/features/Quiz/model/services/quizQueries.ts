@@ -9,7 +9,7 @@ export const useFetchQuiz = (quizId: string) => {
   return useQuery({
     queryKey: ['quiz', quizId],
     queryFn: () => fetchQuiz(quizId),
-  
+
   });
 };
 
@@ -44,7 +44,7 @@ export const useCreateQuiz = () => {
       });
       return mutationPromise;
     },
-  
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
     },

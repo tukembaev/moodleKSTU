@@ -11,6 +11,7 @@ import CommandsGroup from "./CommandGroups/CommandsGroup";
 import CoursesGroup from "./CommandGroups/CoursesGroup";
 import EmployeesGroup from "./CommandGroups/EmployeesGroup";
 import FilesGroup from "./CommandGroups/FilesGroup";
+import StudyTasksGroup from "./CommandGroups/StudyTasksGroup";
 import SearchLoader from "./SearchLoader";
 
 const CommandSearchBar = () => {
@@ -45,6 +46,7 @@ const CommandSearchBar = () => {
               <CoursesGroup data={data?.courses || []} />
               <EmployeesGroup data={data?.employees || []} />
               <FilesGroup data={data?.files || []} />
+              <StudyTasksGroup data={data?.study_tasks || []} />
               <CommandsGroup />
               {/* <CommandGroup heading="Settings">
                 <CommandItem>

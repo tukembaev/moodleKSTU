@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 
-import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ } from './courseAPI';
+import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getStudentDashboard, getStudentCourseDetail, getTeacherDashboard, getTeacherCourseDetail } from './courseAPI';
 
 import { delete_material, useAddComment, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment } from 'features/Course/model/services/course_queries';
 
@@ -57,6 +57,50 @@ export const courseQueries = {
                   queryFn: () => getThemeDiscussion(theme as string),
                   enabled: !!theme,
                 }),
+      courseModules: (course_id: string | null) =>
+                queryOptions({
+                  queryKey: ['course', 'modules', course_id],
+                  queryFn: () => getCourseModules(course_id as string),
+                  enabled: !!course_id,
+                }),
+      weekThemes: (week_id: string | null) =>
+                queryOptions({
+                  queryKey: ['week', 'themes', week_id],
+                  queryFn: () => getWeekThemes(week_id as string),
+                  enabled: !!week_id,
+                }),
+      // Статистика для студентов
+      studentDashboard: () =>
+                queryOptions({
+                  queryKey: ['statistics', 'student', 'dashboard'],
+                  queryFn: () => getStudentDashboard(),
+                  staleTime: 5 * 60 * 1000, // 5 минут кэширования (как указано в документации)
+                  gcTime: 10 * 60 * 1000, // 10 минут хранения в кэше
+                }),
+      studentCourseDetail: (courseId: string | null) =>
+                queryOptions({
+                  queryKey: ['statistics', 'student', 'course', courseId],
+                  queryFn: () => getStudentCourseDetail(courseId as string),
+                  enabled: !!courseId,
+                  staleTime: 1 * 60 * 1000, // 1 минута кэширования (как указано в документации)
+                  gcTime: 2 * 60 * 1000, // 2 минуты хранения в кэше
+                }),
+      // Статистика для учителей
+      teacherDashboard: () =>
+                queryOptions({
+                  queryKey: ['statistics', 'teacher', 'dashboard'],
+                  queryFn: () => getTeacherDashboard(),
+                  staleTime: 5 * 60 * 1000, // 5 минут кэширования (как указано в документации)
+                  gcTime: 10 * 60 * 1000, // 10 минут хранения в кэше
+                }),
+      teacherCourseDetail: (courseId: string | null) =>
+                queryOptions({
+                  queryKey: ['statistics', 'teacher', 'course', courseId],
+                  queryFn: () => getTeacherCourseDetail(courseId as string),
+                  enabled: !!courseId,
+                  staleTime: 1 * 60 * 1000, // 1 минута кэширования (как указано в документации)
+                  gcTime: 2 * 60 * 1000, // 2 минуты хранения в кэше
+                }),
   
   //----------POST QUERIES------------
       
@@ -84,7 +128,7 @@ export const courseQueries = {
 
 
   deleteCourse: (id: number) => deleteCourse(id),
-  delete_material,
+  delete_material: () => delete_material(),
 
 
 };

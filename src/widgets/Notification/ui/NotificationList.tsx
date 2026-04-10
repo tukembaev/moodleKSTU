@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { cn } from "shared/lib/utils";
@@ -12,63 +12,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "shared/shadcn/ui/select";
-
-// Мок-данные для уведомлений
-const mockNotifications = [
-  {
-    id: "1",
-    sender: "Александр Петров",
-    title: "Новое задание добавлено",
-    message:
-      "В курсе 'Методы оптимизации' добавлено новое задание 'Лабораторная работа №3'. Пожалуйста, ознакомьтесь с материалами и сдайте до дедлайна.",
-    date: new Date("2025-05-20T10:00:00Z"),
-    tags: ["курс", "задание", "важно"],
-  },
-  {
-    id: "2",
-    sender: "Елена Смирнова",
-    title: "Оценка за СРС",
-    message:
-      "Ваша работа по СРС в курсе 'Программирование на Python' оценена на 85 баллов. Комментарии преподавателя доступны в профиле курса.",
-    date: new Date("2025-05-18T14:30:00Z"),
-    tags: ["оценка", "курс"],
-  },
-  {
-    id: "3",
-    sender: "Иван Иванов",
-    title: "Приглашение на вебинар",
-    message:
-      "Приглашаем вас на вебинар 'Современные технологии в разработке' 30 мая в 18:00. Зарегистрируйтесь по ссылке в вашем профиле.",
-    date: new Date("2025-05-15T09:15:00Z"),
-    tags: ["вебинар", "мероприятие"],
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { userQueries } from "entities/User";
 
 type SortType = "date-desc" | "date-asc" | "sender-asc" | "sender-desc" | "title-asc" | "title-desc";
 
 const NotificationList = () => {
   const [sortType, setSortType] = useState<SortType>("date-desc");
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const { data: notificationsData, isLoading } = useQuery(
+    userQueries.user_notifications()
+  );
 
   const sortedNotifications = useMemo(() => {
-    const notifications = [...mockNotifications];
-    
+    if (!notificationsData) return [];
+    const notifications = [...notificationsData];
+
     switch (sortType) {
       case "date-desc":
-        return notifications.sort((a, b) => b.date.getTime() - a.date.getTime());
+        return notifications.sort((a, b) => parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime());
       case "date-asc":
-        return notifications.sort((a, b) => a.date.getTime() - b.date.getTime());
+        return notifications.sort((a, b) => parseISO(a.created_at).getTime() - parseISO(b.created_at).getTime());
       case "sender-asc":
-        return notifications.sort((a, b) => a.sender.localeCompare(b.sender, "ru"));
+        return notifications.sort((a, b) =>
+          `${a.sender_first_name} ${a.sender_last_name}`.localeCompare(`${b.sender_first_name} ${b.sender_last_name}`, "ru")
+        );
       case "sender-desc":
-        return notifications.sort((a, b) => b.sender.localeCompare(a.sender, "ru"));
+        return notifications.sort((a, b) =>
+          `${b.sender_first_name} ${b.sender_last_name}`.localeCompare(`${a.sender_first_name} ${a.sender_last_name}`, "ru")
+        );
       case "title-asc":
-        return notifications.sort((a, b) => a.title.localeCompare(b.title, "ru"));
+        return notifications.sort((a, b) => a.type.localeCompare(b.type, "ru"));
       case "title-desc":
-        return notifications.sort((a, b) => b.title.localeCompare(a.title, "ru"));
+        return notifications.sort((a, b) => b.type.localeCompare(a.type, "ru"));
       default:
         return notifications;
     }
-  }, [sortType]);
+  }, [notificationsData, sortType]);
+
+  const visibleNotifications = isExpanded ? sortedNotifications : sortedNotifications.slice(0, 6);
+
+  if (isLoading) {
+    return (
+      <Card className="h-full border-0 shadow-none py-0">
+        <CardContent className="flex h-full flex-col items-center justify-center p-4">
+          <div className="text-muted-foreground animate-pulse">Загрузка уведомлений...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="h-full border-0 shadow-none py-0">
@@ -89,14 +82,18 @@ const NotificationList = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex-1 overflow-y-auto flex flex-col gap-6">
-          {sortedNotifications.map((notification) => (
+        <div
+          className={cn(
+            "flex-1 flex flex-col gap-4 overflow-y-auto transition-all duration-300 pr-2 max-h-[700px]",
+          )}
+        >
+          {visibleNotifications.map((notification) => (
             <Link to={`/notification/${notification.id}`} key={notification.id}>
               <Button
                 variant="outline"
                 className={cn(
-                  "flex flex-col items-start gap-2 rounded-lg border p-3 sm:p-4 text-left text-sm transition-all hover:bg-accent w-full",
-                  "min-h-[120px] sm:min-h-[140px] bg-muted"
+                  "flex flex-col items-start gap-2 rounded-lg border p-3 sm:p-4 text-left text-sm transition-all hover:bg-accent w-full h-auto",
+                  !notification.status ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800" : "bg-muted/50"
                 )}
                 isAnimated={false}
               >
@@ -104,26 +101,59 @@ const NotificationList = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-xs sm:text-sm">
-                        {notification.sender}
+                        {notification.sender_first_name} {notification.sender_last_name}
                       </span>
+                      {!notification.status && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                      )}
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(notification.date, {
+                    <span className="text-[10px] sm:text-xs text-muted-foreground">
+                      {formatDistanceToNow(parseISO(notification.created_at), {
                         addSuffix: true,
                         locale: ru,
                       })}
                     </span>
                   </div>
-                  <div className="text-xs font-medium">
-                    {notification.title}
+                  <div className="text-[11px] sm:text-xs font-medium text-primary">
+                    {notification.type}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground break-words whitespace-pre-wrap line-clamp-2 sm:line-clamp-none">
-                  {notification.message}
+                <div className="text-[11px] sm:text-xs text-muted-foreground break-words whitespace-pre-wrap line-clamp-2">
+                  {notification.text}
                 </div>
               </Button>
             </Link>
           ))}
+        </div>
+
+        <div className="mt-auto pt-4 border-t flex flex-col gap-2">
+          {!isExpanded && sortedNotifications.length > 5 && (
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto text-muted-foreground hover:text-primary transition-colors text-xs font-medium px-8"
+                onClick={() => setIsExpanded(true)}
+              >
+                Показать все уведомления ({sortedNotifications.length})
+              </Button>
+            </div>
+          )}
+          {isExpanded && sortedNotifications.length > 5 && (
+            <div className="flex justify-center">
+              <Button
+                variant="ghost"
+                className="w-full sm:w-auto text-muted-foreground hover:text-primary transition-colors text-xs font-medium"
+                onClick={() => setIsExpanded(false)}
+              >
+                Свернуть
+              </Button>
+            </div>
+          )}
+          {!isLoading && sortedNotifications.length === 0 && (
+            <div className="text-center text-muted-foreground py-8">
+              У вас нет уведомлений
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

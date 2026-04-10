@@ -143,18 +143,7 @@ export const quizData = {
         { id: "opt_c", text: "Дивизиональная структура", image: null }
       ]
     }
-    // {
-    //   id: "q_1",
-    //   question: "Какой тип организационной структуры предполагает единоначалие и строгую вертикаль?",
-    //   questionImage: null,
-    //   multipleAnswers: false,
-    //   options: [
-    //     { id: "opt_a", text: "Линейная структура", image: null },
-    //     { id: "opt_b", text: "Матричная структура", image: null },
-    //     { id: "opt_c", text: "Дивизиональная структура", image: null }
-    //   ]
-    // },
-,
+    ,
     {
       id: "q_2",
       question: "Какие затраты относятся к прямым издержкам?",

@@ -2,10 +2,12 @@ import React, { FC, ReactNode, memo } from "react";
 import { SidebarProvider } from "shared/shadcn/ui/sidebar";
 import Header from "./ui/Header/Header";
 import Sidebar from "./ui/Sidebar/Sidebar";
+import { useLocation } from "react-router-dom";
 
 import { useAuth } from "shared/hooks";
 import { Toaster } from "shared/shadcn/ui/sonner";
 import { GlobalDrawer } from "shared/components";
+import { NotificationWebSocket } from "widgets/Notification/ui/NotificationWebSocket";
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,6 +15,26 @@ interface LayoutProps {
 
 const Layout: FC<LayoutProps> = ({ children }) => {
   const auth = useAuth();
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/";
+
+  // Если это страница логина, показываем только содержимое без Header и Sidebar
+  if (isLoginPage) {
+    return (
+      <>
+        <div className="flex items-center justify-center min-h-screen w-full bg-background">
+          {children}
+        </div>
+        <Toaster
+          richColors
+          closeButton
+          position="top-center"
+          expand={false}
+          className="z-80"
+        />
+      </>
+    );
+  }
 
   return (
     <SidebarProvider
@@ -38,12 +60,13 @@ const Layout: FC<LayoutProps> = ({ children }) => {
         {auth && (
           <>
             <GlobalDrawer />
+            <NotificationWebSocket />
           </>
         )}
         <Toaster
           richColors
           closeButton
-          position="top-center"
+          position="top-right"
           expand={false}
           className="z-80"
         />
