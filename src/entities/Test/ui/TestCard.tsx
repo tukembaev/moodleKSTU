@@ -1,9 +1,17 @@
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { 
-  LuCalendarDays, 
-  LuHandCoins, 
-  LuShapes 
+import {
+  AlertCircle,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  PlayCircle,
+  Trophy
+} from "lucide-react";
+import {
+  LuCalendarDays,
+  LuHandCoins,
+  LuShapes
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { UseTooltip } from "shared/components";
@@ -14,15 +22,6 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
 import { Test } from "../model/types/test";
-import { 
-  ChevronRight, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock,
-  Trophy,
-  PlayCircle,
-  BarChart3
-} from "lucide-react";
 
 // Компонент статуса теста
 const TestStatusBadge: React.FC<{
