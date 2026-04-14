@@ -220,7 +220,11 @@
   }
   body {
     @apply bg-background text-foreground;
-    
+    background-image: url('/src/shared/assets/img/LayoutBackground.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
 }
 

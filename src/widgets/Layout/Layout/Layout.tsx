@@ -52,7 +52,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
           <div className="w-full">
             <Header />
 
-            <div className={`${auth && "px-4 pt-4 pb-8"} overflow-hidden`}>
+            <div className={`${auth && "px-4 pt-4 pb-8"} overflow-hidden `}>
               {children}
             </div>
           </div>

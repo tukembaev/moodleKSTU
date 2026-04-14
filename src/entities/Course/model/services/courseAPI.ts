@@ -1,10 +1,10 @@
 import { CreateCoursePayload, CreateFAQPayload, CreateThemePayload, editPermissionPayload } from "features/Course";
-import $api_edu from "shared/api/api_edu";
-import $api_users from "shared/api/api_users";
-import { Course, CourseMaterials, CourseThemes, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme, CourseModulesResponse } from "../types/course";
 import { ExtraPointPayload, FinishCoursePayload, RateAnswerPayload } from "features/Course/model/types/course_payload";
 import $api_base_edu from "shared/api/api_base_edu";
-import { StudentDashboard, StudentCourseDetail, TeacherDashboard, TeacherCourseDetail } from "../types/statistics";
+import $api_edu from "shared/api/api_edu";
+import $api_users from "shared/api/api_users";
+import { Course, CourseAllMaterials, CourseMaterials, CourseModulesResponse, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme } from "../types/course";
+import { StudentCourseDetail, StudentDashboard, TeacherCourseDetail, TeacherDashboard } from "../types/statistics";
 
 
 
@@ -14,7 +14,7 @@ export const getCoursesOfProfessor = async ():Promise<Course[]> => {
     return response.data;
   };
 //Все задания выбранной дисциплины
-  export const getCourseAllTasks = async (id: string | null):Promise<CourseThemes> => {
+  export const getCourseAllTasks = async (id: string | null):Promise<CourseAllMaterials> => {
     const response = await $api_edu.get(`course-theme/${id}/`); 
     return response.data;
   };

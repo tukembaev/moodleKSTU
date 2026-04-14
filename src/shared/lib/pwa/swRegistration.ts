@@ -26,12 +26,11 @@ export async function registerSW(config?: SWConfig): Promise<ServiceWorkerRegist
     return null;
   }
 
-  // ВАЖНО: Service Worker работает и в режиме разработки для тестирования PWA
-  // Если нужно отключить, раскомментируйте:
-  // if (import.meta.env.DEV) {
-  //   console.log('[PWA] Service Worker отключён в режиме разработки');
-  //   return null;
-  // }
+  // ВАЖНО: Отключаем Service Worker в dev режиме, чтобы избежать конфликтов с Vite HMR
+  if (import.meta.env.DEV) {
+    console.log('[PWA] Service Worker отключён в режиме разработки');
+    return null;
+  }
 
   try {
     const registration = await navigator.serviceWorker.register('/sw.js', {

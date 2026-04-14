@@ -34,7 +34,7 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
           <p className="text-muted-foreground">Замечаний пока нет</p>
         </div>
       ) : (
-        <ScrollArea className="h-[500px] rounded-md border p-2">
+        <ScrollArea className="h-[150px] rounded-md border p-2">
           <ReviewThread
             reviews={mockReviews}
             onReply={handleReply}

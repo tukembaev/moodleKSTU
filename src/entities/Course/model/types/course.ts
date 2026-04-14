@@ -133,6 +133,42 @@ export interface CourseMaterials {
   course_detail: string,
   files: string
 }
+
+export interface CourseAllMaterials {
+  id: string;
+  discipline_name: string;
+  category: string;
+  category_icon: string;
+  credit: number;
+  control_form: string;
+  is_favorite: boolean;
+  audience: string;
+  requirements: string;
+  description: string;
+  count_lb_pr: CourseLessonsStatusCounter;
+  progress: CourseProgress;
+  course_points: number;
+  count_stud: number;
+  is_end: boolean;
+  course_owner: CourseOwner[];
+  additional_points: AdditionalCoursePoints[];
+  detail: Array<{
+    id: string;
+    week: string;
+    title: string;
+    type_less: string;
+    max_points: number;
+    deadline: string;
+    status: boolean;
+    locked: boolean;
+    open_date: string;
+    description: string;
+    discipline_name: string;
+    is_favorite: boolean;
+    result: string;
+    active_remarks_count: number;
+  }>;
+}
 export interface FileAnswer {
   id: string;
   file: string;

@@ -5,7 +5,6 @@ import { useState } from "react";
 import {
   LuClipboardList,
   LuEye,
-  LuEyeClosed,
   LuFolderDown,
   LuGlasses,
   LuList,
@@ -20,14 +19,7 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "shared/shadcn/ui/dialog";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "shared/shadcn/ui/table";
+
 import ThemeAnswers from "../Answers/ThemeAnswers";
 
 import { StudentComments } from "features/Course/hooks/StudentComments";
@@ -104,79 +96,68 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
     return <p>Ошибка: {error.message}</p>;
   }
 
+  const getFileIcon = (material: CourseMaterials) => {
+    if (material.url) {
+      return <LuGlasses className="size-8" />;
+    }
+    if (material.file?.includes(".pdf")) {
+      return <LuEye className="size-8" />;
+    }
+    return <LuFolderDown className="size-8" />;
+  };
+
+  const getTooltipContent = (material: CourseMaterials) => {
+    return (
+      <div className="flex flex-col gap-1 max-w-[250px]">
+        <p className="font-semibold">{material.url ? material.url_name : material.file_name || "Без названия"}</p>
+        {material.description && <p className="text-xs text-muted-foreground">{material.description}</p>}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-3 pt-6">
       <div className="flex flex-col gap-3">
-        <p className="text-lg font-semibold">Учебный материалы</p>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[300px] py-4">Название</TableHead>
-                <TableHead className="w-[300px] py-4">Описание</TableHead>
-                {!auth_data.isStudent && (
-                  <TableHead className="text-right">
-                    <Button
-                      variant="outline"
-                      className="cursor-pointer"
-                      onClick={() => openForm(FormQuery.ADD_MATERIAL, { id })}
-                    >
-                      Добавить материал
-                    </Button>
-                  </TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: 2 }).map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[200px]" />
-                    </TableCell>
-                    <TableCell className="flex justify-end gap-3">
-                      <Skeleton className="h-8 w-8 rounded" />
-                      <Skeleton className="h-8 w-8 rounded" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : !allMaterials.length ? (
-                <TableRow>
-                  <TableCell colSpan={4}>Учебный материал пуст</TableCell>
-                </TableRow>
-              ) : (
-                allMaterials.map((material) => (
-                  <TableRow key={material.id}>
-                    <TableCell className="font-medium max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="flex items-center justify-between">
+          <p className="text-lg font-semibold">Учебный материалы</p>
+          {!auth_data.isStudent && (
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => openForm(FormQuery.ADD_MATERIAL, { id })}
+            >
+              Добавить материал
+            </Button>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Skeleton key={index} className="h-24 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : !allMaterials.length ? (
+          <div className="rounded-md border p-8 text-center text-muted-foreground">
+            Учебный материал пуст
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+            {allMaterials.map((material) => (
+              <UseTooltip key={material.id} text={getTooltipContent(material)}>
+                <div className="relative group">
+                  <HoverLift>
+                    <div className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer h-24">
                       {material.url ? (
-                        <UseTooltip text={material.url_name || "Ссылка на материал"}>
-                          <a
-                            href={material.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline "
-                          >
-                            {material.url_name || "Ссылка на материал"}
-                          </a>
-
-                        </UseTooltip>
-
-                      ) : (
-                        material.file_name || "Без названия"
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <HoverLift>
-                        <Badge
-                          variant="outline"
-                          className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
+                        <a
+                          href={material.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex flex-col items-center justify-center gap-2 w-full h-full"
                         >
-                          {material.description}
-                        </Badge>
-                      </HoverLift>
-                    </TableCell>
-                    <TableCell className="justify-end flex gap-3">
-                      {material.file?.includes(".pdf") && (
+                          {getFileIcon(material)}
+                        </a>
+                      ) : material.file?.includes(".pdf") ? (
                         <Dialog
                           onOpenChange={(isOpen) => {
                             if (!isOpen) {
@@ -185,18 +166,13 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
                           }}
                           open={preview?.id === material.id}
                         >
-                          <DialogTrigger>
-                            <Button
-                              variant="outline"
-                              size="icon"
+                          <DialogTrigger asChild>
+                            <button
+                              className="flex flex-col items-center justify-center gap-2 w-full h-full"
                               onClick={() => handleOpenPreview(material)}
                             >
-                              {preview?.id === material.id ? (
-                                <LuEyeClosed />
-                              ) : (
-                                <LuEye />
-                              )}
-                            </Button>
+                              {getFileIcon(material)}
+                            </button>
                           </DialogTrigger>
                           <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
                             <DialogHeader className="px-6 pt-6 pb-0">
@@ -205,34 +181,32 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
                             <PdfViewer url={material.file || ""} inDialog={true} />
                           </DialogContent>
                         </Dialog>
-                      )}
-                      {material.file && (
+                      ) : (
                         <a
                           href={material.file}
                           download={material.file_name}
-                          className="text-blue-500 hover:text-blue-700"
+                          className="flex flex-col items-center justify-center gap-2 w-full h-full"
                         >
-                          <Button variant="outline" size="icon">
-                            <LuFolderDown />
-                          </Button>
+                          {getFileIcon(material)}
                         </a>
                       )}
-                      {isOwner && (
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => delete_material(material.id)}
-                        >
-                          <LuTrash2 />
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                    </div>
+                  </HoverLift>
+                  {isOwner && (
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => delete_material(material.id)}
+                    >
+                      <LuTrash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </UseTooltip>
+            ))}
+          </div>
+        )}
       </div>
       {/* <ThemeQuiz course_id={course_id} course_name={course_name} theme_id={id}/> */}
       <UseTabs tabs={tabs} />

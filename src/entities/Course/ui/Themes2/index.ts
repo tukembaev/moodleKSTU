@@ -1,0 +1,9 @@
+export { CourseTasksLayout } from "./CourseTasksLayout";
+export { TaskGroup } from "./TaskGroup";
+export { TaskItem } from "./TaskItem";
+export { InstructorCard } from "./InstructorCard";
+export { CourseInfoCard } from "./CourseInfoCard";
+export { TasksList } from "./TasksList";
+export { MaterialsSection } from "./MaterialsSection";
+export { MaterialCard } from "./MaterialCard";
+export { TabsSection } from "./TabsSection";

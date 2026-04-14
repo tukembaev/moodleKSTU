@@ -16,25 +16,25 @@ export const courseQueries = {
     }),
     allTasks: (id: string | null) =>
       queryOptions({
-        queryKey: ['course','course-theme',id],
+        queryKey: ['course','course-all-themes',id],
         queryFn: () => getCourseAllTasks(id as string),
         enabled: !!id,
       }),
     allTaskMaterials: (id: string | null) =>
         queryOptions({
-          queryKey: ['course','course-details'],
+          queryKey: ['course','task-materials', id],
           queryFn: () => getTaskMaterials(id as string),
           enabled: !!id,
         }),
     allAnswerTask: (id: string | null) =>
           queryOptions({
-            queryKey: ['answer-task'],
+            queryKey: ['answer-task', id],
             queryFn: () => getAnswerTask(id as string),
             enabled: !!id,
           }),
     allStudentAnswers: (id: string | null) =>
             queryOptions({
-              queryKey: ['student-answer-task'],
+              queryKey: ['student-answer-task', id],
               queryFn: () => getStudentAnswers(id as string),
               enabled: !!id,
             }),

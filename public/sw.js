@@ -95,6 +95,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // ВАЖНО: Пропускаем все запросы в dev режиме (Vite HMR и модули)
+  if (url.pathname.includes('/@') || url.pathname.includes('/src/') || url.pathname.includes('/node_modules/')) {
+    return;
+  }
+
   // API запросы: Network First
   if (API_URL_PATTERN.test(url.pathname)) {
     event.respondWith(networkFirst(request, API_CACHE));

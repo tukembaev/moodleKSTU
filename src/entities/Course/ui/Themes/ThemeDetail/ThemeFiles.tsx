@@ -81,7 +81,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
       icon: <LuMessageSquareText />,
     },
     {
-      name: "FAQ",
+      name: "FAQDADADAD",
       value: "faq",
       content: <ThemeFAQ theme_id={id} />,
       icon: <LuGlasses />,
@@ -260,7 +260,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
                   className="cursor-pointer"
                   onClick={() => openForm(FormQuery.ADD_MATERIAL, { id })}
                 >
-                  Добавить материал
+                  Добавить материал фввфвфвфв
                 </Button>
               </TableHead>
             )}

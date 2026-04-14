@@ -4,7 +4,7 @@ import { courseQueries } from "../../model/services/courseQueryFactory";
 import ListOfStudentsWithAnswers from "./ListOfStudentsWithAnswers";
 import SingleStudentAnswers from "./SingleStudentAnswers";
 
-const ThemeAnswers = ({ id }: { id: string }) => {
+const ThemeAnswers = ({ id }: { id: string | null }) => {
   const { isStudent } = useAuth();
   const {
     data: answersOfAllStudents,
@@ -12,13 +12,13 @@ const ThemeAnswers = ({ id }: { id: string }) => {
     error: listOfStudentsError,
     refetch,
   } = useQuery(courseQueries.allAnswerTask(isStudent ? null : id));
-  console.log(answersOfAllStudents);
+  console.log('answersOfAllStudents for id:', id, answersOfAllStudents);
   const {
     data: authStudentAnswers,
     isLoading: authStudentAnswersLoading,
     error: authStudentAnswersError,
   } = useQuery(courseQueries.allStudentAnswers(isStudent ? id : null));
-  console.log(authStudentAnswers);
+  console.log('authStudentAnswers for id:', id, authStudentAnswers);
 
   return (
     <>
