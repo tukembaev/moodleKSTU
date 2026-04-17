@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 
-import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getStudentDashboard, getStudentCourseDetail, getTeacherDashboard, getTeacherCourseDetail } from './courseAPI';
+import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getStudentDashboard, getStudentCourseDetail, getTeacherDashboard, getTeacherCourseDetail, getCourseTests } from './courseAPI';
 
 import { delete_material, useAddComment, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment } from 'features/Course/model/services/course_queries';
 
@@ -68,6 +68,13 @@ export const courseQueries = {
                   queryKey: ['week', 'themes', week_id],
                   queryFn: () => getWeekThemes(week_id as string),
                   enabled: !!week_id,
+                }),
+      // Тесты курса
+      courseTests: (courseId: string | null) =>
+                queryOptions({
+                  queryKey: ['course', 'tests', courseId],
+                  queryFn: () => getCourseTests(courseId),
+                  enabled: !!courseId,
                 }),
       // Статистика для студентов
       studentDashboard: () =>

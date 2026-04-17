@@ -12,13 +12,13 @@ const ThemeAnswers = ({ id }: { id: string | null }) => {
     error: listOfStudentsError,
     refetch,
   } = useQuery(courseQueries.allAnswerTask(isStudent ? null : id));
-  console.log('answersOfAllStudents for id:', id, answersOfAllStudents);
+
   const {
     data: authStudentAnswers,
     isLoading: authStudentAnswersLoading,
     error: authStudentAnswersError,
   } = useQuery(courseQueries.allStudentAnswers(isStudent ? id : null));
-  console.log('authStudentAnswers for id:', id, authStudentAnswers);
+ 
 
   return (
     <>
@@ -28,10 +28,11 @@ const ThemeAnswers = ({ id }: { id: string | null }) => {
           isLoading={isStudentsLoading}
           refetch={refetch}
           error={listOfStudentsError}
+          theme_id={id}
           // count_students = {answersOfAllStudents.length}
         />
       )}
-      {authStudentAnswers && (
+      {authStudentAnswers && id && (
         <SingleStudentAnswers
           data={authStudentAnswers}
           isLoading={authStudentAnswersLoading}

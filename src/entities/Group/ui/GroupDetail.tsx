@@ -51,7 +51,7 @@ const features = [
 
 const GroupDetail = () => {
   return (
-    <div className="min-h-screen flex py-3">
+    <div className="flex">
       <div>
         <div className="flex justify-between items-center">
           <div className="flex flex-col">

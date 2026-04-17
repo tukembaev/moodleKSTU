@@ -19,6 +19,7 @@ export const useAddThemeForm = () => {
   } = useForm<CreateThemePayload>();
 
   const id = searchParams.get("id");
+  const typeParam = searchParams.get("type");
 
   // Get all tests
   const { data: allTests } = useQuery(testQueries.allTest("/"));
@@ -34,6 +35,25 @@ export const useAddThemeForm = () => {
       setValue("week", id);
     }
   }, [id, setValue]);
+
+  // Предустановка типа из URL параметра
+  useEffect(() => {
+    if (typeParam) {
+      // Если type_param это уже значение type_less (например "type_less"), используем его напрямую
+      if (TYPE_LESS[typeParam]) {
+        setSelectedType(typeParam);
+        setValue("type_less", TYPE_LESS[typeParam]);
+      } else {
+        // Иначе используем как есть (для случая type_less)
+        setValue("type_less", typeParam);
+        // Находим ключ по значению
+        const key = Object.keys(TYPE_LESS).find(k => TYPE_LESS[k] === typeParam);
+        if (key) {
+          setSelectedType(key);
+        }
+      }
+    }
+  }, [typeParam, setValue]);
 
   const handleTypeChange = (value: string) => {
     setSelectedType(value);

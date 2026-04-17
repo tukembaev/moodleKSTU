@@ -1,8 +1,9 @@
 // Types
 export * from "./model/types/remarks";
 
-// Mocks
-export * from "./model/mocks/remarksMock";
+// Services (API + queries)
+export * from "./model/services/remarksAPI";
+export * from "./model/services/remarksQueryFactory";
 
 // UI Components
 export { default as RemarkChat } from "./ui/RemarkChat";

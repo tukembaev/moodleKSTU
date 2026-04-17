@@ -173,29 +173,37 @@ export interface FileAnswer {
   id: string;
   file: string;
   file_names: string;
+  created_at: string;
   is_read: {
     is_read: boolean;
-    read: Date
+    read: string | null ;
   };
-  created_at: Date;
-  resides: {
-    course: ResidesCourse[],
-    theme: ResidesTheme[]
-  }
 }
+
 export interface StudentsAnswers {
-  id: string,
-  task: string,
-  fullname: string,
-  avatar: string,
-  group: string,
-  points: number,
-  status: boolean,
-  locked: boolean,
-  user_id: number,
-  comment: string,
-  max_points: number,
-  files: FileAnswer[]
+  id: string ;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  avatar: string;
+  role: string;
+  position: string;
+  email: string;
+  bio: string;
+  number_phone: string;
+  telegram_username: string;
+  group: string;
+  fullname: string;
+  locked: boolean;
+  task: string;
+  max_points: number;
+  created_at: string;
+  user_id: number;
+  status: string;
+  points: number;
+  remarks: number;
+  pending_remarks: number;
+  files: FileAnswer[];
 }
 export interface ThemeItem {
   id: string;

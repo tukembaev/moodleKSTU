@@ -1,6 +1,13 @@
 import { FC } from "react";
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { cn } from "shared/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "shared/shadcn/ui/dropdown-menu";
+import { Button } from "shared/shadcn/ui/button";
 
 interface TaskItemProps {
   id: string;
@@ -15,9 +22,12 @@ interface TaskItemProps {
   activeRemarksCount?: number;
   onClick?: () => void;
   isActive?: boolean;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const TaskItem: FC<TaskItemProps> = ({
+  id,
   title,
   week,
   result,
@@ -27,9 +37,10 @@ export const TaskItem: FC<TaskItemProps> = ({
   isStudent,
   onClick,
   isActive = false,
+  onEdit,
+  onDelete,
 }) => {
-  const isCompleted = status || result !== "—";
-  
+
   return (
     <div
       onClick={onClick}
@@ -41,13 +52,14 @@ export const TaskItem: FC<TaskItemProps> = ({
       )}
     >
       {/* Иконка статуса */}
-      <div className="shrink-0">
-        {isCompleted ? (
+      {isStudent &&   <div className="shrink-0">
+        {result ? (
           <CheckCircle2 className="h-5 w-5 text-green-500" />
         ) : (
           <Circle className="h-5 w-5 text-muted-foreground" />
         )}
-      </div>
+      </div>}
+   
 
       {/* Название задания */}
       <div className="flex-1 min-w-0">
@@ -70,8 +82,31 @@ export const TaskItem: FC<TaskItemProps> = ({
         )}
       </div>
 
-      {/* Сложность (опционально) */}
-    
+      {/* Меню действий для преподавателя */}
+      {!isStudent && (
+        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit?.(id)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Редактировать
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete?.(id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Удалить
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
     </div>
   );
 };

@@ -5,6 +5,7 @@ import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
 import { Course, CourseAllMaterials, CourseMaterials, CourseModulesResponse, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme } from "../types/course";
 import { StudentCourseDetail, StudentDashboard, TeacherCourseDetail, TeacherDashboard } from "../types/statistics";
+import { Test } from "entities/Test/model/types/test";
 
 
 
@@ -202,5 +203,18 @@ export const getTeacherCourseDetail = async (courseId: string): Promise<TeacherC
       throw new Error("Курс не найден или нет доступа к статистике.");
     }
     throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики курса");
+  }
+};
+
+// Получить все тесты курса  
+export const getCourseTests = async (courseId: string | null): Promise<Test[]> => {
+  if (!courseId) return [];
+  try {
+    // Пробуем разные варианты endpoint
+    const response = await $api_edu.get(`testing?course_id=${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching course tests:", error);
+    return [];
   }
 };

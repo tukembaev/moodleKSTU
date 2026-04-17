@@ -193,7 +193,7 @@ const FileTab = ({
       </div>
 
       {/* Desktop view (table) */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block p-0">
         {renderTable()}
       </div>
     </>

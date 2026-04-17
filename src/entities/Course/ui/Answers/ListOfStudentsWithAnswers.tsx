@@ -8,25 +8,25 @@ import { SetMark } from "features/Course/hooks/SetMark";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 import {
+  LuCalendarDays,
   LuCheckCheck,
+  LuEye,
+  LuEyeClosed,
+  LuFile,
   LuFolderDown,
   LuKeyRound,
   LuLaugh,
   LuLock,
   LuMeh,
   LuMessageCircleWarning,
+  LuMessageSquare,
   LuThumbsUp,
-  LuX,
-  LuEye,
-  LuEyeClosed,
-  LuUser,
   LuUsers,
-  LuCalendarDays,
-  LuFile,
+  LuX
 } from "react-icons/lu";
-import { GetFileIcon, HoverLift, UseTooltip, SpringPopupList } from "shared/components";
+import { GetFileIcon, HoverLift, SpringPopupList, UseTooltip } from "shared/components";
 import PdfViewer from "shared/components/PdfPreview";
-import { Avatar, AvatarImage, AvatarFallback } from "shared/shadcn/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent, CardHeader } from "shared/shadcn/ui/card";
@@ -65,11 +65,13 @@ const ListOfStudentsWithAnswers = ({
   isLoading,
   error,
   refetch,
+  theme_id,
 }: {
   data: StudentsAnswers[];
   isLoading?: boolean;
   refetch: () => void;
   error?: Error | null;
+  theme_id?: string | null;
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -140,6 +142,26 @@ const ListOfStudentsWithAnswers = ({
         selectedGroup === "Все группы" ||
         student.group === selectedGroup)
   );
+  console.log(data)
+  // Функция для определения статуса замечаний
+  const getRemarksStatus = (student: StudentsAnswers) => {
+ 
+    // Если есть responded замечания
+    if (student.pending_remarks > 0 || student.status === 'responded') {
+      return "responded";
+    }
+
+    if (student.pending_remarks > 0 || student.status === 'rejected') {
+      return "pending";
+    }
+    // Если есть комментарий или ожидающие замечания
+    if (student.pending_remarks > 0) {
+      return "pending";
+    }
+    
+    // Нет замечаний
+    return "none";
+  };
 
   const { mutate: change_permission } = courseQueries.edit_permission();
 
@@ -215,7 +237,7 @@ const ListOfStudentsWithAnswers = ({
                     <>
                       <div>Файл просмотрен</div>
                       <div>
-                        {format(item.is_read.read, "PPP 'в' p", { locale: ru })}
+                        {item.is_read.read && format(item.is_read.read, "PPP 'в' p", { locale: ru })}
                       </div>
                     </>
                   }
@@ -303,7 +325,7 @@ const ListOfStudentsWithAnswers = ({
             
             return (
               <Collapsible
-                key={student.id}
+                key={student.user_id}
                 open={isExpanded}
                 onOpenChange={() => toggleExpand(student.id)}
               >
@@ -411,16 +433,28 @@ const ListOfStudentsWithAnswers = ({
                       </UseTooltip>
                       
                       {/* Comments status */}
-                      <SetComment text="Добавить замечание" id={student.id}>
+                      <SetComment
+                        text="Добавить замечание"
+                        id={student.id}
+                        theme_id={theme_id}
+                        student_id={student.user_id}
+                      >
                         <Badge
                           variant="outline"
                           className={`gap-1 text-xs cursor-pointer ${
-                            student.comment
+                            getRemarksStatus(student) === "responded"
+                              ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800"
+                              : getRemarksStatus(student) === "pending"
                               ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
                               : ""
                           }`}
                         >
-                          {student.comment ? (
+                          {getRemarksStatus(student) === "responded" ? (
+                            <>
+                              <LuMessageSquare className="h-3 w-3" />
+                              Ответил
+                            </>
+                          ) : getRemarksStatus(student) === "pending" ? (
                             <>
                               <LuMeh className="h-3 w-3" />
                               Замечание
@@ -530,7 +564,7 @@ const ListOfStudentsWithAnswers = ({
 
         <TableBody>
           {filteredData.map((student) => (
-            <React.Fragment key={student.id}>
+            <React.Fragment key={student.user_id}>
               <TableRow
                 className={`${expandedId === student.id ? "border-b-0" : ""}`}
               // key={student.id + student.fullname}
@@ -624,20 +658,48 @@ const ListOfStudentsWithAnswers = ({
                   <HoverLift>
                     <Badge
                       variant="outline"
-                      className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer"
+                      className={`flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer ${
+                        getRemarksStatus(student) === "responded"
+                          ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800"
+                          : getRemarksStatus(student) === "pending"
+                          ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
+                          : ""
+                      }`}
                     >
-                      {!student.comment ? (
-                        <SetComment text="Добавить замечание" id={student.id}>
-                          <span className="flex gap-1 items-center cursor-pointer">
-                            <LuLaugh className="text-green-500 dark:text-green-400" />
-                            Замечаний нет
+                      {getRemarksStatus(student) === "responded" ? (
+                        <SetComment
+                          text="Просмотреть ответ"
+                          id={student.id}
+                          theme_id={theme_id}
+                          student_id={student.user_id}
+                        >
+                          <span className="flex gap-1 items-center">
+                            <LuMessageSquare className="text-blue-500 dark:text-blue-400 cursor-pointer" />
+                            Студент ответил
+                          </span>
+                        </SetComment>
+                      ) : getRemarksStatus(student) === "pending" ? (
+                        <SetComment
+                          text="Добавить замечание"
+                          id={student.id}
+                          theme_id={theme_id}
+                          student_id={student.user_id}
+                        >
+                          <span className="flex gap-1 items-center">
+                            <LuMeh className="text-orange-500 dark:text-orange-400 cursor-pointer" />
+                            {student.pending_remarks > 0 || "Есть замечания"}
                           </span>
                         </SetComment>
                       ) : (
-                        <SetComment text="Добавить замечание" id={student.id}>
-                          <span className="flex gap-1 items-center">
-                            <LuMeh className="text-orange-500 dark:text-orange-400 cursor-pointer" />
-                            {student.comment}
+                        <SetComment
+                          text="Добавить замечание"
+                          id={student.id}
+                          theme_id={theme_id}
+                          student_id={student.user_id}
+                        >
+                          <span className="flex gap-1 items-center cursor-pointer">
+                            <LuLaugh className="text-green-500 dark:text-green-400" />
+                            Замечаний нет
                           </span>
                         </SetComment>
                       )}
@@ -681,7 +743,7 @@ const ListOfStudentsWithAnswers = ({
                       {item.is_read.is_read ? <UseTooltip text={
                         <>
                           <div>Файл просмотрен</div>
-                          <div>{format(item.is_read.read, "PPP 'в' p", {
+                          <div>{ item.is_read.read && format(item.is_read.read, "PPP 'в' p", {
                             locale: ru,
                           })}</div>
                         </>

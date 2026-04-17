@@ -6,4 +6,5 @@ export { CourseInfoCard } from "./CourseInfoCard";
 export { TasksList } from "./TasksList";
 export { MaterialsSection } from "./MaterialsSection";
 export { MaterialCard } from "./MaterialCard";
+export { AddMaterialCard } from "./AddMaterialCard";
 export { TabsSection } from "./TabsSection";

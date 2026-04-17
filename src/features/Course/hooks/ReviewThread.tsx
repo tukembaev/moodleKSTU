@@ -5,6 +5,7 @@ import { cn } from "shared/lib/utils";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 import { Separator } from "shared/shadcn/ui/separator";
+import { Remark, RemarkStatus } from "entities/Remarks";
 
 // Типы сообщений для логики UI
 export type ReviewMessageType = 
@@ -44,117 +45,69 @@ export interface Review {
   needs_teacher_action: boolean; // Ключ для UI: требуется действие учителя
 }
 
-// MOCK DATA - структура для бэкенда
-export const mockReviews: Review[] = [
-  {
-    id: "review_1",
-    theme_id: "theme_123",
-    student_id: "student_456",
-    status: "student_replied",
-    has_student_reply: true,
-    needs_teacher_action: true,
-    created_at: "2025-11-15T10:30:00Z",
-    updated_at: "2025-11-17T14:20:00Z",
-    messages: [
-      {
-        id: "msg_1",
-        type: "teacher_remark",
-        message: "Вы не загрузили PDF файл с решением задачи №3",
-        timestamp: "2025-11-15T10:30:00Z",
-        author_id: "teacher_001",
-        author_name: "Иванов И.И.",
-        author_role: "teacher",
-      },
-      {
-        id: "msg_2",
-        type: "student_reply",
-        message: "Я загрузил PDF, извините, не заметил. Проверьте, пожалуйста",
-        timestamp: "2025-11-17T14:20:00Z",
-        author_id: "student_456",
-        author_name: "Петров П.П.",
-        author_role: "student",
-      },
-    ],
-  },
-  {
-    id: "review_2",
-    theme_id: "theme_123",
-    student_id: "student_456",
-    status: "rejected",
-    has_student_reply: true,
-    needs_teacher_action: false,
-    created_at: "2025-11-14T09:00:00Z",
-    updated_at: "2025-11-18T11:00:00Z",
-    messages: [
-      {
-        id: "msg_3",
-        type: "teacher_remark",
-        message: "В задаче №1 допущена ошибка в расчетах",
-        timestamp: "2025-11-14T09:00:00Z",
-        author_id: "teacher_001",
-        author_name: "Иванов И.И.",
-        author_role: "teacher",
-      },
-      {
-        id: "msg_4",
-        type: "student_reply",
-        message: "Исправил ошибку, пересчитал все значения",
-        timestamp: "2025-11-16T16:30:00Z",
-        author_id: "student_456",
-        author_name: "Петров П.П.",
-        author_role: "student",
-      },
-      {
-        id: "msg_5",
-        type: "teacher_rejection",
-        message: "Ошибка все еще присутствует. Проверьте формулу на странице 2",
-        timestamp: "2025-11-18T11:00:00Z",
-        author_id: "teacher_001",
-        author_name: "Иванов И.И.",
-        author_role: "teacher",
-      },
-    ],
-  },
-  {
-    id: "review_3",
-    theme_id: "theme_123",
-    student_id: "student_456",
-    status: "approved",
-    has_student_reply: true,
-    needs_teacher_action: false,
-    created_at: "2025-11-10T08:00:00Z",
-    updated_at: "2025-11-17T10:00:00Z",
-    messages: [
-      {
-        id: "msg_6",
-        type: "teacher_remark",
-        message: "Отсутствуют выводы по работе",
-        timestamp: "2025-11-10T08:00:00Z",
-        author_id: "teacher_001",
-        author_name: "Иванов И.И.",
-        author_role: "teacher",
-      },
-      {
-        id: "msg_7",
-        type: "student_reply",
-        message: "Добавил раздел с выводами",
-        timestamp: "2025-11-16T12:00:00Z",
-        author_id: "student_456",
-        author_name: "Петров П.П.",
-        author_role: "student",
-      },
-      {
-        id: "msg_8",
-        type: "teacher_approval",
-        message: "Учитель одобрил",
-        timestamp: "2025-11-17T10:00:00Z",
-        author_id: "teacher_001",
-        author_name: "Иванов И.И.",
-        author_role: "teacher",
-      },
-    ],
-  },
-];
+// Адаптер: Remark (из API /api/v1/remarks) -> Review (формат UI ReviewThread)
+export const remarkToReview = (remark: Remark): Review => {
+  const status: ReviewStatus =
+    remark.status === RemarkStatus.PENDING
+      ? "pending"
+      : remark.status === RemarkStatus.RESPONDED
+      ? "student_replied"
+      : remark.status === RemarkStatus.APPROVED
+      ? "approved"
+      : "rejected";
+
+  const messages: ReviewMessage[] = remark.messages.map((m, idx, arr) => {
+    const isLast = idx === arr.length - 1;
+    let type: ReviewMessageType;
+    if (m.sender_role === "student") {
+      type = "student_reply";
+    } else if (
+      isLast &&
+      remark.status === RemarkStatus.APPROVED
+    ) {
+      type = "teacher_approval";
+    } else if (
+      isLast &&
+      remark.status === RemarkStatus.REJECTED
+    ) {
+      type = "teacher_rejection";
+    } else {
+      type = "teacher_remark";
+    }
+    return {
+      id: m.id,
+      type,
+      message: m.message,
+      timestamp:
+        typeof m.created_at === "string"
+          ? m.created_at
+          : new Date(m.created_at).toISOString(),
+      author_id: String(m.sender_id),
+      author_name: m.sender_name,
+      author_role: m.sender_role,
+    };
+  });
+
+  return {
+    id: remark.id,
+    theme_id: remark.theme_id,
+    student_id: String(remark.student_id),
+    status,
+    messages,
+    created_at:
+      typeof remark.created_at === "string"
+        ? remark.created_at
+        : new Date(remark.created_at).toISOString(),
+    updated_at:
+      typeof remark.updated_at === "string"
+        ? remark.updated_at
+        : new Date(remark.updated_at).toISOString(),
+    has_student_reply: remark.messages.some(
+      (m) => m.sender_role === "student"
+    ),
+    needs_teacher_action: remark.status === RemarkStatus.RESPONDED,
+  };
+};
 
 // Утилиты
 export const getMessageIcon = (type: ReviewMessageType) => {

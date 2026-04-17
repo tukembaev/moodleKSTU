@@ -95,7 +95,7 @@ export const useRegistrateCourse = () => {
         console.log(error.message);
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['course','course-details'] });
+        queryClient.invalidateQueries({ queryKey: ['course','task-materials'], exact: false });
       },
     });
   };
@@ -344,7 +344,7 @@ export const delete_material = () => {
 
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['course','course-details'] });
+      queryClient.invalidateQueries({ queryKey: ['course','task-materials'], exact: false });
  
     },
   });

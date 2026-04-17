@@ -1,21 +1,29 @@
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { remarksQueries } from "entities/Remarks";
+import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { ScrollArea } from "shared/shadcn/ui/scroll-area";
-import { ReviewThread, mockReviews } from "./ReviewThread";
+import { ReviewThread, remarkToReview } from "./ReviewThread";
 
 interface StudentCommentsProps {
   theme_id: string;
 }
 
 export function StudentComments({ theme_id }: StudentCommentsProps) {
-  // TODO: Заменить на реальный API вызов
-  // const { data: reviews, isLoading } = useQuery(
-  //   courseQueries.themeReviews(theme_id)
-  // );
+  const { data: remarks, isLoading } = useQuery(
+    remarksQueries.byTheme(theme_id)
+  );
 
-  // const themeReviews = mockReviews.filter((review) => review.theme_id === theme_id);
+  const { mutate: addMessage } = remarksQueries.add_message();
+
+  const reviews = useMemo(
+    () => (remarks ?? []).map(remarkToReview),
+    [remarks]
+  );
 
   const handleReply = (reviewId: string, message: string) => {
-    // TODO: API call для ответа студента
-    console.log("Student reply to review:", reviewId, "message:", message, "theme:", theme_id);
+    if (!message.trim()) return;
+    addMessage({ id: reviewId, data: { message } });
   };
 
   return (
@@ -29,20 +37,24 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
         </div>
       </div>
 
-      {mockReviews.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-2 p-2">
+          <Skeleton className="h-16 w-full rounded-md" />
+          <Skeleton className="h-16 w-full rounded-md" />
+        </div>
+      ) : reviews.length === 0 ? (
         <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
           <p className="text-muted-foreground">Замечаний пока нет</p>
         </div>
       ) : (
-        <ScrollArea className="h-[150px] rounded-md border p-2">
+       
           <ReviewThread
-            reviews={mockReviews}
+            reviews={reviews}
             onReply={handleReply}
             showStudentActions={true}
           />
-        </ScrollArea>
+      
       )}
     </div>
   );
 }
-

@@ -1,14 +1,14 @@
-import { FC, useState } from "react";
 import { CourseMaterials } from "entities/Course/model/types/course";
+import { FC, useState } from "react";
 import {
+  LuExternalLink,
   LuEye,
+  LuFileText,
   LuFolderDown,
   LuGlasses,
   LuTrash2,
-  LuFileText,
-  LuExternalLink,
 } from "react-icons/lu";
-import { HoverLift, UseTooltip } from "shared/components";
+import { UseTooltip } from "shared/components";
 import PdfViewer from "shared/components/PdfPreview";
 import { Button } from "shared/shadcn/ui/button";
 import {
@@ -18,7 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "shared/shadcn/ui/dialog";
-import { cn } from "shared/lib/utils";
 
 interface MaterialCardProps {
   material: CourseMaterials;
@@ -71,7 +70,7 @@ export const MaterialCard: FC<MaterialCardProps> = ({
   return (
     <UseTooltip text={getTooltipContent()} side="top">
       <div className="relative group">
-        <HoverLift>
+  
           <div className="flex flex-col items-center gap-2 p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer">
             {/* Иконка файла */}
             <div className="flex items-center justify-center h-20 w-full">
@@ -83,8 +82,7 @@ export const MaterialCard: FC<MaterialCardProps> = ({
               {fileName}
             </p>
           </div>
-        </HoverLift>
-
+       
         {/* Кнопки действий при наведении */}
         <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {/* Кнопка открыть/скачать */}

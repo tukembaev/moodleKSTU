@@ -5,6 +5,7 @@ import {
   LuChartBar,
   LuInfo,
   LuLock,
+  LuUser,
 } from "react-icons/lu";
 import AboutCourse from "./Details/AboutCourse";
 
@@ -24,6 +25,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "shared/shadcn/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 
 const CourseDetails = () => {
   const { id } = useParams();
@@ -74,98 +76,54 @@ const CourseDetails = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <span className="text-lg sm:text-xl tracking-tight">
-          {courseModulesData?.course_owner?.[0]?.owner_name}
-        </span>
-        <span className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight pb-2">
-          {courseModulesData?.discipline_name}
-        </span>
-      </div>
-      
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col">
-        <TabsList className="h-auto gap-2 rounded-xl p-1 bg-muted justify-start flex-shrink-0 w-fit">
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex flex-col gap-3 pt-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              {courseModulesData?.discipline_name}
+            </h1>
+            <div className="flex items-center gap-2.5">
+              <Avatar className="h-8 w-8 border-2 border-border">
+                <AvatarImage src={courseModulesData?.course_owner?.[0]?.avatar} />
+                <AvatarFallback className="bg-muted">
+                  <LuUser className="h-4 w-4 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm sm:text-base text-muted-foreground font-medium">
+                {courseModulesData?.course_owner?.[0]?.owner_name}
+              </span>
+            </div>
+          </div>
+          
+          <TabsList className="h-auto gap-2 rounded-xl p-1 bg-muted justify-center  flex-shrink-0 w-fit">
           {tabs.map(({ icon: Icon, name, value, count }) => {
-            const isActive = activeTab === value;
+            
             return (
-              <motion.div
-                key={value}
-                layout
-                className={cn(
-                  'flex h-10 items-center justify-center overflow-hidden rounded-lg',
-                  isActive ? 'flex-1' : 'flex-none'
-                )}
-                onClick={() => setActiveTab(value)}
-                initial={false}
-                animate={{
-                  width: isActive ? 'auto' : 44
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 400,
-                  damping: 25
-                }}
-              >
-                <TabsTrigger value={value} asChild>
-                  <motion.div
-                    className="flex h-10 w-full items-center justify-center gap-1.5 px-3 relative cursor-pointer"
-                    animate={{ filter: 'blur(0px)' }}
-                    exit={{ filter: 'blur(2px)' }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    
-                    {/* Счетчик для неактивного таба */}
-                    {!isActive && count > 0 && (
-                      <motion.div
-                        className="absolute -top-0.5 right-0.5"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <div className="h-[15px] min-w-[15px] flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold shadow-sm">
-                          {count}
-                        </div>
-                      </motion.div>
-                    )}
-                    
-                    <AnimatePresence initial={false}>
-                      {isActive && (
-                        <motion.span
-                          className="font-medium whitespace-nowrap"
-                          initial={{ opacity: 0, scaleX: 0.8 }}
-                          animate={{ opacity: 1, scaleX: 1 }}
-                          exit={{ opacity: 0, scaleX: 0.8 }}
-                          transition={{ duration: 0.25, ease: 'easeOut' }}
-                          style={{ originX: 0 }}
-                        >
-                          {name}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                    
-                    {/* Счетчик для активного таба */}
-                    {count > 0 && isActive && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-xs">
-                          {count}
-                        </Badge>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                </TabsTrigger>
-              </motion.div>
+              <TabsTrigger key={value} value={value} asChild>
+                <motion.div
+                  className="flex h-10 items-center justify-center gap-1.5 px-3 relative cursor-pointer rounded-lg"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  
+                  <span className="font-medium whitespace-nowrap">
+                    {name}
+                  </span>
+                  
+                  {count > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-xs">
+                      {count}
+                    </Badge>
+                  )}
+                </motion.div>
+              </TabsTrigger>
             );
           })}
         </TabsList>
+        </div>
 
-        <div className="mt-4">
+        <div>
           <TabsContent value="study_proccess" className="m-0 p-0 data-[state=inactive]:hidden">
             <motion.div
               initial={{ opacity: 0, x: 10 }}

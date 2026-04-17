@@ -58,7 +58,7 @@ const SingleStudentAnswers = ({
       setPreviewFileId(fileId);
     }
   };
-
+  console.log(data)
   // Render card skeleton for loading state (mobile/tablet)
   const renderCardSkeleton = () => (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
@@ -130,7 +130,7 @@ const SingleStudentAnswers = ({
                         <>
                           <div>Файл просмотрен</div>
                           <div>
-                            {format(material.is_read.read, "PPP 'в' p", {
+                            {material.is_read.read && format(material.is_read.read, "PPP 'в' p", {
                               locale: ru,
                             })}
                           </div>
@@ -157,7 +157,7 @@ const SingleStudentAnswers = ({
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <LuCalendarDays className="h-3.5 w-3.5" />
                   <span>
-                    {format(material.created_at, "PPP", { locale: ru })}
+                    {material.created_at && format(material.created_at, "PPP", { locale: ru })}
                   </span>
                 </div>
                 
@@ -223,7 +223,8 @@ const SingleStudentAnswers = ({
 
   // Render table for desktop
   const renderTable = () => (
-    <div className="rounded-md border">
+    <div className="border rounded-lg">
+
       <Table>
         <TableHeader className="">
           <TableRow className="hover:bg-transparent">
@@ -265,7 +266,7 @@ const SingleStudentAnswers = ({
 
                     {material.file_names}
                     <span className="text-xs text-foreground/50">
-                      {format(material.created_at, "PPP", {
+                      {material.created_at && format(material.created_at, "PPP", {
                         locale: ru,
                       })}
                     </span>
@@ -273,7 +274,7 @@ const SingleStudentAnswers = ({
                       <UseTooltip text={
                         <>
                           <div>Файл просмотрен</div>
-                          <div>{format(material.is_read.read, "PPP 'в' p", {
+                          <div>{material.is_read.read && format(material.is_read.read, "PPP 'в' p", {
                             locale: ru,
                           })}</div>
                         </>
@@ -340,6 +341,7 @@ const SingleStudentAnswers = ({
         </TableBody>
       </Table>
     </div>
+
   );
 
   if (error) {
@@ -376,7 +378,7 @@ const SingleStudentAnswers = ({
       </div>
 
       {/* Desktop view (table) */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block p-0">
         {renderTable()}
       </div>
     </div>

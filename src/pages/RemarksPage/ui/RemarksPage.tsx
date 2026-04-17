@@ -1,15 +1,12 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   ArchiveSection,
-  mockArchivedRemarks,
-  mockCurrentUser,
-  mockRemarks,
-  mockStudentSummaries,
   Remark,
   RemarkList,
-  RemarkMessage,
   RemarkStatus,
+  remarksQueries,
   StudentList,
-  StudentRemarkSummary
+  StudentRemarkSummary,
 } from "entities/Remarks";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -21,31 +18,123 @@ import {
   LuList,
   LuMessageSquareWarning,
   LuSearch,
-  LuUsers,
 } from "react-icons/lu";
+import { useAuth } from "shared/hooks";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
 import { Input } from "shared/shadcn/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
+import { Skeleton } from "shared/shadcn/ui/skeleton";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "shared/shadcn/ui/tabs";
 
 const RemarksPage = () => {
-  // For demo purposes - toggle between teacher and student view
-  const [currentUser, setCurrentUser] = useState(mockCurrentUser);
-  const [remarks, setRemarks] = useState<Remark[]>(mockRemarks);
-  const [archivedRemarks, setArchivedRemarks] = useState<Remark[]>(mockArchivedRemarks);
-  const [selectedStudent, setSelectedStudent] = useState<StudentRemarkSummary | null>(null);
+  const authData = useAuth();
+
+  const currentUser = useMemo(() => {
+    if (!authData) {
+      return null;
+    }
+    const fullName =
+      `${authData.last_name ?? ""} ${authData.first_name ?? ""}`.trim() ||
+      authData.email ||
+      "";
+    return {
+      id: authData.id,
+      name: fullName,
+      role: (authData.isStudent ? "student" : "teacher") as
+        | "student"
+        | "teacher",
+      avatar: authData.avatar || "",
+    };
+  }, [authData]);
+
+  const [selectedStudent, setSelectedStudent] =
+    useState<StudentRemarkSummary | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "expanded">("list");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter remarks based on user role and selected student
+  const {
+    data: activeRemarksData,
+    isLoading: isActiveLoading,
+  } = useQuery(remarksQueries.list("actual"));
+  const {
+    data: archivedRemarksData,
+    isLoading: isArchiveLoading,
+  } = useQuery(remarksQueries.list("archive"));
+
+  const remarks: Remark[] = useMemo(
+    () => activeRemarksData ?? [],
+    [activeRemarksData]
+  );
+  const archivedRemarks: Remark[] = useMemo(
+    () => archivedRemarksData ?? [],
+    [archivedRemarksData]
+  );
+
+  // Мутации
+  const { mutate: addMessage } = remarksQueries.add_message();
+  const { mutate: updateStatus } = remarksQueries.update_status();
+
+  // Агрегируем сводку по студентам из активных замечаний (для учителя)
+  const studentSummaries: StudentRemarkSummary[] = useMemo(() => {
+    const map = new Map<number, StudentRemarkSummary>();
+    remarks.forEach((r) => {
+      const existing = map.get(r.student_id);
+      if (existing) {
+        existing.total_remarks += 1;
+        if (r.status === RemarkStatus.PENDING) existing.pending_remarks += 1;
+        if (r.status === RemarkStatus.RESPONDED)
+          existing.responded_remarks += 1;
+        const course = existing.courses.find(
+          (c) => c.course_id === r.course_id
+        );
+        if (course) {
+          course.remarks_count += 1;
+        } else {
+          existing.courses.push({
+            course_id: r.course_id,
+            course_name: r.course_name,
+            remarks_count: 1,
+          });
+        }
+      } else {
+        map.set(r.student_id, {
+          student_id: r.student_id,
+          student_name: r.student_name,
+          student_avatar: r.student_avatar,
+          student_group: r.student_group,
+          total_remarks: 1,
+          pending_remarks: r.status === RemarkStatus.PENDING ? 1 : 0,
+          responded_remarks: r.status === RemarkStatus.RESPONDED ? 1 : 0,
+          courses: [
+            {
+              course_id: r.course_id,
+              course_name: r.course_name,
+              remarks_count: 1,
+            },
+          ],
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [remarks]);
+
+  // Фильтрация активных замечаний по выбранному студенту / поиску / роли
   const filteredRemarks = useMemo(() => {
+    if (!currentUser) return [];
     let filtered = remarks.filter((r) => r.status !== RemarkStatus.APPROVED);
 
     if (currentUser.role === "student") {
       filtered = filtered.filter((r) => r.student_id === currentUser.id);
     } else if (selectedStudent) {
-      filtered = filtered.filter((r) => r.student_id === selectedStudent.student_id);
+      filtered = filtered.filter(
+        (r) => r.student_id === selectedStudent.student_id
+      );
     }
 
     if (searchQuery) {
@@ -61,17 +150,20 @@ const RemarksPage = () => {
     return filtered;
   }, [remarks, currentUser, selectedStudent, searchQuery]);
 
-  // Filter archived remarks
   const filteredArchivedRemarks = useMemo(() => {
+    if (!currentUser) return [];
     if (currentUser.role === "student") {
       return archivedRemarks.filter((r) => r.student_id === currentUser.id);
     }
     return archivedRemarks;
   }, [archivedRemarks, currentUser]);
 
-  // Stats
   const stats = useMemo(() => {
-    const activeRemarks = remarks.filter((r) => r.status !== RemarkStatus.APPROVED);
+    if (!currentUser)
+      return { total: 0, pending: 0, responded: 0, rejected: 0, archived: 0 };
+    const activeRemarks = remarks.filter(
+      (r) => r.status !== RemarkStatus.APPROVED
+    );
     const userRemarks =
       currentUser.role === "student"
         ? activeRemarks.filter((r) => r.student_id === currentUser.id)
@@ -79,108 +171,65 @@ const RemarksPage = () => {
 
     return {
       total: userRemarks.length,
-      pending: userRemarks.filter((r) => r.status === RemarkStatus.PENDING).length,
-      responded: userRemarks.filter((r) => r.status === RemarkStatus.RESPONDED).length,
-      rejected: userRemarks.filter((r) => r.status === RemarkStatus.REJECTED).length,
+      pending: userRemarks.filter((r) => r.status === RemarkStatus.PENDING)
+        .length,
+      responded: userRemarks.filter(
+        (r) => r.status === RemarkStatus.RESPONDED
+      ).length,
+      rejected: userRemarks.filter((r) => r.status === RemarkStatus.REJECTED)
+        .length,
       archived: filteredArchivedRemarks.length,
     };
   }, [remarks, currentUser, filteredArchivedRemarks]);
 
-  // Handlers
+  // ----- Handlers -----
+
   const handleSendMessage = useCallback(
-    (remarkId: string, message: string, files: File[]) => {
-      setRemarks((prev) =>
-        prev.map((remark) => {
-          if (remark.id !== remarkId) return remark;
-
-          const newMessage: RemarkMessage = {
-            id: `msg-${Date.now()}`,
-            remark_id: remarkId,
-            sender_id: currentUser.id,
-            sender_name: currentUser.name,
-            sender_avatar: currentUser.avatar,
-            sender_role: currentUser.role,
-            message,
-            attachments: files.map((file, i) => ({
-              id: `attach-${Date.now()}-${i}`,
-              file_name: file.name,
-              file_url: URL.createObjectURL(file),
-              file_size: file.size,
-              uploaded_at: new Date(),
-            })),
-            created_at: new Date(),
-          };
-
-          return {
-            ...remark,
-            messages: [...remark.messages, newMessage],
-            status:
-              currentUser.role === "student"
-                ? RemarkStatus.RESPONDED
-                : remark.status,
-            updated_at: new Date(),
-          };
-        })
-      );
+    (remarkId: string, message: string, _files: File[]) => {
+      if (!message.trim()) return;
+      addMessage({ id: remarkId, data: { message } });
     },
-    [currentUser]
+    [addMessage]
   );
 
-  const handleApprove = useCallback((remarkId: string) => {
-    setRemarks((prev) => {
-      const remarkToArchive = prev.find((r) => r.id === remarkId);
-      if (remarkToArchive) {
-        setArchivedRemarks((archived) => [
-          ...archived,
-          {
-            ...remarkToArchive,
-            status: RemarkStatus.APPROVED,
-            archived_at: new Date(),
-          },
-        ]);
-      }
-      return prev.filter((r) => r.id !== remarkId);
-    });
-  }, []);
+  const handleApprove = useCallback(
+    (remarkId: string) => {
+      updateStatus({
+        id: remarkId,
+        data: { status: RemarkStatus.APPROVED },
+      });
+    },
+    [updateStatus]
+  );
 
   const handleReject = useCallback(
     (remarkId: string, reason: string) => {
-      setRemarks((prev) =>
-        prev.map((remark) => {
-          if (remark.id !== remarkId) return remark;
-
-          const rejectMessage: RemarkMessage = {
-            id: `msg-${Date.now()}`,
-            remark_id: remarkId,
-            sender_id: currentUser.id,
-            sender_name: currentUser.name,
-            sender_avatar: currentUser.avatar,
-            sender_role: "teacher",
-            message: reason,
-            attachments: [],
-            created_at: new Date(),
-          };
-
-          return {
-            ...remark,
-            messages: [...remark.messages, rejectMessage],
-            status: RemarkStatus.REJECTED,
-            updated_at: new Date(),
-          };
-        })
+      addMessage(
+        { id: remarkId, data: { message: reason } },
+        {
+          onSuccess: () => {
+            updateStatus({
+              id: remarkId,
+              data: { status: RemarkStatus.REJECTED },
+            });
+          },
+        }
       );
     },
-    [currentUser]
+    [addMessage, updateStatus]
   );
 
-  const toggleUserRole = () => {
-    setCurrentUser((prev) =>
-      prev.role === "teacher"
-        ? { id: 101, name: "Иванов Александр Петрович", role: "student", avatar: "" }
-        : mockCurrentUser
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">
+          Требуется авторизация для просмотра замечаний
+        </p>
+      </div>
     );
-    setSelectedStudent(null);
-  };
+  }
+
+  const isLoading = isActiveLoading || isArchiveLoading;
 
   return (
     <div className="min-h-screen">
@@ -198,17 +247,8 @@ const RemarksPage = () => {
             </p>
           </div>
 
-          {/* Demo toggle and view controls */}
+          {/* View controls */}
           <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleUserRole}
-              className="gap-2"
-            >
-              <LuUsers className="h-4 w-4" />
-              {currentUser.role === "teacher" ? "Режим студента" : "Режим учителя"}
-            </Button>
             <div className="flex items-center rounded-lg border bg-muted/30 p-1">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
@@ -242,7 +282,9 @@ const RemarksPage = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.pending}</p>
-                  <p className="text-xs text-muted-foreground">Ожидает ответа</p>
+                  <p className="text-xs text-muted-foreground">
+                    Ожидает ответа
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -270,7 +312,9 @@ const RemarksPage = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.rejected}</p>
-                  <p className="text-xs text-muted-foreground">На исправлении</p>
+                  <p className="text-xs text-muted-foreground">
+                    На исправлении
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -316,7 +360,6 @@ const RemarksPage = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Search for teacher with student list */}
           {currentUser.role === "teacher" && !selectedStudent && (
             <div className="relative w-full sm:w-72">
               <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -331,8 +374,13 @@ const RemarksPage = () => {
         </div>
 
         <TabsContent value="active" className="mt-4">
-          {currentUser.role === "teacher" ? (
-            // Teacher view: student list or selected student's remarks
+          {isLoading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : currentUser.role === "teacher" ? (
             selectedStudent ? (
               <div className="space-y-4">
                 <Button
@@ -345,9 +393,12 @@ const RemarksPage = () => {
                 </Button>
                 <div className="flex items-center gap-3 mb-4 p-4 rounded-xl bg-muted/30 border">
                   <div className="flex-1">
-                    <p className="font-semibold">{selectedStudent.student_name}</p>
+                    <p className="font-semibold">
+                      {selectedStudent.student_name}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {selectedStudent.student_group} • {selectedStudent.total_remarks} замечаний
+                      {selectedStudent.student_group} •{" "}
+                      {selectedStudent.total_remarks} замечаний
                     </p>
                   </div>
                 </div>
@@ -363,13 +414,12 @@ const RemarksPage = () => {
               </div>
             ) : (
               <StudentList
-                students={mockStudentSummaries}
+                students={studentSummaries}
                 remarks={remarks}
                 onSelectStudent={setSelectedStudent}
               />
             )
           ) : (
-            // Student view: remarks feed
             <RemarkList
               remarks={filteredRemarks}
               currentUserId={currentUser.id}
@@ -381,12 +431,20 @@ const RemarksPage = () => {
         </TabsContent>
 
         <TabsContent value="archive" className="mt-4">
-          <ArchiveSection
-            archivedRemarks={filteredArchivedRemarks}
-            studentSummaries={mockStudentSummaries}
-            currentUserId={currentUser.id}
-            currentUserRole={currentUser.role}
-          />
+          {isLoading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : (
+            <ArchiveSection
+              archivedRemarks={filteredArchivedRemarks}
+              studentSummaries={studentSummaries}
+              currentUserId={currentUser.id}
+              currentUserRole={currentUser.role}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>

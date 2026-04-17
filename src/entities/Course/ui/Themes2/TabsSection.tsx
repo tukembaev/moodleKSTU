@@ -26,7 +26,7 @@ import {
 } from "shared/shadcn/ui/empty";
 import ThemeAnswers from "../Answers/ThemeAnswers";
 import { StudentComments } from "features/Course/hooks/StudentComments";
-import { mockReviews } from "features/Course/hooks/ReviewThread";
+import { remarksQueries } from "entities/Remarks";
 import ThemeFAQ from "../Themes/ThemeDetail/ThemeFAQ";
 import { ThemeFeed } from "../Themes/ThemeDetail/ThemeFeed";
 import { cn } from "shared/lib/utils";
@@ -42,6 +42,11 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
   const { data: comments, isLoading: isLoadingComments } = useQuery(
     courseQueries.allThemeFeed(themeId)
   );
+
+  const { data: themeRemarks } = useQuery({
+    ...remarksQueries.byTheme(themeId),
+    enabled: !!themeId && auth_data.isStudent,
+  });
 
   const tabs = [
     {
@@ -68,7 +73,7 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
             name: "Замечания",
             value: "comments",
             icon: LuClipboardList,
-            count: mockReviews?.length || 0,
+            count: themeRemarks?.length || 0,
           },
         ]
       : []),
@@ -76,7 +81,7 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
 
   if (!themeId) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="flex items-center justify-center p-8">
         <Empty>
           <EmptyContent>
             <EmptyMedia variant="icon">
@@ -94,13 +99,13 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
   }
 
   return (
-    <div className="h-full overflow-hidden flex flex-col p-4">
+    <div className="flex flex-col h-full overflow-hidden">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="flex flex-col h-full"
       >
-        <TabsList className="h-auto gap-2 rounded-xl p-1 bg-muted justify-start flex-shrink-0 w-fit cursor-pointer">
+        <TabsList className="h-auto gap-2 rounded-xl p-1 bg-muted justify-start flex-shrink-0 w-fit cursor-pointer m-4 mb-0">
           {tabs.map(({ icon: Icon, name, value, count }) => {
             const isActive = activeTab === value;
             return (
@@ -182,32 +187,32 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
           })}
         </TabsList>
 
-        <div className="flex-1 overflow-hidden bg-background rounded-lg border mt-4">
+        <div className="bg-background mx-4 mb-4 flex-1 min-h-0 overflow-hidden flex flex-col">
           <TabsContent
             value="theme_answers"
-            className="m-0 p-0 h-full data-[state=inactive]:hidden"
+            className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
           >
             <motion.div
-              className="h-full overflow-y-auto"
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
+              className="h-full"
             >
-              <div className="p-4">
+              
                 <ThemeAnswers id={themeId} />
-              </div>
+              
             </motion.div>
           </TabsContent>
 
           <TabsContent
             value="feed"
-            className="m-0 p-0 h-full data-[state=inactive]:hidden"
+            className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
           >
             <motion.div
-              className="h-full overflow-y-auto"
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
+              className="h-full border"
             >
               <div className="p-4">
                 <ThemeFeed
@@ -221,15 +226,15 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
 
           <TabsContent
             value="faq"
-            className="m-0 p-0 h-full data-[state=inactive]:hidden"
+            className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
           >
             <motion.div
-              className="h-full overflow-y-auto"
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
+              className="h-full border"
             >
-              <div className="p-4">
+              <div className="p-2">
                 <ThemeFAQ theme_id={themeId} />
               </div>
             </motion.div>
@@ -237,13 +242,13 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
 
           <TabsContent
             value="comments"
-            className="m-0 p-0 h-full data-[state=inactive]:hidden"
+            className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
           >
             <motion.div
-              className="h-full overflow-y-auto"
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
+              className="h-full"
             >
               <div className="p-4">
                 {auth_data.isStudent && <StudentComments theme_id={themeId} />}

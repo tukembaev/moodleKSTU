@@ -1,4 +1,4 @@
-// Типы для системы замечаний
+// Типы для системы замечаний (подогнаны под API /api/v1/remarks/)
 
 export enum RemarkStatus {
   PENDING = "pending",           // Ожидает ответа студента
@@ -7,9 +7,10 @@ export enum RemarkStatus {
   REJECTED = "rejected",         // Отклонено, требует исправления
 }
 
+// Оставлено для совместимости UI (не приходит с API)
 export enum RemarkType {
-  TEXT = "text",                 // Текстовое замечание
-  FILE = "file",                 // Замечание к файлу
+  TEXT = "text",
+  FILE = "file",
 }
 
 export interface RemarkAttachment {
@@ -17,7 +18,7 @@ export interface RemarkAttachment {
   file_name: string;
   file_url: string;
   file_size: number;
-  uploaded_at: Date;
+  uploaded_at: Date | string;
 }
 
 export interface RemarkMessage {
@@ -28,13 +29,15 @@ export interface RemarkMessage {
   sender_avatar: string;
   sender_role: "teacher" | "student";
   message: string;
-  attachments: RemarkAttachment[];
-  created_at: Date;
+  created_at: Date | string;
+  // UI-only, на API отсутствует
+  attachments?: RemarkAttachment[];
 }
 
 export interface Remark {
   id: string;
   course_id: string;
+  title?: string;
   course_name: string;
   theme_id: string;
   theme_title: string;
@@ -45,14 +48,40 @@ export interface Remark {
   teacher_id: number;
   teacher_name: string;
   teacher_avatar: string;
-  type: RemarkType;
   status: RemarkStatus;
-  original_file?: RemarkAttachment;  // Файл, к которому было замечание (для FILE типа)
   messages: RemarkMessage[];
-  created_at: Date;
-  updated_at: Date;
-  archived_at?: Date;
+  messages_count?: string | number;
+  last_message?: string;
+  created_at: Date | string;
+  updated_at: Date | string;
+  archived_at?: Date | string | null;
+  pending_remarks:number;
+  // UI-only поля (не приходят с API)
+  type?: RemarkType;
+  original_file?: RemarkAttachment;
 }
+
+// Тип замечаний для фильтрации на /api/v1/remarks/
+export type RemarksListType = "actual" | "archive";
+
+// ---- Payloads ----
+
+export interface CreateRemarkPayload {
+  theme_id: string;
+  student_id: number;
+  title: string;
+  message: string;
+}
+
+export interface AddRemarkMessagePayload {
+  message: string;
+}
+
+export interface UpdateRemarkStatusPayload {
+  status: RemarkStatus;
+}
+
+// ---- Вспомогательные ----
 
 export interface StudentRemarkSummary {
   student_id: number;
