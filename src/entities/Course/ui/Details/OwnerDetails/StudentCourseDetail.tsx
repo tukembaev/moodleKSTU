@@ -20,7 +20,7 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
     const [open, setOpen] = useState(false);
     
 
-     console.log(student);
+     ;
     // Модуль 1: первый модуль (если есть)
     const module1 = student.modules[0];
     const module1Points = {

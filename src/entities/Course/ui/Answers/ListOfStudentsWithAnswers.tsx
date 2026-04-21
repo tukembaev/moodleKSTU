@@ -142,7 +142,7 @@ const ListOfStudentsWithAnswers = ({
         selectedGroup === "Все группы" ||
         student.group === selectedGroup)
   );
-  console.log(data)
+  
   // Функция для определения статуса замечаний
   const getRemarksStatus = (student: StudentsAnswers) => {
  

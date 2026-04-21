@@ -17,6 +17,7 @@ const Add_Theme = () => {
     errors,
     setValue,
     watch,
+    control,
     selectedType,
     handleTypeChange,
     isTestType,
@@ -37,7 +38,7 @@ const Add_Theme = () => {
     if (isTestType && data.test_id) {
       // Use the new API for attaching test to week
       attach_test({
-        week_id: data.week,
+        week_id: data.week.toString(),
         test_id: data.test_id,
       });
     } else {
@@ -67,6 +68,7 @@ const Add_Theme = () => {
               register={register}
               errors={errors}
               isTestType={isTestType}
+              control={control}
             />
           )}
 

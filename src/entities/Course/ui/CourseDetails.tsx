@@ -40,7 +40,7 @@ const CourseDetails = () => {
   const { isLoading: isLoadingDetails } = useQuery(
     courseQueries.allTasks(safeId)
   );
-
+  console.log(isStudent)
   const tabs = [
     {
       name: "Учебный процесс",

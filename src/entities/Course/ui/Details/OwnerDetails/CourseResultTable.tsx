@@ -24,7 +24,7 @@ const CourseResultTable = () => {
   const { data, isLoading } = useQuery(
     courseQueries.allStudentPerfomance(id as string)
   );
-
+  console.log(data)
   if (isLoading) {
     return (
       <div className="rounded-md border mt-4 overflow-x-auto">
@@ -73,124 +73,125 @@ const CourseResultTable = () => {
   }
 
   return (
-    <div className="rounded-md border mt-4 overflow-x-auto">
-      <Table>
-        <TableHeader className="bg-muted">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="min-w-[200px] sm:w-[300px]">Имя студента</TableHead>
-            <TableHead className="min-w-[80px] sm:w-[100px]">Группа</TableHead>
-            <TableHead className="min-w-[120px] sm:w-[150px]">Модуль 1</TableHead>
-            <TableHead className="min-w-[120px] sm:w-[150px]">Модуль 2</TableHead>
-            <TableHead className="min-w-[80px] sm:w-[100px]">Баллы</TableHead>
-            <TableHead className="min-w-[60px]" />
-          </TableRow>
-        </TableHeader>
+    // <div className="rounded-md border mt-4 overflow-x-auto">
+    //   <Table>
+    //     <TableHeader className="bg-muted">
+    //       <TableRow className="hover:bg-transparent">
+    //         <TableHead className="min-w-[200px] sm:w-[300px]">Имя студента</TableHead>
+    //         <TableHead className="min-w-[80px] sm:w-[100px]">Группа</TableHead>
+    //         <TableHead className="min-w-[120px] sm:w-[150px]">Модуль 1</TableHead>
+    //         <TableHead className="min-w-[120px] sm:w-[150px]">Модуль 2</TableHead>
+    //         <TableHead className="min-w-[80px] sm:w-[100px]">Баллы</TableHead>
+    //         <TableHead className="min-w-[60px]" />
+    //       </TableRow>
+    //     </TableHeader>
 
-        <TableBody>
-          {data?.map((student) => {
-            // Модуль 1: первый модуль (если есть) - все типы заданий
-            const module1 = student.modules[0];
-            const module1Points = module1
-              ? module1.thems.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-                module1.thems.pr.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-                module1.thems.srs.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-                module1.thems.other.reduce((sum, item) => sum + (item.stud_points || 0), 0)
-              : 0;
+    //     <TableBody>
+    //       {data?.map((student) => {
+    //         // Модуль 1: первый модуль (если есть) - все типы заданий
+    //         const module1 = student.modules[0];
+    //         const module1Points = module1
+    //           ? module1.thems.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+    //             module1.thems.pr.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+    //             module1.thems.srs.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+    //             module1.thems.other.reduce((sum, item) => sum + (item.stud_points || 0), 0)
+    //           : 0;
             
-            const module1MaxPoints = module1
-              ? module1.thems.lb.reduce((sum, item) => sum + item.max_points, 0) +
-                module1.thems.pr.reduce((sum, item) => sum + item.max_points, 0) +
-                module1.thems.srs.reduce((sum, item) => sum + item.max_points, 0) +
-                module1.thems.other.reduce((sum, item) => sum + item.max_points, 0)
-              : 0;
+    //         const module1MaxPoints = module1
+    //           ? module1.thems.lb.reduce((sum, item) => sum + item.max_points, 0) +
+    //             module1.thems.pr.reduce((sum, item) => sum + item.max_points, 0) +
+    //             module1.thems.srs.reduce((sum, item) => sum + item.max_points, 0) +
+    //             module1.thems.other.reduce((sum, item) => sum + item.max_points, 0)
+    //           : 0;
 
-            // Модуль 2: второй модуль (если есть) - все типы заданий
-            const module2 = student.modules[1];
-            const module2Points = module2
-              ? module2.thems.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-                module2.thems.pr.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-                module2.thems.srs.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
-                module2.thems.other.reduce((sum, item) => sum + (item.stud_points || 0), 0)
-              : 0;
+    //         // Модуль 2: второй модуль (если есть) - все типы заданий
+    //         const module2 = student.modules[1];
+    //         const module2Points = module2
+    //           ? module2.thems.lb.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+    //             module2.thems.pr.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+    //             module2.thems.srs.reduce((sum, item) => sum + (item.stud_points || 0), 0) +
+    //             module2.thems.other.reduce((sum, item) => sum + (item.stud_points || 0), 0)
+    //           : 0;
             
-            const module2MaxPoints = module2
-              ? module2.thems.lb.reduce((sum, item) => sum + item.max_points, 0) +
-                module2.thems.pr.reduce((sum, item) => sum + item.max_points, 0) +
-                module2.thems.srs.reduce((sum, item) => sum + item.max_points, 0) +
-                module2.thems.other.reduce((sum, item) => sum + item.max_points, 0)
-              : 0;
+    //         const module2MaxPoints = module2
+    //           ? module2.thems.lb.reduce((sum, item) => sum + item.max_points, 0) +
+    //             module2.thems.pr.reduce((sum, item) => sum + item.max_points, 0) +
+    //             module2.thems.srs.reduce((sum, item) => sum + item.max_points, 0) +
+    //             module2.thems.other.reduce((sum, item) => sum + item.max_points, 0)
+    //           : 0;
 
-            // Дополнительные баллы
-            const extraPoints = student.extra_points.reduce((sum, item) => sum + (item.points || 0), 0);
+    //         // Дополнительные баллы
+    //         const extraPoints = student.extra_points.reduce((sum, item) => sum + (item.points || 0), 0);
 
-            const totalPoints = module1Points + module2Points + extraPoints;
+    //         const totalPoints = module1Points + module2Points + extraPoints;
 
-            return (
-              <TableRow key={student.id}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
-                      <AvatarImage src={student.avatar} />
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="text-sm sm:text-base truncate">{`${student.first_name} ${student.last_name}`}</p>
-                      {student.is_end && (
-                        <Badge
-                          variant="outline"
-                          className="flex gap-1 px-1 sm:px-1.5 text-muted-foreground [&_svg]:size-3 w-fit mt-1 text-xs"
-                        >
-                          <LuCheckCheck className="text-green-500 dark:text-green-400" />
-                          Сдано
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm sm:text-base">{student.group || '—'}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="font-semibold text-xs sm:text-sm">
-                    {module1Points} / {module1MaxPoints}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {module2MaxPoints > 0 ? (
-                    <Badge variant="secondary" className="font-semibold text-xs sm:text-sm">
-                      {module2Points} / {module2MaxPoints}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground text-xs sm:text-sm">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge className="font-semibold text-xs sm:text-sm">
-                    {totalPoints} / {student.max_points_course}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <StudentDetailDialog student={student} />
-                    {/* <UseTooltip text="Поставить итоговую оценку">
-                      <Button
-                        variant={"outline"}
-                        size="sm"
-                        onClick={() =>
-                          openForm(FormQuery.END_COURSE, {
-                            user_id: String(student.user_id),
-                            points: String(totalPoints),
-                          })
-                        }
-                      >
-                        <LuSparkles />
-                      </Button>
-                    </UseTooltip> */}
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+    //         return (
+    //           <TableRow key={student.id}>
+    //             <TableCell className="font-medium">
+    //               <div className="flex items-center gap-2 sm:gap-3">
+    //                 <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
+    //                   <AvatarImage src={student.avatar} />
+    //                 </Avatar>
+    //                 <div className="min-w-0">
+    //                   <p className="text-sm sm:text-base truncate">{`${student.first_name} ${student.last_name}`}</p>
+    //                   {student.is_end && (
+    //                     <Badge
+    //                       variant="outline"
+    //                       className="flex gap-1 px-1 sm:px-1.5 text-muted-foreground [&_svg]:size-3 w-fit mt-1 text-xs"
+    //                     >
+    //                       <LuCheckCheck className="text-green-500 dark:text-green-400" />
+    //                       Сдано
+    //                     </Badge>
+    //                   )}
+    //                 </div>
+    //               </div>
+    //             </TableCell>
+    //             <TableCell className="text-sm sm:text-base">{student.group || '—'}</TableCell>
+    //             <TableCell>
+    //               <Badge variant="secondary" className="font-semibold text-xs sm:text-sm">
+    //                 {module1Points} / {module1MaxPoints}
+    //               </Badge>
+    //             </TableCell>
+    //             <TableCell>
+    //               {module2MaxPoints > 0 ? (
+    //                 <Badge variant="secondary" className="font-semibold text-xs sm:text-sm">
+    //                   {module2Points} / {module2MaxPoints}
+    //                 </Badge>
+    //               ) : (
+    //                 <span className="text-muted-foreground text-xs sm:text-sm">—</span>
+    //               )}
+    //             </TableCell>
+    //             <TableCell>
+    //               <Badge className="font-semibold text-xs sm:text-sm">
+    //                 {totalPoints} / {student.max_points_course}
+    //               </Badge>
+    //             </TableCell>
+    //             <TableCell>
+    //               <div className="flex items-center gap-1 sm:gap-2">
+    //                 <StudentDetailDialog student={student} />
+    //                 {/* <UseTooltip text="Поставить итоговую оценку">
+    //                   <Button
+    //                     variant={"outline"}
+    //                     size="sm"
+    //                     onClick={() =>
+    //                       openForm(FormQuery.END_COURSE, {
+    //                         user_id: String(student.user_id),
+    //                         points: String(totalPoints),
+    //                       })
+    //                     }
+    //                   >
+    //                     <LuSparkles />
+    //                   </Button>
+    //                 </UseTooltip> */}
+    //               </div>
+    //             </TableCell>
+    //           </TableRow>
+    //         );
+    //       })}
+    //     </TableBody>
+    //   </Table>
+    // </div>a
+    'a'
   );
 };
 

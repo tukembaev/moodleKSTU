@@ -58,7 +58,7 @@ const SingleStudentAnswers = ({
       setPreviewFileId(fileId);
     }
   };
-  console.log(data)
+  
   // Render card skeleton for loading state (mobile/tablet)
   const renderCardSkeleton = () => (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">

@@ -54,7 +54,7 @@ const LoginForm = ({
           "auth_data",
           JSON.stringify({
             ...response,
-            isStudent: response.position === null,
+            isStudent: response.role === 'student' ? true : false,
           })
         );
 

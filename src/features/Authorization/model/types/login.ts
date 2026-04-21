@@ -70,6 +70,7 @@ interface UserData {
   univer_branch_name: string;
   is_student: boolean;
   is_employee: boolean;
+  role: string;
 }
 
 // Тип для расшифрованного объекта JWT

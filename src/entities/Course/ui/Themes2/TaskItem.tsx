@@ -63,12 +63,7 @@ export const TaskItem: FC<TaskItemProps> = ({
 
       {/* Название задания */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm text-foreground">{title}</h4>
-      </div>
-
-      {/* Неделя */}
-      <div className="shrink-0 hidden sm:block">
-        <span className="text-sm text-muted-foreground">{week}</span>
+        <h4 className="font-medium text-sm text-foreground">{title} <span className="text-xs text-muted-foreground pl-2">{week} неделя </span></h4>
       </div>
 
       {/* Баллы */}

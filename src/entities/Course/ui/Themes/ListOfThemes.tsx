@@ -42,9 +42,7 @@ const WeekContent = ({
   viewMode: "grid" | "list";
 }) => {
   const [weekData, setWeekData] = useState<CourseThemes | null>(null);
-  console.log(weekNumber
-    
-  )
+ 
   useEffect(() => {
     // Simulate fetch
     // In a real scenario, you would fetch data for the specific week here

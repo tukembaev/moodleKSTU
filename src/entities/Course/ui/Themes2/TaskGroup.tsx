@@ -5,7 +5,7 @@ import { Button } from "shared/shadcn/ui/button";
 import { Plus } from "lucide-react";
 import { useForm } from "shared/hooks";
 import { FormQuery } from "shared/config";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { EditTaskForm } from "features/Course/forms/edit-task-form";
 
 interface Task {
@@ -37,8 +37,7 @@ export const TaskGroup: FC<TaskGroupProps> = ({
   selectedTaskId,
 }) => {
   const openForm = useForm();
-  const [searchParams] = useSearchParams();
-  const courseId = searchParams.get("id");
+  const { id: courseId } = useParams<{ id: string }>();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   

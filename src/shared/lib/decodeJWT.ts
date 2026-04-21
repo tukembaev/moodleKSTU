@@ -10,9 +10,9 @@ export const saveToLocalStorageFromJWT = (
   storageKey = "auth_data"
 ) => {
   const decoded = JSON.parse(atob(tokens.access.split(".")[1])) as DecodedJWT;
-debugger
-  const { first_name, last_name, imeag, user, position } = decoded.user_data;
 
+  const { first_name, last_name, imeag, user, position , role } = decoded.user_data;
+  debugger
   localStorage.setItem(
     storageKey,
     JSON.stringify({
@@ -22,7 +22,7 @@ debugger
       last_name,
       imeag,
       position,
-      isStudent: position === null,
+      isStudent: role === 'student' ? true : false ,
     })
   );
 

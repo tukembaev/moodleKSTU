@@ -4,21 +4,27 @@ import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CreateThemePayload } from "../../model/types/course_payload";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
-import { TYPE_LESS } from "./add-theme-constants";
 
 export const useAddThemeForm = () => {
   const [selectedType, setSelectedType] = useState<string>("");
   const [searchParams] = useSearchParams();
-
+  const courseId = searchParams.get("id");
+  
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
     watch,
-  } = useForm<CreateThemePayload>();
+    control,
+  } = useForm<CreateThemePayload>({
+    defaultValues: {
+      course: courseId || "",
+      week: 1,
+      locked: false,
+    }
+  });
 
-  const id = searchParams.get("id");
   const typeParam = searchParams.get("type");
 
   // Get all tests
@@ -29,38 +35,20 @@ export const useAddThemeForm = () => {
     return allTests;
   }, [allTests]);
 
-  // Initialize form from URL params
-  useEffect(() => {
-    if (id) {
-      setValue("week", id);
-    }
-  }, [id, setValue]);
-
-  // Предустановка типа из URL параметра
+  // Предустановка типа из URL параметра - only once
   useEffect(() => {
     if (typeParam) {
-      // Если type_param это уже значение type_less (например "type_less"), используем его напрямую
-      if (TYPE_LESS[typeParam]) {
-        setSelectedType(typeParam);
-        setValue("type_less", TYPE_LESS[typeParam]);
-      } else {
-        // Иначе используем как есть (для случая type_less)
-        setValue("type_less", typeParam);
-        // Находим ключ по значению
-        const key = Object.keys(TYPE_LESS).find(k => TYPE_LESS[k] === typeParam);
-        if (key) {
-          setSelectedType(key);
-        }
-      }
+      setSelectedType(typeParam);
+      setValue("type_less", typeParam);
     }
   }, [typeParam, setValue]);
 
   const handleTypeChange = (value: string) => {
     setSelectedType(value);
-    setValue("type_less", TYPE_LESS[value]);
+    setValue("type_less", value);
   };
 
-  const isTestType = selectedType === "test";
+  const isTestType = selectedType === "Тест";
 
   return {
     register,
@@ -68,6 +56,7 @@ export const useAddThemeForm = () => {
     errors,
     setValue,
     watch,
+    control,
     selectedType,
     handleTypeChange,
     isTestType,

@@ -1,22 +1,60 @@
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { UseFormRegister, FieldErrors, Control, Controller } from "react-hook-form";
 import { Label } from "shared/shadcn/ui/label";
 import { Input } from "shared/shadcn/ui/input";
 import { Textarea } from "shared/shadcn/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "shared/shadcn/ui/select";
 import { CreateThemePayload } from "../../model/types/course_payload";
 
 interface AddThemeRegularFieldsProps {
   register: UseFormRegister<CreateThemePayload>;
   errors: FieldErrors<CreateThemePayload>;
   isTestType: boolean;
+  control: Control<CreateThemePayload>;
 }
 
 export const AddThemeRegularFields = ({
   register,
   errors,
   isTestType,
+  control,
 }: AddThemeRegularFieldsProps) => {
   return (
     <>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="week">Неделя</Label>
+        <Controller
+          name="week"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Select
+              onValueChange={(value) => field.onChange(parseInt(value, 10))}
+              value={field.value?.toString() || "1"}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Выберите неделю" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 16 }, (_, i) => i + 1).map((week) => (
+                  <SelectItem key={week} value={week.toString()}>
+                    Неделя {week}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.week && (
+          <span className="text-xs text-red-500">Выберите неделю</span>
+        )}
+      </div>
+
       <div className="flex flex-col gap-2">
         <Label htmlFor="title">Название</Label>
         <Textarea
@@ -63,4 +101,3 @@ export const AddThemeRegularFields = ({
     </>
   );
 };
-

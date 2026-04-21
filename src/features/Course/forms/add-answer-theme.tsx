@@ -3,12 +3,13 @@ import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { LuCloudUpload } from "react-icons/lu";
-import { useSearchParams } from "react-router-dom";
+
+import { useParams } from "react-router-dom";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
 import { UploadAnswerPayload } from "../model/types/course_payload";
 import { useEffect } from "react";
+import { LuCloudUpload } from "react-icons/lu";
 
 const Add_Answer_Theme = () => {
   const {
@@ -20,8 +21,7 @@ const Add_Answer_Theme = () => {
   } = useForm<UploadAnswerPayload>();
   const { mutate: add_answer, isPending } = courseQueries.create_answer();
 
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     setValue("task", id || "");

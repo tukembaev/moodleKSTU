@@ -4,7 +4,7 @@ import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LuCloudUpload } from "react-icons/lu";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
 import { UploadMaterialPayload } from "../model/types/course_payload";
@@ -21,8 +21,7 @@ const Add_Material_file = () => {
   const { mutate: add_material, isPending } = courseQueries.create_material();
   const navigate = useNavigate();
 
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     setValue("course_detail", id || "");

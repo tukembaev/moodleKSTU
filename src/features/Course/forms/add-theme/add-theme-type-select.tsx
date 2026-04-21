@@ -28,7 +28,7 @@ export const AddThemeTypeSelect = ({
         </SelectTrigger>
         <SelectContent>
           {Object.entries(TYPE_LABELS).map(([key, label]) => (
-            <SelectItem key={key} value={key}>
+            <SelectItem key={key} value={label}>
               {label}
             </SelectItem>
           ))}

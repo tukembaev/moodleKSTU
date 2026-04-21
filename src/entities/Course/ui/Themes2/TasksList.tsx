@@ -5,7 +5,7 @@ import { useAuth, useForm } from "shared/hooks";
 import { TaskGroup } from "./TaskGroup";
 import { Plus } from "lucide-react";
 import { FormQuery } from "shared/config";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   Empty,
   EmptyContent,
@@ -28,8 +28,7 @@ export const TasksList: FC<TasksListProps> = ({
 }) => {
   const auth_data = useAuth();
   const openForm = useForm();
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+  const { id } = useParams<{ id: string }>();
 
   const { data: courseDetails } = useQuery(
     courseQueries.allTasks(courseId || null)
@@ -117,7 +116,7 @@ export const TasksList: FC<TasksListProps> = ({
         />
       ))}
 
-      {Object.keys(groupedTasks).length === 0 && (
+      {Object.keys(groupedTasks).length === 0 && auth_data.isStudent &&(
         <div className="text-center py-12 text-muted-foreground">
           <p className="text-lg">Задания пока не добавлены</p>
         </div>
