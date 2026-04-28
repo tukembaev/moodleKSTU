@@ -234,18 +234,20 @@ export interface CourseModule {
   thems: ModuleThemes;
 }
 
-export interface ExtraPoint {
-  id: string;
-  points: number;
-  reason: string;
+export interface StudentTheme {
+  id: string; // UUID формат
+  title: string;
+  max_points: number;
+  id_answer_task: string | null;
+  stud_points: number | null;
+  due_date: string | null; // Обычно ISO дата или null
 }
-
 export interface TablePerfomance {
   id: number;
   first_name: string;
   last_name: string;
-  middle_name: string;
-  avatar: string;
+  middle_name: string | null;
+  avatar: string | null;
   role: string;
   position: string | null;
   email: string;
@@ -255,9 +257,10 @@ export interface TablePerfomance {
   group: string | null;
   is_end: boolean;
   max_points_course: number;
-  modules: CourseModule[];
-  extra_points: ExtraPoint[];
+  themes: StudentTheme[];
+  
 }
+
 
 export interface Week {
   id: string;

@@ -34,6 +34,23 @@ export const MaterialCard: FC<MaterialCardProps> = ({
   const isPdf = material.file?.includes(".pdf");
   const isUrl = !!material.url;
 
+  // Извлечение YouTube ID из URL
+  const getYouTubeId = (url: string): string | null => {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/shorts\/([^&\n?#]+)/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
+  const youtubeId = isUrl && material.url ? getYouTubeId(material.url) : null;
+  const isYouTube = !!youtubeId;
+
   const getFileIcon = () => {
     if (isUrl) return <LuGlasses className="size-8" />;
     if (isPdf) return <LuFileText className="size-8" />;
@@ -46,14 +63,32 @@ export const MaterialCard: FC<MaterialCardProps> = ({
 
   const getTooltipContent = () => {
     return (
-      <div className="flex flex-col gap-1 max-w-[250px]">
-        <p className="font-semibold">{fileName}</p>
-        {material.description && (
-          <p className="text-xs text-muted-foreground">{material.description}</p>
+      <div className="flex flex-col gap-2 max-w-[400px]">
+        {isYouTube && youtubeId && (
+          <img
+            src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
+            alt={fileName}
+            className="w-full rounded-md"
+            onError={(e) => {
+              e.currentTarget.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+            }}
+          />
         )}
-        <p className="text-xs text-muted-foreground mt-1">
-          {isUrl ? "Внешняя ссылка" : isPdf ? "PDF документ" : "Файл для скачивания"}
-        </p>
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold">{fileName}</p>
+          {material.description && (
+            <p className="text-xs text-muted-foreground">{material.description}</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            {isUrl 
+              ? isYouTube 
+                ? "YouTube видео" 
+                : "Внешняя ссылка" 
+              : isPdf 
+              ? "PDF документ" 
+              : "Файл для скачивания"}
+          </p>
+        </div>
       </div>
     );
   };

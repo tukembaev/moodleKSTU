@@ -4,12 +4,13 @@ import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 
-import { useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
 import { UploadAnswerPayload } from "../model/types/course_payload";
 import { useEffect } from "react";
 import { LuCloudUpload } from "react-icons/lu";
+
 
 const Add_Answer_Theme = () => {
   const {
@@ -21,14 +22,16 @@ const Add_Answer_Theme = () => {
   } = useForm<UploadAnswerPayload>();
   const { mutate: add_answer, isPending } = courseQueries.create_answer();
 
-  const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const taskId = searchParams.get("id");
 
   useEffect(() => {
-    setValue("task", id || "");
-  }, [id, setValue]);
+    setValue("task", taskId || "");
+  }, [taskId, setValue]);
 
   const onSubmit = async () => {
     const files = watch("list_files");
+    const task = watch("task");
     const formData = new FormData();
 
     const fileArray = files ? Array.from(files) : [];
@@ -36,7 +39,7 @@ const Add_Answer_Theme = () => {
     fileArray.forEach((file, index) => {
       formData.append(`list_files[${index}]`, file, file.name);
     });
-    formData.append("task", id || "");
+    formData.append("task", task || taskId || "");
 
     add_answer(formData);
   };

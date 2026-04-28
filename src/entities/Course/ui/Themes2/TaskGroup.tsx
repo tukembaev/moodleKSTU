@@ -1,12 +1,9 @@
-import { FC, useMemo, useState } from "react";
-import { TaskItem } from "./TaskItem";
-import { Progress } from "shared/shadcn/ui/progress";
-import { Button } from "shared/shadcn/ui/button";
-import { Plus } from "lucide-react";
-import { useForm } from "shared/hooks";
-import { FormQuery } from "shared/config";
-import { useParams } from "react-router-dom";
 import { EditTaskForm } from "features/Course/forms/edit-task-form";
+import { FC, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useForm } from "shared/hooks";
+import { Progress } from "shared/shadcn/ui/progress";
+import { TaskItem } from "./TaskItem";
 
 interface Task {
   id: string;
@@ -93,28 +90,7 @@ export const TaskGroup: FC<TaskGroupProps> = ({
                 </span>
               </div>
             )}
-            
-            {!isStudent && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  if (title === "Тесты") {
-                    openForm(FormQuery.ADD_TEST, {
-                      id: courseId || "",
-                    });
-                  } else {
-                    openForm(FormQuery.ADD_THEME, {
-                      type: title,
-                      id: courseId || "",
-                    });
-                  }
-                }}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                {title === "Тесты" ? "Добавить тест" : "Добавить тему"}
-              </Button>
-            )}
+        
           </div>
         </div>
       </div>
