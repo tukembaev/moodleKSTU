@@ -26,7 +26,7 @@ interface WeekTabsProps {
 
 const WeekTabs: React.FC<WeekTabsProps> = ({
   module,
-
+  course_id,
   course_name,
   viewMode,
   course_owner,
@@ -65,7 +65,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
 
     // Fetch tests for this specific week
     const { data: weekTests } = useQuery(
-      testQueries.allTest(`?week=${week.id}`)
+      testQueries.allTest(course_id)
     );
 
     // Loading state with skeleton
@@ -168,7 +168,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
       if (isStudent) {
         return (
           <div className="min-h-[200px] flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
-            <HoverLift>
+            
               <div className="flex flex-col justify-center items-center gap-2 sm:gap-3 text-center px-2">
                 <img
                   src={empty}
@@ -179,13 +179,13 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
                   Преподаватель еще не добавил темы
                 </p>
               </div>
-            </HoverLift>
+            
           </div>
         );
       }
       return (
         <div className="min-h-[200px] flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
-          <HoverLift>
+          
             <UseTooltip text="Добавить задание">
               <button
                 className="flex flex-col justify-center items-center gap-2 sm:gap-3 touch-manipulation min-h-[44px] w-full"
@@ -203,7 +203,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
                 <p className="text-sm sm:text-base">Добавьте новое задание</p>
               </button>
             </UseTooltip>
-          </HoverLift>
+          
         </div>
       );
     }
@@ -219,6 +219,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
       openForm: openForm,
       isMobile: isMobile,
       id_week: week.id,
+      course_id: course_id,
       course_name: course_name,
     };
 

@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { fetchQuiz, submitQuizResult } from './quizAPI';
 import { QuizPayload, QuizResult } from '../types/quiz';
 import axios from 'axios';
+import { API_URL } from "shared/api/config";
 
 
 export const useFetchQuiz = (quizId: string) => {
@@ -37,7 +38,7 @@ export const useCreateQuiz = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: QuizPayload) => {
-      const mutationPromise = axios.post('https://uadmin.kstu.kg/educations/api/v1/quizzes/', data);
+      const mutationPromise = axios.post(`${API_URL}v1/quizzes/`, data);
       toast.promise(mutationPromise, {
         loading: 'Создание викторины...',
         success: 'Викторина успешно создана!',

@@ -26,7 +26,7 @@ const Add_Course = () => {
 
   const selectedCredit = watch("credit");
   const selectedControlForm = watch("control_form");
-  const selectedCategory = watch("category");
+
 
   const { mutate: add_course, isPending } = courseQueries.create_course();
   const onSubmit = async (data: CreateCoursePayload) => {
@@ -58,40 +58,7 @@ const Add_Course = () => {
               </span>
             )}
           </div>
-          <div className="flex flex-col">
-            <Label htmlFor="control" className="pb-2">
-              Категории
-              {/* (несколько штук) */}
-            </Label>
-            <Select
-              onValueChange={(value) => {
-                setValue("category", value, { shouldValidate: true });
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <span>{selectedCategory || "Выберите категорию"}</span>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Технологии">Технологии</SelectItem>
-                <SelectItem value="Бизнес">Бизнес</SelectItem>
-                <SelectItem value="Финансы">Финансы</SelectItem>
-                <SelectItem value="Здоровье">Здоровье</SelectItem>
-                <SelectItem value="Политика">Политика</SelectItem>
-                <SelectItem value="Наука">Наука</SelectItem>
-                <SelectItem value="Спорт">Спорт</SelectItem>
-              
-              </SelectContent>
-            </Select>
-            <input
-              type="hidden"
-              {...register("control_form", { required: "Кредит обязателен" })}
-            />
-            {errors.control_form && (
-              <span className="text-xs text-red-500 pt-1 ">
-                Форма контроля обязательна
-              </span>
-            )}
-          </div>
+       
 
           <div className="flex flex-col">
             <Label htmlFor="credit" className="pb-2">

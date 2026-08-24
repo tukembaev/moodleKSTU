@@ -5,8 +5,11 @@ import {
   BarChart3,
   CheckCircle2,
   Clock,
+  Lock,
+  LockOpen,
   PlayCircle,
-  Trophy
+  Trophy,
+  XCircle
 } from "lucide-react";
 import {
   LuCalendarDays,
@@ -21,18 +24,27 @@ import { getFormattedDate } from "shared/lib";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
-import { Test } from "../model/types/test";
+import { studentCanTakeTest, Test } from "../model/types/test";
 
 // Компонент статуса теста
 const TestStatusBadge: React.FC<{
-  status: boolean | null;
+  passed?: boolean | null;
   result: number | null;
-}> = ({ status, result }) => {
-  if (status && result !== null) {
+}> = ({ passed, result }) => {
+  if (passed === true) {
     return (
       <Badge className="gap-1.5 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800">
         <CheckCircle2 className="h-3 w-3" />
-        {result} балла
+        Пройден{result !== null ? `: ${result}` : ""}
+      </Badge>
+    );
+  }
+
+  if (passed === false) {
+    return (
+      <Badge className="gap-1.5 bg-red-50 text-red-600 border-red-200 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800">
+        <XCircle className="h-3 w-3" />
+        Не пройден{result !== null ? `: ${result}` : ""}
       </Badge>
     );
   }
@@ -47,15 +59,22 @@ const TestStatusBadge: React.FC<{
 
 const TestCard = ({
   item, 
-  id_week, 
+  courseId,
   viewMode = "grid"
 }: {
   item: Test; 
-  id_week: string; 
+  courseId?: string;
   viewMode?: "grid" | "list";
 }) => {
   const { isStudent } = useAuth();
   const navigate = useNavigate();
+  const canTake = isStudent && studentCanTakeTest(item);
+  const passPath =
+    "/test/" +
+    AppSubRoutes.TEST_PASS +
+    "/" +
+    item.id +
+    (courseId ? `?course_id=${courseId}` : "");
   
   // Category styling for tests
   const testCategory = {
@@ -92,6 +111,10 @@ const TestCard = ({
                   <Badge className={`${testCategory.badgeClass} text-xs gap-1`}>
                     <LuShapes className="h-3 w-3" />
                     Тест
+                  </Badge>
+                  <Badge variant={item.is_open ? "default" : "outline"} className="text-xs gap-1">
+                    {item.is_open ? <LockOpen className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                    {item.is_open ? "Открыт" : "Закрыт"}
                   </Badge>
                 </div>
                 
@@ -130,7 +153,7 @@ const TestCard = ({
               
               {/* Status for student */}
               {isStudent && (
-                <TestStatusBadge status={item.status} result={item.result} />
+                <TestStatusBadge passed={item.passed} result={item.result} />
               )}
               
               {/* Action button */}
@@ -143,18 +166,18 @@ const TestCard = ({
                     navigate(
                       "/test/result" +
                       `?test_id=${item.id}` +
-                      `&weekId=${id_week}`
+                      `&course_id=${courseId || ""}`
                     )
                   }
                 >
                   <BarChart3 className="h-4 w-4" />
                   Результаты
                 </Button>
-              ) : isStudent && !item.status ? (
+              ) : canTake ? (
                 <Button
                   size="sm"
                   className="gap-1.5 bg-rose-600 hover:bg-rose-700 text-white"
-                  onClick={() => navigate("/test/" + AppSubRoutes.TEST_PASS + "/" + item.id)}
+                  onClick={() => navigate(passPath)}
                 >
                   <PlayCircle className="h-4 w-4" />
                   Пройти
@@ -183,10 +206,15 @@ const TestCard = ({
             <LuShapes className={testCategory.iconClass} />
             <span>Тестирование</span>
           </Badge>
-          
-          {isStudent && (
-            <TestStatusBadge status={item.status} result={item.result} />
-          )}
+          <div className="flex items-center gap-2">
+            <Badge variant={item.is_open ? "default" : "outline"} className="gap-1">
+              {item.is_open ? <LockOpen className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+              {item.is_open ? "Открыт" : "Закрыт"}
+            </Badge>
+            {isStudent && (
+              <TestStatusBadge passed={item.passed} result={item.result} />
+            )}
+          </div>
         </div>
         
         {/* Title */}
@@ -234,26 +262,33 @@ const TestCard = ({
                 navigate(
                   "/test/result" +
                   `?test_id=${item.id}` +
-                  `&weekId=${id_week}`
+                  `&course_id=${courseId || ""}`
                 )
               }
             >
               <BarChart3 className="h-4 w-4" />
               Открыть результаты
             </Button>
-          ) : isStudent && !item.status ? (
+          ) : canTake ? (
             <Button
               className="w-full gap-2 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
-              onClick={() => navigate("/test/" + AppSubRoutes.TEST_PASS + "/" + item.id)}
+              onClick={() => navigate(passPath)}
             >
               <PlayCircle className="h-4 w-4" />
               Пройти тест
             </Button>
-          ) : item.status && item.result !== null ? (
+          ) : item.passed === true ? (
             <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
               <Trophy className="h-4 w-4 text-green-600 dark:text-green-400" />
               <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                Сдано на {item.result} / {item.max_points} баллов
+                Пройден: {item.result ?? 0} / {item.max_points} баллов
+              </span>
+            </div>
+          ) : item.passed === false ? (
+            <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+              <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <span className="text-sm font-medium text-red-700 dark:text-red-400">
+                Не пройден: {item.result ?? 0} / {item.max_points} баллов
               </span>
             </div>
           ) : null}

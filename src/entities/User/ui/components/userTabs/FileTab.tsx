@@ -62,7 +62,7 @@ const FileTab = ({
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Источник:</span>
-                <HoverLift>
+                
                   <UseTooltip
                     text={material?.resides?.course[0]?.discipline_name}
                   >
@@ -82,7 +82,7 @@ const FileTab = ({
                       {material?.resides?.theme[0]?.title}
                     </Badge>
                   </UseTooltip>
-                </HoverLift>
+                
               </div>
               <a
                 href={material.file}
@@ -136,7 +136,7 @@ const FileTab = ({
                   <span className="font-medium">{material.file_names}</span>
                 </TableCell>
                 <TableCell>
-                  <HoverLift>
+                  
                     <UseTooltip
                       text={material?.resides?.course[0]?.discipline_name}
                     >
@@ -156,7 +156,7 @@ const FileTab = ({
                         {material?.resides?.theme[0]?.title}
                       </Badge>
                     </UseTooltip>
-                  </HoverLift>
+                  
                 </TableCell>
                 <TableCell className="text-right">
                   <a

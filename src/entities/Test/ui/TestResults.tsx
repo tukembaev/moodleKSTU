@@ -13,11 +13,11 @@ import TestTable from "./lib/TestTable";
 const TestResults = () => {
   const [searchParams] = useSearchParams();
 
-  const weekId = searchParams.get("weekId");
+  const courseId = searchParams.get("course_id");
   const test_id = searchParams.get("test_id");
 
   const { data: test_list, isLoading: isLoadingResults } = useQuery(
-    testQueries.TestResult(test_id, weekId)
+    testQueries.TestResult(test_id, courseId)
   );
   const { data: testDetails, isLoading: isLoadingDetails } = useQuery(
     testQueries.TestQuestions(test_id)
@@ -25,15 +25,19 @@ const TestResults = () => {
 
   // Вычисление статистики
   const totalStudents = test_list?.length || 0;
-  const passedStudents = test_list?.filter((s) => s.result !== null && s.result !== undefined) || [];
+  const passedStudents = test_list?.filter((s) => s.passed === true) || [];
+  const failedStudents = test_list?.filter((s) => s.passed === false) || [];
+  const attemptedStudents = test_list?.filter((s) => s.result !== null && s.result !== undefined) || [];
   const passedCount = passedStudents.length;
+  const failedCount = failedStudents.length;
   const passedPercentage = totalStudents > 0 ? Math.round((passedCount / totalStudents) * 100) : 0;
-  const averageScore = passedCount > 0
+  const averageScore = attemptedStudents.length > 0
     ? Math.round(
-      (passedStudents.reduce((sum, s) => sum + (s.result || 0), 0) / passedCount) * 10
+      (attemptedStudents.reduce((sum, s) => sum + (s.result || 0), 0) / attemptedStudents.length) * 10
     ) / 10
     : 0;
   const maxScore = testDetails?.maxPoints || 0;
+  const minScore = testDetails?.minPoints ?? 0;
 
 
   const openingDate = testDetails?.opening_date ? new Date(testDetails.opening_date) : null;
@@ -77,6 +81,10 @@ const TestResults = () => {
               <span>Максимум: {maxScore} баллов</span>
             </Badge>
           )}
+          <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
+            <LuCheckCheck className="h-4 w-4" />
+            <span>Проходной: {minScore} баллов</span>
+          </Badge>
 
           {openingDate && (
             <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
@@ -126,9 +134,9 @@ const TestResults = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-red-600">{totalStudents - passedCount}</p>
+            <p className="text-3xl font-bold text-red-600">{failedCount}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              {totalStudents > 0 ? Math.round(((totalStudents - passedCount) / totalStudents) * 100) : 0}% от общего числа
+              {totalStudents > 0 ? Math.round((failedCount / totalStudents) * 100) : 0}% от общего числа
             </p>
           </CardContent>
         </Card>
@@ -157,7 +165,7 @@ const TestResults = () => {
         <h2 className="text-base sm:text-lg ">
           Результаты студентов
         </h2>
-        <TestTable data={test_list || []} />
+        <TestTable data={test_list || []} testId={test_id} courseId={courseId} />
 
       </div>
 

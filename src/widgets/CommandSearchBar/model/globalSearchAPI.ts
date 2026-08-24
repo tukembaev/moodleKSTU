@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import axios from "axios";
 import $api_base_edu from "shared/api/api_base_edu";
+import { API_URL } from "shared/api/config";
 import { AUTH_DATA } from "shared/const/localstorage";
 import { SearchBar } from "./search";
 
@@ -9,7 +10,7 @@ const getGlobalSearchData = async (search: string): Promise<SearchBar> => {
   const auth = JSON.parse(localStorage.getItem(AUTH_DATA) || "{}");
 
   if (Object.keys(auth).length === 0) {
-    const response = await axios.get(`https://uadmin.kstu.kg/educations/api/v1/global-search?search=${search}`);
+    const response = await axios.get(`${API_URL}v1/global-search?search=${search}`);
 
     return response.data;
   }

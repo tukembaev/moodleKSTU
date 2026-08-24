@@ -18,6 +18,8 @@ import {
 } from "shared/shadcn/ui/dialog";
 import { Textarea } from "shared/shadcn/ui/textarea";
 import { useEffect } from "react";
+import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { TYPE_LABELS } from "./add-theme/add-theme-constants";
 
 interface EditTaskFormData {
   week: string;
@@ -37,26 +39,25 @@ interface EditTaskFormProps {
     max_points: number;
     description?: string;
     type_less: string;
+    deadline?: string;
+    locked?: boolean;
+    open_date?: string;
   };
-  onSubmit: (data: EditTaskFormData) => void;
-  isPending?: boolean;
 }
 
-const TASK_TYPES = [
-  { value: "lb", label: "Лабораторная работа" },
-  { value: "pr", label: "Практическая работа" },
-  { value: "lc", label: "Лекция" },
-  { value: "srs", label: "СРС" },
-  { value: "other", label: "Другое" },
-];
+const TASK_TYPES = Object.entries(TYPE_LABELS).map(([value, label]) => ({
+  value,
+  label,
+}));
+
+const toTypeLabel = (value: string) => TYPE_LABELS[value] || value;
 
 export const EditTaskForm = ({
   open,
   onOpenChange,
   taskData,
-  onSubmit,
-  isPending = false,
 }: EditTaskFormProps) => {
+  const { mutate: editTheme, isPending } = courseQueries.edit_theme();
   const {
     register,
     handleSubmit,
@@ -71,17 +72,38 @@ export const EditTaskForm = ({
 
   useEffect(() => {
     if (taskData) {
-      setValue("week", taskData.week);
+      setValue("week", String(taskData.week));
       setValue("title", taskData.title);
       setValue("max_points", taskData.max_points);
       setValue("description", taskData.description || "");
-      setValue("type_less", taskData.type_less);
+      setValue("type_less", toTypeLabel(taskData.type_less));
     }
   }, [taskData, setValue]);
 
   const handleFormSubmit = (data: EditTaskFormData) => {
-    onSubmit(data);
-    reset();
+    if (!taskData?.id) return;
+
+    editTheme(
+      {
+        id: taskData.id,
+        data: {
+          title: data.title,
+          week: Number(data.week),
+          type_less: toTypeLabel(data.type_less),
+          max_points: data.max_points,
+          description: data.description,
+          ...(taskData.deadline ? { deadline: taskData.deadline } : {}),
+          ...(taskData.open_date ? { open_date: taskData.open_date } : {}),
+          ...(typeof taskData.locked === "boolean" ? { locked: taskData.locked } : {}),
+        },
+      },
+      {
+        onSuccess: () => {
+          reset();
+          onOpenChange(false);
+        },
+      }
+    );
   };
 
   return (
@@ -174,7 +196,7 @@ export const EditTaskForm = ({
                 </SelectTrigger>
                 <SelectContent>
                   {TASK_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
+                    <SelectItem key={type.value} value={type.label}>
                       {type.label}
                     </SelectItem>
                   ))}

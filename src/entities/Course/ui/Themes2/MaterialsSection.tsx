@@ -1,9 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { DragEvent, FC, useRef, useState } from "react";
+import { Lock, LockOpen } from "lucide-react";
+import { DragEvent, FC, useMemo, useRef, useState } from "react";
 import { LuFileText, LuUpload } from "react-icons/lu";
+import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { cn } from "shared/lib/utils";
+import { Badge } from "shared/shadcn/ui/badge";
+import { Button } from "shared/shadcn/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -11,10 +15,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
-import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { toast } from "sonner";
 import { AddMaterialCard } from "./AddMaterialCard";
-import { MaterialCard } from "./MaterialCard";
+import { MaterialAttachment } from "./MaterialAttachment";
 
 interface MaterialsSectionProps {
   themeId: string | null;
@@ -22,22 +25,42 @@ interface MaterialsSectionProps {
 
 export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
   const auth_data = useAuth();
+  const { id: courseId } = useParams<{ id: string }>();
+  const isStudent = Boolean(auth_data.isStudent);
  
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
-  const { data: materials, isLoading } = useQuery(
+  const { data: materials, isPending } = useQuery(
     courseQueries.allTaskMaterials(themeId)
   );
 
   const { data: courseDetails } = useQuery(
-    courseQueries.allTasks(themeId?.split("-")[0] || null)
+    courseQueries.allTasks(courseId || null)
+  );
+
+  const { data: students } = useQuery(
+    courseQueries.allAnswerTask(isStudent ? null : themeId)
   );
 
   const { mutate: delete_material } = courseQueries.delete_material();
   const { mutate: add_material } = courseQueries.create_material();
+  const { mutate: setAccessForAll, isPending: isAccessPending } =
+    courseQueries.set_theme_access_for_all();
 
   const isOwner = courseDetails?.course_owner?.[0]?.user_id === auth_data?.id;
+  const currentTheme = courseDetails?.detail?.find((task) => task.id === themeId);
+  const isThemeOpen = currentTheme ? !currentTheme.locked : true;
+
+  const studentUserIds = useMemo(
+    () => [...new Set((students ?? []).map((student) => student.user_id))],
+    [students]
+  );
+
+  const handleAccessForAll = (locked: boolean) => {
+    if (!themeId) return;
+    setAccessForAll({ id: themeId, locked, users: studentUserIds });
+  };
 
   const allMaterials = [
     ...(materials?.filter((material) => material.files) || []),
@@ -98,7 +121,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
 
   if (!themeId) {
     return (
-      <div className="flex items-center justify-center bg-muted/20 p-8">
+      <div className="flex h-full w-full items-center justify-center p-8">
         <Empty>
           <EmptyContent>
             <EmptyMedia variant="icon">
@@ -117,7 +140,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
   return (
     <div 
       className={cn(
-        "p-4 flex flex-col relative",
+        "relative flex h-full min-h-0 flex-col p-4",
         isDragging && !auth_data.isStudent && "ring-2 ring-primary ring-inset"
       )}
       onDragEnter={handleDragEnter}
@@ -136,25 +159,20 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-lg font-semibold">Учебные материалы</p>
-     
+      <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="text-lg font-semibold">Учебные материалы</p>
+        </div>
       </div>
 
-      <div>
-        {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <Skeleton key={index} className="h-28 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : !allMaterials.length ? (
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {isPending ? null : !allMaterials.length ? (
           !auth_data.isStudent && themeId ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <div className="flex flex-wrap gap-2">
               <AddMaterialCard themeId={themeId} />
             </div>
           ) : (
-            <Empty>
+            <Empty className="h-full min-h-0 p-4 md:p-6">
               <EmptyContent>
                 <EmptyMedia variant="icon">
                   <LuFileText size={24} />
@@ -167,16 +185,16 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
             </Empty>
           )
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <div className="flex flex-wrap gap-2">
             {allMaterials.map((material) => (
-              <MaterialCard
+              <MaterialAttachment
                 key={material.id}
                 material={material}
-                isOwner={isOwner}
+                canDelete={isOwner}
                 onDelete={delete_material}
+                className="min-w-[240px] flex-1 max-w-md"
               />
             ))}
-            {/* Карточка добавления материала */}
             {!auth_data.isStudent && themeId && (
               <AddMaterialCard themeId={themeId} />
             )}

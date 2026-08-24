@@ -1,12 +1,21 @@
 import { TestList } from "entities/Test";
-import { Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "shared/hooks";
 
 const TestingPage = () => {
   const location = useLocation();
-  const isTestSubRoute = location.pathname.includes("/test/pass/") || 
-                         location.pathname.includes("/test/result") ||
-                         location.pathname.includes("/test/add-quiz") ||
-                         location.pathname.includes("/test/quiz-result/");
+  const auth = useAuth();
+  const isStudent = Boolean(auth?.isStudent);
+  const isTestSubRoute =
+    location.pathname.includes("/test/pass/") ||
+    location.pathname.includes("/test/result") ||
+    location.pathname.includes("/test/add-quiz") ||
+    location.pathname.includes("/test/edit/") ||
+    location.pathname.includes("/test/quiz-result/");
+
+  if (isStudent && !isTestSubRoute) {
+    return <Navigate to="/courses" replace />;
+  }
 
   return (
     <div>

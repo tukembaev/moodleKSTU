@@ -151,7 +151,7 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
 
           {!isStudent && (
             <FadeIn className="flex border rounded-xl py-4 px-5 min-w-1/3 justify-center items-center min-h-48 text-center">
-              <HoverLift>
+              
                 <UseTooltip text="Добавить тест">
                   <div
                     className="flex flex-col justify-center items-center"
@@ -165,7 +165,7 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
                     <p>Добавьте новый тест</p>
                   </div>
                 </UseTooltip>
-              </HoverLift>
+              
             </FadeIn>
           )}
         </div>

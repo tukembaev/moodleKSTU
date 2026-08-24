@@ -14,6 +14,16 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: true, // Разрешаем ngrok и другие хосты
+    proxy: {
+      "/api": {
+        target: "http://localhost:8005",
+        changeOrigin: true,
+      },
+      "/media": {
+        target: "http://localhost:8005",
+        changeOrigin: true,
+      },
+    },
     // Оптимизация HMR
     hmr: {
       overlay: true, // Показывать ошибки как оверлей

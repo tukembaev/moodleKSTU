@@ -1,28 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { CourseMaterials } from "entities/Course/model/types/course";
-import { useState } from "react";
+import { StudentComments } from "features/Course/hooks/StudentComments";
 import {
   LuClipboardList,
-  LuEye,
-  LuFolderDown,
+  LuFile,
   LuGlasses,
   LuList,
   LuMessageSquareText,
-  LuTrash2,
 } from "react-icons/lu";
-import { HoverLift, UseTabs, UseTooltip } from "shared/components";
-import PdfViewer from "shared/components/PdfPreview";
-import { FormQuery } from "shared/config";
-import { useAuth, useForm } from "shared/hooks";
-import { Badge } from "shared/shadcn/ui/badge";
-import { Button } from "shared/shadcn/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "shared/shadcn/ui/dialog";
+import { UseTabs } from "shared/components";
+import { useAuth } from "shared/hooks";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
-
 import ThemeAnswers from "../Answers/ThemeAnswers";
-
-import { StudentComments } from "features/Course/hooks/StudentComments";
+import { AddMaterialCard } from "../Themes2/AddMaterialCard";
+import { MaterialAttachment } from "../Themes2/MaterialAttachment";
 import ThemeFAQ from "./ThemeFAQ";
 import { ThemeFeed } from "./ThemeFeed";
 
@@ -35,17 +26,6 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   );
 
   const auth_data = useAuth();
-  const openForm = useForm();
-
-  const [preview, setPreview] = useState<CourseMaterials | null>(null);
-
-  const handleOpenPreview = (material: CourseMaterials) => {
-    if (preview?.id === material.id) {
-      setPreview(null);
-    } else {
-      setPreview(material);
-    }
-  };
 
   const tabs = [
     {
@@ -96,119 +76,45 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
     return <p>Ошибка: {error.message}</p>;
   }
 
-  const getFileIcon = (material: CourseMaterials) => {
-    if (material.url) {
-      return <LuGlasses className="size-8" />;
-    }
-    if (material.file?.includes(".pdf")) {
-      return <LuEye className="size-8" />;
-    }
-    return <LuFolderDown className="size-8" />;
-  };
-
-  const getTooltipContent = (material: CourseMaterials) => {
-    return (
-      <div className="flex flex-col gap-1 max-w-[250px]">
-        <p className="font-semibold">{material.url ? material.url_name : material.file_name || "Без названия"}</p>
-        {material.description && <p className="text-xs text-muted-foreground">{material.description}</p>}
-      </div>
-    );
-  };
-
   return (
     <div className="flex flex-col gap-3 pt-6">
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <p className="text-lg font-semibold">Учебный материалы</p>
-          {!auth_data.isStudent && (
-            <Button
-              variant="outline"
-              className="cursor-pointer"
-              onClick={() => openForm(FormQuery.ADD_MATERIAL, { id })}
-            >
-              Добавить материал
-            </Button>
-          )}
-        </div>
-
+        <p className="text-lg font-semibold">Учебные материалы</p>
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <Skeleton key={index} className="h-24 w-full rounded-lg" />
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton
+                key={index}
+                className="h-14 min-w-[240px] flex-1 max-w-md rounded-xl"
+              />
             ))}
           </div>
         ) : !allMaterials.length ? (
-          <div className="rounded-md border p-8 text-center text-muted-foreground">
-            Учебный материал пуст
+          <div className="flex flex-wrap gap-2">
+            {!auth_data.isStudent ? (
+              <AddMaterialCard themeId={id} />
+            ) : (
+              <div className="w-full rounded-md border p-8 text-center text-muted-foreground">
+                <LuFile className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                Учебный материал пуст
+              </div>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+          <div className="flex flex-wrap gap-2">
             {allMaterials.map((material) => (
-              <UseTooltip key={material.id} text={getTooltipContent(material)}>
-                <div className="relative group">
-                  <HoverLift>
-                    <div className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer h-24">
-                      {material.url ? (
-                        <a
-                          href={material.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex flex-col items-center justify-center gap-2 w-full h-full"
-                        >
-                          {getFileIcon(material)}
-                        </a>
-                      ) : material.file?.includes(".pdf") ? (
-                        <Dialog
-                          onOpenChange={(isOpen) => {
-                            if (!isOpen) {
-                              setPreview(null);
-                            }
-                          }}
-                          open={preview?.id === material.id}
-                        >
-                          <DialogTrigger asChild>
-                            <button
-                              className="flex flex-col items-center justify-center gap-2 w-full h-full"
-                              onClick={() => handleOpenPreview(material)}
-                            >
-                              {getFileIcon(material)}
-                            </button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
-                            <DialogHeader className="px-6 pt-6 pb-0">
-                              <DialogTitle>{material.file_name || "Документ PDF"}</DialogTitle>
-                            </DialogHeader>
-                            <PdfViewer url={material.file || ""} inDialog={true} />
-                          </DialogContent>
-                        </Dialog>
-                      ) : (
-                        <a
-                          href={material.file}
-                          download={material.file_name}
-                          className="flex flex-col items-center justify-center gap-2 w-full h-full"
-                        >
-                          {getFileIcon(material)}
-                        </a>
-                      )}
-                    </div>
-                  </HoverLift>
-                  {isOwner && (
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => delete_material(material.id)}
-                    >
-                      <LuTrash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              </UseTooltip>
+              <MaterialAttachment
+                key={material.id}
+                material={material}
+                canDelete={isOwner}
+                onDelete={delete_material}
+                className="min-w-[240px] flex-1 max-w-md"
+              />
             ))}
+            {!auth_data.isStudent && <AddMaterialCard themeId={id} />}
           </div>
         )}
       </div>
-      {/* <ThemeQuiz course_id={course_id} course_name={course_name} theme_id={id}/> */}
       <UseTabs tabs={tabs} />
     </div>
   );

@@ -28,7 +28,7 @@ export const useAddThemeForm = () => {
   const typeParam = searchParams.get("type");
 
   // Get all tests
-  const { data: allTests } = useQuery(testQueries.allTest("/"));
+  const { data: allTests } = useQuery(testQueries.allTest());
 
   const userTests = useMemo(() => {
     if (!allTests) return [];

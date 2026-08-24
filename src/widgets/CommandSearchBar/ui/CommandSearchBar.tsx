@@ -14,7 +14,12 @@ import FilesGroup from "./CommandGroups/FilesGroup";
 import StudyTasksGroup from "./CommandGroups/StudyTasksGroup";
 import SearchLoader from "./SearchLoader";
 
-const CommandSearchBar = () => {
+interface CommandSearchBarProps {
+  autoFocus?: boolean;
+  onCollapse?: () => void;
+}
+
+const CommandSearchBar = ({ autoFocus, onCollapse }: CommandSearchBarProps) => {
   const [text, setText] = useState("");
   const [isActive, setIsActive] = useState(false);
   const { data, isLoading } = useQuery(searchQueries.searchResults(text));
@@ -22,16 +27,21 @@ const CommandSearchBar = () => {
   return (
     <Command className="rounded-lg border shadow-md md:min-w-[350px] z-50">
       <CommandInput
+        autoFocus={autoFocus}
         value={text}
         onValueChange={(e) => setText(e)}
         onFocus={() => setIsActive(true)}
         onBlur={() => {
-          setTimeout(() => setIsActive(false), 200);
+          setTimeout(() => {
+            setIsActive(false);
+            onCollapse?.();
+          }, 200);
         }}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
             setIsActive(false);
             (e.target as HTMLInputElement).blur();
+            onCollapse?.();
           }
         }}
         placeholder="Введите команду или поиск..."

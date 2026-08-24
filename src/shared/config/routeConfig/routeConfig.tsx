@@ -14,10 +14,9 @@ import { TestResults } from "entities/Test";
 import { AboutUsPage } from "pages/AboutUsPage";
 import { CollaboratePage } from "pages/CollaboratePage";
 import { CategoryPage } from "pages/CategoryPage";
-import { NotificationPage } from "pages/NotificationPage";
 import { StatisticPage } from "pages/StatisticPage";
-import { ChatPage } from "pages/ChatPage";
 import AddQuizPage from "features/Quiz/ui/AddQuizPage";
+import EditQuizPage from "features/Quiz/ui/EditQuizPage";
 import { QuizTestPage } from "pages/QuizTestPage";
 import { QuizResultsPage } from "pages/QuizResultsPage";
 import { RemarksPage } from "pages/RemarksPage";
@@ -38,12 +37,10 @@ export enum AppRoutes {
   MAIN = "main",
   COURSES = "courses",
   CATEGORY = "category",
-  CHAT = "chat",
 
   STATISTIC = "statistic",
 
   // REGISTRATION = "registration",
-  NOTIFICATION = "notification",
   PROFILE = "profile",
   TEST = "test",
 
@@ -61,6 +58,7 @@ export enum AppSubRoutes {
   TEST_RESULTS = "result",
   TEST_PASS = "pass",
   TEST_ADD_QUIZ = "add-quiz",
+  TEST_EDIT = "edit",
   TEST_QUIZ = "quiz",
   TEST_QUIZ_RESULT = "quiz-result",
 }
@@ -77,16 +75,14 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppRoutes.CATEGORY]: "/category",
 
   [AppRoutes.STATISTIC]: "/statistic",
-  [AppRoutes.CHAT]: "/chat",
 
   // [AppRoutes.REGISTRATION]: "/registration",
-  [AppRoutes.NOTIFICATION]: "/notification",
-
   [AppRoutes.PROFILE]: "/profile",
   [AppRoutes.TEST]: "/test",
   [AppSubRoutes.TEST_RESULTS]: "/test/result",
   [AppSubRoutes.TEST_PASS]: "/test/pass/:id",
   [AppSubRoutes.TEST_ADD_QUIZ]: "/test/add-quiz",
+  [AppSubRoutes.TEST_EDIT]: "/test/edit/:id",
   [AppSubRoutes.TEST_QUIZ]: "/test/quiz/:id",
   [AppSubRoutes.TEST_QUIZ_RESULT]: "/test/quiz-result/:id",
 
@@ -143,28 +139,10 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
   //   path: RoutePath.registration,
   //   element: <RegistrationPage />,
   // },
-  [AppRoutes.NOTIFICATION]: {
-    path: RoutePath.notification + "/*",
-    element: <NotificationPage />,
-    breadcrumbName: "Уведомления",
-
-    children: [
-      {
-        path: ":id",
-        element: <NotificationPage />,
-        breadcrumbName: "Уведомления 2",
-      },
-    ],
-  },
   [AppRoutes.STATISTIC]: {
     path: RoutePath.statistic,
     element: <StatisticPage />,
     breadcrumbName: "Оплата",
-  },
-  [AppRoutes.CHAT]: {
-    path: RoutePath.chat,
-    element: <ChatPage />,
-    breadcrumbName: "Чат",
   },
   [AppRoutes.PROFILE]: {
     path: RoutePath.profile + "/*",
@@ -199,6 +177,11 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
         path: RoutePath[AppSubRoutes.TEST_ADD_QUIZ],
         element: <AddQuizPage />,
         breadcrumbName: "Создание теста",
+      },
+      {
+        path: RoutePath[AppSubRoutes.TEST_EDIT],
+        element: <EditQuizPage />,
+        breadcrumbName: "Редактирование теста",
       },
       {
         path: RoutePath[AppSubRoutes.TEST_PASS],

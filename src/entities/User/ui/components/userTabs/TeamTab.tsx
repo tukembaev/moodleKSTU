@@ -25,21 +25,21 @@ const TeamTab = ({ data }: { data: UserGroupList[] }) => {
           <p className="text-muted-foreground text-sm">{member.position}</p>
           <p className="mt-2 mb-6">Крутое описание крутого меня !</p>
           <div className="mt-auto flex items-center gap-4">
-            <HoverLift>
+            
               <NavLink to="#" target="_blank">
                 <LuMessageCircle className="stroke-muted-foreground h-5 w-5" />
               </NavLink>
-            </HoverLift>
-            <HoverLift>
+            
+            
               <NavLink to="#" target="_blank">
                 <LuDribbble className="stroke-muted-foreground h-5 w-5" />
               </NavLink>
-            </HoverLift>
-            <HoverLift>
+            
+            
               <NavLink to="#" target="_blank">
                 <LuTwitch className="stroke-muted-foreground h-5 w-5" />
               </NavLink>
-            </HoverLift>
+            
           </div>
         </div>
       ))}

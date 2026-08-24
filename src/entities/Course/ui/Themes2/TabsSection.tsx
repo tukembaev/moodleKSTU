@@ -81,7 +81,7 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
 
   if (!themeId) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex h-full items-center justify-center p-8">
         <Empty>
           <EmptyContent>
             <EmptyMedia variant="icon">
@@ -192,68 +192,40 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
             value="theme_answers"
             className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
           >
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className="h-full"
-            >
-              
-                <ThemeAnswers id={themeId} />
-              
-            </motion.div>
+            <div className="h-full">
+              <ThemeAnswers id={themeId} />
+            </div>
           </TabsContent>
 
           <TabsContent
             value="feed"
-            className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
+            className="m-0 p-0 data-[state=inactive]:hidden h-full min-h-0 overflow-hidden"
           >
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className="h-full border"
-            >
-              <div className="p-4">
-                <ThemeFeed
-                  items={comments || []}
-                  isLoading={isLoadingComments}
-                  theme_id={themeId}
-                />
-              </div>
-            </motion.div>
+            <div className="flex h-full min-h-0 flex-col p-4">
+              <ThemeFeed
+                items={comments || []}
+                isLoading={isLoadingComments}
+                theme_id={themeId}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent
             value="faq"
             className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
           >
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className="h-full border"
-            >
-              <div className="p-2">
-                <ThemeFAQ theme_id={themeId} />
-              </div>
-            </motion.div>
+            <div className="h-full">
+              <ThemeFAQ theme_id={themeId} />
+            </div>
           </TabsContent>
 
           <TabsContent
             value="comments"
-            className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
+            className="m-0 p-0 data-[state=inactive]:hidden h-full min-h-0 overflow-hidden"
           >
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className="h-full"
-            >
-              <div className="p-4">
-                {auth_data.isStudent && <StudentComments theme_id={themeId} />}
-              </div>
-            </motion.div>
+            <div className="flex h-full min-h-0 flex-col">
+              {auth_data.isStudent && <StudentComments theme_id={themeId} />}
+            </div>
           </TabsContent>
         </div>
       </Tabs>

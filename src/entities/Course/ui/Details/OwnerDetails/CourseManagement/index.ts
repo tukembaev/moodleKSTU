@@ -1,0 +1,1 @@
+export { CourseManagementTab } from "./CourseManagementTab";

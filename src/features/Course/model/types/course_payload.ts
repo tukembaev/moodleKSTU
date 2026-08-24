@@ -1,6 +1,6 @@
 export interface CreateCoursePayload {
     discipline_name: string;
-    category: string;
+  
     credit: number;
     control_form: string;
 
@@ -67,15 +67,37 @@ export interface CreateCoursePayload {
   }
   export interface CreateThemePayload {
       course?: string;
-      week: number;
-      title?: string;
-      type_less: string;
-      max_points?: number;
-      deadline: string;
+    week: number;
+    title?: string;
+    type_less: string;
+    max_points?: number;
+    deadline: string;
 
-      locked: boolean;
-      open_date: string;
-      description?: string;
-      test_id?: string;
+    locked: boolean;
+    open_date: string;
+    description?: string;
+    test_id?: string;
+  }
+
+  export interface EditThemePayload {
+    title?: string;
+    week?: number;
+    type_less?: string;
+    max_points?: number;
+    deadline?: string;
+    locked?: boolean;
+    open_date?: string;
+    description?: string;
+  }
+
+  export interface CourseStreamItemPayload {
+    title: string;
+    stream: string;
+  }
+
+  export interface BindCourseStreamsPayload {
+    course: string;
+    title: string;
+    streams: CourseStreamItemPayload[];
   }
   

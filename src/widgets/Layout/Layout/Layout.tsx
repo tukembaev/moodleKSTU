@@ -1,7 +1,5 @@
-import React, { FC, ReactNode, memo } from "react";
-import { SidebarProvider } from "shared/shadcn/ui/sidebar";
+import { FC, ReactNode, memo } from "react";
 import Header from "./ui/Header/Header";
-import Sidebar from "./ui/Sidebar/Sidebar";
 import { useLocation } from "react-router-dom";
 
 import { useAuth } from "shared/hooks";
@@ -18,7 +16,6 @@ const Layout: FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const isLoginPage = location.pathname === "/";
 
-  // Если это страница логина, показываем только содержимое без Header и Sidebar
   if (isLoginPage) {
     return (
       <>
@@ -37,41 +34,25 @@ const Layout: FC<LayoutProps> = ({ children }) => {
   }
 
   return (
-    <SidebarProvider
-      defaultOpen={false}
-      style={
-        {
-          "--sidebar-width": "14rem",
-          "--sidebar-width-mobile": "14rem",
-        } as React.CSSProperties
-      }
-    >
-      <div className="flex flex-col min-h-screen w-full">
-        <div className="flex flex-grow">
-          {auth && <Sidebar />}
-          <div className="w-full">
-            <Header />
-
-            <div className={`${auth && "px-4 pt-4 pb-8"} overflow-hidden `}>
-              {children}
-            </div>
-          </div>
-        </div>
-        {auth && (
-          <>
-            <GlobalDrawer />
-            <NotificationWebSocket />
-          </>
-        )}
-        <Toaster
-          richColors
-          closeButton
-          position="top-right"
-          expand={false}
-          className="z-80"
-        />
+    <div className="flex flex-col h-dvh w-full overflow-hidden">
+      <Header />
+      <div className={`${auth ? "px-4 pt-4 pb-4" : ""} flex-1 min-h-0 overflow-y-auto`}>
+        {children}
       </div>
-    </SidebarProvider>
+      {auth && (
+        <>
+          <GlobalDrawer />
+          <NotificationWebSocket />
+        </>
+      )}
+      <Toaster
+        richColors
+        closeButton
+        position="top-right"
+        expand={false}
+        className="z-80"
+      />
+    </div>
   );
 };
 

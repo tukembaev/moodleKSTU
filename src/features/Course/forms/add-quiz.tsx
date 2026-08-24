@@ -33,6 +33,7 @@ interface QuizFormData {
   required: boolean;
   timeLimit: number;
   maxPoints: number;
+  minPoints: number;
   showCorrectAnswers: boolean;
   theme_id?: string;
   questions: QuestionForm[];
@@ -50,6 +51,7 @@ const Add_Quiz = () => {
   } = useForm<QuizFormData>({
     defaultValues: {
       maxPoints: 100,
+      minPoints: 0,
       showCorrectAnswers: false,
       questions: [
         {
@@ -82,6 +84,8 @@ const Add_Quiz = () => {
   const formParam = searchParams.get("form");
 
   const { mutate: createTest, isPending } = testQueries.create_test_with_formdata();
+  const { mutate: attachTest } = testQueries.attach_test_to_course();
+  const courseId = searchParams.get("course_id");
 
   const options = [
     {
@@ -109,8 +113,6 @@ const Add_Quiz = () => {
     setValue("opening_date", opening_date!);
   }, [opening_date, setValue]);
 
-  const params = new URLSearchParams(location.search);
-
   const {
     fields: questionFields,
     append,
@@ -120,19 +122,17 @@ const Add_Quiz = () => {
     name: "questions",
   });
 
-  const theme_id = params.get("theme_id");
   const onSubmit = (formData: QuizFormData) => {
     // Подготовка JSON данных согласно спецификации API
     const testData = {
       title: formData.title,
       description: formData.description || "",
       opening_date: formData.opening_date.toISOString(),
-      deadline: formData.deadline.toISOString(),
       required: formData.required || false,
       timeLimit: formData.timeLimit,
       maxPoints: formData.maxPoints || 0,
+      minPoints: formData.minPoints || 0,
       showCorrectAnswers: formData.showCorrectAnswers || false,
-      ...(theme_id ? { theme_id: theme_id } : {}),
       questions: formData.questions.map((question) => ({
         question: question.question,
         multipleAnswers: question.multipleAnswers || false,
@@ -172,7 +172,14 @@ const Add_Quiz = () => {
 
     // Отправка данных
     createTest(formDataToSend, {
-      onSuccess: () => {
+      onSuccess: (created) => {
+        if (courseId && created?.id) {
+          attachTest(
+            { test_id: created.id, course_id: courseId },
+            { onSettled: () => navigate(-1) }
+          );
+          return;
+        }
         navigate(-1);
       },
     });
@@ -293,11 +300,33 @@ const Add_Quiz = () => {
           <Label className="pb-2">Максимальное количество баллов</Label>
           <Input
             type="number"
+            step={1}
             {...register("maxPoints", { required: true, min: 0, valueAsNumber: true })}
             placeholder="Например, 100"
           />
           {errors.maxPoints && (
             <p className="text-destructive">Минимум 0 баллов</p>
+          )}
+        </div>
+        <div>
+          <Label className="pb-2">Минимальный балл</Label>
+          <Input
+            type="number"
+            step={1}
+            {...register("minPoints", {
+              required: true,
+              min: 0,
+              valueAsNumber: true,
+              validate: (value) =>
+                value <= (watch("maxPoints") || 0) ||
+                "Не больше максимального балла",
+            })}
+            placeholder="Например, 60"
+          />
+          {errors.minPoints && (
+            <p className="text-destructive">
+              {errors.minPoints.message || "Целое число от 0 до максимума"}
+            </p>
           )}
         </div>
         <div className="flex items-center gap-2">

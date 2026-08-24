@@ -17,6 +17,12 @@ import {
   updateRemarkStatus,
 } from "./remarksAPI";
 
+const invalidateRemarkRelatedQueries = (queryClient: ReturnType<typeof useQueryClient>) => {
+  queryClient.invalidateQueries({ queryKey: ["remarks"] });
+  queryClient.invalidateQueries({ queryKey: ["student-answer-task"] });
+  queryClient.invalidateQueries({ queryKey: ["answer-task"] });
+};
+
 // ---- Мутации ----
 
 export const useCreateRemark = () => {
@@ -34,7 +40,7 @@ export const useCreateRemark = () => {
       toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["remarks"] });
+      invalidateRemarkRelatedQueries(queryClient);
     },
   });
 };
@@ -60,7 +66,7 @@ export const useAddRemarkMessage = () => {
       toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["remarks"] });
+      invalidateRemarkRelatedQueries(queryClient);
     },
   });
 };
@@ -95,7 +101,7 @@ export const useUpdateRemarkStatus = () => {
       toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["remarks"] });
+      invalidateRemarkRelatedQueries(queryClient);
     },
   });
 };

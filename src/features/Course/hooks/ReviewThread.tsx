@@ -45,48 +45,81 @@ export interface Review {
   needs_teacher_action: boolean; // Ключ для UI: требуется действие учителя
 }
 
+const normalizeRemarkStatus = (
+  status: Remark["status"] | string
+): ReviewStatus => {
+  const value = String(status ?? "").toLowerCase();
+  if (value === RemarkStatus.PENDING || value === "pending") return "pending";
+  if (
+    value === RemarkStatus.RESPONDED ||
+    value === "responded" ||
+    value === "student_replied"
+  ) {
+    return "student_replied";
+  }
+  if (value === RemarkStatus.APPROVED || value === "approved") return "approved";
+  if (value === RemarkStatus.REJECTED || value === "rejected") return "rejected";
+  return "pending";
+};
+
+const messageTime = (timestamp?: string) => {
+  const time = new Date(timestamp ?? "").getTime();
+  return Number.isFinite(time) ? time : Number.POSITIVE_INFINITY;
+};
+
+export const sortMessagesByTime = <T extends { id: string; timestamp: string }>(
+  messages: T[]
+) =>
+  [...messages].sort((left, right) => {
+    const byTime = messageTime(left.timestamp) - messageTime(right.timestamp);
+    if (byTime !== 0) return byTime;
+    return String(left.id).localeCompare(String(right.id));
+  });
+
+export const reviewsToThreadMessages = (reviews: Review[]) =>
+  sortMessagesByTime(
+    reviews.flatMap((review) =>
+      review.messages.map((message) => ({
+        ...message,
+        reviewId: review.id,
+      }))
+    )
+  );
+
 // Адаптер: Remark (из API /api/v1/remarks) -> Review (формат UI ReviewThread)
 export const remarkToReview = (remark: Remark): Review => {
-  const status: ReviewStatus =
-    remark.status === RemarkStatus.PENDING
-      ? "pending"
-      : remark.status === RemarkStatus.RESPONDED
-      ? "student_replied"
-      : remark.status === RemarkStatus.APPROVED
-      ? "approved"
-      : "rejected";
+  const mappedStatus = normalizeRemarkStatus(remark.status);
+  const messages: ReviewMessage[] = sortMessagesByTime(
+    (remark.messages ?? []).map((m) => {
+      const senderRole = String(m.sender_role ?? "").toLowerCase();
+      return {
+        id: m.id,
+        type: (senderRole === "student"
+          ? "student_reply"
+          : "teacher_remark") as ReviewMessageType,
+        message: m.message,
+        timestamp:
+          typeof m.created_at === "string"
+            ? m.created_at
+            : m.created_at
+              ? new Date(m.created_at).toISOString()
+              : new Date().toISOString(),
+        author_id: String(m.sender_id),
+        author_name: m.sender_name,
+        author_role: senderRole === "student" ? "student" : "teacher",
+      };
+    })
+  );
 
-  const messages: ReviewMessage[] = remark.messages.map((m, idx, arr) => {
-    const isLast = idx === arr.length - 1;
-    let type: ReviewMessageType;
-    if (m.sender_role === "student") {
-      type = "student_reply";
-    } else if (
-      isLast &&
-      remark.status === RemarkStatus.APPROVED
-    ) {
-      type = "teacher_approval";
-    } else if (
-      isLast &&
-      remark.status === RemarkStatus.REJECTED
-    ) {
-      type = "teacher_rejection";
-    } else {
-      type = "teacher_remark";
-    }
-    return {
-      id: m.id,
-      type,
-      message: m.message,
-      timestamp:
-        typeof m.created_at === "string"
-          ? m.created_at
-          : new Date(m.created_at).toISOString(),
-      author_id: String(m.sender_id),
-      author_name: m.sender_name,
-      author_role: m.sender_role,
-    };
-  });
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage && lastMessage.author_role === "teacher") {
+    if (mappedStatus === "approved") lastMessage.type = "teacher_approval";
+    else if (mappedStatus === "rejected") lastMessage.type = "teacher_rejection";
+  }
+  const status = mappedStatus;
+  const hasStudentReply = messages.some(
+    (message) => message.author_role === "student"
+  );
 
   return {
     id: remark.id,
@@ -102,10 +135,10 @@ export const remarkToReview = (remark: Remark): Review => {
       typeof remark.updated_at === "string"
         ? remark.updated_at
         : new Date(remark.updated_at).toISOString(),
-    has_student_reply: remark.messages.some(
-      (m) => m.sender_role === "student"
-    ),
-    needs_teacher_action: remark.status === RemarkStatus.RESPONDED,
+    has_student_reply: hasStudentReply,
+    needs_teacher_action:
+      status === "student_replied" ||
+      (status !== "approved" && lastMessage?.author_role === "student"),
   };
 };
 
@@ -131,6 +164,31 @@ export const formatTimestamp = (timestamp: string) => {
     hour: "2-digit",
     minute: "2-digit",
   });
+};
+
+export const formatMessageTime = (timestamp: string) =>
+  new Date(timestamp).toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+export const formatMessageDate = (timestamp: string) => {
+  const date = new Date(timestamp);
+  const day = date.getDate();
+  const month = date.toLocaleDateString("ru-RU", { month: "long" });
+  const year = date.getFullYear();
+  return `${day} ${month} ${year} года`;
+};
+
+export const isSameCalendarDay = (a?: string, b?: string) => {
+  if (!a || !b) return false;
+  const left = new Date(a);
+  const right = new Date(b);
+  return (
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate()
+  );
 };
 
 // Компонент для отображения thread'а замечаний

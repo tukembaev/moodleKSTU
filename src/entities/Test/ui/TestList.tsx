@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Pencil, Trash2 } from "lucide-react";
 import { LuHandCoins, LuPlus } from "react-icons/lu";
 
 import { CourseCardSkeleton } from "entities/Course";
 import { useNavigate } from "react-router-dom";
 import {
   FadeIn,
-  HoverLift,
   SpringPopupList,
+  UseConfirmationDialog,
   UseTooltip,
 } from "shared/components";
 import { AppSubRoutes } from "shared/config";
@@ -42,7 +42,8 @@ import { testQueries } from "../model/services/testQueryFactory";
 // ];
 const TestList = () => {
   const { isStudent } = useAuth();
-  const { data: test_list, isLoading } = useQuery(testQueries.allTest("/"));
+  const { data: test_list, isLoading } = useQuery(testQueries.allTest());
+  const { mutate: deleteTest, isPending: isDeleting } = testQueries.delete_test();
   const navigate = useNavigate();
   return (
     <div>
@@ -60,9 +61,13 @@ const TestList = () => {
                 <CardContent className="flex flex-col p-4 gap-2">
                   <span className="text-lg font-semibold flex gap-2 items-center flex-wrap">
                     {theme.title}
-                    {!isStudent ? null : theme.status && theme.result !== null ? (
+                    {!isStudent ? null : theme.passed === true ? (
                       <Badge className="bg-green-300 text-primary  text-md px-1.5">
-                        Сдано на {theme.result}
+                        Пройден: {theme.result}
+                      </Badge>
+                    ) : theme.passed === false ? (
+                      <Badge variant="destructive" className=" text-md px-1.5">
+                        Не пройден{theme.result != null ? `: ${theme.result}` : ""}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className=" text-md px-1.5">
@@ -84,11 +89,35 @@ const TestList = () => {
                   <span className="text-md text-foreground/80 line-clamp-2">
                     {theme.description}
                   </span>
-                  {!isStudent || theme.status ? (
-                    // Note: Results button removed as course_id is not available in TestList context
-                    // Use TestCard component within course context to access results
-                    null
-                  ) : (
+                  {!isStudent ? (
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <Button
+                        className="shadow-none h-8 w-full text-md"
+                        variant="outline"
+                        onClick={() =>
+                          navigate(`/test/${AppSubRoutes.TEST_EDIT}/${theme.id}`)
+                        }
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Редактировать
+                      </Button>
+                      <UseConfirmationDialog
+                        title="Удалить тест?"
+                        description={`«${theme.title}» будет удалён вместе с вопросами и результатами без возможности восстановления.`}
+                        onConfirm={() => deleteTest(theme.id)}
+                        trigger={
+                          <Button
+                            className="shadow-none h-8 w-full text-md"
+                            variant="destructive"
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Удалить
+                          </Button>
+                        }
+                      />
+                    </div>
+                  ) : theme.passed == null ? (
                     <Button
                       className="shadow-none w-full mt-2 h-8 text-md"
                       variant="outline"
@@ -100,26 +129,16 @@ const TestList = () => {
                     >
                       Пройти тест <ChevronRight className="h-3 w-3" />
                     </Button>
-                  )}
-                  {/* <Button
-                      className="shadow-none w-full mt-2 h-8 text-md"
-                      variant="outline"
-                      onClick={() =>
-                        navigate(
-                          "/test/" + AppSubRoutes.TEST_PASS + "/" + theme.id
-                        )
-                      }
-                    >
-                      Пройти тест <ChevronRight className="h-3 w-3" />
-                    </Button> */}
+                  ) : null}
                 </CardContent>
               </Card>
             );
           })
         )}
 
+        {!isStudent && (
         <FadeIn className="flex border rounded-xl py-4 px-5 min-w-1/3 justify-center items-center min-h-48">
-          <HoverLift>
+          
             <UseTooltip text="Добавить тест">
               <div
                 className="flex flex-col justify-center items-center cursor-pointer"
@@ -129,8 +148,9 @@ const TestList = () => {
                 <p>Добавьте новый тест</p>
               </div>
             </UseTooltip>
-          </HoverLift>
+          
         </FadeIn>
+        )}
       </div>
       {/* <Blog03Page /> */}
     </div>

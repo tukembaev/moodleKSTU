@@ -20,27 +20,29 @@ const ThemeAnswers = ({ id }: { id: string | null }) => {
   } = useQuery(courseQueries.allStudentAnswers(isStudent ? id : null));
  
 
+  if (!id) {
+    return null;
+  }
+
+  if (isStudent) {
+    return (
+      <SingleStudentAnswers
+        data={authStudentAnswers ?? []}
+        isLoading={authStudentAnswersLoading}
+        error={authStudentAnswersError}
+        id={id}
+      />
+    );
+  }
+
   return (
-    <>
-      {answersOfAllStudents && (
-        <ListOfStudentsWithAnswers
-          data={answersOfAllStudents}
-          isLoading={isStudentsLoading}
-          refetch={refetch}
-          error={listOfStudentsError}
-          theme_id={id}
-          // count_students = {answersOfAllStudents.length}
-        />
-      )}
-      {authStudentAnswers && id && (
-        <SingleStudentAnswers
-          data={authStudentAnswers}
-          isLoading={authStudentAnswersLoading}
-          error={authStudentAnswersError}
-          id={id}
-        />
-      )}
-    </>
+    <ListOfStudentsWithAnswers
+      data={answersOfAllStudents ?? []}
+      isLoading={isStudentsLoading}
+      refetch={refetch}
+      error={listOfStudentsError}
+      theme_id={id}
+    />
   );
 };
 

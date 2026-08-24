@@ -1,44 +1,47 @@
+import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { EditTaskForm } from "features/Course/forms/edit-task-form";
 import { FC, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useForm } from "shared/hooks";
 import { Progress } from "shared/shadcn/ui/progress";
+import { CourseItemKind, CourseListTask } from "./TasksList";
 import { TaskItem } from "./TaskItem";
-
-interface Task {
-  id: string;
-  title: string;
-  week: string;
-  result: string;
-  max_points: number;
-  status: boolean;
-  locked: boolean;
-  type_less: string;
-  deadline: string;
-  active_remarks_count: number;
-}
 
 interface TaskGroupProps {
   title: string;
-  tasks: Task[];
+  tasks: CourseListTask[];
   isStudent: boolean;
-  onTaskClick?: (taskId: string) => void;
+  onItemClick?: (
+    taskId: string,
+    kind: CourseItemKind,
+    meta?: { passed: boolean | null; is_open: boolean | null; locked?: boolean }
+  ) => void;
   selectedTaskId?: string | null;
+  isTestsGroup?: boolean;
 }
 
 export const TaskGroup: FC<TaskGroupProps> = ({
   title,
   tasks,
   isStudent,
-  onTaskClick,
+  onItemClick,
   selectedTaskId,
+  isTestsGroup = false,
 }) => {
-  const openForm = useForm();
-  const { id: courseId } = useParams<{ id: string }>();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  
-  console.log(tasks)
+  const [editingTask, setEditingTask] = useState<CourseListTask | null>(null);
+  const { mutate: deleteTheme } = courseQueries.delete_theme();
+
+  const { earnedPoints, maxPoints, percentage } = useMemo(() => {
+    const maxPoints = tasks.reduce((sum, task) => sum + task.max_points, 0);
+    const earnedPoints = tasks.reduce((sum, task) => {
+      if (!isStudent) return 0;
+      const points = task.result !== "—" ? parseFloat(task.result) : 0;
+      return sum + (isNaN(points) ? 0 : points);
+    }, 0);
+    const percentage = maxPoints > 0 ? (earnedPoints / maxPoints) * 100 : 0;
+
+    return { earnedPoints, maxPoints, percentage };
+  }, [tasks, isStudent]);
+
   if (tasks.length === 0) return null;
 
   const handleEdit = (taskId: string) => {
@@ -50,37 +53,15 @@ export const TaskGroup: FC<TaskGroupProps> = ({
   };
 
   const handleDelete = (taskId: string) => {
-    // TODO: Implement delete logic
-    console.log("Delete task:", taskId);
+    deleteTheme(taskId);
   };
-
-  const handleEditSubmit = (data: any) => {
-    // TODO: Implement edit logic
-    console.log("Edit task:", editingTask?.id, data);
-    setEditDialogOpen(false);
-    setEditingTask(null);
-  };
-
-  // Вычисляем прогресс
-  const { earnedPoints, maxPoints, percentage } = useMemo(() => {
-    const maxPoints = tasks.reduce((sum, task) => sum + task.max_points, 0);
-    const earnedPoints = tasks.reduce((sum, task) => {
-      if (!isStudent) return 0;
-      const points = task.result !== "—" ? parseFloat(task.result) : 0;
-      return sum + (isNaN(points) ? 0 : points);
-    }, 0);
-    const percentage = maxPoints > 0 ? (earnedPoints / maxPoints) * 100 : 0;
-    
-    return { earnedPoints, maxPoints, percentage };
-  }, [tasks, isStudent]);
 
   return (
     <div className="bg-background border rounded-lg overflow-hidden mb-6">
-      {/* Заголовок группы */}
       <div className="bg-muted/50 px-4 py-3 border-b">
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-base font-semibold text-foreground">{title}</h3>
-          
+
           <div className="flex items-center gap-3">
             {isStudent && (
               <div className="flex items-center gap-3 min-w-[200px]">
@@ -90,12 +71,10 @@ export const TaskGroup: FC<TaskGroupProps> = ({
                 </span>
               </div>
             )}
-        
           </div>
         </div>
       </div>
 
-      {/* Список заданий */}
       <div>
         {tasks.map((task) => (
           <TaskItem
@@ -110,28 +89,41 @@ export const TaskGroup: FC<TaskGroupProps> = ({
             isStudent={isStudent}
             deadline={task.deadline}
             activeRemarksCount={task.active_remarks_count}
-            onClick={() => onTaskClick?.(task.id)}
+            onClick={() =>
+              onItemClick?.(task.id, task.itemKind, {
+                passed: task.passed ?? null,
+                is_open: task.is_open ?? null,
+                locked: task.locked,
+              })
+            }
             isActive={selectedTaskId === task.id}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onEdit={isTestsGroup ? undefined : handleEdit}
+            onDelete={isTestsGroup ? undefined : handleDelete}
+            isTest={task.itemKind === "test"}
+            isOpen={task.is_open}
+            passed={task.passed ?? null}
           />
         ))}
       </div>
 
-      {/* Форма редактирования */}
-      {editingTask && (
+      {editingTask && !isTestsGroup && (
         <EditTaskForm
           open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (!open) setEditingTask(null);
+          }}
           taskData={{
             id: editingTask.id,
             week: editingTask.week,
             title: editingTask.title,
             max_points: editingTask.max_points,
-            description: "",
+            description: editingTask.description || "",
             type_less: editingTask.type_less,
+            deadline: editingTask.deadline,
+            locked: editingTask.locked,
+            open_date: editingTask.open_date,
           }}
-          onSubmit={handleEditSubmit}
         />
       )}
     </div>

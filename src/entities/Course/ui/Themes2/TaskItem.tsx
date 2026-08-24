@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { CheckCircle2, Circle, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { CheckCircle2, Circle, Lock, LockOpen, MoreVertical, Pencil, Trash2, XCircle } from "lucide-react";
 import { cn } from "shared/lib/utils";
 import {
   DropdownMenu,
@@ -8,6 +8,9 @@ import {
   DropdownMenuTrigger,
 } from "shared/shadcn/ui/dropdown-menu";
 import { Button } from "shared/shadcn/ui/button";
+import { UseConfirmationDialog } from "shared/components";
+import { Badge } from "shared/shadcn/ui/badge";
+import { studentCanTakeTest } from "entities/Test/model/types/test";
 
 interface TaskItemProps {
   id: string;
@@ -24,6 +27,9 @@ interface TaskItemProps {
   isActive?: boolean;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
+  isTest?: boolean;
+  isOpen?: boolean | null;
+  passed?: boolean | null;
 }
 
 export const TaskItem: FC<TaskItemProps> = ({
@@ -32,53 +38,83 @@ export const TaskItem: FC<TaskItemProps> = ({
   week,
   result,
   maxPoints,
-  status,
   locked,
   isStudent,
   onClick,
   isActive = false,
   onEdit,
   onDelete,
+  isTest = false,
+  isOpen,
+  passed = null,
 }) => {
+  const showTeacherActions = !isStudent && !isTest && (onEdit || onDelete);
+  const isBlockedTest =
+    isTest && isStudent && !studentCanTakeTest({ passed, is_open: isOpen });
+  const isBlockedTheme = !isTest && isStudent && locked;
+  const isBlocked = isBlockedTest || isBlockedTheme;
+  const isItemOpen = isTest ? Boolean(isOpen) : !locked;
 
   return (
     <div
-      onClick={onClick}
+      onClick={isBlocked ? undefined : onClick}
+      aria-disabled={isBlocked}
       className={cn(
-        "flex items-center gap-3 px-4 py-3 border-b last:border-b-0 transition-colors cursor-pointer",
-        "hover:bg-muted/30",
-        locked && "opacity-50 cursor-not-allowed",
+        "flex items-center gap-3 px-4 py-3 border-b last:border-b-0 transition-colors",
+        isBlocked ? "cursor-not-allowed" : "cursor-pointer hover:bg-muted/30",
+        locked && !isTest && "opacity-50",
         isActive && "bg-primary/10 border-l-4 border-l-primary"
       )}
     >
-      {/* Иконка статуса */}
-      {isStudent &&   <div className="shrink-0">
-        {result ? (
-          <CheckCircle2 className="h-5 w-5 text-green-500" />
-        ) : (
-          <Circle className="h-5 w-5 text-muted-foreground" />
-        )}
-      </div>}
-   
+      {isStudent && (
+        <div className="shrink-0">
+          {isTest ? (
+            passed === true ? (
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+            ) : passed === false ? (
+              <XCircle className="h-5 w-5 text-red-500" />
+            ) : (
+              <Circle className="h-5 w-5 text-muted-foreground" />
+            )
+          ) : result && result !== "—" ? (
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+          ) : (
+            <Circle className="h-5 w-5 text-muted-foreground" />
+          )}
+        </div>
+      )}
 
-      {/* Название задания */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm text-foreground">{title} <span className="text-xs text-muted-foreground pl-2">{week} неделя </span></h4>
+        <h4 className="font-medium text-sm text-foreground">
+          {title}
+          {!isTest && week && (
+            <span className="text-xs text-muted-foreground pl-2">
+              {week} неделя
+            </span>
+          )}
+        </h4>
       </div>
 
-      {/* Баллы */}
+      <Badge variant={isItemOpen ? "default" : "outline"} className="shrink-0 gap-1">
+        {isItemOpen ? (
+          <LockOpen className="h-3 w-3" />
+        ) : (
+          <Lock className="h-3 w-3" />
+        )}
+        {isItemOpen ? "Открыт" : "Закрыт"}
+      </Badge>
+
       <div className="shrink-0">
         {isStudent ? (
           <span className="text-sm text-muted-foreground">
-            {result === null ? 0 : result}/{maxPoints}
+            {result === null || result === "—" ? 0 : result}/{maxPoints}
           </span>
         ) : (
           <span className="text-sm text-muted-foreground">{maxPoints} б.</span>
         )}
       </div>
 
-      {/* Меню действий для преподавателя */}
-      {!isStudent && (
+      {showTeacherActions && (
         <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -91,13 +127,20 @@ export const TaskItem: FC<TaskItemProps> = ({
                 <Pencil className="mr-2 h-4 w-4" />
                 Редактировать
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDelete?.(id)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Удалить
-              </DropdownMenuItem>
+              <UseConfirmationDialog
+                title="Удалить тему?"
+                description={`«${title}» будет удалена без возможности восстановления.`}
+                onConfirm={() => onDelete?.(id)}
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(event) => event.preventDefault()}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Удалить
+                  </DropdownMenuItem>
+                }
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

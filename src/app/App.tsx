@@ -6,7 +6,7 @@ import { PWAInstallBanner } from "features/PWAInstallBanner/PWAInstallBanner";
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <div className="w-full ">
+      <div className="h-dvh w-full">
         <Layout>
           <AppRouter />
         </Layout>

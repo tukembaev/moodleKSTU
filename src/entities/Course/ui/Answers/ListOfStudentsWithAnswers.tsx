@@ -1,6 +1,3 @@
-import { format } from "date-fns";
-import { ru } from "date-fns/locale";
-import { makeIsRead } from "entities/Course/model/services/courseAPI";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentsAnswers } from "entities/Course/model/types/course";
 import { SetComment } from "features/Course/hooks/SetComment";
@@ -8,12 +5,8 @@ import { SetMark } from "features/Course/hooks/SetMark";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 import {
-  LuCalendarDays,
   LuCheckCheck,
-  LuEye,
-  LuEyeClosed,
   LuFile,
-  LuFolderDown,
   LuKeyRound,
   LuLaugh,
   LuLock,
@@ -24,8 +17,7 @@ import {
   LuUsers,
   LuX
 } from "react-icons/lu";
-import { GetFileIcon, HoverLift, SpringPopupList, UseTooltip } from "shared/components";
-import PdfViewer from "shared/components/PdfPreview";
+import { SpringPopupList, UseTooltip } from "shared/components";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
@@ -36,13 +28,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "shared/shadcn/ui/collapsible";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "shared/shadcn/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from "shared/shadcn/ui/table";
+import { AnswerFileAttachment } from "./AnswerFileAttachment";
 
 const ListOfStudentsWithAnswers = ({
   data,
@@ -81,21 +67,9 @@ const ListOfStudentsWithAnswers = ({
   const [selectedStudents, setSelectedStudents] = useState<Set<number>>(
     new Set()
   );
-  const [previewFileId, setPreviewFileId] = useState<string | null>(null);
 
   const toggleExpand = (studentId: string) => {
     setExpandedId(expandedId === studentId ? null : studentId);
-  };
-
-  const handleOpenPreview = (fileId: string) => {
-    if (previewFileId === fileId) {
-      setPreviewFileId(null);
-    } else {
-      setPreviewFileId(fileId);
-      // Помечаем файл как прочитанный при открытии предпросмотра
-      makeIsRead(fileId);
-      refetch();
-    }
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,25 +119,26 @@ const ListOfStudentsWithAnswers = ({
   
   // Функция для определения статуса замечаний
   const getRemarksStatus = (student: StudentsAnswers) => {
- 
-    // Если есть responded замечания
-    if (student.pending_remarks > 0 || student.status === 'responded') {
+    const status = String(student.status ?? "").toLowerCase();
+
+    if (status === "responded" || status === "student_replied") {
       return "responded";
     }
 
-    if (student.pending_remarks > 0 || student.status === 'rejected') {
+    if (
+      status === "pending" ||
+      status === "rejected" ||
+      student.pending_remarks > 0
+    ) {
       return "pending";
     }
-    // Если есть комментарий или ожидающие замечания
-    if (student.pending_remarks > 0) {
-      return "pending";
-    }
-    
-    // Нет замечаний
+
     return "none";
   };
 
   const { mutate: change_permission } = courseQueries.edit_permission();
+  const { mutate: setAccessForAll, isPending: isAccessPending } =
+    courseQueries.set_theme_access_for_all();
 
   const handlePermission = (student: StudentsAnswers) => {
     change_permission({
@@ -182,6 +157,16 @@ const ListOfStudentsWithAnswers = ({
         locked: lock,
         users: [...selectedStudents],
       },
+    });
+  };
+
+  const handleAccessForAll = (locked: boolean) => {
+    const taskId = theme_id || uniqueData[0]?.task;
+    if (!taskId) return;
+    setAccessForAll({
+      id: taskId,
+      locked,
+      users: uniqueData.map((student) => student.user_id),
     });
   };
 
@@ -209,100 +194,6 @@ const ListOfStudentsWithAnswers = ({
         </Card>
       ))}
     </div>
-  );
-
-  // Render student file card for mobile
-  const renderFileCard = (item: StudentsAnswers['files'][0], student: StudentsAnswers) => (
-    <Card 
-      key={item.id} 
-      className="overflow-hidden hover:shadow-sm transition-all duration-300 bg-muted/30"
-    >
-      <CardContent className="p-3">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-background shrink-0">
-            <GetFileIcon file_names={item.file_names} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <UseTooltip text={item.file_names}>
-              <p className="font-medium text-sm truncate">{item.file_names}</p>
-            </UseTooltip>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <LuCalendarDays className="h-3 w-3" />
-                {format(item.created_at, "PPP", { locale: ru })}
-              </span>
-              {item.is_read.is_read ? (
-                <UseTooltip
-                  text={
-                    <>
-                      <div>Файл просмотрен</div>
-                      <div>
-                        {item.is_read.read && format(item.is_read.read, "PPP 'в' p", { locale: ru })}
-                      </div>
-                    </>
-                  }
-                >
-                  <Badge className="gap-1 bg-blue-50 text-blue-600 border-blue-200 text-xs px-1.5 py-0 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800">
-                    <LuCheckCheck className="h-3 w-3" />
-                  </Badge>
-                </UseTooltip>
-              ) : (
-                <UseTooltip text="Не просмотрен">
-                  <Badge className="gap-1 bg-orange-50 text-orange-600 border-orange-200 text-xs px-1.5 py-0 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800">
-                    <LuMessageCircleWarning className="h-3 w-3" />
-                  </Badge>
-                </UseTooltip>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-1.5 shrink-0">
-            {item.file_names.toLowerCase().endsWith('.pdf') && (
-              <Dialog
-                onOpenChange={(isOpen) => {
-                  if (!isOpen) {
-                    setPreviewFileId(null);
-                  }
-                }}
-                open={previewFileId === item.id}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleOpenPreview(item.id)}
-                  >
-                    {previewFileId === item.id ? (
-                      <LuEyeClosed className="h-4 w-4" />
-                    ) : (
-                      <LuEye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
-                  <DialogHeader className="px-6 pt-6 pb-0">
-                    <DialogTitle>{item.file_names}</DialogTitle>
-                  </DialogHeader>
-                  <PdfViewer url={item.file || ""} inDialog={true} />
-                </DialogContent>
-              </Dialog>
-            )}
-            <a
-              href={item.file}
-              download={item.file_names}
-              onClick={() => {
-                makeIsRead(item.id);
-                refetch();
-              }}
-            >
-              <Button variant="outline" size="icon" className="h-8 w-8">
-                <LuFolderDown className="h-4 w-4" />
-              </Button>
-            </a>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 
   // Render student cards for mobile/tablet
@@ -478,8 +369,16 @@ const ListOfStudentsWithAnswers = ({
                           <LuFile className="h-3.5 w-3.5" />
                           Файлы ({student.files.length})
                         </p>
-                        <div className="space-y-2">
-                          {student.files.map((item) => renderFileCard(item, student))}
+                        <div className="flex flex-col gap-2">
+                          {student.files.map((item) => (
+                            <AnswerFileAttachment
+                              key={item.id}
+                              file={item}
+                              markAsReadOnOpen
+                              onRead={refetch}
+                              className="w-full max-w-full"
+                            />
+                          ))}
                         </div>
                       </div>
                     </CardContent>
@@ -609,7 +508,7 @@ const ListOfStudentsWithAnswers = ({
                   )}
                 </TableCell>
                 <TableCell>
-                  <HoverLift>
+                  
                     <SetMark
                       text="Выставить баллы"
                       points={student.points}
@@ -630,7 +529,7 @@ const ListOfStudentsWithAnswers = ({
                           : "Не сдано"}
                       </Badge>
                     </SetMark>
-                  </HoverLift>
+                  
                 </TableCell>
                 <TableCell>
                   <UseTooltip
@@ -638,7 +537,7 @@ const ListOfStudentsWithAnswers = ({
                       student.locked ? "Открыть доступ" : "Закрыть доступ"
                     }
                   >
-                    <HoverLift>
+                    
                       <Badge
                         variant="outline"
                         className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
@@ -651,11 +550,11 @@ const ListOfStudentsWithAnswers = ({
                         )}
                         {student.locked ? "Доступ запрещен" : "Доступ открыт"}
                       </Badge>
-                    </HoverLift>
+                    
                   </UseTooltip>
                 </TableCell>
                 <TableCell>
-                  <HoverLift>
+                  
                     <Badge
                       variant="outline"
                       className={`flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer ${
@@ -687,7 +586,7 @@ const ListOfStudentsWithAnswers = ({
                         >
                           <span className="flex gap-1 items-center">
                             <LuMeh className="text-orange-500 dark:text-orange-400 cursor-pointer" />
-                            {student.pending_remarks > 0 || "Есть замечания"}
+                            Есть замечания
                           </span>
                         </SetComment>
                       ) : (
@@ -704,7 +603,7 @@ const ListOfStudentsWithAnswers = ({
                         </SetComment>
                       )}
                     </Badge>
-                  </HoverLift>
+                  
                 </TableCell>
 
                 <TableCell
@@ -723,90 +622,27 @@ const ListOfStudentsWithAnswers = ({
                 </TableCell>
               </TableRow>
 
-              {expandedId === student.id &&
-                student.files.map((item) => (
-                  <TableRow
-                    key={`expanded-${student.id}-${item.file}`}
-                    className="border-b-1 hover:bg-transparent"
-                  >
-                    <TableCell />
-                    <TableCell className="font-medium flex gap-3 pt-3 pl-3 items-center max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                      <GetFileIcon file_names={item.file_names} />
-                      <UseTooltip text={item.file_names}>
-                        <p>{item.file_names}</p>
-                      </UseTooltip>
-                      <span className="text-xs text-foreground/50">
-                        {format(item.created_at, "PPP", {
-                          locale: ru,
-                        })}
-                      </span>
-                      {item.is_read.is_read ? <UseTooltip text={
-                        <>
-                          <div>Файл просмотрен</div>
-                          <div>{ item.is_read.read && format(item.is_read.read, "PPP 'в' p", {
-                            locale: ru,
-                          })}</div>
-                        </>
-                      }>
-                        <LuCheckCheck className="text-blue-500" />
-                      </UseTooltip>
-                        : <UseTooltip text="Новый не просмотренный файл!">
-                          <LuMessageCircleWarning className="text-orange-500" />
-                        </UseTooltip>}
-                    </TableCell>
-                    <TableCell colSpan={6} className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        {item.file_names.toLowerCase().endsWith('.pdf') && (
-                          <Dialog
-                            onOpenChange={(isOpen) => {
-                              if (!isOpen) {
-                                setPreviewFileId(null);
-                              }
-                            }}
-                            open={previewFileId === item.id}
-                          >
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleOpenPreview(item.id)}
-                              >
-                                {previewFileId === item.id ? (
-                                  <LuEyeClosed />
-                                ) : (
-                                  <LuEye />
-                                )}
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
-                              <DialogHeader className="px-6 pt-6 pb-0">
-                                <DialogTitle>{item.file_names}</DialogTitle>
-                              </DialogHeader>
-                              <PdfViewer url={item.file || ""} inDialog={true} />
-                            </DialogContent>
-                          </Dialog>
-                        )}
-                        <a
-                          href={item.file}
-                          download={item.file_names}
-                          className="text-blue-500 hover:text-blue-700"
-                          onClick={() => {
-                            makeIsRead(item.id);
-                            refetch();
-                          }}
-                        >
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="cursor-pointer"
-                          >
-                            <LuFolderDown />
-                          </Button>
-                        </a>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+              {expandedId === student.id && student.files.length > 0 && (
+                <TableRow
+                  key={`expanded-${student.id}`}
+                  className="hover:bg-transparent"
+                >
+                  <TableCell />
+                  <TableCell colSpan={5} className="pt-0 pb-3">
+                    <div className="flex flex-wrap gap-2 py-1">
+                      {student.files.map((item) => (
+                        <AnswerFileAttachment
+                          key={item.id}
+                          file={item}
+                          markAsReadOnOpen
+                          onRead={refetch}
+                          className="min-w-[240px] flex-1 max-w-md"
+                        />
+                      ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </React.Fragment>
           ))}
         </TableBody>
@@ -849,27 +685,49 @@ const ListOfStudentsWithAnswers = ({
             onChange={handleSearch}
             className="max-w-full sm:max-w-[350px]"
           />
-          {selectedStudents.size === filteredData.length &&
-            filteredData.length > 0 && (
-            <div className="hidden lg:flex gap-2">
-              <Button
-                onClick={() => handleMultiplePermission(true)}
-                variant="outline"
-                size="sm"
-              >
-                <LuLock className="text-red-400" />
-                Закрыть доступ
-              </Button>
-              <Button
-                onClick={() => handleMultiplePermission(false)}
-                variant="outline"
-                size="sm"
-              >
-                <LuKeyRound className="text-green-400" />
-                Открыть доступ
-              </Button>
-            </div>
-          )}
+          <div className="hidden lg:flex gap-2">
+            <Button
+              onClick={() => handleAccessForAll(true)}
+              variant="outline"
+              size="sm"
+              disabled={isAccessPending}
+            >
+              <LuLock className="text-red-400" />
+              Закрыть доступ всем
+            </Button>
+            <Button
+              onClick={() => handleAccessForAll(false)}
+              variant="outline"
+              size="sm"
+              disabled={isAccessPending}
+            >
+              <LuKeyRound className="text-green-400" />
+              Открыть всем
+            </Button>
+            {selectedStudents.size > 0 &&
+              selectedStudents.size !== uniqueData.length && (
+                <>
+                  <Button
+                    onClick={() => handleMultiplePermission(true)}
+                    variant="outline"
+                    size="sm"
+                    disabled={isAccessPending}
+                  >
+                    <LuLock className="text-red-400" />
+                    Закрыть выбранным
+                  </Button>
+                  <Button
+                    onClick={() => handleMultiplePermission(false)}
+                    variant="outline"
+                    size="sm"
+                    disabled={isAccessPending}
+                  >
+                    <LuKeyRound className="text-green-400" />
+                    Открыть выбранным
+                  </Button>
+                </>
+              )}
+          </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

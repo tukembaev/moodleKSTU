@@ -4,7 +4,8 @@ import { ChevronRight } from "lucide-react";
 import {
   LuBookCheck,
   LuFlaskConical,
-  LuHammer
+  LuHammer,
+  LuPlus,
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,7 +14,9 @@ import {
   SpringPopupList,
   UseTooltip
 } from "shared/components";
+import { FormQuery } from "shared/config";
 import { AppRoutes, AppSubRoutes } from "shared/config/routeConfig/routeConfig";
+import { useAuth, useForm } from "shared/hooks";
 import { cn } from "shared/lib/utils";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
@@ -21,8 +24,9 @@ import CourseCardSkeleton from "../lib/skeletons/CourseCardSkeleton";
 import { courseQueries } from "../model/services/courseQueryFactory";
 
 const CourseList = () => {
-
   const navigate = useNavigate();
+  const openForm = useForm();
+  const { isStudent } = useAuth();
 
   const { data, isLoading, error } = useQuery(courseQueries.allCourses());
 
@@ -217,6 +221,30 @@ const CourseList = () => {
                   </div>
                 );
               })}
+              {!isStudent && (
+                <div
+                  className="group flex flex-col border-2 border-dashed rounded-xl py-4 px-5 justify-center items-center min-w-1/3 min-h-48 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer"
+                  onClick={() => openForm(FormQuery.ADD_COURSE)}
+                >
+                  
+                    <UseTooltip text="Создать курс">
+                      <div className="flex flex-col justify-center items-center gap-3">
+                        <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                          <LuPlus size={32} className="text-primary" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
+                            Добавить курс
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Нажмите, чтобы создать новый курс
+                          </p>
+                        </div>
+                      </div>
+                    </UseTooltip>
+                  
+                </div>
+              )}
             </FadeInList>
           )}
         </div>

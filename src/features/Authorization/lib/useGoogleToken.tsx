@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { GOOGLE_AUTH_URL } from "shared/api/config";
 import { saveToLocalStorageFromJWT } from "shared/lib/decodeJWT";
 
 interface GoogleTokens {
@@ -25,7 +26,7 @@ export const useGoogleToken = () => {
       (async () => {
         try {
           const response = await axios.post(
-            "https://uadmin.kstu.kg/educations/api/employees/auth/google/",
+            GOOGLE_AUTH_URL,
             { token: access_token }
           );
 

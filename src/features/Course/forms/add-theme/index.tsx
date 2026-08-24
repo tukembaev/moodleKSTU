@@ -25,7 +25,7 @@ const Add_Theme = () => {
   } = useAddThemeForm();
 
   const { mutate: add_theme, isPending: isThemePending } = courseQueries.create_theme();
-  const { mutate: attach_test, isPending: isTestPending } = testQueries.attach_test_to_week();
+  const { mutate: attach_test, isPending: isTestPending } = testQueries.attach_test_to_course();
 
   const isPending = isThemePending || isTestPending;
 
@@ -36,9 +36,8 @@ const Add_Theme = () => {
     }
 
     if (isTestType && data.test_id) {
-      // Use the new API for attaching test to week
       attach_test({
-        week_id: data.week.toString(),
+        course_id: data.course || "",
         test_id: data.test_id,
       });
     } else {

@@ -4,17 +4,21 @@ export interface Test {
   description: string;
   opening_date: string; // ISO string
   max_points: number;
+  min_points?: number;
   status: boolean;
   result: number | null;
+  passed?: boolean | null;
+  is_open: boolean | null;
 }
 export interface TestResult {
-  id: string,
-  name: string,
-  group: string,
-  user_id: number,
-  result: number,
-
-  avatar: string
+  id: number | string;
+  name: string;
+  group: string;
+  user_id: number;
+  student_id?: number;
+  result: number | null;
+  passed: boolean | null;
+  avatar: string;
 }
 
 // Варианты ответа
@@ -23,6 +27,7 @@ export interface TestOption {
   text: string;
   image: string | null;
   order: number;
+  is_correct?: boolean;
 }
 
 // Вопрос теста
@@ -43,6 +48,7 @@ export interface TestDetails {
   description: string;
   showCorrectAnswers: boolean;
   maxPoints: number;
+  minPoints?: number;
   timeLimit: number;                    // в минутах
   required: boolean;
   opening_date: string;                 // ISO string
@@ -83,12 +89,27 @@ export interface DetailedResult {
 }
 
 export interface TestSubmissionResponse {
-  totalQuestions: number;
-  correctAnswers: number;
-  incorrectAnswers: number;
-  skippedQuestions: number;
-  timeSpent: number;                    // в секундах
-  completionDate: string;               // ISO string
+  score?: number;
+  maxPoints?: number;
+  minPoints?: number;
+  passed?: boolean;
+  totalQuestions?: number;
+  correctAnswers?: number;
+  incorrectAnswers?: number;
+  skippedQuestions?: number;
+  timeSpent?: number;                    // в секундах
+  completionDate?: string;               // ISO string
   detailedResults?: DetailedResult[];   // опционально, если showCorrectAnswers = true
 }
+
+export const studentCanTakeTest = (test: {
+  passed?: boolean | null;
+  is_open?: boolean | null;
+}) => test.passed == null && test.is_open === true;
+
+export const getTestStudentId = (student: TestResult): number => {
+  if (typeof student.student_id === "number") return student.student_id;
+  if (typeof student.id === "number") return student.id;
+  return student.user_id;
+};
 

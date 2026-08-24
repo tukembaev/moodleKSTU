@@ -156,7 +156,7 @@ const EmptyState: React.FC<{
   if (isStudent) {
     return (
       <FadeIn className="flex border-2 border-dashed rounded-2xl py-8 sm:py-12 px-4 sm:px-6 w-full justify-center items-center bg-gradient-to-br from-muted/30 to-transparent">
-        <HoverLift>
+        
           <div className="flex flex-col justify-center items-center gap-3 sm:gap-4 text-center px-4">
             <div className="relative">
               <img
@@ -177,7 +177,7 @@ const EmptyState: React.FC<{
               </p>
             </div>
           </div>
-        </HoverLift>
+        
       </FadeIn>
     );
   }
@@ -205,7 +205,7 @@ const AddThemeCard: React.FC<{
   isMobile?: boolean;
 }> = ({ openForm, id_week, isMobile }) => (
   <FadeIn className="group flex border-2 border-dashed rounded-2xl py-6 sm:py-8 px-4 sm:px-6 w-full justify-center items-center min-h-40 sm:min-h-52 bg-gradient-to-br from-primary/5 via-transparent to-transparent hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer">
-    <HoverLift>
+    
       <UseTooltip text="Добавить новое задание">
         <button
           className="flex flex-col justify-center items-center gap-3 sm:gap-4 touch-manipulation min-h-[44px] w-full"
@@ -231,7 +231,7 @@ const AddThemeCard: React.FC<{
           </div>
         </button>
       </UseTooltip>
-    </HoverLift>
+    
   </FadeIn>
 );
 
@@ -246,6 +246,7 @@ interface WeekThemeViewProps {
   openForm: any;
   isMobile: boolean | undefined;
   id_week?: string;
+  course_id?: string;
   course_name: string;
 }
 
@@ -263,6 +264,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
   openForm,
   isMobile,
   id_week,
+  course_id,
 }) => {
   if (themes.length === 0 && tests.length === 0) {
     return (
@@ -282,7 +284,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 pt-4 pb-10">
       {/* Render all tests first */}
       {tests.map((item) => (
-        <TestCard key={item.id} item={item} id_week={id_week || ""} viewMode="grid" />
+        <TestCard key={item.id} item={item} courseId={course_id} viewMode="grid" />
       ))}
       
       {/* Render all themes */}
@@ -418,6 +420,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
   openForm,
   isMobile,
   id_week,
+  course_id,
 }) => {
   if (themes.length === 0 && tests.length === 0) {
     return (
@@ -439,7 +442,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
       {tests.length > 0 && (
         <div className="space-y-3">
           {tests.map((item) => (
-            <TestCard key={item.id} item={item} id_week={id_week || ""} viewMode="list" />
+            <TestCard key={item.id} item={item} courseId={course_id} viewMode="list" />
           ))}
         </div>
       )}

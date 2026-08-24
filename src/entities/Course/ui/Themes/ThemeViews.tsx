@@ -80,7 +80,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4 w-full">
         {tests.length > 0 ? (
-          tests.map((item) => <TestCard key={item.id} {...item} />)
+          tests.map((item) => <TestCard key={item.id} item={item} courseId={data.id} />)
         ) : (
           <Empty className="border border-dashed border-border bg-background rounded-lg w-full">
             <EmptyContent>
@@ -114,7 +114,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
   if (!themes.length && isStudent)
     return (
       <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
-        <HoverLift>
+        
           <div className="flex flex-col justify-center items-center gap-2 sm:gap-3 text-center px-2">
             <img
               src={empty}
@@ -125,7 +125,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
               Преподаватель еще не добавил темы
             </p>
           </div>
-        </HoverLift>
+        
       </FadeIn>
     );
 
@@ -222,7 +222,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
       })}
       {isOwner && (
         <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
-          <HoverLift>
+          
             <UseTooltip text="Добавить тему">
               <button
                 className="flex flex-col justify-center items-center gap-2 sm:gap-3 touch-manipulation min-h-[44px] w-full"
@@ -240,7 +240,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
                 <p className="text-sm sm:text-base">Добавьте новую тему</p>
               </button>
             </UseTooltip>
-          </HoverLift>
+          
         </FadeIn>
       )}
     </div>
@@ -266,7 +266,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4">
         {tests?.map((item) => (
-          <TestCard key={item.id} {...item} />
+          <TestCard key={item.id} item={item} courseId={data.id} />
         ))}
       </div>
     );
@@ -276,7 +276,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
   if (!themes.length && isStudent)
     return (
       <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
-        <HoverLift>
+        
           <div className="flex flex-col justify-center items-center gap-2 sm:gap-3 text-center px-2">
             <img
               src={empty}
@@ -287,7 +287,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
               Преподаватель еще не добавил темы
             </p>
           </div>
-        </HoverLift>
+        
       </FadeIn>
     );
 
@@ -408,7 +408,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
       ))}
       {isOwner && (
         <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
-          <HoverLift>
+          
             <UseTooltip text="Добавить тему">
               <button
                 className="flex flex-col justify-center items-center gap-2 sm:gap-3 touch-manipulation min-h-[44px] w-full"
@@ -426,7 +426,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
                 <p className="text-sm sm:text-base">Добавьте новую тему</p>
               </button>
             </UseTooltip>
-          </HoverLift>
+          
         </FadeIn>
       )}
     </Accordion>

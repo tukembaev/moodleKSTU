@@ -1,10 +1,9 @@
-import { CreateCoursePayload, CreateFAQPayload, CreateThemePayload, editPermissionPayload } from "features/Course";
+import { BindCourseStreamsPayload, CreateCoursePayload, CreateFAQPayload, CreateThemePayload, EditThemePayload, editPermissionPayload } from "features/Course";
 import { ExtraPointPayload, FinishCoursePayload, RateAnswerPayload } from "features/Course/model/types/course_payload";
 import $api_base_edu from "shared/api/api_base_edu";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
-import { Course, CourseAllMaterials, CourseMaterials, CourseModulesResponse, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme } from "../types/course";
-import { StudentCourseDetail, StudentDashboard, TeacherCourseDetail, TeacherDashboard } from "../types/statistics";
+import { Course, CourseAllMaterials, CourseMaterials, CourseModulesResponse, CourseStream, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme } from "../types/course";
 import { Test } from "entities/Test/model/types/test";
 
 
@@ -56,8 +55,21 @@ export const createCourse = async (data:CreateCoursePayload) => {
   const response = await $api_edu.post(`course/`,data); 
   return response.data;
 };
+export const duplicateCourse = async (id: string) => {
+  // Client-side mock until backend duplicate endpoint is ready
+  await new Promise((resolve) => setTimeout(resolve, 900));
+  return { id, duplicated: true };
+};
 export const createTheme = async (data:CreateThemePayload) => {
   const response = await $api_edu.post(`course-detail/`,data); 
+  return response.data;
+};
+export const editTheme = async (id: string, data: EditThemePayload) => {
+  const response = await $api_edu.patch(`course-detail/${id}/`, data);
+  return response.data;
+};
+export const deleteTheme = async (id: string) => {
+  const response = await $api_edu.delete(`course-detail/${id}/`);
   return response.data;
 };
 export const createFAQ = async (data:CreateFAQPayload) => {
@@ -126,7 +138,7 @@ export const deleteMaterial = async (id: string | null) => {
   return response.data;
 };
 export const deleteAnswer = async (id: string | null) => {
-  const response = await $api_edu.delete(`material/${id}/`); 
+  const response = await $api_edu.delete(`student-task-files/${id}/`);
   return response.data;
 };
 export const finishCourse = async (data:FinishCoursePayload) => {
@@ -138,83 +150,26 @@ export const setExtraPoints = async (data:ExtraPointPayload) => {
   return response.data;
 };
 
-// Статистика для студентов
-export const getStudentDashboard = async (): Promise<StudentDashboard> => {
-  try {
-    const response = await $api_edu.get(`statistics/student/dashboard/`);
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 403) {
-      throw new Error("Нет доступа к статистике студента. Убедитесь, что вы авторизованы как студент.");
-    }
-    if (error.response?.status === 404) {
-      throw new Error("Статистика не найдена.");
-    }
-    throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики студента");
-  }
+export const getCourseStreams = async (courseId: string | null): Promise<CourseStream[]> => {
+  const response = await $api_edu.get(`course-streams/`, {
+    params: { course_id: courseId },
+  });
+  return response.data;
 };
-
-export const getStudentCourseDetail = async (courseId: string): Promise<StudentCourseDetail> => {
-  if (!courseId) {
-    throw new Error("ID курса обязателен");
-  }
-  try {
-    const response = await $api_edu.get(`statistics/student/course/${courseId}/`);
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 403) {
-      throw new Error("Нет доступа к статистике курса. Убедитесь, что вы зарегистрированы на этот курс.");
-    }
-    if (error.response?.status === 404) {
-      throw new Error("Курс не найден или нет доступа к статистике.");
-    }
-    throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики курса");
-  }
+export const bindCourseStreams = async (data: BindCourseStreamsPayload) => {
+  const response = await $api_edu.post(`course-streams/`, data);
+  return response.data;
 };
-
-// Статистика для учителей
-export const getTeacherDashboard = async (): Promise<TeacherDashboard> => {
-  try {
-    const response = await $api_edu.get(`statistics/teacher/dashboard/`);
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 403) {
-      throw new Error("Нет доступа к статистике учителя. Убедитесь, что вы авторизованы как учитель.");
-    }
-    if (error.response?.status === 404) {
-      throw new Error("Статистика не найдена.");
-    }
-    throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики учителя");
-  }
-};
-
-export const getTeacherCourseDetail = async (courseId: string): Promise<TeacherCourseDetail> => {
-  if (!courseId) {
-    throw new Error("ID курса обязателен");
-  }
-  try {
-    const response = await $api_edu.get(`statistics/teacher/course/${courseId}/`);
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 403) {
-      throw new Error("Нет доступа к статистике курса. Убедитесь, что вы являетесь владельцем этого курса.");
-    }
-    if (error.response?.status === 404) {
-      throw new Error("Курс не найден или нет доступа к статистике.");
-    }
-    throw new Error(error.response?.data?.error || error.message || "Ошибка при получении статистики курса");
-  }
+export const deleteCourseStream = async (id: string) => {
+  const response = await $api_edu.delete(`course-streams/${id}/`);
+  return response.data;
 };
 
 // Получить все тесты курса  
 export const getCourseTests = async (courseId: string | null): Promise<Test[]> => {
   if (!courseId) return [];
-  try {
-    // Пробуем разные варианты endpoint
-    const response = await $api_edu.get(`testing?course_id=${courseId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching course tests:", error);
-    return [];
-  }
+  const response = await $api_edu.get(`testing/`, {
+    params: { course_id: courseId },
+  });
+  return response.data;
 };

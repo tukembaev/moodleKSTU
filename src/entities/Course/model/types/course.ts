@@ -317,3 +317,10 @@ export interface StudyTask {
   is_favorite: boolean;
   result: number | null;
 }
+
+export interface CourseStream {
+  id: string;
+  course: string;
+  stream_id: string;
+  title: string;
+}

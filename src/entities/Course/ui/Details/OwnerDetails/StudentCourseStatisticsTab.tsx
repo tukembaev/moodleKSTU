@@ -55,135 +55,88 @@ export const StudentCourseStatisticsTab = () => {
   }
 
   const {
-
     overall_statistics,
     tasks_statistics,
     tests_statistics,
-    materials_statistics,
-    discussion_statistics,
-    comparison_statistics,
   } = data;
 
-  // Безопасные значения по умолчанию
-  const tasksList = tasks_statistics?.tasks_list || [];
-  const testsList = tests_statistics?.tests_list || [];
-  const tasksByType = tasks_statistics?.by_type || {};
+  const tasksList = tasks_statistics?.tasks_list ?? [];
+  const testsList = tests_statistics?.tests_list ?? [];
+  const tasksByType = tasks_statistics?.by_type ?? {};
   const tasksOverall = tasks_statistics?.overall;
   const testsOverall = tests_statistics?.overall;
+  const extraPoints = overall_statistics?.extra_points;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Общая статистика */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader>
-            <CardDescription>Общий прогресс</CardDescription>
-            <CardTitle className="text-3xl font-semibold">
-              {overall_statistics.completion_percentage.toFixed(1)}%
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={overall_statistics.completion_percentage} className="h-2" />
-            <p className="text-sm text-muted-foreground mt-2">
-              {overall_statistics.current_points} / {overall_statistics.max_points} баллов
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Дополнительные баллы</CardDescription>
-            <CardTitle className="text-3xl font-semibold">
-              {overall_statistics.extra_points?.total || 0}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {overall_statistics.extra_points?.items?.length || 0} начислений
-            </p>
-          </CardContent>
-        </Card>
-
-        {tasksOverall && (
+      {overall_statistics && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader>
-              <CardDescription>Задания</CardDescription>
+              <CardDescription>Общий прогресс</CardDescription>
               <CardTitle className="text-3xl font-semibold">
-                {tasksOverall.completed || 0} / {tasksOverall.total || 0}
+                {overall_statistics.completion_percentage.toFixed(1)}%
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Progress value={tasksOverall.completion_percentage || 0} className="h-2" />
+              <Progress value={overall_statistics.completion_percentage} className="h-2" />
               <p className="text-sm text-muted-foreground mt-2">
-                {(tasksOverall.completion_percentage || 0).toFixed(1)}% выполнено
+                {overall_statistics.current_points} / {overall_statistics.max_points} баллов
               </p>
             </CardContent>
           </Card>
-        )}
 
-        {testsOverall && (
-          <Card>
-            <CardHeader>
-              <CardDescription>Тесты</CardDescription>
-              <CardTitle className="text-3xl font-semibold">
-                {testsOverall.completed || 0} / {testsOverall.total || 0}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Средний балл: {(testsOverall.average_score || 0).toFixed(1)}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Сравнение с группой и потоком */}
-      {comparison_statistics && (comparison_statistics.group || comparison_statistics.stream) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {comparison_statistics.group && (
+          {extraPoints && (
             <Card>
               <CardHeader>
-                <CardTitle>Позиция в группе</CardTitle>
-                <CardDescription>{comparison_statistics.group.group || "Группа"}</CardDescription>
+                <CardDescription>Дополнительные баллы</CardDescription>
+                <CardTitle className="text-3xl font-semibold">
+                  {extraPoints.total}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center">
-                  <p className="text-4xl font-bold">{comparison_statistics.group.position}</p>
-                  <p className="text-sm text-muted-foreground">
-                    из {comparison_statistics.group.total_students} студентов
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Лучше {comparison_statistics.group.percentage_better.toFixed(1)}% студентов
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  {extraPoints.items?.length ?? 0} начислений
+                </p>
               </CardContent>
             </Card>
           )}
 
-          {comparison_statistics.stream && (
+          {tasksOverall && (
             <Card>
               <CardHeader>
-                <CardTitle>Позиция в потоке</CardTitle>
-                <CardDescription>{comparison_statistics.stream.stream || "Поток"}</CardDescription>
+                <CardDescription>Задания</CardDescription>
+                <CardTitle className="text-3xl font-semibold">
+                  {tasksOverall.completed} / {tasksOverall.total}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center">
-                  <p className="text-4xl font-bold">{comparison_statistics.stream.position}</p>
-                  <p className="text-sm text-muted-foreground">
-                    из {comparison_statistics.stream.total_students} студентов
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Лучше {comparison_statistics.stream.percentage_better.toFixed(1)}% студентов
-                  </p>
-                </div>
+                <Progress value={tasksOverall.completion_percentage} className="h-2" />
+                <p className="text-sm text-muted-foreground mt-2">
+                  {tasksOverall.completion_percentage.toFixed(1)}% выполнено
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {testsOverall && (
+            <Card>
+              <CardHeader>
+                <CardDescription>Тесты</CardDescription>
+                <CardTitle className="text-3xl font-semibold">
+                  {testsOverall.completed} / {testsOverall.total}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Средний балл: {testsOverall.average_score.toFixed(1)}
+                </p>
               </CardContent>
             </Card>
           )}
         </div>
       )}
 
-      {/* Табы с детальной статистикой */}
       <Tabs defaultValue="tasks" className="w-full">
         <TabsList>
           <TabsTrigger value="tasks">Задания</TabsTrigger>
@@ -197,7 +150,6 @@ export const StudentCourseStatisticsTab = () => {
               <CardDescription>Ваша статистика выполнения заданий</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* По типам заданий */}
               {Object.keys(tasksByType).length > 0 && (
                 <div className="space-y-4 mb-6">
                   <h3 className="font-semibold">По типам заданий</h3>
@@ -212,15 +164,15 @@ export const StudentCourseStatisticsTab = () => {
                             <div className="flex justify-between">
                               <span className="text-sm text-muted-foreground">Выполнено</span>
                               <span className="font-medium">
-                                {stats.completed || 0} / {stats.total || 0}
+                                {stats.completed} / {stats.total}
                               </span>
                             </div>
-                            <Progress value={stats.completion_percentage || 0} className="h-2" />
+                            <Progress value={stats.completion_percentage} className="h-2" />
                             {stats.earned_points !== undefined && (
                               <div className="flex justify-between mt-2">
                                 <span className="text-sm text-muted-foreground">Баллы</span>
                                 <span className="font-medium">
-                                  {stats.earned_points} / {stats.max_points || 0}
+                                  {stats.earned_points} / {stats.max_points}
                                 </span>
                               </div>
                             )}
@@ -232,7 +184,6 @@ export const StudentCourseStatisticsTab = () => {
                 </div>
               )}
 
-              {/* Список заданий */}
               {tasksList.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-4">Список заданий</h3>
@@ -287,12 +238,14 @@ export const StudentCourseStatisticsTab = () => {
                               )}
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-2 text-sm">
-                                <LuClock className="h-4 w-4" />
-                                {format(new Date(task.course_detail.deadline), "dd.MM.yyyy", {
-                                  locale: ru,
-                                })}
-                              </div>
+                              {task.course_detail.deadline && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <LuClock className="h-4 w-4" />
+                                  {format(new Date(task.course_detail.deadline), "dd.MM.yyyy", {
+                                    locale: ru,
+                                  })}
+                                </div>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -321,7 +274,9 @@ export const StudentCourseStatisticsTab = () => {
                           <CardTitle className="text-lg">{test.testing.title}</CardTitle>
                           <Badge variant="outline">{test.testing.max_points} баллов</Badge>
                         </div>
-                        <CardDescription>{test.testing.description}</CardDescription>
+                        {test.testing.description && (
+                          <CardDescription>{test.testing.description}</CardDescription>
+                        )}
                       </CardHeader>
                       <CardContent>
                         {test.result_testing ? (
@@ -332,20 +287,24 @@ export const StudentCourseStatisticsTab = () => {
                                 {test.result_testing.score} / {test.result_testing.total_questions}
                               </p>
                             </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">Правильность</p>
-                              <p className="text-xl font-bold">
-                                {test.correct_percentage?.toFixed(1) || 0}%
-                              </p>
-                            </div>
+                            {test.correct_percentage !== null && (
+                              <div>
+                                <p className="text-sm text-muted-foreground">Правильность</p>
+                                <p className="text-xl font-bold">
+                                  {test.correct_percentage.toFixed(1)}%
+                                </p>
+                              </div>
+                            )}
                             <div>
                               <p className="text-sm text-muted-foreground">Попыток</p>
                               <p className="text-xl font-bold">{test.attempts_count}</p>
                             </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">Лучший результат</p>
-                              <p className="text-xl font-bold">{test.best_score || "-"}</p>
-                            </div>
+                            {test.best_score !== null && (
+                              <div>
+                                <p className="text-sm text-muted-foreground">Лучший результат</p>
+                                <p className="text-xl font-bold">{test.best_score}</p>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="text-center text-muted-foreground py-4">
@@ -363,55 +322,6 @@ export const StudentCourseStatisticsTab = () => {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Дополнительная информация */}
-      {(materials_statistics || discussion_statistics) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {materials_statistics && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Материалы</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Просмотрено</span>
-                    <span className="font-medium">
-                      {materials_statistics.viewed_count} / {materials_statistics.total_count}
-                    </span>
-                  </div>
-                  <Progress value={materials_statistics.view_percentage} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {discussion_statistics && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Обсуждения</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Комментарии</span>
-                    <span className="font-medium">{discussion_statistics.comments_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Ответы</span>
-                    <span className="font-medium">{discussion_statistics.replies_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Лайки</span>
-                    <span className="font-medium">{discussion_statistics.likes_received}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
     </div>
   );
 };
-

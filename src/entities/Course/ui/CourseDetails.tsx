@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
   LuBookA,
-  LuChartBar,
   LuInfo,
   LuLock,
+  LuSettings,
   LuUser,
 } from "react-icons/lu";
 import AboutCourse from "./Details/AboutCourse";
@@ -13,11 +13,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { courseQueries } from "../model/services/courseQueryFactory";
+import { CourseManagementTab } from "./Details/OwnerDetails/CourseManagement";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
-import { CourseStatisticsTab } from "./Details/OwnerDetails/CourseStatisticsTab";
-import { StudentCourseStatisticsTab } from "./Details/OwnerDetails/StudentCourseStatisticsTab";
 import { CourseTasksLayout } from "./Themes2";
-import { cn } from "shared/lib/utils";
 import { Badge } from "shared/shadcn/ui/badge";
 import {
   Tabs,
@@ -40,7 +38,6 @@ const CourseDetails = () => {
   const { isLoading: isLoadingDetails } = useQuery(
     courseQueries.allTasks(safeId)
   );
-  console.log(isStudent)
   const tabs = [
     {
       name: "Учебный процесс",
@@ -61,13 +58,13 @@ const CourseDetails = () => {
         icon: LuBookA,
         count: 0,
       },
+      {
+        name: "Управление курсом",
+        value: "course_management",
+        icon: LuSettings,
+        count: 0,
+      },
     ] : []),
-    {
-      name: "Статистика",
-      value: "course_statistics",
-      icon: LuChartBar,
-      count: 0,
-    },
   ];
   
   if (isLoading || isLoadingDetails) {
@@ -75,9 +72,9 @@ const CourseDetails = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col">
-        <div className="flex justify-between items-center gap-4">
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col">
+        <div className="flex justify-between items-center gap-4 flex-wrap shrink-0">
           <div className="flex flex-col gap-3 pt-2">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
               {courseModulesData?.discipline_name}
@@ -123,14 +120,15 @@ const CourseDetails = () => {
         </TabsList>
         </div>
 
-        <div>
-          <TabsContent value="study_proccess" className="m-0 p-0 data-[state=inactive]:hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <TabsContent value="study_proccess" className="m-0 h-full p-0 data-[state=inactive]:hidden">
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
+              className="h-full min-h-0"
             >
-              <div className="flex flex-col gap-4 relative pt-2">
+              <div className="relative flex h-full min-h-0 flex-col gap-4 pt-2">
                 {isLocked && (
                   <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80">
                     <LuLock className="w-12 h-12 text-gray-700" />
@@ -140,14 +138,14 @@ const CourseDetails = () => {
                   </div>
                 )}
                 
-                <div className={`${isLocked ? "blur-xs" : ""}`}>
+                <div className={`h-full min-h-0 ${isLocked ? "blur-xs" : ""}`}>
                   <CourseTasksLayout />
                 </div>
               </div>
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="about_course" className="m-0 p-0 data-[state=inactive]:hidden">
+          <TabsContent value="about_course" className="m-0 h-full overflow-y-auto p-0 data-[state=inactive]:hidden">
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -163,7 +161,7 @@ const CourseDetails = () => {
           </TabsContent>
 
           {!isStudent && (
-            <TabsContent value="students_progress" className="m-0 p-0 data-[state=inactive]:hidden">
+            <TabsContent value="students_progress" className="m-0 h-full overflow-y-auto p-0 data-[state=inactive]:hidden">
               <motion.div
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -174,15 +172,20 @@ const CourseDetails = () => {
             </TabsContent>
           )}
 
-          <TabsContent value="course_statistics" className="m-0 p-0 data-[state=inactive]:hidden">
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {isStudent ? <StudentCourseStatisticsTab /> : <CourseStatisticsTab />}
-            </motion.div>
-          </TabsContent>
+          {!isStudent && (
+            <TabsContent value="course_management" className="m-0 h-full overflow-y-auto p-0 data-[state=inactive]:hidden">
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <CourseManagementTab
+                  courseId={safeId}
+                  courseName={courseModulesData?.discipline_name}
+                />
+              </motion.div>
+            </TabsContent>
+          )}
         </div>
       </Tabs>
     </div>

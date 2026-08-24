@@ -1,20 +1,26 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "shared/shadcn/ui/card";
 import { Button } from "shared/shadcn/ui/button";
 import { LuX, LuArrowLeft, LuCheck } from "react-icons/lu";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { TestSubmissionResponse, TestDetails } from "entities/Test/model/types/test";
+import { Badge } from "shared/shadcn/ui/badge";
+import { cn } from "shared/lib/utils";
 
 interface QuizResultsState {
   results: TestSubmissionResponse;
   quizData: TestDetails;
+  courseId?: string | null;
 }
 
 const QuizResultsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const state = location.state as QuizResultsState | null;
+  const courseId = state?.courseId || searchParams.get("course_id");
+  const backPath = courseId ? `/courses/course_themes/${courseId}` : "/courses";
 
   if (!state) {
     return (
@@ -26,9 +32,9 @@ const QuizResultsPage = () => {
             </p>
             <Button
               className="w-full mt-4"
-              onClick={() => navigate("/test")}
+              onClick={() => navigate(backPath)}
             >
-              Вернуться к тестам
+              Вернуться к курсу
             </Button>
           </CardContent>
         </Card>
@@ -37,23 +43,26 @@ const QuizResultsPage = () => {
   }
 
   const { results, quizData } = state;
+  const score = results.score ?? results.correctAnswers;
+  const maxPoints = results.maxPoints ?? quizData.maxPoints;
+  const minPoints = results.minPoints ?? quizData.minPoints ?? 0;
+  const isPassed = results.passed === true;
 
-  // Время прохождения
-  const minutesSpent = Math.floor(results.timeSpent / 60);
-  const secondsSpent = results.timeSpent % 60;
-
-  // Дата прохождения теста
-  const completionDate = new Date(results.completionDate);
+  const minutesSpent = Math.floor((results.timeSpent || 0) / 60);
+  const secondsSpent = (results.timeSpent || 0) % 60;
+  const completionDate = results.completionDate
+    ? new Date(results.completionDate)
+    : null;
 
   return (
     <div className="min-h-screen flex flex-col gap-4 sm:gap-6 py-4 sm:py-6 max-w-4xl mx-auto px-4">
       <Button
         variant="ghost"
-        onClick={() => navigate("/test")}
+        onClick={() => navigate(backPath)}
         className="self-start w-full sm:w-auto"
       >
         <LuArrowLeft className="mr-2" />
-        Вернуться к тестам
+        Вернуться к курсу
       </Button>
 
       <div>
@@ -61,83 +70,116 @@ const QuizResultsPage = () => {
         <p className="text-muted-foreground text-sm sm:text-base lg:text-lg">{quizData.title}</p>
       </div>
 
-      {/* Статистика */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <Card>
-          <CardHeader className="p-3 sm:p-6">
-            <CardTitle className="text-sm sm:text-base lg:text-lg">Всего вопросов</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <p className="text-2xl sm:text-3xl font-bold">{results.totalQuestions}</p>
-          </CardContent>
-        </Card>
+      <Card
+        className={cn(
+          "border-2",
+          isPassed
+            ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20"
+            : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20"
+        )}
+      >
+        <CardContent className="flex flex-col items-center gap-3 py-8">
+          <Badge
+            className={cn(
+              "px-3 py-1 text-sm",
+              isPassed
+                ? "bg-green-600 text-white hover:bg-green-600"
+                : "bg-red-600 text-white hover:bg-red-600"
+            )}
+          >
+            {isPassed ? "Тест пройден" : "Тест не пройден"}
+          </Badge>
+          <p className="text-4xl font-bold">
+            {score ?? "—"} / {maxPoints}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Проходной балл: {minPoints}
+          </p>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader className="p-3 sm:p-6">
-            <CardTitle className="text-sm sm:text-base lg:text-lg">Правильные</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <p className="text-2xl sm:text-3xl font-bold text-green-600">
-              {results.correctAnswers}
-            </p>
-          </CardContent>
-        </Card>
+      {results.totalQuestions != null && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <Card>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Всего вопросов</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <p className="text-2xl sm:text-3xl font-bold">{results.totalQuestions}</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="p-3 sm:p-6">
-            <CardTitle className="text-sm sm:text-base lg:text-lg">Неправильные</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <p className="text-2xl sm:text-3xl font-bold text-red-600">
-              {results.incorrectAnswers}
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Правильные</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <p className="text-2xl sm:text-3xl font-bold text-green-600">
+                {results.correctAnswers}
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="p-3 sm:p-6">
-            <CardTitle className="text-sm sm:text-base lg:text-lg">Пропущено</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <p className="text-2xl sm:text-3xl font-bold text-orange-600">
-              {results.skippedQuestions}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Неправильные</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <p className="text-2xl sm:text-3xl font-bold text-red-600">
+                {results.incorrectAnswers}
+              </p>
+            </CardContent>
+          </Card>
 
-      {/* Время и дата */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Время прохождения</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <p className="text-base sm:text-lg">
-              {minutesSpent} минут {secondsSpent} секунд
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Из {quizData.timeLimit} минут
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Пропущено</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <p className="text-2xl sm:text-3xl font-bold text-orange-600">
+                {results.skippedQuestions}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Дата прохождения</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <p className="text-base sm:text-lg">
-              {format(completionDate, "PPP", { locale: ru })}
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              {format(completionDate, "HH:mm", { locale: ru })}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {(results.timeSpent != null || completionDate) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          {results.timeSpent != null && (
+            <Card>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg">Время прохождения</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <p className="text-base sm:text-lg">
+                  {minutesSpent} минут {secondsSpent} секунд
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  Из {quizData.timeLimit} минут
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
-      {/* Детали ответов - показывается только если есть detailedResults */}
+          {completionDate && (
+            <Card>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg">Дата прохождения</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <p className="text-base sm:text-lg">
+                  {format(completionDate, "PPP", { locale: ru })}
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  {format(completionDate, "HH:mm", { locale: ru })}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
       {results.detailedResults && results.detailedResults.length > 0 && (
         <Card>
           <CardHeader className="p-4 sm:p-6">
@@ -177,7 +219,6 @@ const QuizResultsPage = () => {
                       </div>
                     ) : (
                       <>
-                        {/* Ваш ответ */}
                         <div>
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-xs sm:text-sm font-medium">Ваш ответ:</span>
@@ -197,7 +238,6 @@ const QuizResultsPage = () => {
                           </div>
                         </div>
 
-                        {/* Правильный ответ */}
                         <div>
                           <div className="flex items-center gap-2 mb-2">
                             {result.isCorrect ? (
@@ -239,8 +279,8 @@ const QuizResultsPage = () => {
       )}
 
       <div className="flex justify-end gap-4 pb-4 sm:pb-6">
-        <Button onClick={() => navigate("/test")} size="lg" className="w-full sm:w-auto">
-          Вернуться к тестам
+        <Button onClick={() => navigate(backPath)} size="lg" className="w-full sm:w-auto">
+          Вернуться к курсу
         </Button>
       </div>
     </div>
@@ -248,4 +288,3 @@ const QuizResultsPage = () => {
 };
 
 export default QuizResultsPage;
-

@@ -1,8 +1,8 @@
 import { queryOptions } from '@tanstack/react-query';
 
-import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getStudentDashboard, getStudentCourseDetail, getTeacherDashboard, getTeacherCourseDetail, getCourseTests } from './courseAPI';
+import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseStreams, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests } from './courseAPI';
 
-import { delete_material, useAddComment, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment } from 'features/Course/model/services/course_queries';
+import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnswer, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment, useSetThemeAccessForAll } from 'features/Course/model/services/course_queries';
 
 
 
@@ -76,48 +76,24 @@ export const courseQueries = {
                   queryFn: () => getCourseTests(courseId),
                   enabled: !!courseId,
                 }),
-      // Статистика для студентов
-      studentDashboard: () =>
+      courseStreams: (courseId: string | null) =>
                 queryOptions({
-                  queryKey: ['statistics', 'student', 'dashboard'],
-                  queryFn: () => getStudentDashboard(),
-                  staleTime: 5 * 60 * 1000, // 5 минут кэширования (как указано в документации)
-                  gcTime: 10 * 60 * 1000, // 10 минут хранения в кэше
-                }),
-      studentCourseDetail: (courseId: string | null) =>
-                queryOptions({
-                  queryKey: ['statistics', 'student', 'course', courseId],
-                  queryFn: () => getStudentCourseDetail(courseId as string),
+                  queryKey: ['course', 'streams', courseId],
+                  queryFn: () => getCourseStreams(courseId),
                   enabled: !!courseId,
-                  staleTime: 1 * 60 * 1000, // 1 минута кэширования (как указано в документации)
-                  gcTime: 2 * 60 * 1000, // 2 минуты хранения в кэше
-                }),
-      // Статистика для учителей
-      teacherDashboard: () =>
-                queryOptions({
-                  queryKey: ['statistics', 'teacher', 'dashboard'],
-                  queryFn: () => getTeacherDashboard(),
-                  staleTime: 5 * 60 * 1000, // 5 минут кэширования (как указано в документации)
-                  gcTime: 10 * 60 * 1000, // 10 минут хранения в кэше
-                }),
-      teacherCourseDetail: (courseId: string | null) =>
-                queryOptions({
-                  queryKey: ['statistics', 'teacher', 'course', courseId],
-                  queryFn: () => getTeacherCourseDetail(courseId as string),
-                  enabled: !!courseId,
-                  staleTime: 1 * 60 * 1000, // 1 минута кэширования (как указано в документации)
-                  gcTime: 2 * 60 * 1000, // 2 минуты хранения в кэше
                 }),
   
   //----------POST QUERIES------------
       
   create_course: () => useCreateCourse(),
+  duplicate_course: () => useDuplicateCourse(),
   create_theme: () => useCreateTheme(),
   create_faq: () => useCreateFAQ(),
   create_material: () => useCreateMaterial(),
   create_answer: () => useCreateAnswer(),
   rate_answer: () => useRateAnswerAndComment(),
   finish_course: () => useFinishCourse(),
+  bind_course_streams: () => useBindCourseStreams(),
 
 
   add_comment: () => useAddComment(),
@@ -127,6 +103,8 @@ export const courseQueries = {
 
   edit_details: () => useChangeDetails(),
   edit_permission: () => useChangePermission(),
+  edit_theme: () => useEditTheme(),
+  set_theme_access_for_all: () => useSetThemeAccessForAll(),
 
 
   
@@ -136,6 +114,9 @@ export const courseQueries = {
 
   deleteCourse: (id: number) => deleteCourse(id),
   delete_material: () => delete_material(),
+  delete_answer: () => useDeleteAnswer(),
+  delete_course_stream: () => useDeleteCourseStream(),
+  delete_theme: () => useDeleteTheme(),
 
 
 };

@@ -1,5 +1,6 @@
 
 import axios from 'axios';
+import { API_USERS_URL } from "shared/api/config";
 
 
 export interface PersonData {
@@ -10,7 +11,7 @@ const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}");
 
 
 export const authUser = async (data: PersonData) => {
-  const response = await axios.post('https://uadmin.kstu.kg/educations/api/v1/users/auth/', data);
+  const response = await axios.post(`${API_USERS_URL}auth/`, data);
   return response.data;
 };
 
@@ -19,7 +20,7 @@ export const refreshUser = async () => {
   if (!auth_data || !auth_data.refresh) {
     throw new Error("No refresh token available");
   }
-  const response = await axios.post("https://uadmin.kstu.kg/educations/api/v1/users/refresh/", {
+  const response = await axios.post(`${API_USERS_URL}refresh/`, {
     refresh: auth_data.refresh,
   });
   return response.data;
