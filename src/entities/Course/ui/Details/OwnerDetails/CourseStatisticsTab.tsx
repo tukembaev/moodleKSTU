@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import type { TaskDetail, TeacherCourseDetail, TeacherCourseTasksStatistics, TestDetail } from "entities/Course/model/types/statistics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { Progress } from "shared/shadcn/ui/progress";
@@ -258,7 +259,7 @@ export const CourseStatisticsTab = () => {
                 <div className="space-y-4">
                   <h3 className="font-semibold">По типам заданий</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {Object.entries(tasksByType).map(([type, stats]) => (
+                    {(Object.entries(tasksByType) as [string, TeacherCourseTasksStatistics["by_type"][string]][]).map(([type, stats]) => (
                       <Card key={type}>
                         <CardHeader>
                           <CardTitle className="text-lg">{type}</CardTitle>
@@ -304,7 +305,7 @@ export const CourseStatisticsTab = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {tasksDetail.map((task) => (
+                        {tasksDetail.map((task: TaskDetail) => (
                           <TableRow key={task.course_detail.id}>
                             <TableCell className="font-medium">
                               {task.course_detail.title}
@@ -370,7 +371,7 @@ export const CourseStatisticsTab = () => {
               {testsDetail.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="font-semibold">Детали по тестам</h3>
-                  {testsDetail.map((test) => (
+                  {testsDetail.map((test: TestDetail) => (
                     <Card key={test.testing.id}>
                       <CardHeader>
                         <div className="flex items-center justify-between">
@@ -433,7 +434,7 @@ export const CourseStatisticsTab = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {top_students.map((student, index) => (
+                      {top_students.map((student: NonNullable<TeacherCourseDetail["top_students"]>[number], index: number) => (
                         <TableRow key={student.user_data.id}>
                           <TableCell>
                             <Badge variant={index < 3 ? "default" : "outline"}>

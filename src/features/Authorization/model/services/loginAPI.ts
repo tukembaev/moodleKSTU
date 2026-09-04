@@ -1,34 +1,35 @@
 
-import axios from 'axios';
-import { API_USERS_URL } from "shared/api/config";
+import {
+  authByGoogle,
+  authByPassword,
+  LoginCredentials,
+  selectAuthContext,
+  AuthContext,
+} from "shared/lib/auth";
+import { refreshSession } from "shared/lib/auth";
 
+export type PersonData = LoginCredentials;
 
-export interface PersonData {
+/** @deprecated use username — kept for gradual migration */
+export interface LegacyPersonData {
   email: string;
   password: string;
 }
-const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}");
 
-
-export const authUser = async (data: PersonData) => {
-  const response = await axios.post(`${API_USERS_URL}auth/`, data);
-  return response.data;
+export const authUser = async (data: LoginCredentials | LegacyPersonData) => {
+  const username =
+    "username" in data ? data.username : (data as LegacyPersonData).email;
+  return authByPassword({ username, password: data.password });
 };
-
 
 export const refreshUser = async () => {
-  if (!auth_data || !auth_data.refresh) {
-    throw new Error("No refresh token available");
-  }
-  const response = await axios.post(`${API_USERS_URL}refresh/`, {
-    refresh: auth_data.refresh,
-  });
-  return response.data;
+  return refreshSession();
 };
 
+export const setAuthContext = async (context: AuthContext) => {
+  return selectAuthContext(context);
+};
 
-// export const getPerson = async ({ id }: { id: number | string }) => {
-//   if (!id) throw new Error('Id is required');
-//   const response = await axios.get(`https://swapi.dev/api/people/${id}/`);
-//   return response.data;
-// };
+export const authGoogle = async (idToken: string) => {
+  return authByGoogle(idToken);
+};

@@ -14,8 +14,8 @@ import { Skeleton } from "shared/shadcn/ui/skeleton";
 import ThemeAnswers from "../Answers/ThemeAnswers";
 import { AddMaterialCard } from "../Themes2/AddMaterialCard";
 import { MaterialAttachment } from "../Themes2/MaterialAttachment";
-import ThemeFAQ from "./ThemeFAQ";
-import { ThemeFeed } from "./ThemeFeed";
+import ThemeFAQ from "./ThemeDetail/ThemeFAQ";
+import { ThemeFeed } from "./ThemeDetail/ThemeFeed";
 
 const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   const { data, isLoading, error } = useQuery(

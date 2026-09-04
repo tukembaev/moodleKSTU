@@ -12,7 +12,7 @@ import {
   LuPuzzle,
   LuShapes,
 } from "react-icons/lu";
-import { FadeIn, HoverLift, UseTooltip } from "shared/components";
+import { FadeIn, UseTooltip } from "shared/components";
 import {
   Accordion,
   AccordionContent,

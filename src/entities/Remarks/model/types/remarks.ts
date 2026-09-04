@@ -55,7 +55,7 @@ export interface Remark {
   created_at: Date | string;
   updated_at: Date | string;
   archived_at?: Date | string | null;
-  pending_remarks:number;
+  pending_remarks?: number;
   // UI-only поля (не приходят с API)
   type?: RemarkType;
   original_file?: RemarkAttachment;

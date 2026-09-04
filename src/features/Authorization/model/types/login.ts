@@ -1,14 +1,25 @@
 export type LoginPayload = {
-    email: string;
-    password: string;
-  };
-export type LoginResponse = {
-    access: string;
-    refresh: string;
-    id?:number | null;
+  username: string;
+  password: string;
 };
-  
-// Вложенный декодированный объект user_data из access токена
+
+/** @deprecated use username */
+export type LegacyLoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  requires_context_selection?: boolean;
+  available_contexts?: Array<"employee" | "student">;
+  active_context?: "employee" | "student";
+  csrf_token?: string;
+  id?: number | null;
+  access?: string;
+  refresh?: string;
+};
+
+// Вложенный декодированный объект user_data из access токена (legacy JWT)
 interface UserData {
   id: number;
   user: number;
@@ -73,7 +84,6 @@ interface UserData {
   role: string;
 }
 
-// Тип для расшифрованного объекта JWT
 export interface DecodedJWT {
   user_data: UserData;
 }

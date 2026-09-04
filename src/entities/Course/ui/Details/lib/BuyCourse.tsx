@@ -39,7 +39,7 @@ export const BuyCourse: FC = () => {
           </li>
         ))}
       </ul>
-      {auth && (
+      {auth.isAuthenticated && (
         <div className="flex flex-col bg-foreground/20 py-6 px-12 rounded-lg">
           <p className="mt-2 text-4xl font-bold mx-auto">
             ${course_info.price}

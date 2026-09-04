@@ -2,12 +2,18 @@ import { Course } from "entities/Course";
 import { FavoritePayload } from "features/User";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
-import { AchievementList, Favorites, Notification, UserFilesList, UserGroupList, UserProfileData } from "../types/user";
+import { $api_auth } from "shared/lib/auth";
+import { AchievementList, Favorites, Notification, UserFilesList, UserGroupList, UserProfileData, UsersMe } from "../types/user";
 
 
 export const getUserInfo = async (id: number | null): Promise<UserProfileData> => {
   const response = await $api_users.get(`user/${id}/`)
   return response.data
+};
+
+export const getCurrentUser = async (): Promise<UsersMe> => {
+  const response = await $api_auth.get("users/me");
+  return response.data;
 };
 
 export const getUserFiles = async (id: number | null): Promise<UserFilesList[]> => {

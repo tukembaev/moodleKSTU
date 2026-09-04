@@ -1,20 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { FC } from "react";
 import { LuCalendarDays, LuCheckCheck, LuHandCoins, LuTrendingUp, LuUsers, LuX } from "react-icons/lu";
-import { useSearchParams } from "react-router-dom";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Separator } from "shared/shadcn/ui/separator";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
+import { cn } from "shared/lib/utils";
 import { testQueries } from "../model/services/testQueryFactory";
 import TestTable from "./lib/TestTable";
 
-const TestResults = () => {
-  const [searchParams] = useSearchParams();
+interface TestResultsProps {
+  testId: string;
+  courseId: string;
+  compact?: boolean;
+}
 
-  const courseId = searchParams.get("course_id");
-  const test_id = searchParams.get("test_id");
+const TestResults: FC<TestResultsProps> = ({
+  testId,
+  courseId,
+  compact = false,
+}) => {
+  const test_id = testId;
 
   const { data: test_list, isLoading: isLoadingResults } = useQuery(
     testQueries.TestResult(test_id, courseId)
@@ -44,8 +52,13 @@ const TestResults = () => {
 
   if (isLoadingDetails || isLoadingResults) {
     return (
-      <div className="min-h-screen flex flex-col gap-6 py-6 px-4 max-w-7xl mx-auto">
-        <Skeleton className="h-12 w-64" />
+      <div
+        className={cn(
+          "flex flex-col gap-6",
+          compact ? "h-full overflow-auto p-4" : "min-h-screen py-6 px-4 max-w-7xl mx-auto"
+        )}
+      >
+        {!compact && <Skeleton className="h-12 w-64" />}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-32" />
@@ -57,24 +70,27 @@ const TestResults = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col gap-6 py-6 px-4 mx-auto">
-      {/* Заголовок и навигация */}
+    <div
+      className={cn(
+        "flex flex-col gap-6",
+        compact ? "h-full overflow-auto p-4" : "min-h-screen py-6 px-4 mx-auto"
+      )}
+    >
       <div className="flex flex-col gap-4">
+        {!compact && (
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+              {testDetails?.title || "Результаты теста"}
+            </h1>
+            {testDetails?.description && (
+              <p className="text-base sm:text-lg text-muted-foreground max-w-3xl">
+                {testDetails.description}
+              </p>
+            )}
+          </div>
+        )}
 
-
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            {testDetails?.title || "Результаты теста"}
-          </h1>
-          {testDetails?.description && (
-            <p className="text-base sm:text-lg text-muted-foreground max-w-3xl">
-              {testDetails.description}
-            </p>
-          )}
-        </div>
-
-        {/* Информация о тесте */}
-        <div className="flex flex-wrap gap-4 mt-2">
+        <div className={cn("flex flex-wrap gap-4", !compact && "mt-2")}>
           {maxScore > 0 && (
             <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
               <LuHandCoins className="h-4 w-4" />
@@ -97,9 +113,8 @@ const TestResults = () => {
         </div>
       </div>
 
-      <Separator />
+      {!compact && <Separator />}
 
-      {/* Статистика */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="shadow-sm">
           <CardHeader className="pb-3">

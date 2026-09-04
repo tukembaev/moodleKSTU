@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unet LMS — Руководство преподавателя</title>
+  <style>
+    :root {
+      --ink: #171717;
+      --muted: #525252;
+      --line: #e5e5e5;
+      --bg: #fafafa;
+      --accent: #111111;
+      --note: #f4f4f5;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--ink);
+      background: #fff;
+      font-family: "PT Serif", "Times New Roman", Georgia, serif;
+      font-size: 12pt;
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 18mm 16mm 22mm;
+    }
+    .cover {
+      min-height: 240mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18mm;
+      padding-bottom: 12mm;
+    }
+    .eyebrow {
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    h1, h2, h3 {
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-weight: 700;
+      line-height: 1.25;
+      margin: 0 0 0.5em;
+    }
+    h1 { font-size: 34px; }
+    h2 {
+      font-size: 20px;
+      margin-top: 28px;
+      padding-top: 10px;
+      border-top: 2px solid var(--ink);
+    }
+    h3 { font-size: 15px; margin-top: 18px; }
+    p { margin: 0 0 0.85em; }
+    ol, ul { margin: 0 0 1em; padding-left: 1.3em; }
+    li { margin-bottom: 0.35em; }
+    a { color: inherit; }
+    .muted { color: var(--muted); }
+    .toc a { text-decoration: none; }
+    .toc li { margin: 0.45em 0; }
+    .figure {
+      margin: 14px 0 20px;
+      page-break-inside: avoid;
+    }
+    .figure img {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: block;
+    }
+    .caption {
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 16px;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-size: 11px;
+      page-break-inside: avoid;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--bg); font-weight: 600; }
+    .note, .warn {
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-size: 11.5px;
+      background: var(--note);
+      border-left: 4px solid var(--accent);
+      padding: 10px 12px;
+      margin: 12px 0 16px;
+    }
+    .warn { border-left-color: #b45309; }
+    .meta {
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media print {
+      .page { max-width: none; padding: 0; }
+      .cover { min-height: auto; }
+      a { text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="cover">
+      <div>
+        <p class="eyebrow">Unet LMS · Кабинет преподавателя</p>
+        <h1>Руководство пользователя</h1>
+        <p class="muted">Как войти в систему, создать курс, добавить тему или тест и загрузить учебные материалы.</p>
+      </div>
+      <div class="meta">
+        <p>Роль: преподаватель (профиль сотрудника UNET)</p>
+        <p>Документ подготовлен по фактическому интерфейсу системы</p>
+        <p>Сентябрь 2026</p>
+      </div>
+    </section>
+
+    <h2>Содержание</h2>
+    <ol class="toc">
+      <li><a href="#login">Вход в систему</a></li>
+      <li><a href="#courses">Раздел «Мои курсы»</a></li>
+      <li><a href="#add-course">Как добавить курс</a></li>
+      <li><a href="#course">Страница курса</a></li>
+      <li><a href="#add-theme">Как добавить новую тему или тест в курс</a></li>
+      <li><a href="#add-test">Как создать тест</a></li>
+      <li><a href="#materials">Как добавить учебные материалы</a></li>
+    </ol>
+
+    <h2 id="login">1. Вход в систему</h2>
+    <p>
+      Unet LMS использует те же учётные данные, что и корпоративная система <strong>UNET</strong>.
+      Входите тем же логином (ПИН) и паролем, которые вы используете в UNET.
+      Если у вашей учётной записи есть несколько профилей, выберите тот же профиль,
+      что и в UNET: для работы преподавателя это профиль <strong>Сотрудник</strong>.
+    </p>
+
+    <div class="figure">
+      <img src="screenshots/01-login.png" alt="Экран входа Unet LMS" />
+      <div class="caption">Рисунок 1. Экран входа Unet LMS</div>
+    </div>
+
+    <h3>Что заполнить</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Поле</th>
+          <th>Что вводить</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Логин (ПИН)</td>
+          <td>ПИН / логин из системы UNET</td>
+        </tr>
+        <tr>
+          <td>Пароль</td>
+          <td>Пароль от UNET. По умолчанию у сотрудника это ИНН, у студента — «s» + ИНН</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ol>
+      <li>Откройте систему Unet LMS.</li>
+      <li>Введите логин (ПИН) и пароль от UNET.</li>
+      <li>Нажмите <strong>Войти</strong>.</li>
+      <li>
+        Если появится экран «Выберите профиль для входа», выберите
+        <strong>Сотрудник</strong> — тот же профиль, что в UNET.
+        Не выбирайте «Студент», иначе откроется студенческий кабинет без возможности создавать курсы.
+      </li>
+    </ol>
+
+    <div class="note">
+      Дополнительно доступен вход через Google. Для преподавателя основной способ —
+      логин и пароль UNET. После успешного входа система открывает раздел «Мои курсы».
+    </div>
+
+    <h2 id="courses">2. Раздел «Мои курсы»</h2>
+    <p>
+      Это главная страница преподавателя. Вверху меню: <strong>Мои курсы</strong> и
+      <strong>Тестирование</strong>. Справа — поиск, уведомления и меню профиля.
+    </p>
+
+    <div class="figure">
+      <img src="screenshots/04-my-courses.png" alt="Страница Мои курсы" />
+      <div class="caption">Рисунок 2. Список курсов преподавателя</div>
+    </div>
+
+    <p>На карточке уже созданного курса отображаются:</p>
+    <ul>
+      <li>название дисциплины;</li>
+      <li>количество кредитов;</li>
+      <li>форма контроля;</li>
+      <li>ФИО преподавателя;</li>
+      <li>кнопка <strong>Подробнее</strong> — открывает учебный процесс курса.</li>
+    </ul>
+    <p>
+      Рядом с существующими курсами есть пунктирная карточка
+      <strong>Добавить курс</strong>. Через неё создаётся новая дисциплина.
+    </p>
+
+    <h2 id="add-course">3. Как добавить курс</h2>
+    <ol>
+      <li>Откройте <strong>Мои курсы</strong>.</li>
+      <li>Нажмите карточку <strong>Добавить курс</strong>.</li>
+      <li>Справа откроется панель <strong>Создание курса</strong>.</li>
+      <li>Заполните форму и нажмите <strong>Добавить курс</strong>.</li>
+    </ol>
+
+    <div class="figure">
+      <img src="screenshots/05-add-course-form.png" alt="Форма создания курса" />
+      <div class="caption">Рисунок 3. Панель «Создание курса»</div>
+    </div>
+
+    <h3>Поля формы «Создание курса»</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Поле</th>
+          <th>Обязательно</th>
+          <th>Описание</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Дисциплина</td>
+          <td>Да</td>
+          <td>Название курса, от 6 до 30 символов. Пример: «Программирование».</td>
+        </tr>
+        <tr>
+          <td>Кредит</td>
+          <td>Да</td>
+          <td>Количество кредитов: 3, 4, 5 или 6.</td>
+        </tr>
+        <tr>
+          <td>Форма контроля</td>
+          <td>Да</td>
+          <td>Итоговая форма: Экзамен, Устный, СРС, Отчет или Тестирование.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="figure">
+      <img src="screenshots/06-add-course-credits.png" alt="Выбор количества кредитов" />
+      <div class="caption">Рисунок 4. Выбор кредитов: 3, 4, 5 или 6</div>
+    </div>
+
+    <div class="figure">
+      <img src="screenshots/07-add-course-control.png" alt="Выбор формы контроля" />
+      <div class="caption">Рисунок 5. Форма контроля: Экзамен, Устный, СРС, Отчет, Тестирование</div>
+    </div>
+
+    <div class="note">
+      После сохранения курс появляется в списке «Мои курсы». Чтобы перейти к темам,
+      тестам и материалам, нажмите <strong>Подробнее</strong>.
+    </div>
+
+    <h2 id="course">4. Страница курса</h2>
+    <p>
+      На странице курса сверху видно название дисциплины и преподавателя.
+      Для преподавателя доступны вкладки:
+    </p>
+    <ul>
+      <li><strong>Учебный процесс</strong> — темы, тесты и материалы;</li>
+      <li><strong>О курсе</strong> — описание дисциплины;</li>
+      <li><strong>Успеваемость студентов</strong> — результаты обучающихся;</li>
+      <li><strong>Управление курсом</strong> — настройки курса.</li>
+    </ul>
+
+    <div class="figure">
+      <img src="screenshots/08-course-details.png" alt="Учебный процесс курса" />
+      <div class="caption">Рисунок 6. Вкладка «Учебный процесс»</div>
+    </div>
+
+    <p>Слева — список заданий по типам (например, «Лабораторная работа»). У каждой темы видны:</p>
+    <ul>
+      <li>название и неделя;</li>
+      <li>статус «Открыт» или закрытая тема;</li>
+      <li>максимальные баллы;</li>
+      <li>меню действий (изменить или удалить).</li>
+    </ul>
+    <p>
+      Справа, пока тема не выбрана, показаны подсказки: сначала выберите тему слева,
+      чтобы увидеть учебные материалы и дополнительную информацию.
+    </p>
+    <p>
+      Под списком тем находится блок
+      <strong>Добавить новую тему или тест</strong> с кнопкой <strong>Добавить</strong>.
+    </p>
+
+    <h2 id="add-theme">5. Как добавить новую тему или тест в курс</h2>
+    <ol>
+      <li>Откройте нужный курс через <strong>Подробнее</strong>.</li>
+      <li>Оставайтесь на вкладке <strong>Учебный процесс</strong>.</li>
+      <li>Нажмите <strong>Добавить</strong> в блоке «Добавить новую тему или тест».</li>
+      <li>Справа откроется панель <strong>Создание темы</strong>.</li>
+    </ol>
+
+    <div class="figure">
+      <img src="screenshots/09-add-theme-form.png" alt="Форма создания темы" />
+      <div class="caption">Рисунок 7. Панель «Создание темы»</div>
+    </div>
+
+    <p>Сначала выберите <strong>Тип занятия</strong>:</p>
+    <ul>
+      <li>Лабораторная работа</li>
+      <li>Практическое занятие</li>
+      <li>Лекционное занятие</li>
+      <li>Другое</li>
+      <li>СРС</li>
+      <li>Тест</li>
+    </ul>
+
+    <div class="figure">
+      <img src="screenshots/10-add-theme-types.png" alt="Типы занятия" />
+      <div class="caption">Рисунок 8. Список типов занятия</div>
+    </div>
+
+    <h3>Если выбран обычный тип (лекция, практика, лабораторная, СРС, другое)</h3>
+    <p>Форма показывает поля задания:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Поле</th>
+          <th>Обязательно</th>
+          <th>Описание</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Тип занятия</td>
+          <td>Да</td>
+          <td>Вид работы в учебном плане.</td>
+        </tr>
+        <tr>
+          <td>Неделя</td>
+          <td>Да</td>
+          <td>Неделя с 1 по 16. По умолчанию — неделя 1.</td>
+        </tr>
+        <tr>
+          <td>Название</td>
+          <td>Да</td>
+          <td>Название темы или задания.</td>
+        </tr>
+        <tr>
+          <td>Описание</td>
+          <td>Да</td>
+          <td>Краткое содержание, что должен сделать студент.</td>
+        </tr>
+        <tr>
+          <td>Макс. баллы</td>
+          <td>Да</td>
+          <td>Максимальный балл за задание.</td>
+        </tr>
+        <tr>
+          <td>Дополнительно → Закрытый</td>
+          <td>Нет</td>
+          <td>Если включено, тема по умолчанию закрыта для студентов.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="figure">
+      <img src="screenshots/11-add-theme-lecture.png" alt="Форма темы для лекции" />
+      <div class="caption">Рисунок 9. Пример: тип «Лекционное занятие»</div>
+    </div>
+
+    <p>После заполнения нажмите <strong>Добавить задание</strong>.</p>
+
+    <h3>Если выбран тип «Тест»</h3>
+    <p>
+      Поля недели, названия и баллов скрываются. Нужно выбрать уже созданный тест
+      и привязать его к курсу.
+    </p>
+
+    <div class="figure">
+      <img src="screenshots/12-add-theme-test.png" alt="Привязка теста к теме" />
+      <div class="caption">Рисунок 10. Тип «Тест»: выбор готового теста</div>
+    </div>
+
+    <div class="warn">
+      Если написано «Нет доступных тестов», сначала создайте тест в разделе
+      <strong>Тестирование</strong>, затем вернитесь в курс и снова выберите тип «Тест».
+    </div>
+
+    <h2 id="add-test">6. Как создать тест</h2>
+    <p>
+      Тест создаётся отдельно, в разделе <strong>Тестирование</strong>.
+      После этого его можно привязать к курсу (см. раздел 5).
+    </p>
+
+    <ol>
+      <li>В верхнем меню нажмите <strong>Тестирование</strong>.</li>
+      <li>Откроется страница <strong>Мои тесты</strong>.</li>
+      <li>Нажмите карточку <strong>Добавьте новый тест</strong>.</li>
+    </ol>
+
+    <div class="figure">
+      <img src="screenshots/15-my-tests.png" alt="Страница Мои тесты" />
+      <div class="caption">Рисунок 11. Раздел «Мои тесты»</div>
+    </div>
+
+    <p>Откроется страница <strong>Создание теста по усвоению материала</strong>.</p>
+
+    <div class="figure">
+      <img src="screenshots/18-add-quiz-header.png" alt="Параметры теста" />
+      <div class="caption">Рисунок 12. Основные параметры теста</div>
+    </div>
+
+    <h3>Параметры теста</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Поле</th>
+          <th>Обязательно</th>
+          <th>Описание</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Название теста</td>
+          <td>Да</td>
+          <td>Как тест будет отображаться студентам и в списке «Мои тесты».</td>
+        </tr>
+        <tr>
+          <td>Описание</td>
+          <td>Да</td>
+          <td>Кратко, для чего тест и что проверяется.</td>
+        </tr>
+        <tr>
+          <td>Время на прохождение (в минутах)</td>
+          <td>Да</td>
+          <td>Лимит времени. Минимум 1 минута.</td>
+        </tr>
+        <tr>
+          <td>Максимальное количество баллов</td>
+          <td>Да</td>
+          <td>По умолчанию 100.</td>
+        </tr>
+        <tr>
+          <td>Минимальный балл</td>
+          <td>Да</td>
+          <td>Порог прохождения. Не может быть больше максимума. По умолчанию 0.</td>
+        </tr>
+        <tr>
+          <td>Показывать правильные ответы после отправки</td>
+          <td>Нет</td>
+          <td>Если включено, студент увидит верные ответы после сдачи.</td>
+        </tr>
+        <tr>
+          <td>Дополнительно → Обязательный</td>
+          <td>Нет</td>
+          <td>Для выставления балла студенту нужно пройти этот тест.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Вопросы и варианты ответов</h3>
+    <p>
+      По умолчанию в форме уже есть два вопроса. Можно добавить ещё вопросы
+      (всего до четырёх) и до шести вариантов ответа на вопрос.
+    </p>
+
+    <div class="figure">
+      <img src="screenshots/17-add-quiz-questions.png" alt="Форма вопроса теста" />
+      <div class="caption">Рисунок 13. Вопрос, варианты ответов и правильный ответ</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Элемент</th>
+          <th>Как использовать</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Текст вопроса</td>
+          <td>Введите формулировку вопроса.</td>
+        </tr>
+        <tr>
+          <td>Изображение для вопроса</td>
+          <td>Необязательно. Можно прикрепить рисунок, схему или формулу.</td>
+        </tr>
+        <tr>
+          <td>Несколько правильных ответов</td>
+          <td>Включите, если верных вариантов больше одного.</td>
+        </tr>
+        <tr>
+          <td>Вариант 1, Вариант 2…</td>
+          <td>Текст ответа. К варианту тоже можно добавить изображение.</td>
+        </tr>
+        <tr>
+          <td>Добавить вариант</td>
+          <td>Добавляет ещё один вариант (максимум 6).</td>
+        </tr>
+        <tr>
+          <td>Правильный ответ</td>
+          <td>Выберите верный вариант. Если включён множественный выбор — отметьте несколько.</td>
+        </tr>
+        <tr>
+          <td>Добавить вопрос</td>
+          <td>Добавляет следующий вопрос.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="figure">
+      <img src="screenshots/17c-add-quiz-submit.png" alt="Кнопки сохранения теста" />
+      <div class="caption">Рисунок 14. «Добавить вопрос», «Назад» и «Создать тест»</div>
+    </div>
+
+    <ol>
+      <li>Заполните параметры теста.</li>
+      <li>Введите вопросы, варианты и отметьте правильные ответы.</li>
+      <li>При необходимости нажмите <strong>Добавить вопрос</strong>.</li>
+      <li>Нажмите <strong>Создать тест</strong>.</li>
+      <li>Вернитесь в курс → <strong>Добавить</strong> → тип занятия <strong>Тест</strong> → выберите созданный тест → <strong>Добавить задание</strong>.</li>
+    </ol>
+
+    <h2 id="materials">7. Как добавить учебные материалы</h2>
+    <p>
+      Материалы привязаны к конкретной теме. Сначала выберите тему в списке слева
+      на вкладке «Учебный процесс». Справа появится блок
+      <strong>Учебные материалы</strong>.
+    </p>
+
+    <div class="figure">
+      <img src="screenshots/13-theme-materials.png" alt="Учебные материалы выбранной темы" />
+      <div class="caption">Рисунок 15. Тема выбрана: блок «Учебные материалы»</div>
+    </div>
+
+    <ol>
+      <li>Откройте курс и вкладку <strong>Учебный процесс</strong>.</li>
+      <li>Нажмите нужную тему слева (например, лабораторную работу).</li>
+      <li>В блоке «Учебные материалы» нажмите <strong>Добавить материал</strong> или перетащите файлы.</li>
+      <li>Откроется панель <strong>Загрузка материала</strong>.</li>
+    </ol>
+
+    <div class="figure">
+      <img src="screenshots/14-add-material-form.png" alt="Форма загрузки материала" />
+      <div class="caption">Рисунок 16. Панель «Загрузка материала»</div>
+    </div>
+
+    <h3>Поля формы «Загрузка материала»</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Поле</th>
+          <th>Обязательно</th>
+          <th>Описание</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Описание материала</td>
+          <td>Да</td>
+          <td>Как материал будет подписан для студентов.</td>
+        </tr>
+        <tr>
+          <td>Ссылка на файл/видео/фото</td>
+          <td>Нет*</td>
+          <td>Внешняя ссылка: документ, видео или изображение.</td>
+        </tr>
+        <tr>
+          <td>Материал</td>
+          <td>Нет*</td>
+          <td>Загрузка файла с компьютера.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      * Файл и ссылка взаимоисключающие: если выбран файл, поле ссылки скрывается,
+      и наоборот. Нужно указать либо файл, либо ссылку.
+    </p>
+
+    <p>Нажмите <strong>Загрузить материал</strong>. Файл или ссылка появятся в учебных материалах выбранной темы.</p>
+
+    <h2>Краткий порядок работы</h2>
+    <ol>
+      <li>Войдите логином и паролем UNET, профиль <strong>Сотрудник</strong>.</li>
+      <li>Создайте курс: дисциплина, кредиты, форма контроля.</li>
+      <li>Откройте курс через <strong>Подробнее</strong>.</li>
+      <li>Добавьте темы (лекция, практика, лабораторная, СРС).</li>
+      <li>При необходимости создайте тест в разделе <strong>Тестирование</strong> и привяжите его к курсу.</li>
+      <li>Выберите тему и загрузите учебные материалы.</li>
+    </ol>
+  </div>
+</body>
+</html>

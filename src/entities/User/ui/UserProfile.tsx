@@ -2,25 +2,30 @@ import { Separator } from "shared/shadcn/ui/separator";
 import UserCard from "./components/UserCard";
 
 import { useQuery } from "@tanstack/react-query";
-import { LuFileBox, LuUsersRound } from "react-icons/lu";
+import { LuFileBox } from "react-icons/lu";
 import { useParams } from "react-router-dom";
 import { UseTabs } from "shared/components";
 import { useAuth } from "shared/hooks";
+import { mapUsersMeToProfile } from "../lib/mapUsersMe";
 import { userQueries } from "../model/userQueryFactory";
-import UserCompletedCourses from "./components/UserCompletedCourses";
 import FileTab from "./components/userTabs/FileTab";
-import TeamTab from "./components/userTabs/TeamTab";
 
 const UserProfile = () => {
   const { id: visit_user } = useParams();
   const { id: user_id } = useAuth();
-  const { data, isLoading } = useQuery(
+  const isOwnProfile = !visit_user;
+
+  const { data: lmsUser, isLoading: isLmsLoading } = useQuery(
     userQueries.user(visit_user ? Number(visit_user) : user_id)
   );
-  //IMPORTANT сказать бексу чтобы он добавил в my_student_friends bio number tg mail
-  const { data: my_student_friends } = useQuery(
-    userQueries.user_team(data?.group || "")
-  );
+  const { data: me, isLoading: isMeLoading } = useQuery({
+    ...userQueries.me(),
+    enabled: isOwnProfile,
+  });
+
+  const data =
+    isOwnProfile && me ? mapUsersMeToProfile(me, lmsUser) : lmsUser;
+  const isLoading = isOwnProfile ? isMeLoading && !me : isLmsLoading;
   const {
     data: user_files,
     isLoading: isLoadingFiles,
@@ -41,32 +46,17 @@ const UserProfile = () => {
       count: user_files?.length,
       icon: <LuFileBox />,
     },
-
-    {
-      name: "Коллеги",
-      value: "group",
-      content: <TeamTab data={my_student_friends || []} />,
-      count: my_student_friends?.length,
-      icon: <LuUsersRound />,
-    },
-    // {
-    //   name: "Достижения",
-    //   value: "achivements",
-    //   content: <AchievementTab />,
-    //   count: 9,
-    //   icon: <LuAward />,
-    // },
   ];
 
   return (
     <div className="flex flex-col gap-8 max-w-screen-xl mx-auto">
       <UserCard data={data} isLoading={isLoading} />
-      <Separator />
-      {/* <UserBudget />
-      <Separator /> */}
-      <UserCompletedCourses />
-      <Separator />
-      {!visit_user && <UseTabs tabs={tabs} />}
+      {!visit_user && (
+        <>
+          <Separator />
+          <UseTabs tabs={tabs} />
+        </>
+      )}
     </div>
   );
 };

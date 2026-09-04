@@ -1,7 +1,7 @@
 import { UserFilesList } from "entities/User/types/user";
 import { LuFolderDown } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
-import { HoverLift, SpringPopupList, UseTooltip } from "shared/components";
+import { SpringPopupList, UseTooltip } from "shared/components";
 import { AppSubRoutes } from "shared/config";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";

@@ -60,7 +60,7 @@ export const TaskItem: FC<TaskItemProps> = ({
       onClick={isBlocked ? undefined : onClick}
       aria-disabled={isBlocked}
       className={cn(
-        "flex items-center gap-3 px-4 py-3 border-b last:border-b-0 transition-colors",
+        "flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4 border-b last:border-b-0 transition-colors",
         isBlocked ? "cursor-not-allowed" : "cursor-pointer hover:bg-muted/30",
         locked && !isTest && "opacity-50",
         isActive && "bg-primary/10 border-l-4 border-l-primary"
@@ -85,32 +85,32 @@ export const TaskItem: FC<TaskItemProps> = ({
       )}
 
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm text-foreground">
+        <h4 className="font-medium text-sm text-foreground line-clamp-2">
           {title}
           {!isTest && week && (
-            <span className="text-xs text-muted-foreground pl-2">
+            <span className="text-xs text-muted-foreground pl-1 sm:pl-2">
               {week} неделя
             </span>
           )}
         </h4>
       </div>
 
-      <Badge variant={isItemOpen ? "default" : "outline"} className="shrink-0 gap-1">
+      <Badge variant={isItemOpen ? "default" : "outline"} className="shrink-0 gap-1 px-1.5 sm:px-2.5">
         {isItemOpen ? (
           <LockOpen className="h-3 w-3" />
         ) : (
           <Lock className="h-3 w-3" />
         )}
-        {isItemOpen ? "Открыт" : "Закрыт"}
+        <span className="hidden sm:inline">{isItemOpen ? "Открыт" : "Закрыт"}</span>
       </Badge>
 
       <div className="shrink-0">
         {isStudent ? (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
             {result === null || result === "—" ? 0 : result}/{maxPoints}
           </span>
         ) : (
-          <span className="text-sm text-muted-foreground">{maxPoints} б.</span>
+          <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{maxPoints} б.</span>
         )}
       </div>
 

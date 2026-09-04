@@ -15,46 +15,49 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isLoginPage = location.pathname === "/";
-  const isStudent = auth?.isStudent;
+  const isStudent = auth.isStudent;
+  const isAuthed = auth.isAuthenticated;
 
   return (
     <header className="py-4 px-4 border-b w-full sticky top-0 z-30 bg-background">
       <div className="flex justify-between items-center mx-auto">
-        {!auth ? (
-          <div className="flex items-center gap-4">
-            <img src={logo} className="w-8" alt="Logo" />
+        {!isAuthed ? (
+          <div className="flex items-center gap-2 sm:gap-4">
+            <img src={logo} className="w-8 shrink-0" alt="Logo" />
             <GuestNavigationMenu />
           </div>
         ) : (
-          <div className="flex items-center gap-4">
-            <img src={logo} className="w-8" alt="Logo" />
+          <div className="flex items-center gap-2 sm:gap-4">
+            <img src={logo} className="w-8 shrink-0" alt="Logo" />
             <nav className="flex items-center gap-1">
               <NavLink
                 to={RoutePath[AppRoutes.COURSES]}
                 className={({ isActive }) =>
                   cn(
-                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                    "rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
                     isActive
                       ? "bg-accent text-accent-foreground"
                       : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                   )
                 }
               >
-                Мои курсы
+                <span className="hidden sm:inline">Мои курсы</span>
+                <span className="sm:hidden">Курсы</span>
               </NavLink>
               {!isStudent && (
                 <NavLink
                   to={RoutePath[AppRoutes.TEST]}
                   className={() =>
                     cn(
-                      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                      "rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
                       location.pathname.includes(RoutePath[AppRoutes.TEST])
                         ? "bg-accent text-accent-foreground"
                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                     )
                   }
                 >
-                  Тестирование
+                  <span className="hidden sm:inline">Тестирование</span>
+                  <span className="sm:hidden">Тесты</span>
                 </NavLink>
               )}
             </nav>
@@ -62,13 +65,13 @@ const Header = () => {
         )}
 
         <div className="flex items-center gap-1">
-          {!auth && !isLoginPage && (
+          {!isAuthed && !isLoginPage && (
             <div className="max-h-[35px] flex">
               <CommandSearchBar />
             </div>
           )}
 
-          {auth ? (
+          {isAuthed ? (
             <>
               <HeaderSearch />
               <HeaderNotifications />

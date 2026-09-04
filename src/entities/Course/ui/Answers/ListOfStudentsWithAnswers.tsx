@@ -34,6 +34,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "shared/shadcn/ui/dropdown-menu";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "shared/shadcn/ui/empty";
 import { Input } from "shared/shadcn/ui/input";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import {
@@ -200,14 +207,17 @@ const ListOfStudentsWithAnswers = ({
   const renderStudentCards = () => (
     <div className="space-y-3">
       {filteredData.length === 0 ? (
-        <div className="py-8 text-center">
-          <div className="inline-flex flex-col items-center gap-3">
-            <div className="p-4 rounded-2xl bg-muted/50">
-              <LuUsers className="h-10 w-10 text-muted-foreground opacity-50" />
-            </div>
-            <p className="text-muted-foreground">Студенты не найдены</p>
-          </div>
-        </div>
+        <Empty className="min-h-48 border-0">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <LuUsers />
+            </EmptyMedia>
+            <EmptyTitle>Студенты не найдены</EmptyTitle>
+            <EmptyDescription>
+              Измените поиск или выбранную группу.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <SpringPopupList>
           {filteredData.map((student) => {
@@ -670,7 +680,19 @@ const ListOfStudentsWithAnswers = ({
   }
 
   if (!data.length) {
-    return null;
+    return (
+      <Empty className="h-full min-h-48 border-0">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <LuUsers />
+          </EmptyMedia>
+          <EmptyTitle>Пока нет студентов</EmptyTitle>
+          <EmptyDescription>
+            Студенты появятся здесь после записи на курс.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    );
   }
 
   return (

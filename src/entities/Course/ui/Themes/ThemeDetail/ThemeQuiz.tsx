@@ -4,7 +4,6 @@ import { useState } from "react";
 import { LuHandCoins, LuPlus } from "react-icons/lu";
 import {
   FadeIn,
-  HoverLift,
   UseConfirmation,
   UseTooltip,
 } from "shared/components";

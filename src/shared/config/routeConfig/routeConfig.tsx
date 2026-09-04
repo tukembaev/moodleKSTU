@@ -10,7 +10,6 @@ import { UniversitiesPage } from "pages/UniversitiesPage";
 import { UserBilling, UserProfile } from "entities/User";
 
 import { TestingPage } from "pages/TestingPage";
-import { TestResults } from "entities/Test";
 import { AboutUsPage } from "pages/AboutUsPage";
 import { CollaboratePage } from "pages/CollaboratePage";
 import { CategoryPage } from "pages/CategoryPage";
@@ -55,7 +54,6 @@ export enum AppRoutes {
 export enum AppSubRoutes {
   COURSE_THEMES = "course_themes",
 
-  TEST_RESULTS = "result",
   TEST_PASS = "pass",
   TEST_ADD_QUIZ = "add-quiz",
   TEST_EDIT = "edit",
@@ -79,7 +77,6 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   // [AppRoutes.REGISTRATION]: "/registration",
   [AppRoutes.PROFILE]: "/profile",
   [AppRoutes.TEST]: "/test",
-  [AppSubRoutes.TEST_RESULTS]: "/test/result",
   [AppSubRoutes.TEST_PASS]: "/test/pass/:id",
   [AppSubRoutes.TEST_ADD_QUIZ]: "/test/add-quiz",
   [AppSubRoutes.TEST_EDIT]: "/test/edit/:id",
@@ -168,11 +165,6 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
     breadcrumbName: "Тесты",
 
     children: [
-      {
-        path: RoutePath[AppSubRoutes.TEST_RESULTS],
-        element: <TestResults />,
-        breadcrumbName: "Результаты теста",
-      },
       {
         path: RoutePath[AppSubRoutes.TEST_ADD_QUIZ],
         element: <AddQuizPage />,

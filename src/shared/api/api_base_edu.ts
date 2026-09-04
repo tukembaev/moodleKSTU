@@ -1,47 +1,14 @@
-
-import axios from "axios"
-import { refreshUser } from "features/Authorization/model/services/loginAPI";
+import axios from "axios";
 import { API_URL } from "./config";
+import { attachAuthInterceptors } from "shared/lib/auth";
 
 export { API_URL };
 
-
-const auth_data = JSON.parse(localStorage.getItem("auth_data") || "{}");
-
-
 export const $api_base_edu = axios.create({
-  // withCredentials: true,
+  withCredentials: true,
   baseURL: API_URL,
-})
+});
 
-$api_base_edu.interceptors.request.use((config) => {
-  config.headers.Authorization = `Bearer ${auth_data.access}`
-  return config
-})
-$api_base_edu.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      console.error("Unauthorized access in api.ts");
-      try {
-        const newTokens = await refreshUser();
-        const authData = JSON.parse(localStorage.getItem("auth_data") || "{}");
-        const updatedAuthData = { ...authData, access: newTokens.access };
-        localStorage.setItem("auth_data", JSON.stringify(updatedAuthData));
-        window.dispatchEvent(new Event("storage"));
-        error.config.headers.Authorization = `Bearer ${newTokens.access}`;
-        return axios.request(error.config);
-      } catch (refreshError) {
-        console.error("Refresh token failed, logging out...", refreshError);
-        localStorage.setItem("refresh_error", 'Refresh токен устарел, перезайдите в систему');
-        // localStorage.removeItem("auth_data");
-        // window.location.href = "/";
-        // BUG: сделать ошибку в loginForm 
+attachAuthInterceptors($api_base_edu);
 
-        return Promise.reject(refreshError);
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-export default $api_base_edu
+export default $api_base_edu;

@@ -2,11 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { TestDetails } from "entities/Test/model/types/test";
-import { AlertCircle, BarChart3, Lock, LockOpen, Plus, Trash2 } from "lucide-react";
-import { ChangeEvent, FC, useEffect } from "react";
+import TestResults from "entities/Test/ui/TestResults";
+import { AlertCircle, BarChart3, Lock, LockOpen, Pencil, Plus, Trash2 } from "lucide-react";
+import { ChangeEvent, FC, useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { LuImage, LuX } from "react-icons/lu";
-import { useNavigate } from "react-router-dom";
 import { UseConfirmationDialog } from "shared/components";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
@@ -14,6 +14,7 @@ import { Checkbox } from "shared/shadcn/ui/checkbox";
 import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
 import { ScrollArea } from "shared/shadcn/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
 import {
   Empty,
   EmptyContent,
@@ -113,7 +114,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   courseId,
   onDeleted,
 }) => {
-  const navigate = useNavigate();
+  const [panelTab, setPanelTab] = useState<"edit" | "results">("edit");
   const { data: courseTests } = useQuery(courseQueries.courseTests(courseId ?? null));
   const {
     data: testDetails,
@@ -161,6 +162,10 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   });
 
   const watchQuestions = watch("questions");
+
+  useEffect(() => {
+    setPanelTab("edit");
+  }, [testId]);
 
   useEffect(() => {
     if (testDetails && canEdit) {
@@ -343,17 +348,6 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                 <Lock className="h-4 w-4" />
                 Закрыть тест
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  navigate(`/test/result?test_id=${testId}&course_id=${courseId}`)
-                }
-              >
-                <BarChart3 className="h-4 w-4" />
-                Результаты
-              </Button>
             </>
           )}
           {canEdit && (
@@ -387,7 +381,31 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
         </div>
       </div>
 
-      {!canEdit ? (
+      {isCourseContext && (
+        <div className="shrink-0 border-b px-4 py-2">
+          <Tabs
+            value={panelTab}
+            onValueChange={(value) => setPanelTab(value as "edit" | "results")}
+          >
+            <TabsList className="h-9">
+              <TabsTrigger value="edit" className="gap-1.5">
+                <Pencil className="h-4 w-4" />
+                Редактирование
+              </TabsTrigger>
+              <TabsTrigger value="results" className="gap-1.5">
+                <BarChart3 className="h-4 w-4" />
+                Результаты
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
+
+      {panelTab === "results" && isCourseContext && courseId ? (
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <TestResults testId={testId} courseId={courseId} compact />
+        </div>
+      ) : !canEdit ? (
         <div className="flex flex-1 items-center justify-center p-6">
           <Empty>
             <EmptyContent>
@@ -767,11 +785,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
             </div>
           </ScrollArea>
 
-          <div className="flex shrink-0 justify-end border-t bg-background px-4 py-3">
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? "Сохранение..." : "Сохранить изменения"}
-            </Button>
-          </div>
+     
         </form>
       )}
     </div>

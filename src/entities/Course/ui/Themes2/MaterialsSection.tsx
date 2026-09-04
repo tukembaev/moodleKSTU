@@ -1,13 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { Lock, LockOpen } from "lucide-react";
-import { DragEvent, FC, useMemo, useRef, useState } from "react";
+import { DragEvent, FC, useRef, useState } from "react";
 import { LuFileText, LuUpload } from "react-icons/lu";
 import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { cn } from "shared/lib/utils";
-import { Badge } from "shared/shadcn/ui/badge";
-import { Button } from "shared/shadcn/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -26,7 +23,6 @@ interface MaterialsSectionProps {
 export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
   const auth_data = useAuth();
   const { id: courseId } = useParams<{ id: string }>();
-  const isStudent = Boolean(auth_data.isStudent);
  
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -39,28 +35,10 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
     courseQueries.allTasks(courseId || null)
   );
 
-  const { data: students } = useQuery(
-    courseQueries.allAnswerTask(isStudent ? null : themeId)
-  );
-
   const { mutate: delete_material } = courseQueries.delete_material();
   const { mutate: add_material } = courseQueries.create_material();
-  const { mutate: setAccessForAll, isPending: isAccessPending } =
-    courseQueries.set_theme_access_for_all();
 
   const isOwner = courseDetails?.course_owner?.[0]?.user_id === auth_data?.id;
-  const currentTheme = courseDetails?.detail?.find((task) => task.id === themeId);
-  const isThemeOpen = currentTheme ? !currentTheme.locked : true;
-
-  const studentUserIds = useMemo(
-    () => [...new Set((students ?? []).map((student) => student.user_id))],
-    [students]
-  );
-
-  const handleAccessForAll = (locked: boolean) => {
-    if (!themeId) return;
-    setAccessForAll({ id: themeId, locked, users: studentUserIds });
-  };
 
   const allMaterials = [
     ...(materials?.filter((material) => material.files) || []),
@@ -192,7 +170,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
                 material={material}
                 canDelete={isOwner}
                 onDelete={delete_material}
-                className="min-w-[240px] flex-1 max-w-md"
+                className="w-full sm:min-w-[240px] sm:flex-1 sm:max-w-md"
               />
             ))}
             {!auth_data.isStudent && themeId && (

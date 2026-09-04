@@ -164,9 +164,9 @@ const TestCard = ({
                   className="gap-1.5 shadow-none"
                   onClick={() =>
                     navigate(
-                      "/test/result" +
-                      `?test_id=${item.id}` +
-                      `&course_id=${courseId || ""}`
+                      courseId
+                        ? `/courses/course_themes/${courseId}`
+                        : "/courses"
                     )
                   }
                 >
@@ -260,9 +260,9 @@ const TestCard = ({
               variant="outline"
               onClick={() =>
                 navigate(
-                  "/test/result" +
-                  `?test_id=${item.id}` +
-                  `&course_id=${courseId || ""}`
+                  courseId
+                    ? `/courses/course_themes/${courseId}`
+                    : "/courses"
                 )
               }
             >

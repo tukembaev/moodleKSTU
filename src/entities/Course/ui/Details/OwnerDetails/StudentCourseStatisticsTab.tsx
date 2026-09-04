@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import type { TaskByType, TaskListItem, TestListItem } from "entities/Course/model/types/statistics";
 import { LuClock } from "react-icons/lu";
 import { useParams } from "react-router-dom";
 import { Badge } from "shared/shadcn/ui/badge";
@@ -154,7 +155,7 @@ export const StudentCourseStatisticsTab = () => {
                 <div className="space-y-4 mb-6">
                   <h3 className="font-semibold">По типам заданий</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {Object.entries(tasksByType).map(([type, stats]) => (
+                    {(Object.entries(tasksByType) as [string, TaskByType[string]][]).map(([type, stats]) => (
                       <Card key={type}>
                         <CardHeader>
                           <CardTitle className="text-lg">{type}</CardTitle>
@@ -199,7 +200,7 @@ export const StudentCourseStatisticsTab = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {tasksList.map((task) => (
+                        {tasksList.map((task: TaskListItem) => (
                           <TableRow key={task.course_detail.id}>
                             <TableCell className="font-medium">
                               {task.course_detail.title}
@@ -267,7 +268,7 @@ export const StudentCourseStatisticsTab = () => {
             <CardContent>
               {testsList.length > 0 ? (
                 <div className="space-y-4">
-                  {testsList.map((test) => (
+                  {testsList.map((test: TestListItem) => (
                     <Card key={test.testing.id}>
                       <CardHeader>
                         <div className="flex items-center justify-between">

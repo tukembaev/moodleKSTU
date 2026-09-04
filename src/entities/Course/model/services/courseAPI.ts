@@ -32,8 +32,10 @@ export const getStudentAnswers = async (id: string | null):Promise<FileAnswer[]>
   return response.data;
 };
 export const getThemeFAQ = async (theme: string | null):Promise<ThemeFaq[]> => {
-  const response = await $api_edu.get(`faq/${theme}/`); 
-  return response.data;
+  const response = await $api_edu.get(`faq/${theme}/`);
+  const faqs: ThemeFaq[] = Array.isArray(response.data) ? response.data : [];
+  // Backend list endpoint ignores the theme in the URL and returns every FAQ.
+  return faqs.filter((faq) => faq.theme === theme);
 };
 export const getThemeDiscussion = async (theme: string | null):Promise<FeedItem[]> => {
   const response = await $api_base_edu.get(`v1/chats/discussion/${theme}/`); 

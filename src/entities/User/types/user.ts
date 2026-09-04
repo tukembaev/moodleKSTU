@@ -35,6 +35,50 @@ export interface AchievementList {
   legendary: Achievement[];
 }
 
+export interface UserEmployment {
+  id: string;
+  organization_id: string;
+  organization_name: string;
+  position: string;
+  rate: number;
+  employment_type: string;
+  start_date: string;
+  end_date: string | null;
+  is_active: boolean;
+}
+
+export interface UsersMeEmployeeProfile {
+  is_active: boolean;
+  employments: UserEmployment[];
+}
+
+export interface UsersMeStudentProfile {
+  is_active?: boolean;
+  group?: string | null;
+  group_name?: string | null;
+  faculty?: string | null;
+  specialty?: string | null;
+}
+
+export interface UsersMe {
+  id: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string | null;
+  email: string | null;
+  phone_number: string | null;
+  birth_date: string | null;
+  gender: string | null;
+  is_active: boolean;
+  permissions: string[];
+  institute_id: string | null;
+  institute_name: string | null;
+  employee_profile: UsersMeEmployeeProfile | null;
+  student_profile: UsersMeStudentProfile | null;
+  avatar_url: string | null;
+}
+
 export interface UserProfileData {
   id: number,
   user_id: number,
@@ -52,6 +96,11 @@ export interface UserProfileData {
   custom_permission: [
     string
   ]
+  username?: string;
+  birth_date?: string | null;
+  gender?: string | null;
+  institute_name?: string | null;
+  employments?: UserEmployment[];
 }
 export interface ResidesCourse {
   id: string,

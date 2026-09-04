@@ -125,7 +125,7 @@ const GlobalCourseListByCategory = ({
             </div>
             <div className="px-6 flex items-center justify-between pt-6">
               <div className="flex gap-2">
-                {auth && (
+                {auth.isAuthenticated && (
                   <Button
                     variant={"outline"}
                     onClick={() => addToCart(article)}

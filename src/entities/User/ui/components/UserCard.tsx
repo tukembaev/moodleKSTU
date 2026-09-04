@@ -1,7 +1,9 @@
 import UserCardSkeleton from "entities/User/lib/UserCardSkeleton";
 import { userQueries } from "entities/User/model/userQueryFactory";
 import { UserProfileData } from "entities/User/types/user";
-import { MapPin, User } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
+import { Briefcase, Calendar, Mail, User } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { LuPencil, LuPhone, LuSend } from "react-icons/lu";
 import { PhoneInput } from "shared/components/PhoneInput";
@@ -20,8 +22,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "shared/shadcn/ui/dialog";
+import { Badge } from "shared/shadcn/ui/badge";
 import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
+
+const genderLabel = (gender?: string | null) => {
+  if (gender === "M") return "Мужской";
+  if (gender === "F") return "Женский";
+  return gender || "";
+};
+
+const employmentTypeLabel = (type?: string) => {
+  if (type === "MAIN") return "Основное";
+  if (type === "PART_TIME" || type === "INNER") return "Совместительство";
+  return type || "";
+};
+
+const formatDate = (value?: string | null) => {
+  if (!value) return "";
+  try {
+    return format(parseISO(value), "d MMMM yyyy", { locale: ru });
+  } catch {
+    return value;
+  }
+};
 
 const UserCard = ({
   data,
@@ -104,7 +128,9 @@ const UserCard = ({
                     alt="User avatar"
                     className="object-cover"
                   />
-                  <AvatarFallback className="text-2xl md:text-5xl">M</AvatarFallback>
+                  <AvatarFallback className="text-2xl md:text-5xl">
+                    {(data?.first_name?.[0] || "") + (data?.last_name?.[0] || "") || "U"}
+                  </AvatarFallback>
                 </Avatar>
                 {hovered && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
@@ -160,43 +186,104 @@ const UserCard = ({
         </Dialog>
 
         <div className="flex flex-col items-center md:items-start text-center md:text-left">
-          <span className="text-xs md:text-sm font-bold text-gray-500">{data?.group}</span>
+          <span className="text-xs md:text-sm font-bold text-gray-500">
+            {data?.username ? `@${data.username}` : data?.group}
+          </span>
           <h2 className="text-2xl md:text-4xl font-bold flex flex-wrap justify-center md:justify-start gap-2">
-            <span>{data?.first_name}</span> <span>{data?.last_name}</span>
+            <span>{data?.last_name}</span>
+            <span>{data?.first_name}</span>
+            {data?.middle_name ? <span>{data.middle_name}</span> : null}
           </h2>
           <p className="text-sm md:text-base text-gray-500">{data?.position}</p>
+          {data?.group && data?.username ? (
+            <p className="text-sm text-muted-foreground mt-1">{data.group}</p>
+          ) : null}
           <div className="mt-4 md:mt-2 text-sm space-y-3 w-full">
-            <div className="flex items-center gap-3 md:gap-2">
-              <User size={18} className="shrink-0" /> <span className="line-clamp-2">{data?.bio}</span>
-            </div>
-            <div className="flex items-center gap-3 md:gap-2">
-              <LuPhone size={18} className="shrink-0" />
-              <a href={`tel:${data?.number_phone}`} className="hover:underline break-all">
-                {data?.number_phone}
-              </a>
-            </div>
+            {data?.bio ? (
+              <div className="flex items-center gap-3 md:gap-2">
+                <User size={18} className="shrink-0" />{" "}
+                <span className="line-clamp-2">{data.bio}</span>
+              </div>
+            ) : null}
+            {data?.number_phone ? (
+              <div className="flex items-center gap-3 md:gap-2">
+                <LuPhone size={18} className="shrink-0" />
+                <a href={`tel:${data.number_phone}`} className="hover:underline break-all">
+                  {data.number_phone}
+                </a>
+              </div>
+            ) : null}
 
-            <div className="flex items-center gap-3 md:gap-2">
-              <MapPin size={18} className="shrink-0" />
-              <a href={`mailto:${data?.email}`} className="hover:underline break-all">
-                {data?.email}
-              </a>
-            </div>
+            {data?.email ? (
+              <div className="flex items-center gap-3 md:gap-2">
+                <Mail size={18} className="shrink-0" />
+                <a href={`mailto:${data.email}`} className="hover:underline break-all">
+                  {data.email}
+                </a>
+              </div>
+            ) : null}
 
-            <div className="flex items-center gap-3 md:gap-2">
-              <LuSend size={18} className="shrink-0" />
-              <a
-                href={`https://t.me/${data?.telegram_username?.replace(
-                  "@",
-                  ""
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline break-all"
-              >
-                {data?.telegram_username}
-              </a>
-            </div>
+            {data?.birth_date ? (
+              <div className="flex items-center gap-3 md:gap-2">
+                <Calendar size={18} className="shrink-0" />
+                <span>{formatDate(data.birth_date)}</span>
+                {data.gender ? (
+                  <span className="text-muted-foreground">
+                    · {genderLabel(data.gender)}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+
+            {data?.telegram_username ? (
+              <div className="flex items-center gap-3 md:gap-2">
+                <LuSend size={18} className="shrink-0" />
+                <a
+                  href={`https://t.me/${data.telegram_username.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline break-all"
+                >
+                  {data.telegram_username}
+                </a>
+              </div>
+            ) : null}
+
+            {data?.employments && data.employments.length > 0 ? (
+              <div className="space-y-2 pt-1">
+                {data.employments.map((job) => (
+                  <div
+                    key={job.id}
+                    className="flex items-start gap-3 md:gap-2 text-left"
+                  >
+                    <Briefcase size={18} className="shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="font-medium">{job.position}</p>
+                      <p className="text-muted-foreground">
+                        {job.organization_name}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {job.employment_type ? (
+                          <Badge variant="outline" className="text-xs">
+                            {employmentTypeLabel(job.employment_type)}
+                          </Badge>
+                        ) : null}
+                        {job.rate ? (
+                          <Badge variant="secondary" className="text-xs">
+                            Ставка {job.rate}
+                          </Badge>
+                        ) : null}
+                        {job.start_date ? (
+                          <Badge variant="outline" className="text-xs font-normal">
+                            с {formatDate(job.start_date)}
+                          </Badge>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
             {auth_data?.id === data?.id && (
               <Button
                 className="w-full mt-4"

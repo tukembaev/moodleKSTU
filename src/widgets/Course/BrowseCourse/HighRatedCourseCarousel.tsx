@@ -144,7 +144,7 @@ export default function HighRatedCourseCarousel() {
           ))}
         </div>
         <div className="flex gap-4 justify-end">
-          {auth && (
+          {auth.isAuthenticated && (
             <Button
               variant="outline"
               onClick={() => {

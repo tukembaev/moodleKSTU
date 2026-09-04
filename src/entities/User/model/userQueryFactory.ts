@@ -1,5 +1,5 @@
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getRegistrationList, getUserAchievements, getUserFavorites, getUserFiles, getUserInfo, getUserNotifications, getUserTeam, markNotificationAsRead } from './userAPI';
+import { getCurrentUser, getRegistrationList, getUserAchievements, getUserFavorites, getUserFiles, getUserInfo, getUserNotifications, getUserTeam, markNotificationAsRead } from './userAPI';
 
 import { useRegistrateCourse } from 'features/Course';
 import { make_favorite } from 'features/User';
@@ -14,6 +14,12 @@ export const userQueries = {
       queryKey: ['user_info', id && id],
       queryFn: () => getUserInfo(id as number),
       enabled: Boolean(id),
+    }),
+
+  me: () =>
+    queryOptions({
+      queryKey: ['users_me'],
+      queryFn: () => getCurrentUser(),
     }),
 
   user_file: (id: number) =>

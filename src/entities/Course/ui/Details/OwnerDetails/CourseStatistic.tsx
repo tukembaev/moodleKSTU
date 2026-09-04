@@ -1,6 +1,4 @@
 import { useAuth } from "shared/hooks";
-import { CourseStatisticsTab } from "./CourseStatisticsTab";
-import { StudentCourseStatisticsTab } from "./StudentCourseStatisticsTab";
 
 const CourseStatistic = () => {
   const { isStudent } = useAuth();

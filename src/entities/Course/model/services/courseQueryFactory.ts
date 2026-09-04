@@ -1,6 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 
 import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseStreams, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests } from './courseAPI';
+import { getStudentCourseDetail, getStudentDashboard, getTeacherCourseDetail, getTeacherDashboard } from './statisticsAPI';
 
 import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnswer, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment, useSetThemeAccessForAll } from 'features/Course/model/services/course_queries';
 
@@ -80,6 +81,28 @@ export const courseQueries = {
                 queryOptions({
                   queryKey: ['course', 'streams', courseId],
                   queryFn: () => getCourseStreams(courseId),
+                  enabled: !!courseId,
+                }),
+      studentDashboard: () =>
+                queryOptions({
+                  queryKey: ['statistics', 'student', 'dashboard'],
+                  queryFn: () => getStudentDashboard(),
+                }),
+      teacherDashboard: () =>
+                queryOptions({
+                  queryKey: ['statistics', 'teacher', 'dashboard'],
+                  queryFn: () => getTeacherDashboard(),
+                }),
+      studentCourseDetail: (courseId: string | null) =>
+                queryOptions({
+                  queryKey: ['statistics', 'student', 'course', courseId],
+                  queryFn: () => getStudentCourseDetail(courseId as string),
+                  enabled: !!courseId,
+                }),
+      teacherCourseDetail: (courseId: string | null) =>
+                queryOptions({
+                  queryKey: ['statistics', 'teacher', 'course', courseId],
+                  queryFn: () => getTeacherCourseDetail(courseId as string),
                   enabled: !!courseId,
                 }),
   

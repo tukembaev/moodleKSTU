@@ -6,7 +6,6 @@ import {
     DialogTitle,
     DialogTrigger,
   } from "shared/shadcn/ui/dialog";
-  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
   import { SetMark } from "features/Course/hooks/SetMark";
   import { useState } from "react";
   import { TablePerfomance } from "entities/Course/model/types/course";

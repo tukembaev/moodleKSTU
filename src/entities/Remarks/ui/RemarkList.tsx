@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import {
   LuSearch,
   LuFilter,
-  LuMessageSquarePlus,
   LuInbox,
   LuListFilter,
 } from "react-icons/lu";

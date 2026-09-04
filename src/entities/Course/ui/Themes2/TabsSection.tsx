@@ -51,18 +51,21 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
   const tabs = [
     {
       name: auth_data.isStudent ? "Мои файлы" : "Список студентов",
+      shortName: auth_data.isStudent ? "Файлы" : "Студенты",
       value: "theme_answers",
       icon: LuList,
       count: 0,
     },
     {
       name: "Обсуждение",
+      shortName: "Чат",
       value: "feed",
       icon: LuMessageSquareText,
       count: comments?.length || 0,
     },
     {
       name: "FAQ",
+      shortName: "FAQ",
       value: "faq",
       icon: LuGlasses,
       count: 0,
@@ -71,6 +74,7 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
       ? [
           {
             name: "Замечания",
+            shortName: "Замечания",
             value: "comments",
             icon: LuClipboardList,
             count: themeRemarks?.length || 0,
@@ -103,23 +107,24 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="flex flex-col h-full"
+        className="flex flex-col h-full pt-4"
       >
-        <TabsList className="h-auto gap-2 rounded-xl p-1 bg-muted justify-start flex-shrink-0 w-fit cursor-pointer m-4 mb-0">
-          {tabs.map(({ icon: Icon, name, value, count }) => {
+        <div className="mx-4 mb-0 min-w-0 overflow-x-auto pb-1">
+          <TabsList className="h-auto gap-1.5 rounded-xl p-1 bg-muted justify-start flex-shrink-0 w-max cursor-pointer sm:gap-2">
+          {tabs.map(({ icon: Icon, name, shortName, value, count }) => {
             const isActive = activeTab === value;
             return (
               <motion.div
                 key={value}
                 layout
                 className={cn(
-                  "flex h-9 items-center justify-center overflow-hidden rounded-lg",
+                  "flex h-9 items-center justify-center overflow-hidden rounded-lg sm:h-9",
                   isActive ? "flex-1" : "flex-none"
                 )}
                 onClick={() => setActiveTab(value)}
                 initial={false}
                 animate={{
-                  width: isActive ? "auto" : 44,
+                  width: isActive ? "auto" : 40,
                 }}
                 transition={{
                   type: "spring",
@@ -129,7 +134,7 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
               >
                 <TabsTrigger value={value} asChild>
                   <motion.div
-                    className="flex h-9 w-full items-center justify-center gap-1.5 px-3 relative"
+                    className="flex h-9 w-full items-center justify-center gap-1.5 px-2 sm:px-3 relative"
                     animate={{ filter: "blur(0px)" }}
                     exit={{ filter: "blur(2px)" }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
@@ -153,14 +158,15 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
                     <AnimatePresence initial={false}>
                       {isActive && (
                         <motion.span
-                          className="font-medium whitespace-nowrap"
+                          className="font-medium whitespace-nowrap text-xs sm:text-sm"
                           initial={{ opacity: 0, scaleX: 0.8 }}
                           animate={{ opacity: 1, scaleX: 1 }}
                           exit={{ opacity: 0, scaleX: 0.8 }}
                           transition={{ duration: 0.25, ease: "easeOut" }}
                           style={{ originX: 0 }}
                         >
-                          {name}
+                          <span className="sm:hidden">{shortName}</span>
+                          <span className="hidden sm:inline">{name}</span>
                         </motion.span>
                       )}
                     </AnimatePresence>
@@ -186,6 +192,7 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
             );
           })}
         </TabsList>
+        </div>
 
         <div className="bg-background mx-4 mb-4 flex-1 min-h-0 overflow-hidden flex flex-col">
           <TabsContent

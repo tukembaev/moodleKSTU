@@ -176,7 +176,7 @@ const RemarkChat = ({
             {message.message}
           </div>
 
-          {message.attachments.length > 0 && (
+          {message.attachments && message.attachments.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-1">
               {message.attachments.map((attachment) => (
                 <a

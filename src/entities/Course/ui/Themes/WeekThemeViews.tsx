@@ -6,7 +6,6 @@ import {
   Lock, 
   CheckCircle2,
   AlertCircle,
-  Sparkles,
 } from "lucide-react";
 import React from "react";
 import empty from "/src/assets/empty.svg";
@@ -20,7 +19,7 @@ import {
   LuPuzzle,
   LuShapes,
 } from "react-icons/lu";
-import { FadeIn, HoverLift, UseTooltip } from "shared/components";
+import { FadeIn, UseTooltip } from "shared/components";
 import {
   Accordion,
   AccordionContent,

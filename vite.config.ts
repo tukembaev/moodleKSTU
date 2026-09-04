@@ -2,8 +2,24 @@ import path from "path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import tailwindcss from "@tailwindcss/vite"
+import { API_TARGET, LOCAL_DJANGO_ORIGIN } from "./src/shared/api/api-target"
 // import basicSsl from "@vitejs/plugin-basic-ssl"
 // import { analyzer } from 'vite-bundle-analyzer'
+
+const localProxy =
+  API_TARGET === "local"
+    ? {
+        "/api": {
+          target: LOCAL_DJANGO_ORIGIN,
+          changeOrigin: true,
+        },
+        "/media": {
+          target: LOCAL_DJANGO_ORIGIN,
+          changeOrigin: true,
+        },
+      }
+    : undefined;
+
 export default defineConfig({
   plugins: [
     react(), // Fast Refresh включен по умолчанию для лучшего HMR
@@ -14,16 +30,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: true, // Разрешаем ngrok и другие хосты
-    proxy: {
-      "/api": {
-        target: "http://localhost:8005",
-        changeOrigin: true,
-      },
-      "/media": {
-        target: "http://localhost:8005",
-        changeOrigin: true,
-      },
-    },
+    ...(localProxy ? { proxy: localProxy } : {}),
     // Оптимизация HMR
     hmr: {
       overlay: true, // Показывать ошибки как оверлей

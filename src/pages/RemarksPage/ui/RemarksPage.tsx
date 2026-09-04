@@ -36,7 +36,7 @@ const RemarksPage = () => {
   const authData = useAuth();
 
   const currentUser = useMemo(() => {
-    if (!authData) {
+    if (!authData.isAuthenticated) {
       return null;
     }
     const fullName =

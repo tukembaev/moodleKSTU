@@ -47,7 +47,7 @@ const TestList = () => {
   const navigate = useNavigate();
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
           <SpringPopupList>
             {Array.from({ length: 5 }).map((_, index) => (
@@ -90,9 +90,9 @@ const TestList = () => {
                     {theme.description}
                   </span>
                   {!isStudent ? (
-                    <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div className="flex flex-col sm:flex-row gap-2 mt-2">
                       <Button
-                        className="shadow-none h-8 w-full text-md"
+                        className="shadow-none h-8 w-full sm:flex-1 text-sm"
                         variant="outline"
                         onClick={() =>
                           navigate(`/test/${AppSubRoutes.TEST_EDIT}/${theme.id}`)
@@ -107,7 +107,7 @@ const TestList = () => {
                         onConfirm={() => deleteTest(theme.id)}
                         trigger={
                           <Button
-                            className="shadow-none h-8 w-full text-md"
+                            className="shadow-none h-8 w-full sm:flex-1 text-sm"
                             variant="destructive"
                             disabled={isDeleting}
                           >
@@ -119,7 +119,7 @@ const TestList = () => {
                     </div>
                   ) : theme.passed == null ? (
                     <Button
-                      className="shadow-none w-full mt-2 h-8 text-md"
+                      className="shadow-none w-full mt-2 h-8 text-sm"
                       variant="outline"
                       onClick={() =>
                         navigate(
@@ -137,7 +137,7 @@ const TestList = () => {
         )}
 
         {!isStudent && (
-        <FadeIn className="flex border rounded-xl py-4 px-5 min-w-1/3 justify-center items-center min-h-48">
+        <FadeIn className="flex border rounded-xl py-4 px-5 w-full justify-center items-center min-h-48">
           
             <UseTooltip text="Добавить тест">
               <div

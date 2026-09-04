@@ -2,6 +2,7 @@ import { LogOut, Settings, User } from "lucide-react";
 import { LuBriefcaseBusiness } from "react-icons/lu";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "shared/hooks";
+import { performLogout } from "shared/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import {
   DropdownMenu,
@@ -14,10 +15,7 @@ const UserMenu = () => {
   const auth_data = useAuth();
 
   const onExit = () => {
-    localStorage.removeItem("auth_data");
-    localStorage.removeItem("google_auth");
-    window.dispatchEvent(new Event("storage"));
-    window.location.href = "/";
+    void performLogout({ redirect: true });
   };
 
   return (

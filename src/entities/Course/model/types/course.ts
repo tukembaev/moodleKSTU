@@ -1,5 +1,4 @@
 import { Test } from "entities/Test/model/types/test";
-import { ResidesCourse, ResidesTheme } from "entities/User";
 
 export type CourseOwner = {
   id: string;

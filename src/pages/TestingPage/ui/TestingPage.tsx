@@ -8,7 +8,6 @@ const TestingPage = () => {
   const isStudent = Boolean(auth?.isStudent);
   const isTestSubRoute =
     location.pathname.includes("/test/pass/") ||
-    location.pathname.includes("/test/result") ||
     location.pathname.includes("/test/add-quiz") ||
     location.pathname.includes("/test/edit/") ||
     location.pathname.includes("/test/quiz-result/");
