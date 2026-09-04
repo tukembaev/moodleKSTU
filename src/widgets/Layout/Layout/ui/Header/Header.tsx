@@ -8,7 +8,6 @@ import GuestNavigationMenu from "./lib/GuestNavigationMenu";
 import { HeaderNotifications } from "./lib/HeaderNotifications";
 import { HeaderSearch } from "./lib/HeaderSearch";
 import { HeaderUserMenu } from "./lib/HeaderUserMenu";
-import logo from "/src/assets/logo.svg";
 
 const Header = () => {
   const auth = useAuth();
@@ -23,12 +22,10 @@ const Header = () => {
       <div className="flex justify-between items-center mx-auto">
         {!isAuthed ? (
           <div className="flex items-center gap-2 sm:gap-4">
-            <img src={logo} className="w-8 shrink-0" alt="Logo" />
             <GuestNavigationMenu />
           </div>
         ) : (
           <div className="flex items-center gap-2 sm:gap-4">
-            <img src={logo} className="w-8 shrink-0" alt="Logo" />
             <nav className="flex items-center gap-1">
               <NavLink
                 to={RoutePath[AppRoutes.COURSES]}

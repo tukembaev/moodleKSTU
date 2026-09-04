@@ -229,6 +229,16 @@ const InstructorCard: FC<{ instructor: CourseOwner }> = ({ instructor }) => {
   );
 };
 
+const isSameUserId = (left?: string | number | null, right?: string | number | null) => {
+  if (left == null || right == null || left === "" || right === "") return false;
+  const leftNum = Number(left);
+  const rightNum = Number(right);
+  if (Number.isFinite(leftNum) && Number.isFinite(rightNum) && leftNum > 0 && rightNum > 0) {
+    return leftNum === rightNum;
+  }
+  return String(left) === String(right);
+};
+
 const AboutCourse = ({
   requirements: initialRequirements,
   description: initialDescription,
@@ -240,8 +250,12 @@ const AboutCourse = ({
   audience?: string;
   course_owner?: CourseOwner | undefined;
 }) => {
-  const { id } = useAuth();
-  const isOwner = course_owner?.user_id === id;
+  const { id, isStudent, isAuthenticated } = useAuth();
+  const isOwner =
+    isSameUserId(course_owner?.user_id, id) ||
+    isSameUserId(course_owner?.id, id) ||
+    isSameUserId(course_owner?.owner, id);
+  const canEdit = isOwner || (isAuthenticated && !isStudent);
   const [requirements, setRequirements] = useState(initialRequirements);
   const [description, setDescription] = useState(initialDescription);
   const [audience, setAudience] = useState(initialAudience);
@@ -257,7 +271,7 @@ const AboutCourse = ({
             icon={FileText}
             value={description || ""}
             onChange={setDescription}
-            isEdit={isOwner}
+            isEdit={canEdit}
             empty={EMPTY_COPY.description}
           />
 
@@ -269,7 +283,7 @@ const AboutCourse = ({
               icon={Users}
               value={audience || ""}
               onChange={setAudience}
-              isEdit={isOwner}
+              isEdit={canEdit}
               empty={EMPTY_COPY.audience}
               titleClassName="flex items-center gap-2 text-base"
             />
@@ -281,7 +295,7 @@ const AboutCourse = ({
               icon={ClipboardList}
               value={requirements || ""}
               onChange={setRequirements}
-              isEdit={isOwner}
+              isEdit={canEdit}
               empty={EMPTY_COPY.requirements}
               titleClassName="flex items-center gap-2 text-base"
             />

@@ -17,17 +17,12 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { useGoogleToken } from "../lib/useGoogleToken";
 import { LoginPayload } from "../model/types/login";
-import logoIQ from "/src/assets/logo.svg";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, BookOpen } from "lucide-react";
+import teacherGuidePdf from "../../../../docs/user-guide/Unet-LMS-rukovodstvo-prepodavatelya.pdf?url";
 
 interface SignupProps {
   heading?: string;
   subheading?: string;
-  logo?: {
-    url: string;
-    src: string;
-    alt: string;
-  };
   googleText?: string;
 }
 
@@ -39,12 +34,7 @@ const CONTEXT_LABELS: Record<AuthContextType, string> = {
 const LoginForm = ({
   heading = "Добро пожаловать",
   subheading = "Войдите в свой аккаунт, чтобы продолжить",
-  logo = {
-    url: "/",
-    src: logoIQ,
-    alt: "Logo",
-  },
-  googleText = "Войти через Google",
+  googleText = "Корпоративная почта",
 }: SignupProps) => {
   const {
     register,
@@ -150,11 +140,6 @@ const LoginForm = ({
       <div className="hidden lg:flex flex-col justify-between bg-zinc-900 text-white p-10 relative overflow-hidden">
         <div className="absolute inset-0 bg-zinc-900" />
         <div className="relative z-10 flex items-center gap-2">
-          <img
-            src={logo.src}
-            alt={logo.alt}
-            className="h-10 w-auto invert brightness-0"
-          />
           <span className="text-xl font-bold">Unet LMS</span>
         </div>
 
@@ -169,16 +154,13 @@ const LoginForm = ({
         </div>
 
         <div className="relative z-10 text-sm text-zinc-500">
-          © {new Date().getFullYear()} IQ Academy. Все права защищены.
+          © {new Date().getFullYear()} Unet LMS. Все права защищены.
         </div>
       </div>
 
       <div className="flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-[400px] space-y-8">
           <div className="flex flex-col space-y-2 text-center">
-            <div className="lg:hidden flex justify-center mb-4">
-              <img src={logo.src} alt={logo.alt} className="h-12 w-auto" />
-            </div>
             <h1 className="text-2xl font-semibold tracking-tight">{heading}</h1>
             <p className="text-sm text-muted-foreground">{subheading}</p>
           </div>
@@ -214,17 +196,17 @@ const LoginForm = ({
               <form onSubmit={onSubmit}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="username">Логин (ПИН)</Label>
+                    <Label htmlFor="username">ПИН</Label>
                     <Input
                       id="username"
-                      placeholder="ПИН / логин"
+                      placeholder="ПИН"
                       type="text"
                       autoCapitalize="none"
                       autoComplete="username"
                       autoCorrect="off"
                       disabled={loading}
                       {...register("username", {
-                        required: "Логин обязателен",
+                        required: "ПИН обязателен",
                       })}
                     />
                     {errors.username && (
@@ -292,26 +274,36 @@ const LoginForm = ({
                 </div>
               </div>
 
-              <Button
-                variant="outline"
-                type="button"
-                disabled={loading || loadingGoogle}
-                onClick={authenticate}
-              >
-                {loadingGoogle ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <GoogleIcon />
-                )}
-                {googleText}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="flex-1"
+                  disabled={loading || loadingGoogle}
+                  onClick={authenticate}
+                >
+                  {loadingGoogle ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <GoogleIcon />
+                  )}
+                  {googleText}
+                </Button>
+                <Button variant="outline" type="button" className="flex-1" asChild>
+                  <a
+                    href={teacherGuidePdf}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Руководство
+                  </a>
+                </Button>
+              </div>
             </div>
           )}
 
-          <p className="px-8 text-center text-sm text-muted-foreground">
-            Ваш пароль по умолчанию ваш ИНН если вы сотрудник. Если вы студент s
-            + ИНН.
-          </p>
+        
         </div>
       </div>
     </div>
