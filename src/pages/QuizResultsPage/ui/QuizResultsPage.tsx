@@ -1,10 +1,11 @@
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "shared/shadcn/ui/card";
 import { Button } from "shared/shadcn/ui/button";
 import { LuX, LuArrowLeft, LuCheck } from "react-icons/lu";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { TestSubmissionResponse, TestDetails } from "entities/Test/model/types/test";
+import { openCourse, useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { cn } from "shared/lib/utils";
 
@@ -17,10 +18,13 @@ interface QuizResultsState {
 const QuizResultsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const storedCourseId = useCourseId();
   const state = location.state as QuizResultsState | null;
-  const courseId = state?.courseId || searchParams.get("course_id");
-  const backPath = courseId ? `/courses/course_themes/${courseId}` : "/courses";
+  const courseId = state?.courseId || storedCourseId || null;
+  const goToCourse = () => {
+    if (courseId) openCourse(navigate, courseId);
+    else navigate("/courses");
+  };
 
   if (!state) {
     return (
@@ -32,7 +36,7 @@ const QuizResultsPage = () => {
             </p>
             <Button
               className="w-full mt-4"
-              onClick={() => navigate(backPath)}
+              onClick={goToCourse}
             >
               Вернуться к курсу
             </Button>
@@ -58,7 +62,7 @@ const QuizResultsPage = () => {
     <div className="min-h-screen flex flex-col gap-4 sm:gap-6 py-4 sm:py-6 max-w-4xl mx-auto px-4">
       <Button
         variant="ghost"
-        onClick={() => navigate(backPath)}
+        onClick={goToCourse}
         className="self-start w-full sm:w-auto"
       >
         <LuArrowLeft className="mr-2" />
@@ -279,7 +283,7 @@ const QuizResultsPage = () => {
       )}
 
       <div className="flex justify-end gap-4 pb-4 sm:pb-6">
-        <Button onClick={() => navigate(backPath)} size="lg" className="w-full sm:w-auto">
+        <Button onClick={goToCourse} size="lg" className="w-full sm:w-auto">
           Вернуться к курсу
         </Button>
       </div>

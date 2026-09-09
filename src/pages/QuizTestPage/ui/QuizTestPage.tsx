@@ -6,8 +6,14 @@ import { TestAnswer, TestDetails, TestQuestion } from "entities/Test/model/types
 import { AlertCircle, FileQuestion } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LuTrash2 } from "react-icons/lu";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { cn } from "shared/lib/utils";
+import {
+  openCourse,
+  openTestResult,
+  useCourseId,
+  useQuizId,
+} from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import {
@@ -49,12 +55,14 @@ const collectAnswers = (
 };
 
 const QuizTestPage = () => {
-  const { id } = useParams();
+  const id = useQuizId();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const courseId = searchParams.get("course_id");
-  const coursePath = courseId ? `/courses/course_themes/${courseId}` : "/courses";
+  const courseId = useCourseId() || null;
+  const goToCourse = () => {
+    if (courseId) openCourse(navigate, courseId);
+    else navigate("/courses");
+  };
   const isStudent = true;
   const { data: testQuestionsData, isLoading, isError } = useQuery(
     testQueries.TestQuestions(id as string)
@@ -87,10 +95,8 @@ const QuizTestPage = () => {
         queryClient.invalidateQueries({ queryKey: ["course", "tests"] }),
         queryClient.invalidateQueries({ queryKey: ["test"] }),
       ]);
-      const resultPath = courseId
-        ? `/test/quiz-result/${id}?course_id=${courseId}`
-        : `/test/quiz-result/${id}`;
-      navigate(resultPath, {
+      openTestResult(navigate, id, {
+        courseId,
         state: {
           results: response,
           quizData,
@@ -137,7 +143,7 @@ const QuizTestPage = () => {
 
   const handleDelete = () => {
     if (window.confirm("Вы уверены, что хотите удалить этот тест?")) {
-      navigate(coursePath);
+      goToCourse();
     }
   };
 
@@ -171,7 +177,7 @@ const QuizTestPage = () => {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={() => navigate(coursePath)}>Вернуться к курсу</Button>
+            <Button onClick={goToCourse}>Вернуться к курсу</Button>
           </EmptyContent>
         </Empty>
       </div>
@@ -190,7 +196,7 @@ const QuizTestPage = () => {
             <EmptyDescription>Данные теста отсутствуют.</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={() => navigate(coursePath)}>Вернуться к курсу</Button>
+            <Button onClick={goToCourse}>Вернуться к курсу</Button>
           </EmptyContent>
         </Empty>
       </div>

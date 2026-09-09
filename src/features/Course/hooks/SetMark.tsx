@@ -1,8 +1,7 @@
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { AlertCircleIcon, LucideWandSparkles } from "lucide-react";
+import { LucideWandSparkles } from "lucide-react";
 import React, { useState } from "react";
 import { GaugeWithSliderSmall } from "shared/components/Progress/GaugeWithSliderSmall";
-import { Alert, AlertTitle } from "shared/shadcn/ui/alert";
 import { Button } from "shared/shadcn/ui/button";
 import {
   DropdownMenu,
@@ -40,10 +39,6 @@ export function SetMark({
           {text}
         </DropdownMenuLabel>
 
-        <Alert variant="warning">
-          <AlertCircleIcon />
-          <AlertTitle>Студент имеет 3 замечания</AlertTitle>
-        </Alert>
         <GaugeWithSliderSmall
           score={score}
           maxScore={Number(max_points)}

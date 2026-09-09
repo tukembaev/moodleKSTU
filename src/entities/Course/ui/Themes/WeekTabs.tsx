@@ -4,10 +4,10 @@ import { Week } from "entities/Course/model/types/course";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import React, { useRef, useState } from "react";
 import { LuPlus } from "react-icons/lu";
-import { useSearchParams } from "react-router-dom";
 import { UseTooltip } from "shared/components";
 import { FormQuery } from "shared/config";
 import { useAuth, useForm } from "shared/hooks";
+import { useHiddenId } from "shared/lib/navigation/hidden-ids";
 import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
 import { GridWeekThemes, ListWeekThemes } from "./WeekThemeViews";
 import empty from "/src/assets/empty.svg";
@@ -32,8 +32,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
   course_owner,
 }) => {
   const { id, isStudent } = useAuth();
-  const [searchParams] = useSearchParams();
-  const theme_id = searchParams.get("themeId");
+  const theme_id = useHiddenId("themeId");
   const themeRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const openForm = useForm();
   const isMobile = useIsMobile();

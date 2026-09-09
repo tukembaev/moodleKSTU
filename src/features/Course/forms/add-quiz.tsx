@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { LuBookDashed, LuImage, LuPlus, LuX } from "react-icons/lu";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useFormParam } from "shared/hooks";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import CheckboxCard from "shared/components/CheckboxCard";
 import { Button } from "shared/shadcn/ui/button";
 import { Card } from "shared/shadcn/ui/card";
@@ -82,10 +84,12 @@ const Add_Quiz = () => {
 
   const [searchParams] = useSearchParams();
   const formParam = searchParams.get("form");
+  const formCourseId = useFormParam("course_id");
+  const storedCourseId = useCourseId();
+  const courseId = formCourseId || storedCourseId;
 
   const { mutate: createTest, isPending } = testQueries.create_test_with_formdata();
   const { mutate: attachTest } = testQueries.attach_test_to_course();
-  const courseId = searchParams.get("course_id");
 
   const options = [
     {

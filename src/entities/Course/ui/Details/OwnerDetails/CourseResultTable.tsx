@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 
 import { LuCheckCheck } from "react-icons/lu";
-import { useParams } from "react-router-dom";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
@@ -20,7 +20,7 @@ import StudentDetailDialog from "./StudentCourseDetail";
 
 
 const CourseResultTable = () => {
-  const { id } = useParams();
+  const id = useCourseId();
   const { data, isLoading } = useQuery(
     courseQueries.allStudentPerfomance(id as string)
   );

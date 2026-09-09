@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LuBookOpen, LuFileCheck, LuUsers } from "react-icons/lu";
-import { Link } from "react-router-dom";
-import { AppSubRoutes, RoutePath } from "shared/config";
+import { useNavigate } from "react-router-dom";
+import { openCourse } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 
 export const TeacherDashboard = () => {
+  const navigate = useNavigate();
   const { data, isLoading, error } = useQuery(courseQueries.teacherDashboard());
 
   if (isLoading) {
@@ -135,10 +136,11 @@ export const TeacherDashboard = () => {
         <CardContent>
           <div className="space-y-4">
             {courses.map((course) => (
-              <Link
+              <button
+                type="button"
                 key={course.course.id}
-                to={RoutePath[AppSubRoutes.COURSE_THEMES].replace(":id", course.course.id)}
-                className="block p-4 border rounded-lg hover:bg-accent transition-colors"
+                onClick={() => openCourse(navigate, course.course.id)}
+                className="block w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -188,7 +190,7 @@ export const TeacherDashboard = () => {
                     )}
                   </div>
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         </CardContent>

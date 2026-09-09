@@ -22,6 +22,7 @@ export type ProfileContext = {
 export type StoredUser = Record<string, unknown> & {
   id?: number | string;
   user?: number | string;
+  username?: string;
   first_name?: string;
   last_name?: string;
   surname?: string;
@@ -185,12 +186,46 @@ export function resolveUserId(user: StoredUser | null): number | null {
   return Number.isFinite(id) && id > 0 ? id : null;
 }
 
+function hasAnyUserIdentity(user: StoredUser): boolean {
+  const nested = (user.user_data || {}) as StoredUser;
+  const rawId = user.id ?? user.user ?? nested.id ?? nested.user;
+  if (rawId !== undefined && rawId !== null && String(rawId).trim() !== "") {
+    return true;
+  }
+  const username = user.username ?? nested.username;
+  return typeof username === "string" && username.trim().length > 0;
+}
+
 export function hasAuthSession(user: StoredUser | null = getStoredUser()): boolean {
   if (!user) return false;
   if (getActiveContext()) return true;
+  if (hasAnyUserIdentity(user)) return true;
   if (resolveUserId(user)) return true;
   if (typeof user.isStudent === "boolean") return true;
-  return parseProfileContexts(user.available_contexts).length > 0;
+  return (
+    parseProfileContexts(user.available_contexts).length > 0 ||
+    getAvailableProfileContexts().length > 0
+  );
+}
+
+export function mergeProfileIntoSession(profile: {
+  first_name?: string;
+  last_name?: string;
+  email?: string | null;
+  avatar?: string | null;
+  username?: string;
+}) {
+  const user = getStoredUser();
+  if (!user) return;
+  setStoredUser({
+    ...user,
+    first_name: profile.first_name || user.first_name,
+    last_name: profile.last_name || user.last_name,
+    email: profile.email || user.email,
+    avatar: profile.avatar || user.avatar,
+    username: profile.username || user.username,
+  });
+  notifyAuthChanged();
 }
 
 export function isStudentFromUser(

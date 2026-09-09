@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { registerToCourse } from 'entities/User';
 
 import { createCourse, createTheme } from 'entities/Course';
-import { bindCourseStreams, createAnswer, createComment, createFAQ, createMaterial, deleteAnswer, deleteCourseStream, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, replyOnComment, setExtraPoints } from 'entities/Course/model/services/courseAPI';
+import { bindCourseStreams, createAnswer, createComment, createFAQ, createMaterial, deleteAnswer, deleteCourseStream, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setExtraPoints } from 'entities/Course/model/services/courseAPI';
 import { toast } from 'sonner';
 import { BindCourseStreamsPayload, CreateCoursePayload, CreateFAQPayload, CreateThemePayload, EditThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload } from '../types/course_payload';
 
@@ -494,6 +494,36 @@ export const useBindCourseStreams = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course', 'streams'], exact: false });
+    },
+  });
+};
+
+export const useRemoveStudentFromCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      studentId,
+    }: {
+      courseId: string;
+      studentId: number;
+    }) => {
+      const mutationPromise = removeStudentFromCourse(courseId, studentId);
+      toast.promise(mutationPromise, {
+        loading: "Удаляем студента с курса...",
+        success: "Студент удалён с курса",
+      });
+      return mutationPromise;
+    },
+    onError: (error) => {
+      toast.error(`Ошибка: ${error?.message || "Не удалось удалить студента"}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["answer-task"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["table-perfomance"],
+        exact: false,
+      });
     },
   });
 };

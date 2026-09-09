@@ -107,9 +107,9 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="flex flex-col h-full pt-4"
+        className="flex flex-col h-full pt-3 sm:pt-4"
       >
-        <div className="mx-4 mb-0 min-w-0 overflow-x-auto pb-1">
+        <div className="mx-3 mb-0 min-w-0 overflow-x-auto pb-1 sm:mx-4">
           <TabsList className="h-auto gap-1.5 rounded-xl p-1 bg-muted justify-start flex-shrink-0 w-max cursor-pointer sm:gap-2">
           {tabs.map(({ icon: Icon, name, shortName, value, count }) => {
             const isActive = activeTab === value;
@@ -194,7 +194,7 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
         </TabsList>
         </div>
 
-        <div className="bg-background mx-4 mb-4 flex-1 min-h-0 overflow-hidden flex flex-col">
+        <div className="bg-background mx-3 mb-3 flex-1 min-h-0 overflow-hidden flex flex-col sm:mx-4 sm:mb-4">
           <TabsContent
             value="theme_answers"
             className="m-0 p-0 data-[state=inactive]:hidden h-full overflow-auto"
@@ -208,7 +208,7 @@ export const TabsSection: FC<TabsSectionProps> = ({ themeId }) => {
             value="feed"
             className="m-0 p-0 data-[state=inactive]:hidden h-full min-h-0 overflow-hidden"
           >
-            <div className="flex h-full min-h-0 flex-col p-4">
+            <div className="flex h-full min-h-0 flex-col p-3 sm:p-4">
               <ThemeFeed
                 items={comments || []}
                 isLoading={isLoadingComments}

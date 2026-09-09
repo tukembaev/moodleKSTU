@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { Button } from "shared/shadcn/ui/button";
 import { Test } from "entities/Test/model/types/test";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useCourseId, useHiddenId } from "shared/lib/navigation/hidden-ids";
 import UseTabs from "shared/components/UseTabs";
 import { useAuth, useForm } from "shared/hooks";
 import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
@@ -134,11 +134,9 @@ const ListOfThemes = ({
   tests: Test[];
 }) => {
   const { id, isStudent } = useAuth();
-  const { id: id_theme } = useParams();
+  const id_theme = useCourseId();
+  const theme_id = useHiddenId("themeId");
   const isOwner = id === data?.course_owner[0]?.user_id;
-  
-  const [searchParams] = useSearchParams();
-  const theme_id = searchParams.get("themeId");
   const themeRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const openForm = useForm();
   const isMobile = useIsMobile();

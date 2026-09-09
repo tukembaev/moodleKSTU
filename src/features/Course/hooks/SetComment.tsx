@@ -130,10 +130,15 @@ export function SetComment({
   };
 
   const handleApprove = (reviewId: string) => {
-    updateStatus({
-      id: reviewId,
-      data: { status: RemarkStatus.APPROVED },
-    });
+    updateStatus(
+      {
+        id: reviewId,
+        data: { status: RemarkStatus.APPROVED },
+      },
+      {
+        onSuccess: () => setOpen(false),
+      }
+    );
   };
 
   const handleReject = (reviewId: string, message: string) => {

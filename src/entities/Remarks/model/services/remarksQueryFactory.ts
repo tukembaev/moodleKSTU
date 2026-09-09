@@ -77,24 +77,28 @@ export const useUpdateRemarkStatus = () => {
     mutationFn: ({
       id,
       data,
+      silent,
     }: {
       id: string;
       data: UpdateRemarkStatusPayload;
+      silent?: boolean;
     }) => {
       const mutationPromise = updateRemarkStatus(id, data);
-      const loading =
-        data.status === RemarkStatus.APPROVED
-          ? "Одобряем замечание..."
-          : data.status === RemarkStatus.REJECTED
-          ? "Отклоняем работу..."
-          : "Обновляем статус...";
-      const success =
-        data.status === RemarkStatus.APPROVED
-          ? "Замечание одобрено!"
-          : data.status === RemarkStatus.REJECTED
-          ? "Работа отклонена!"
-          : "Статус обновлен!";
-      toast.promise(mutationPromise, { loading, success });
+      if (!silent) {
+        const loading =
+          data.status === RemarkStatus.APPROVED
+            ? "Одобряем замечание..."
+            : data.status === RemarkStatus.REJECTED
+            ? "Отклоняем работу..."
+            : "Обновляем статус...";
+        const success =
+          data.status === RemarkStatus.APPROVED
+            ? "Замечание одобрено!"
+            : data.status === RemarkStatus.REJECTED
+            ? "Работа отклонена!"
+            : "Статус обновлен!";
+        toast.promise(mutationPromise, { loading, success });
+      }
       return mutationPromise;
     },
     onError: (error: Error) => {

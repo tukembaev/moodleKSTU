@@ -18,8 +18,8 @@ import {
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { UseTooltip } from "shared/components";
-import { AppSubRoutes } from "shared/config";
 import { useAuth } from "shared/hooks";
+import { openCourse, openTestPass } from "shared/lib/navigation/hidden-ids";
 import { getFormattedDate } from "shared/lib";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
@@ -69,12 +69,11 @@ const TestCard = ({
   const { isStudent } = useAuth();
   const navigate = useNavigate();
   const canTake = isStudent && studentCanTakeTest(item);
-  const passPath =
-    "/test/" +
-    AppSubRoutes.TEST_PASS +
-    "/" +
-    item.id +
-    (courseId ? `?course_id=${courseId}` : "");
+  const goToCourse = () => {
+    if (courseId) openCourse(navigate, courseId);
+    else navigate("/courses");
+  };
+  const goToPass = () => openTestPass(navigate, item.id, courseId);
   
   // Category styling for tests
   const testCategory = {
@@ -162,13 +161,7 @@ const TestCard = ({
                   size="sm"
                   variant="outline"
                   className="gap-1.5 shadow-none"
-                  onClick={() =>
-                    navigate(
-                      courseId
-                        ? `/courses/course_themes/${courseId}`
-                        : "/courses"
-                    )
-                  }
+                  onClick={goToCourse}
                 >
                   <BarChart3 className="h-4 w-4" />
                   Результаты
@@ -177,7 +170,7 @@ const TestCard = ({
                 <Button
                   size="sm"
                   className="gap-1.5 bg-rose-600 hover:bg-rose-700 text-white"
-                  onClick={() => navigate(passPath)}
+                  onClick={goToPass}
                 >
                   <PlayCircle className="h-4 w-4" />
                   Пройти
@@ -258,13 +251,7 @@ const TestCard = ({
             <Button
               className="w-full gap-2 shadow-none"
               variant="outline"
-              onClick={() =>
-                navigate(
-                  courseId
-                    ? `/courses/course_themes/${courseId}`
-                    : "/courses"
-                )
-              }
+              onClick={goToCourse}
             >
               <BarChart3 className="h-4 w-4" />
               Открыть результаты
@@ -272,7 +259,7 @@ const TestCard = ({
           ) : canTake ? (
             <Button
               className="w-full gap-2 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
-              onClick={() => navigate(passPath)}
+              onClick={goToPass}
             >
               <PlayCircle className="h-4 w-4" />
               Пройти тест

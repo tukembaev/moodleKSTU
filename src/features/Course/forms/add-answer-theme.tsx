@@ -4,7 +4,7 @@ import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 
-import { useSearchParams } from "react-router-dom";
+import { useFormParam } from "shared/hooks";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
 import { UploadAnswerPayload } from "../model/types/course_payload";
@@ -22,8 +22,7 @@ const Add_Answer_Theme = () => {
   } = useForm<UploadAnswerPayload>();
   const { mutate: add_answer, isPending } = courseQueries.create_answer();
 
-  const [searchParams] = useSearchParams();
-  const taskId = searchParams.get("id");
+  const taskId = useFormParam("id");
 
   useEffect(() => {
     setValue("task", taskId || "");

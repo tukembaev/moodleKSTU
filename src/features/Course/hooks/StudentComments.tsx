@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { remarksQueries } from "entities/Remarks";
+import { remarksQueries, RemarkStatus } from "entities/Remarks";
 import { ArrowUpIcon, MessageCircleDashedIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
@@ -31,6 +31,7 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
   );
 
   const { mutate: addMessage, isPending } = remarksQueries.add_message();
+  const { mutate: updateStatus } = remarksQueries.update_status();
 
   const reviews = useMemo(
     () => (remarks ?? []).map(remarkToReview),
@@ -51,7 +52,18 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
     if (!note.trim() || !replyTarget) return;
     addMessage(
       { id: replyTarget.id, data: { message: note } },
-      { onSuccess: () => setNote("") }
+      {
+        onSuccess: () => {
+          setNote("");
+          if (replyTarget.status !== "student_replied") {
+            updateStatus({
+              id: replyTarget.id,
+              data: { status: RemarkStatus.RESPONDED },
+              silent: true,
+            });
+          }
+        },
+      }
     );
   };
 

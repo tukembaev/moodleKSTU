@@ -9,6 +9,7 @@ import {
   selectAuthContext,
   authByPassword,
 } from "shared/lib/auth";
+import { getPostLoginPath } from "shared/lib/navigation/hidden-ids";
 import { GoogleIcon } from "shared/assets";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
@@ -52,7 +53,7 @@ const LoginForm = ({
 
   useEffect(() => {
     if (hasAuthSession() && getActiveContext()) {
-      window.location.replace("/courses");
+      window.location.replace(getPostLoginPath());
       return;
     }
 
@@ -86,7 +87,7 @@ const LoginForm = ({
   const finishLogin = () => {
     toast.success("Успешно авторизован");
     setTimeout(() => {
-      window.location.href = "/courses";
+      window.location.href = getPostLoginPath();
     }, 100);
   };
 
@@ -129,14 +130,14 @@ const LoginForm = ({
 
   if (restoring) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center">
+      <div className="w-full min-h-dvh flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen grid lg:grid-cols-2">
+    <div className="w-full min-h-dvh grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between bg-zinc-900 text-white p-10 relative overflow-hidden">
         <div className="absolute inset-0 bg-zinc-900" />
         <div className="relative z-10 flex items-center gap-2">
@@ -158,15 +159,15 @@ const LoginForm = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-[400px] space-y-8">
-          <div className="flex flex-col space-y-2 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">{heading}</h1>
+      <div className="flex min-h-dvh items-center justify-center overflow-y-auto bg-background px-4 py-6 sm:px-6 sm:py-8 md:p-10">
+        <div className="w-full max-w-[400px] space-y-6 sm:space-y-8">
+          <div className="flex flex-col space-y-1.5 text-center sm:space-y-2">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{heading}</h1>
             <p className="text-sm text-muted-foreground">{subheading}</p>
           </div>
 
           {pendingContexts ? (
-            <div className="grid gap-4">
+            <div className="grid gap-3 sm:gap-4">
               <p className="text-sm text-center text-muted-foreground">
                 Выберите профиль для входа
               </p>
@@ -175,7 +176,7 @@ const LoginForm = ({
                   key={`${context.type}-${context.full_name || ""}`}
                   disabled={loading}
                   onClick={() => onSelectContext(context)}
-                  className="w-full h-auto py-3 flex flex-col items-start gap-0.5"
+                  className="h-auto w-full min-h-[44px] flex-col items-start gap-0.5 whitespace-normal py-3 text-left"
                   variant="outline"
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -192,7 +193,7 @@ const LoginForm = ({
               ))}
             </div>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-5 sm:gap-6">
               <form onSubmit={onSubmit}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
@@ -205,6 +206,7 @@ const LoginForm = ({
                       autoComplete="username"
                       autoCorrect="off"
                       disabled={loading}
+                      className="h-11 text-base sm:h-10 sm:text-sm"
                       {...register("username", {
                         required: "ПИН обязателен",
                       })}
@@ -225,7 +227,7 @@ const LoginForm = ({
                         type={showPassword ? "text" : "password"}
                         autoComplete="current-password"
                         disabled={loading}
-                        className="pr-10"
+                        className="h-11 pr-10 text-base sm:h-10 sm:text-sm"
                         {...register("password", {
                           required: "Пароль обязателен",
                         })}
@@ -254,7 +256,7 @@ const LoginForm = ({
                     )}
                   </div>
 
-                  <Button disabled={loading} className="mt-2">
+                  <Button disabled={loading} className="mt-2 h-11 sm:h-10">
                     {loading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
@@ -274,11 +276,11 @@ const LoginForm = ({
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Button
                   variant="outline"
                   type="button"
-                  className="flex-1"
+                  className="h-11 w-full flex-1 sm:h-10"
                   disabled={loading || loadingGoogle}
                   onClick={authenticate}
                 >
@@ -287,9 +289,14 @@ const LoginForm = ({
                   ) : (
                     <GoogleIcon />
                   )}
-                  {googleText}
+                  <span className="truncate">{googleText}</span>
                 </Button>
-                <Button variant="outline" type="button" className="flex-1" asChild>
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="h-11 w-full flex-1 sm:h-10"
+                  asChild
+                >
                   <a
                     href={teacherGuidePdf}
                     target="_blank"
@@ -302,8 +309,6 @@ const LoginForm = ({
               </div>
             </div>
           )}
-
-        
         </div>
       </div>
     </div>

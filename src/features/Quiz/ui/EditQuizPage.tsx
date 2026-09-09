@@ -1,8 +1,9 @@
 import { TestEditorPanel } from "entities/Course/ui/Themes2/TestEditorPanel";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useQuizId } from "shared/lib/navigation/hidden-ids";
 
 const EditQuizPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const id = useQuizId();
   const navigate = useNavigate();
 
   if (!id) {

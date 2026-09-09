@@ -2,8 +2,8 @@ import { CommandSeparator } from "cmdk";
 import { Course } from "entities/Course";
 import { LuBook } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
-import { AppRoutes, AppSubRoutes } from "shared/config";
 import { CommandGroup, CommandItem } from "shared/shadcn/ui/command";
+import { openCourse } from "shared/lib/navigation/hidden-ids";
 
 const CoursesGroup = ({ data }: { data: Course[] }) => {
   const navigate = useNavigate();
@@ -16,14 +16,7 @@ const CoursesGroup = ({ data }: { data: Course[] }) => {
           key={item.id}
           value={item.discipline_name}
           onSelect={() => {
-            navigate(
-              "/" +
-                AppRoutes.COURSES +
-                "/" +
-                AppSubRoutes.COURSE_THEMES +
-                "/" +
-                item.id
-            );
+            openCourse(navigate, item.id);
           }}
         >
           <LuBook />

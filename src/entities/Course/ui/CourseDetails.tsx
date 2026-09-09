@@ -10,12 +10,13 @@ import {
 import AboutCourse from "./Details/AboutCourse";
 
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { courseQueries } from "../model/services/courseQueryFactory";
 import { CourseManagementTab } from "./Details/OwnerDetails/CourseManagement";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
 import { CourseTasksLayout } from "./Themes2";
+import { CourseInviteQrButton } from "./invite/CourseInviteQrSection";
 import { Badge } from "shared/shadcn/ui/badge";
 import {
   Tabs,
@@ -26,7 +27,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 
 const CourseDetails = () => {
-  const { id } = useParams();
+  const id = useCourseId();
   const {isStudent} = useAuth();
   const safeId = id || "";
   const isLocked = false;
@@ -76,24 +77,38 @@ const CourseDetails = () => {
   }
 
   return (
-    <div className="flex min-h-0 flex-col gap-4 lg:h-full lg:overflow-hidden">
+    <div className="flex min-h-0 flex-col gap-3 sm:gap-4 lg:h-full lg:overflow-hidden">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col">
         <div className="flex flex-col gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <div className="flex min-w-0 flex-col gap-2 pt-2 sm:gap-3">
-            <h1 className="text-xl font-bold tracking-tight break-words sm:text-2xl md:text-4xl">
-              {courseModulesData?.discipline_name}
-            </h1>
-            <div className="flex items-center gap-2.5">
-              <Avatar className="h-8 w-8 border-2 border-border shrink-0">
-                <AvatarImage src={courseModulesData?.course_owner?.[0]?.avatar} />
-                <AvatarFallback className="bg-muted">
-                  <LuUser className="h-4 w-4 text-muted-foreground" />
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm text-muted-foreground font-medium truncate sm:text-base">
-                {courseModulesData?.course_owner?.[0]?.owner_name}
-              </span>
+          <div className="flex w-full min-w-0 items-stretch gap-3 pt-1 sm:w-auto sm:pt-2">
+            <div className="flex w-full min-w-0 flex-col items-center gap-2 text-center sm:w-auto sm:items-start sm:gap-3 sm:text-left">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+              <h1 className="text-xl font-bold tracking-tight break-words sm:text-2xl md:text-4xl">
+                {courseModulesData?.discipline_name}
+              </h1>
+              {!isStudent && safeId && (
+              <CourseInviteQrButton
+                courseId={safeId}
+                courseName={courseModulesData?.discipline_name}
+                teacherName={courseModulesData?.course_owner?.[0]?.owner_name}
+              />
+            )}
+              </div>
+          
+              
+              <div className="flex items-center gap-2.5">
+                <Avatar className="h-8 w-8 border-2 border-border shrink-0">
+                  <AvatarImage src={courseModulesData?.course_owner?.[0]?.avatar} />
+                  <AvatarFallback className="bg-muted">
+                    <LuUser className="h-4 w-4 text-muted-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm text-muted-foreground font-medium truncate sm:text-base">
+                  {courseModulesData?.course_owner?.[0]?.owner_name}
+                </span>
+              </div>
             </div>
+           
           </div>
 
           <div className="w-full min-w-0 overflow-x-auto pb-1 -mx-1 px-1 sm:w-auto sm:overflow-visible sm:pb-0 sm:mx-0 sm:px-0">

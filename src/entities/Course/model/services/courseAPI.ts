@@ -175,3 +175,19 @@ export const getCourseTests = async (courseId: string | null): Promise<Test[]> =
   });
   return response.data;
 };
+
+// Отправить заявку на вступление на курс (по приглашению/QR-коду)
+export const registerToCourse = async (courseId: string) => {
+  const response = await $api_users.post(`registration-course/`, {
+    course_id: courseId,
+  });
+  return response.data;
+};
+
+export const removeStudentFromCourse = async (
+  courseId: string,
+  studentId: number
+) => {
+  const response = await $api_users.delete(`remove/${courseId}/${studentId}/`);
+  return response.data;
+};

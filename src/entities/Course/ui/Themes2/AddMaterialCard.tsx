@@ -21,7 +21,7 @@ export const AddMaterialCard: FC<AddMaterialCardProps> = ({ themeId }) => {
   return (
     <Attachment
       state="idle"
-      className="min-w-[240px] flex-1 max-w-md cursor-pointer"
+      className="w-full min-w-0 cursor-pointer sm:min-w-[240px] sm:flex-1 sm:max-w-md"
     >
       <AttachmentMedia>
         <PlusIcon />

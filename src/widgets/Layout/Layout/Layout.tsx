@@ -6,6 +6,7 @@ import { useAuth } from "shared/hooks";
 import { Toaster } from "shared/shadcn/ui/sonner";
 import { GlobalDrawer } from "shared/components";
 import { NotificationWebSocket } from "widgets/Notification/ui/NotificationWebSocket";
+import { CourseInviteJoinDialog } from "entities/Course/ui/invite/CourseInviteJoinDialog";
 
 interface LayoutProps {
   children: ReactNode;
@@ -19,7 +20,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
   if (isLoginPage) {
     return (
       <>
-        <div className="flex items-center justify-center min-h-screen w-full bg-background">
+        <div className="flex min-h-dvh w-full items-center justify-center bg-background">
           {children}
         </div>
         <Toaster
@@ -43,6 +44,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
         <>
           <GlobalDrawer />
           <NotificationWebSocket />
+          <CourseInviteJoinDialog />
         </>
       )}
       <Toaster

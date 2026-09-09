@@ -15,6 +15,7 @@ export {
   hasAuthSession,
   isStudentFromUser,
   splitFullName,
+  mergeProfileIntoSession,
   parseProfileContext,
   parseProfileContexts,
   type AuthContext,

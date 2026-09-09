@@ -1,11 +1,14 @@
+import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentsAnswers } from "entities/Course/model/types/course";
+import { Remark, RemarkStatus, remarksQueries } from "entities/Remarks";
 import { SetComment } from "features/Course/hooks/SetComment";
 import { SetMark } from "features/Course/hooks/SetMark";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   LuCheckCheck,
+  LuEllipsisVertical,
   LuFile,
   LuKeyRound,
   LuLaugh,
@@ -14,10 +17,12 @@ import {
   LuMessageCircleWarning,
   LuMessageSquare,
   LuThumbsUp,
+  LuTrash2,
   LuUsers,
   LuX
 } from "react-icons/lu";
-import { SpringPopupList, UseTooltip } from "shared/components";
+import { SpringPopupList, UseConfirmationDialog, UseTooltip } from "shared/components";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
@@ -53,6 +58,145 @@ import {
 } from "shared/shadcn/ui/table";
 import { AnswerFileAttachment } from "./AnswerFileAttachment";
 
+type RemarksUiStatus = "none" | "pending" | "responded";
+
+const getRemarksUiStatus = (
+  student: StudentsAnswers,
+  remarks: Remark[]
+): RemarksUiStatus => {
+  const openRemarks = remarks.filter(
+    (remark) =>
+      Number(remark.student_id) === Number(student.user_id) &&
+      String(remark.status).toLowerCase() !== RemarkStatus.APPROVED
+  );
+
+  if (openRemarks.length > 0) {
+    const awaitingTeacher = openRemarks.some((remark) => {
+      const status = String(remark.status).toLowerCase();
+      if (status === RemarkStatus.RESPONDED || status === "student_replied") {
+        return true;
+      }
+      const messages = remark.messages ?? [];
+      const lastMessage = messages[messages.length - 1];
+      return String(lastMessage?.sender_role ?? "").toLowerCase() === "student";
+    });
+    return awaitingTeacher ? "responded" : "pending";
+  }
+
+  if ((student.responded_remarks ?? 0) > 0) return "responded";
+  if ((student.pending_remarks ?? 0) > 0) return "pending";
+  return "none";
+};
+
+const StudentRemarksBadge = ({
+  status,
+  student,
+  theme_id,
+  compact = false,
+}: {
+  status: RemarksUiStatus;
+  student: StudentsAnswers;
+  theme_id?: string | null;
+  compact?: boolean;
+}) => {
+  const title =
+    status === "responded"
+      ? "Проверить ответ студента"
+      : status === "pending"
+        ? "Замечания по работе"
+        : "Добавить замечание";
+
+  return (
+    <SetComment
+      text={title}
+      id={student.id}
+      theme_id={theme_id}
+      student_id={student.user_id}
+    >
+      <Badge
+        variant="outline"
+        className={`gap-1 text-xs cursor-pointer ${
+          compact ? "" : "flex px-1.5 text-muted-foreground [&_svg]:size-3"
+        } ${
+          status === "responded"
+            ? "bg-blue-50 text-blue-700 border-blue-300 shadow-sm dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700"
+            : status === "pending"
+              ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
+              : compact
+                ? ""
+                : ""
+        }`}
+      >
+        {status === "responded" ? (
+          <>
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
+            </span>
+            <LuMessageSquare className="text-blue-600 dark:text-blue-400" />
+            {compact ? "Ответил" : "Студент ответил"}
+          </>
+        ) : status === "pending" ? (
+          <>
+            <LuMeh className="text-orange-500 dark:text-orange-400" />
+            {compact ? "Замечание" : "Есть замечания"}
+          </>
+        ) : (
+          <>
+            <LuLaugh className="text-green-500 dark:text-green-400" />
+            {compact ? "Ок" : "Замечаний нет"}
+          </>
+        )}
+      </Badge>
+    </SetComment>
+  );
+};
+
+const RemoveStudentFromCourseMenu = ({
+  student,
+  courseId,
+  isPending,
+  onRemove,
+}: {
+  student: StudentsAnswers;
+  courseId: string;
+  isPending: boolean;
+  onRemove: (student: StudentsAnswers) => void;
+}) => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0"
+          disabled={isPending || !courseId}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <LuEllipsisVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+        <UseConfirmationDialog
+          title="Удалить студента с курса?"
+          description={`${student.fullname} будет исключён из курса. Это действие нельзя отменить.`}
+          onConfirm={() => onRemove(student)}
+          trigger={
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={isPending || !courseId}
+              onSelect={(event) => event.preventDefault()}
+            >
+              <LuTrash2 />
+              Удалить из курса
+            </DropdownMenuItem>
+          }
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 const ListOfStudentsWithAnswers = ({
   data,
   isLoading,
@@ -74,6 +218,7 @@ const ListOfStudentsWithAnswers = ({
   const [selectedStudents, setSelectedStudents] = useState<Set<number>>(
     new Set()
   );
+  const fallbackCourseId = useCourseId();
 
   const toggleExpand = (studentId: string) => {
     setExpandedId(expandedId === studentId ? null : studentId);
@@ -108,13 +253,18 @@ const ListOfStudentsWithAnswers = ({
     "Все группы",
     ...new Set(data.map((student) => student.group)),
   ];
-  const uniqueData: StudentsAnswers[] = React.useMemo(() => {
+  const uniqueData: StudentsAnswers[] = useMemo(() => {
     const map = new Map();
     data.forEach((s) => {
       if (!map.has(s.user_id)) map.set(s.user_id, s);
     });
     return [...map.values()];
   }, [data]);
+
+  const { data: themeRemarks = [] } = useQuery({
+    ...remarksQueries.byTheme(theme_id ?? null),
+    enabled: !!theme_id,
+  });
 
   const filteredData = uniqueData.filter(
     (student) =>
@@ -124,28 +274,11 @@ const ListOfStudentsWithAnswers = ({
         student.group === selectedGroup)
   );
   
-  // Функция для определения статуса замечаний
-  const getRemarksStatus = (student: StudentsAnswers) => {
-    const status = String(student.status ?? "").toLowerCase();
-
-    if (status === "responded" || status === "student_replied") {
-      return "responded";
-    }
-
-    if (
-      status === "pending" ||
-      status === "rejected" ||
-      student.pending_remarks > 0
-    ) {
-      return "pending";
-    }
-
-    return "none";
-  };
-
   const { mutate: change_permission } = courseQueries.edit_permission();
   const { mutate: setAccessForAll, isPending: isAccessPending } =
     courseQueries.set_theme_access_for_all();
+  const { mutate: removeStudent, isPending: isRemovePending } =
+    courseQueries.remove_student();
 
   const handlePermission = (student: StudentsAnswers) => {
     change_permission({
@@ -176,6 +309,18 @@ const ListOfStudentsWithAnswers = ({
       users: uniqueData.map((student) => student.user_id),
     });
   };
+
+  const handleRemoveStudent = (student: StudentsAnswers) => {
+    const courseId = String(student.course_id || fallbackCourseId || "");
+    if (!courseId || !student.user_id) return;
+    removeStudent({
+      courseId,
+      studentId: student.user_id,
+    });
+  };
+
+  const studentCourseId = (student: StudentsAnswers) =>
+    String(student.course_id || fallbackCourseId || "");
 
   // Render card skeleton for loading state (mobile/tablet)
   const renderCardSkeleton = () => (
@@ -223,6 +368,7 @@ const ListOfStudentsWithAnswers = ({
           {filteredData.map((student) => {
             const hasUnreadFiles = student.files.some((file) => !file.is_read.is_read);
             const isExpanded = expandedId === student.id;
+            const remarksStatus = getRemarksUiStatus(student, themeRemarks);
             
             return (
               <Collapsible
@@ -231,7 +377,11 @@ const ListOfStudentsWithAnswers = ({
                 onOpenChange={() => toggleExpand(student.id)}
               >
                 <Card className={`overflow-hidden transition-all duration-300 ${
-                  isExpanded ? "ring-2 ring-primary/20 shadow-md" : "hover:shadow-sm"
+                  isExpanded
+                    ? "ring-2 ring-primary/20 shadow-md"
+                    : remarksStatus === "responded"
+                      ? "ring-2 ring-blue-300/80 shadow-sm dark:ring-blue-700/60"
+                      : "hover:shadow-sm"
                 }`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-3">
@@ -263,18 +413,25 @@ const ListOfStudentsWithAnswers = ({
                         </div>
                       </div>
                       
-                      {/* Expand button */}
-                      {student.files.length > 0 && (
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                            {isExpanded ? (
-                              <ChevronDown className="h-4 w-4" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </CollapsibleTrigger>
-                      )}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <RemoveStudentFromCourseMenu
+                          student={student}
+                          courseId={studentCourseId(student)}
+                          isPending={isRemovePending}
+                          onRemove={handleRemoveStudent}
+                        />
+                        {student.files.length > 0 && (
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                              {isExpanded ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </CollapsibleTrigger>
+                        )}
+                      </div>
                     </div>
                     
                     {/* Status badges */}
@@ -333,41 +490,12 @@ const ListOfStudentsWithAnswers = ({
                         </Badge>
                       </UseTooltip>
                       
-                      {/* Comments status */}
-                      <SetComment
-                        text="Добавить замечание"
-                        id={student.id}
+                      <StudentRemarksBadge
+                        status={remarksStatus}
+                        student={student}
                         theme_id={theme_id}
-                        student_id={student.user_id}
-                      >
-                        <Badge
-                          variant="outline"
-                          className={`gap-1 text-xs cursor-pointer ${
-                            getRemarksStatus(student) === "responded"
-                              ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800"
-                              : getRemarksStatus(student) === "pending"
-                              ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
-                              : ""
-                          }`}
-                        >
-                          {getRemarksStatus(student) === "responded" ? (
-                            <>
-                              <LuMessageSquare className="h-3 w-3" />
-                              Ответил
-                            </>
-                          ) : getRemarksStatus(student) === "pending" ? (
-                            <>
-                              <LuMeh className="h-3 w-3" />
-                              Замечание
-                            </>
-                          ) : (
-                            <>
-                              <LuLaugh className="h-3 w-3" />
-                              Ок
-                            </>
-                          )}
-                        </Badge>
-                      </SetComment>
+                        compact
+                      />
                     </div>
                   </CardHeader>
                   
@@ -472,11 +600,16 @@ const ListOfStudentsWithAnswers = ({
         </TableHeader>
 
         <TableBody>
-          {filteredData.map((student) => (
+          {filteredData.map((student) => {
+            const remarksStatus = getRemarksUiStatus(student, themeRemarks);
+            return (
             <React.Fragment key={student.user_id}>
               <TableRow
-                className={`${expandedId === student.id ? "border-b-0" : ""}`}
-              // key={student.id + student.fullname}
+                className={`${expandedId === student.id ? "border-b-0" : ""} ${
+                  remarksStatus === "responded"
+                    ? "bg-blue-50/70 dark:bg-blue-950/20"
+                    : ""
+                }`}
               >
                 <TableCell>
                   <Checkbox
@@ -564,71 +697,35 @@ const ListOfStudentsWithAnswers = ({
                   </UseTooltip>
                 </TableCell>
                 <TableCell>
-                  
-                    <Badge
-                      variant="outline"
-                      className={`flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer ${
-                        getRemarksStatus(student) === "responded"
-                          ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800"
-                          : getRemarksStatus(student) === "pending"
-                          ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
-                          : ""
-                      }`}
-                    >
-                      {getRemarksStatus(student) === "responded" ? (
-                        <SetComment
-                          text="Просмотреть ответ"
-                          id={student.id}
-                          theme_id={theme_id}
-                          student_id={student.user_id}
-                        >
-                          <span className="flex gap-1 items-center">
-                            <LuMessageSquare className="text-blue-500 dark:text-blue-400 cursor-pointer" />
-                            Студент ответил
-                          </span>
-                        </SetComment>
-                      ) : getRemarksStatus(student) === "pending" ? (
-                        <SetComment
-                          text="Добавить замечание"
-                          id={student.id}
-                          theme_id={theme_id}
-                          student_id={student.user_id}
-                        >
-                          <span className="flex gap-1 items-center">
-                            <LuMeh className="text-orange-500 dark:text-orange-400 cursor-pointer" />
-                            Есть замечания
-                          </span>
-                        </SetComment>
-                      ) : (
-                        <SetComment
-                          text="Добавить замечание"
-                          id={student.id}
-                          theme_id={theme_id}
-                          student_id={student.user_id}
-                        >
-                          <span className="flex gap-1 items-center cursor-pointer">
-                            <LuLaugh className="text-green-500 dark:text-green-400" />
-                            Замечаний нет
-                          </span>
-                        </SetComment>
-                      )}
-                    </Badge>
-                  
+                  <StudentRemarksBadge
+                    status={remarksStatus}
+                    student={student}
+                    theme_id={theme_id}
+                  />
                 </TableCell>
 
-                <TableCell
-                  className="flex justify-end cursor-pointer"
-                  onClick={() => toggleExpand(student.id)}
-                >
-                  {student.files.length > 0 && (
-                    <span>
-                      {expandedId === student.id ? (
-                        <ChevronDown strokeWidth={1} />
-                      ) : (
-                        <ChevronRight strokeWidth={1} />
-                      )}
-                    </span>
-                  )}
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <RemoveStudentFromCourseMenu
+                      student={student}
+                      courseId={studentCourseId(student)}
+                      isPending={isRemovePending}
+                      onRemove={handleRemoveStudent}
+                    />
+                    {student.files.length > 0 && (
+                      <button
+                        type="button"
+                        className="flex h-8 w-8 items-center justify-center cursor-pointer"
+                        onClick={() => toggleExpand(student.id)}
+                      >
+                        {expandedId === student.id ? (
+                          <ChevronDown strokeWidth={1} />
+                        ) : (
+                          <ChevronRight strokeWidth={1} />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
 
@@ -654,7 +751,8 @@ const ListOfStudentsWithAnswers = ({
                 </TableRow>
               )}
             </React.Fragment>
-          ))}
+            );
+          })}
         </TableBody>
       </Table>
     </div>

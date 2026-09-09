@@ -2,7 +2,7 @@ import { UserFilesList } from "entities/User/types/user";
 import { LuFolderDown } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { SpringPopupList, UseTooltip } from "shared/components";
-import { AppSubRoutes } from "shared/config";
+import { openCourse } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
@@ -70,13 +70,9 @@ const FileTab = ({
                       variant="outline"
                       className="flex gap-1 px-2 py-1 text-xs cursor-pointer"
                       onClick={() =>
-                        navigate(
-                          "/courses/" +
-                            AppSubRoutes.COURSE_THEMES +
-                            "/" +
-                            material.resides?.course[0]?.id +
-                            `?themeId=${material.resides?.theme[0]?.id}`
-                        )
+                        openCourse(navigate, material.resides?.course[0]?.id, {
+                          themeId: material.resides?.theme[0]?.id,
+                        })
                       }
                     >
                       {material?.resides?.theme[0]?.title}
@@ -144,13 +140,9 @@ const FileTab = ({
                         variant="outline"
                         className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
                         onClick={() =>
-                          navigate(
-                            "/courses/" +
-                              AppSubRoutes.COURSE_THEMES +
-                              "/" +
-                              material.resides?.course[0]?.id +
-                              `?themeId=${material.resides?.theme[0]?.id}`
-                          )
+                          openCourse(navigate, material.resides?.course[0]?.id, {
+                            themeId: material.resides?.theme[0]?.id,
+                          })
                         }
                       >
                         {material?.resides?.theme[0]?.title}

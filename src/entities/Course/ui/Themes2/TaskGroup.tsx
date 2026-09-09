@@ -57,8 +57,8 @@ export const TaskGroup: FC<TaskGroupProps> = ({
   };
 
   return (
-    <div className="bg-background border rounded-lg overflow-hidden mb-6">
-      <div className="bg-muted/50 px-4 py-3 border-b">
+    <div className="bg-background border rounded-lg overflow-hidden mb-4 sm:mb-6">
+      <div className="bg-muted/50 px-3 py-2.5 border-b sm:px-4 sm:py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <h3 className="text-base font-semibold text-foreground">{title}</h3>
 

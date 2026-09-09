@@ -7,11 +7,12 @@ import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { Badge } from "shared/shadcn/ui/badge";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Link } from "react-router-dom";
-import { RoutePath, AppSubRoutes } from "shared/config";
 import { LucideCheckCircle2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { openCourse } from "shared/lib/navigation/hidden-ids";
 
 export const StudentDashboard = () => {
+  const navigate = useNavigate();
   const { data, isLoading, error } = useQuery(courseQueries.studentDashboard());
 
   if (isLoading) {
@@ -119,10 +120,11 @@ export const StudentDashboard = () => {
         <CardContent>
           <div className="space-y-4">
             {courses.map((course) => (
-              <Link
+              <button
+                type="button"
                 key={course.id}
-                to={RoutePath[AppSubRoutes.COURSE_THEMES].replace(":id", course.id)}
-                className="block p-4 border rounded-lg hover:bg-accent transition-colors"
+                onClick={() => openCourse(navigate, course.id)}
+                className="block w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -160,7 +162,7 @@ export const StudentDashboard = () => {
                     <p className="text-sm text-muted-foreground">/ {course.max_points}</p>
                   </div>
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         </CardContent>

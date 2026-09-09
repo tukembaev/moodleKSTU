@@ -15,8 +15,9 @@ import {
   UseTooltip
 } from "shared/components";
 import { FormQuery } from "shared/config";
-import { AppRoutes, AppSubRoutes } from "shared/config/routeConfig/routeConfig";
+import { AppRoutes } from "shared/config/routeConfig/routeConfig";
 import { useAuth, useForm } from "shared/hooks";
+import { openCourse } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
@@ -211,9 +212,7 @@ const CourseList = () => {
                       <Button
                         className="shadow-none"
                         variant={"outline"}
-                        onClick={() =>
-                          navigate(AppSubRoutes.COURSE_THEMES + "/" + course.id)
-                        }
+                        onClick={() => openCourse(navigate, course.id)}
                       >
                         Подробнее <ChevronRight />
                       </Button>

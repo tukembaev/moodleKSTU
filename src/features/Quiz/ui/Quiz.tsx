@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
+import { useQuizId } from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
 import { Progress } from "shared/shadcn/ui/progress";
 import { toast } from "sonner";
@@ -17,7 +17,7 @@ interface QuizProps {
   onFinish: () => void;
 }
 const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
-  const { quizId } = useParams();
+  const quizId = useQuizId();
   const authData = useAuth();
   const { data: quizData, isLoading } = useFetchQuiz(quizId || "");
   const { mutate: submitResult, isPending } = useSubmitQuizResult();

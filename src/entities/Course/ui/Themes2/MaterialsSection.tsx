@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { DragEvent, FC, useRef, useState } from "react";
 import { LuFileText, LuUpload } from "react-icons/lu";
-import { useParams } from "react-router-dom";
-import { useAuth } from "shared/hooks";
+import { FormQuery } from "shared/config";
+import { useAuth, useForm } from "shared/hooks";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
+import { Button } from "shared/shadcn/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -22,7 +24,8 @@ interface MaterialsSectionProps {
 
 export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
   const auth_data = useAuth();
-  const { id: courseId } = useParams<{ id: string }>();
+  const openForm = useForm();
+  const courseId = useCourseId();
  
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -118,7 +121,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
   return (
     <div 
       className={cn(
-        "relative flex h-full min-h-0 flex-col p-4",
+        "relative flex h-full min-h-0 flex-col p-3 sm:p-4",
         isDragging && !auth_data.isStudent && "ring-2 ring-primary ring-inset"
       )}
       onDragEnter={handleDragEnter}
@@ -137,10 +140,20 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
         </div>
       )}
 
-      <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
+      <div className="mb-3 flex shrink-0 flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-2">
           <p className="text-lg font-semibold">Учебные материалы</p>
         </div>
+        {!auth_data.isStudent && themeId && (
+          <Button
+            variant="outline"
+            className="h-11 w-full gap-2 sm:h-9 sm:w-auto"
+            onClick={() => openForm(FormQuery.ADD_MATERIAL, { id: themeId })}
+          >
+            <LuUpload className="h-4 w-4" />
+            Добавить файл
+          </Button>
+        )}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">

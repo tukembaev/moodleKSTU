@@ -1,4 +1,4 @@
 import { useAuth } from "./useAuthData";
-import useForm from "./useForm";
+import useForm, { useFormParam } from "./useForm";
 
-export {useForm , useAuth}
+export { useForm, useFormParam, useAuth };

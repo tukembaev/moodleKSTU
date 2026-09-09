@@ -20,6 +20,7 @@ import { QuizTestPage } from "pages/QuizTestPage";
 import { QuizResultsPage } from "pages/QuizResultsPage";
 import { RemarksPage } from "pages/RemarksPage";
 import CourseDetails from "entities/Course/ui/CourseDetails";
+import CourseInvitePage from "pages/CourseInvitePage/ui/CourseInvitePage";
 
 export interface AppRoutesProps {
   path: string;
@@ -53,6 +54,7 @@ export enum AppRoutes {
 
 export enum AppSubRoutes {
   COURSE_THEMES = "course_themes",
+  COURSE_INVITE = "invite",
 
   TEST_PASS = "pass",
   TEST_ADD_QUIZ = "add-quiz",
@@ -68,7 +70,8 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
 
   [AppRoutes.MAIN]: "/main",
   [AppRoutes.COURSES]: "/courses",
-  [AppSubRoutes.COURSE_THEMES]: "/courses/course_themes/:id",
+  [AppSubRoutes.COURSE_THEMES]: "/courses/course_themes/:id?",
+  [AppSubRoutes.COURSE_INVITE]: "/courses/invite",
 
   [AppRoutes.CATEGORY]: "/category",
 
@@ -77,11 +80,11 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   // [AppRoutes.REGISTRATION]: "/registration",
   [AppRoutes.PROFILE]: "/profile",
   [AppRoutes.TEST]: "/test",
-  [AppSubRoutes.TEST_PASS]: "/test/pass/:id",
+  [AppSubRoutes.TEST_PASS]: "/test/pass/:id?",
   [AppSubRoutes.TEST_ADD_QUIZ]: "/test/add-quiz",
-  [AppSubRoutes.TEST_EDIT]: "/test/edit/:id",
-  [AppSubRoutes.TEST_QUIZ]: "/test/quiz/:id",
-  [AppSubRoutes.TEST_QUIZ_RESULT]: "/test/quiz-result/:id",
+  [AppSubRoutes.TEST_EDIT]: "/test/edit/:id?",
+  [AppSubRoutes.TEST_QUIZ]: "/test/quiz/:id?",
+  [AppSubRoutes.TEST_QUIZ_RESULT]: "/test/quiz-result/:id?",
 
   [AppRoutes.GROUPS]: "/groups",
   [AppRoutes.BILLING]: "/billing",
@@ -118,12 +121,18 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
     children: [
       {
         path: RoutePath[AppSubRoutes.COURSE_THEMES],
-        element:  
-      
-        <CourseDetails />   
-   
-    ,
+        element: <CourseDetails />,
         breadcrumbName: "Опр курс",
+      },
+      {
+        path: "/courses/course_themes/:id/invite",
+        element: <CourseInvitePage />,
+        breadcrumbName: "Приглашение",
+      },
+      {
+        path: RoutePath[AppSubRoutes.COURSE_INVITE],
+        element: <CourseInvitePage />,
+        breadcrumbName: "Приглашение",
       },
     ],
   },

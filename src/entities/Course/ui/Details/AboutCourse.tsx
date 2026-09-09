@@ -11,8 +11,8 @@ import {
   Users,
 } from "lucide-react";
 import { FC, useState } from "react";
-import { useParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
@@ -78,7 +78,7 @@ const AboutBlock: FC<{
   empty,
   titleClassName,
 }) => {
-  const { id } = useParams();
+  const id = useCourseId();
   const { mutate: edit_detail } = courseQueries.edit_details();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -101,8 +101,8 @@ const AboutBlock: FC<{
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader>
+    <Card className="h-full gap-4 py-4 sm:gap-6 sm:py-6">
+      <CardHeader className="px-4 sm:px-6">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1.5 min-w-0">
             <CardTitle className={titleClassName ?? "flex items-center gap-2"}>
@@ -126,7 +126,7 @@ const AboutBlock: FC<{
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 sm:px-6">
         {isEditing ? (
           <div className="flex flex-col gap-3">
             <Textarea
@@ -145,7 +145,7 @@ const AboutBlock: FC<{
             </div>
           </div>
         ) : isBlank(value) ? (
-          <Empty className="border border-dashed p-6 md:p-8 min-h-[160px]">
+          <Empty className="border border-dashed p-4 sm:p-6 md:p-8 min-h-[160px]">
             <EmptyContent>
               <EmptyMedia variant="icon">
                 <Icon className="size-6" />
@@ -173,8 +173,8 @@ const InstructorCard: FC<{ instructor: CourseOwner }> = ({ instructor }) => {
     .slice(0, 2);
 
   return (
-    <Card className="lg:sticky lg:top-4">
-      <CardHeader>
+    <Card className="gap-4 py-4 sm:gap-6 sm:py-6 lg:sticky lg:top-4">
+      <CardHeader className="px-4 sm:px-6">
         <CardTitle className="flex items-center gap-2 text-base">
           <GraduationCap className="h-5 w-5 text-primary" />
           Преподаватель
@@ -183,7 +183,7 @@ const InstructorCard: FC<{ instructor: CourseOwner }> = ({ instructor }) => {
           Контактное лицо курса и сведения о профиле
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 sm:px-6">
         <div className="flex flex-col items-center text-center gap-4">
           <Avatar className="h-20 w-20 ring-2 ring-primary/10">
             <AvatarImage src={instructor.avatar} alt={instructor.owner_name} />
@@ -261,9 +261,9 @@ const AboutCourse = ({
   const [audience, setAudience] = useState(initialAudience);
 
   return (
-    <div className="py-4">
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px] gap-6 items-start">
-        <div className="space-y-6">
+    <div className="py-3 sm:py-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px] gap-4 sm:gap-6 items-start">
+        <div className="space-y-4 sm:space-y-6">
           <AboutBlock
             field="description"
             title="Описание курса"
@@ -275,7 +275,7 @@ const AboutCourse = ({
             empty={EMPTY_COPY.description}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <AboutBlock
               field="audience"
               title="Для кого этот курс"
@@ -305,15 +305,15 @@ const AboutCourse = ({
         {course_owner ? (
           <InstructorCard instructor={course_owner} />
         ) : (
-          <Card>
-            <CardHeader>
+          <Card className="gap-4 py-4 sm:gap-6 sm:py-6">
+            <CardHeader className="px-4 sm:px-6">
               <CardTitle className="flex items-center gap-2 text-base">
                 <GraduationCap className="h-5 w-5 text-primary" />
                 Преподаватель
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <Empty className="border border-dashed p-6">
+            <CardContent className="px-4 sm:px-6">
+              <Empty className="border border-dashed p-4 sm:p-6">
                 <EmptyContent>
                   <EmptyMedia variant="icon">
                     <GraduationCap className="size-6" />

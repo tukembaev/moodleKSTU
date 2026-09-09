@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import type { TaskDetail, TeacherCourseDetail, TeacherCourseTasksStatistics, TestDetail } from "entities/Course/model/types/statistics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
@@ -18,7 +18,7 @@ import {
 import { LuUsers, LuFileCheck } from "react-icons/lu";
 
 export const CourseStatisticsTab = () => {
-  const { id } = useParams();
+  const id = useCourseId();
   const { data, isLoading, error } = useQuery(courseQueries.teacherCourseDetail(id || null));
 
   if (isLoading) {

@@ -1,10 +1,13 @@
 import { CourseList } from "entities/Course";
 import { Outlet, useLocation } from "react-router-dom";
 import { AppSubRoutes } from "shared/config";
+import { COURSE_INVITE_PATH } from "shared/lib/navigation/hidden-ids";
 
 const CoursePage = () => {
   const location = useLocation();
-  const isCourseTheme = location.pathname.includes(AppSubRoutes.COURSE_THEMES);
+  const isCourseTheme =
+    location.pathname.includes(AppSubRoutes.COURSE_THEMES) ||
+    location.pathname === COURSE_INVITE_PATH;
 
   return (
     <div>

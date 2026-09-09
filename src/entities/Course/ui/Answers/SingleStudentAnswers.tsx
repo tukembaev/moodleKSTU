@@ -51,14 +51,6 @@ const SingleStudentAnswers = ({
                 Добавьте свой первый файл!
               </p>
             </div>
-            <Button
-              variant="default"
-              className="gap-2 mt-2"
-              onClick={() => openForm(FormQuery.ADD_ANSWER, { id: id })}
-            >
-              <LuUpload className="h-4 w-4" />
-              Загрузить файл
-            </Button>
           </div>
         </div>
       );
@@ -87,8 +79,15 @@ const SingleStudentAnswers = ({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-    
+    <div className="flex flex-col gap-3 p-3 sm:p-4">
+      <Button
+        variant={data.length ? "outline" : "default"}
+        className="h-11 w-full gap-2 sm:h-9 sm:w-auto sm:self-end"
+        onClick={() => openForm(FormQuery.ADD_ANSWER, { id })}
+      >
+        <LuUpload className="h-4 w-4" />
+        Добавить файл
+      </Button>
 
       {isLoading ? renderCardSkeleton() : renderFileCards()}
     </div>

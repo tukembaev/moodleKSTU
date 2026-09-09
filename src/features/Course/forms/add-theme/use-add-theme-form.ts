@@ -1,14 +1,16 @@
 import { useForm } from "react-hook-form";
-import { useSearchParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CreateThemePayload } from "../../model/types/course_payload";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
+import { useFormParam } from "shared/hooks";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 
 export const useAddThemeForm = () => {
   const [selectedType, setSelectedType] = useState<string>("");
-  const [searchParams] = useSearchParams();
-  const courseId = searchParams.get("id");
+  const formCourseId = useFormParam("id");
+  const storedCourseId = useCourseId();
+  const courseId = formCourseId || storedCourseId;
   
   const {
     register,
@@ -25,7 +27,7 @@ export const useAddThemeForm = () => {
     }
   });
 
-  const typeParam = searchParams.get("type");
+  const typeParam = useFormParam("type");
 
   // Get all tests
   const { data: allTests } = useQuery(testQueries.allTest());

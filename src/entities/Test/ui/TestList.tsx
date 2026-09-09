@@ -10,8 +10,8 @@ import {
   UseConfirmationDialog,
   UseTooltip,
 } from "shared/components";
-import { AppSubRoutes } from "shared/config";
 import { useAuth } from "shared/hooks";
+import { openTestEdit, openTestPass } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
@@ -94,9 +94,7 @@ const TestList = () => {
                       <Button
                         className="shadow-none h-8 w-full sm:flex-1 text-sm"
                         variant="outline"
-                        onClick={() =>
-                          navigate(`/test/${AppSubRoutes.TEST_EDIT}/${theme.id}`)
-                        }
+                        onClick={() => openTestEdit(navigate, theme.id)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
                         Редактировать
@@ -121,11 +119,7 @@ const TestList = () => {
                     <Button
                       className="shadow-none w-full mt-2 h-8 text-sm"
                       variant="outline"
-                      onClick={() =>
-                        navigate(
-                          "/test/" + AppSubRoutes.TEST_PASS + "/" + theme.id
-                        )
-                      }
+                        onClick={() => openTestPass(navigate, theme.id)}
                     >
                       Пройти тест <ChevronRight className="h-3 w-3" />
                     </Button>

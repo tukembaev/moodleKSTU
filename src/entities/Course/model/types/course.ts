@@ -198,10 +198,12 @@ export interface StudentsAnswers {
   max_points: number;
   created_at: string;
   user_id: number;
+  course_id?: string;
   status: string;
   points: number;
   remarks: number;
   pending_remarks: number;
+  responded_remarks?: number;
   files: FileAnswer[];
 }
 export interface ThemeItem {

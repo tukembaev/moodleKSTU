@@ -3,7 +3,7 @@ import { queryOptions } from '@tanstack/react-query';
 import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseStreams, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests } from './courseAPI';
 import { getStudentCourseDetail, getStudentDashboard, getTeacherCourseDetail, getTeacherDashboard } from './statisticsAPI';
 
-import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnswer, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useReplyToComment, useSetThemeAccessForAll } from 'features/Course/model/services/course_queries';
+import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnswer, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetThemeAccessForAll } from 'features/Course/model/services/course_queries';
 
 
 
@@ -140,6 +140,7 @@ export const courseQueries = {
   delete_answer: () => useDeleteAnswer(),
   delete_course_stream: () => useDeleteCourseStream(),
   delete_theme: () => useDeleteTheme(),
+  remove_student: () => useRemoveStudentFromCourse(),
 
 
 };

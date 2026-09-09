@@ -4,7 +4,7 @@ import { ru } from "date-fns/locale";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import type { TaskByType, TaskListItem, TestListItem } from "entities/Course/model/types/statistics";
 import { LuClock } from "react-icons/lu";
-import { useParams } from "react-router-dom";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { Progress } from "shared/shadcn/ui/progress";
@@ -20,7 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
 
 export const StudentCourseStatisticsTab = () => {
-  const { id } = useParams();
+  const id = useCourseId();
   const { data, isLoading, error } = useQuery(courseQueries.studentCourseDetail(id || null));
 
   if (isLoading) {

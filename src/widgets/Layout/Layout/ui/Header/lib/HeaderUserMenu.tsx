@@ -1,9 +1,13 @@
+import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { LogOutIcon, UserCircleIcon } from "lucide-react";
+import { userQueries } from "entities/User";
 import { useAuth } from "shared/hooks";
-import { performLogout } from "shared/lib/auth";
+import { mergeProfileIntoSession, performLogout } from "shared/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
+import { Skeleton } from "shared/shadcn/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,27 +20,50 @@ import {
 
 export function HeaderUserMenu() {
   const auth_data = useAuth();
+  const { data: me, isLoading } = useQuery({
+    ...userQueries.me(),
+    enabled: auth_data.isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (!me) return;
+    mergeProfileIntoSession({
+      first_name: me.first_name,
+      last_name: me.last_name,
+      email: me.email,
+      avatar: me.avatar_url,
+      username: me.username,
+    });
+  }, [me]);
 
   const onExit = () => {
     void performLogout({ redirect: true });
   };
 
+  const firstName = me?.first_name || auth_data?.first_name || "";
+  const lastName = me?.last_name || auth_data?.last_name || "";
+  const email = me?.email || auth_data?.email || "";
+  const avatar = me?.avatar_url || auth_data?.avatar || "";
   const initials =
-    `${auth_data?.first_name?.[0] || ""}${auth_data?.last_name?.[0] || ""}`.toUpperCase() ||
-    "U";
+    `${firstName[0] || ""}${lastName[0] || ""}`.toUpperCase() || "U";
+  const displayName = `${firstName} ${lastName}`.trim() || me?.username || "Профиль";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage
-              src={auth_data?.avatar}
-              alt={auth_data?.first_name}
-              className="object-cover"
-            />
-            <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
-          </Avatar>
+          {isLoading && !me ? (
+            <Skeleton className="h-8 w-8 rounded-lg" />
+          ) : (
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage
+                src={avatar}
+                alt={firstName}
+                className="object-cover"
+              />
+              <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+            </Avatar>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -49,19 +76,26 @@ export function HeaderUserMenu() {
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarImage
-                src={auth_data?.avatar}
-                alt={auth_data?.first_name}
+                src={avatar}
+                alt={firstName}
                 className="object-cover"
               />
               <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">
-                {auth_data?.first_name} {auth_data?.last_name}
-              </span>
-              <span className="truncate text-xs text-muted-foreground">
-                {auth_data?.email || ""}
-              </span>
+              {isLoading && !me ? (
+                <>
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="mt-1 h-3 w-36" />
+                </>
+              ) : (
+                <>
+                  <span className="truncate font-medium">{displayName}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {email}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </DropdownMenuLabel>
@@ -77,7 +111,7 @@ export function HeaderUserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onExit}>
           <LogOutIcon />
-          Log out
+          Выйти
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

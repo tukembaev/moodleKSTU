@@ -4,7 +4,14 @@ import {
   hasAuthSession,
   restoreSessionFromCookie,
 } from "shared/lib/auth";
+import { getPostLoginPath } from "shared/lib/navigation/hidden-ids";
 import { Loader2 } from "lucide-react";
+
+function hasGoogleOAuthHash() {
+  if (typeof window === "undefined") return false;
+  const hash = window.location.hash;
+  return hash.includes("id_token") || hash.includes("access_token");
+}
 
 /**
  * If another UNET app already authenticated the user (shared cookie),
@@ -12,6 +19,9 @@ import { Loader2 } from "lucide-react";
  */
 export function SessionBootstrap({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(() => {
+    if (typeof window !== "undefined" && window.location.pathname === "/") {
+      return false;
+    }
     return hasAuthSession() && Boolean(getActiveContext());
   });
 
@@ -19,25 +29,38 @@ export function SessionBootstrap({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     const run = async () => {
-      if (hasAuthSession() && getActiveContext()) {
-        setReady(true);
+      if (hasGoogleOAuthHash()) {
+        if (!cancelled) setReady(true);
         return;
       }
 
-      try {
-        const restored = await restoreSessionFromCookie();
-        if (
-          restored?.requiresContextSelection &&
-          window.location.pathname !== "/"
-        ) {
-          window.location.replace("/");
-          return;
+      const onLoginPage = window.location.pathname === "/";
+
+      if (onLoginPage || !(hasAuthSession() && getActiveContext())) {
+        try {
+          const restored = await restoreSessionFromCookie();
+          if (
+            restored?.requiresContextSelection &&
+            window.location.pathname !== "/"
+          ) {
+            window.location.replace("/");
+            return;
+          }
+        } catch {
+          // anonymous visitor
         }
-      } catch {
-        // anonymous visitor
-      } finally {
-        if (!cancelled) setReady(true);
       }
+
+      if (
+        window.location.pathname === "/" &&
+        hasAuthSession() &&
+        getActiveContext()
+      ) {
+        window.location.replace(getPostLoginPath());
+        return;
+      }
+
+      if (!cancelled) setReady(true);
     };
 
     run();

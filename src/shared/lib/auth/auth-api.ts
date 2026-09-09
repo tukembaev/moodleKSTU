@@ -67,21 +67,44 @@ export async function selectAuthContext(
   });
 }
 
+async function ensureProfileContext(
+  parsed: ParsedAuthResult
+): Promise<ParsedAuthResult> {
+  if (parsed.activeContext) return parsed;
+
+  const contexts = parsed.availableContexts.length
+    ? parsed.availableContexts
+    : await fetchAuthContexts();
+
+  if (!contexts.length) return parsed;
+  if (contexts.length === 1) {
+    return selectAuthContext(contexts[0]);
+  }
+
+  return persistAuthSession({
+    ...parsed.user,
+    available_contexts: contexts,
+    requires_context_selection: true,
+  });
+}
+
 /**
  * Restore session from shared cookie (SSO across unet / lms / other apps).
  */
 export async function restoreSessionFromCookie(): Promise<ParsedAuthResult | null> {
   try {
     const user = await refreshSession();
-    return normalizeAuthPayload(user);
+    return ensureProfileContext(normalizeAuthPayload(user));
   } catch {
     try {
       const contexts = await fetchAuthContexts();
       if (!contexts.length) return null;
+      if (contexts.length === 1) {
+        return selectAuthContext(contexts[0]);
+      }
       return persistAuthSession({
         available_contexts: contexts,
-        requires_context_selection: contexts.length > 1,
-        active_context: contexts.length === 1 ? contexts[0] : undefined,
+        requires_context_selection: true,
       });
     } catch {
       return null;

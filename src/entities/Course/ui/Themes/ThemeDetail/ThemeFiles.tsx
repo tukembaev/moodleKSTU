@@ -7,9 +7,12 @@ import {
   LuGlasses,
   LuList,
   LuMessageSquareText,
+  LuUpload,
 } from "react-icons/lu";
 import { UseTabs } from "shared/components";
-import { useAuth } from "shared/hooks";
+import { FormQuery } from "shared/config";
+import { useAuth, useForm } from "shared/hooks";
+import { Button } from "shared/shadcn/ui/button";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import ThemeAnswers from "../../Answers/ThemeAnswers";
 import { AddMaterialCard } from "../../Themes2/AddMaterialCard";
@@ -27,6 +30,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   );
 
   const auth_data = useAuth();
+  const openForm = useForm();
 
   const tabs = [
     {
@@ -125,8 +129,18 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   return (
     <div className="flex flex-col gap-4 pt-6">
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-lg font-semibold">Учебные материалы</p>
+          {!auth_data.isStudent && (
+            <Button
+              variant="outline"
+              className="h-11 w-full gap-2 sm:h-9 sm:w-auto"
+              onClick={() => openForm(FormQuery.ADD_MATERIAL, { id })}
+            >
+              <LuUpload className="h-4 w-4" />
+              Добавить файл
+            </Button>
+          )}
         </div>
         {renderMaterials()}
       </div>

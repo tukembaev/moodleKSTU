@@ -5,7 +5,7 @@ import { useAuth, useForm } from "shared/hooks";
 import { TaskGroup } from "./TaskGroup";
 import { Plus } from "lucide-react";
 import { FormQuery } from "shared/config";
-import { useParams } from "react-router-dom";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import {
   Empty,
   EmptyContent,
@@ -61,7 +61,7 @@ export const TasksList: FC<TasksListProps> = ({
 }) => {
   const auth_data = useAuth();
   const openForm = useForm();
-  const { id } = useParams<{ id: string }>();
+  const id = useCourseId();
   const isStudent = Boolean(auth_data?.isStudent);
 
   const { data: courseDetails } = useQuery(
@@ -135,7 +135,7 @@ export const TasksList: FC<TasksListProps> = ({
   );
 
   return (
-    <div className="h-full min-h-0 space-y-4 overflow-y-auto pr-2">
+    <div className="h-full min-h-0 space-y-3 overflow-y-auto pr-1 sm:space-y-4 sm:pr-2">
       {Object.entries(groupedTasks).map(([type, typeTasks]) => (
         <TaskGroup
           key={type}

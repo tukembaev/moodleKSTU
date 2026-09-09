@@ -5,7 +5,7 @@ import { Input } from "shared/shadcn/ui/input";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { useEffect } from "react";
 import { LuCloudUpload } from "react-icons/lu";
-import { useSearchParams } from "react-router-dom";
+import { useFormParam } from "shared/hooks";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
 import { CreateFAQPayload } from "../model/types/course_payload";
@@ -19,8 +19,7 @@ const Add_Theme_FAQ = () => {
   } = useForm<CreateFAQPayload>();
   const { mutate: add_theme_faq, isPending } = courseQueries.create_faq();
 
-  const [searchParams] = useSearchParams();
-  const themeId = searchParams.get("id");
+  const themeId = useFormParam("id");
 
   useEffect(() => {
     setValue("theme", themeId || "");
