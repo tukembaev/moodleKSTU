@@ -87,8 +87,8 @@ export type Course = {
   discipline_name: string;
   category: string;
   category_icon: string
-  control_form: string;
-  credit: number;
+  organization_id?: string;
+  organization_name?: string;
   is_end: boolean;
   additional_points: AdditionalCoursePoints[]
   course_owner: CourseOwner[];
@@ -106,8 +106,8 @@ export interface CourseThemes {
   id: string;
   discipline: string;
   discipline_name: string;
-  credit: number;
-  control_form: string;
+  organization_id?: string;
+  organization_name?: string;
 
   courses_hours_left: number;
   max_points: number;
@@ -138,8 +138,8 @@ export interface CourseAllMaterials {
   discipline_name: string;
   category: string;
   category_icon: string;
-  credit: number;
-  control_form: string;
+  organization_id?: string;
+  organization_name?: string;
   is_favorite: boolean;
   audience: string;
   requirements: string;

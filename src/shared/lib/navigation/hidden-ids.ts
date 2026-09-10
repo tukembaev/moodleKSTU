@@ -10,7 +10,8 @@ export type HiddenIdKey =
   | "quizId"
   | "themeId"
   | "taskId"
-  | "inviteCourseId";
+  | "inviteCourseId"
+  | "bankId";
 
 const STORAGE_PREFIX = "hidden:";
 const FORM_PARAMS_KEY = "hidden:formParams";
@@ -22,6 +23,7 @@ export const TEST_PASS_PATH = "/test/pass";
 export const TEST_EDIT_PATH = "/test/edit";
 export const TEST_QUIZ_PATH = "/test/quiz";
 export const TEST_QUIZ_RESULT_PATH = "/test/quiz-result";
+export const QUESTION_BANK_DETAIL_PATH = "/question-bank/bank";
 
 export function isUuid(value: string | null | undefined): boolean {
   return Boolean(value && UUID_RE.test(value));
@@ -170,6 +172,23 @@ export function openTestResult(
   navigate(TEST_QUIZ_RESULT_PATH, { state: options?.state });
 }
 
+export function useBankId(): string {
+  const params = useParams();
+  const hidden = useHiddenId("bankId");
+  const fromParam = params.id && isUuid(params.id) ? params.id : "";
+
+  useEffect(() => {
+    if (fromParam && !hidden) setHiddenId("bankId", fromParam);
+  }, [fromParam, hidden]);
+
+  return hidden || fromParam;
+}
+
+export function openBank(navigate: NavigateFunction, bankId: string) {
+  setHiddenId("bankId", bankId);
+  navigate(QUESTION_BANK_DETAIL_PATH);
+}
+
 type CaptureResult = {
   changed: boolean;
   pathname: string;
@@ -215,6 +234,13 @@ export function captureHiddenIdsFromLocation(
       path = clean;
       changed = true;
     }
+  }
+
+  const bankMatch = path.match(/^\/question-bank\/bank\/([^/]+)\/?$/);
+  if (bankMatch && isUuid(bankMatch[1])) {
+    setHiddenId("bankId", bankMatch[1]);
+    path = QUESTION_BANK_DETAIL_PATH;
+    changed = true;
   }
 
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);

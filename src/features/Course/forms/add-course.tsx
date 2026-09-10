@@ -1,8 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { userQueries } from "entities/User";
 import { LuCloudUpload } from "react-icons/lu";
 import { Card } from "shared/shadcn/ui/card";
 import { Label } from "shared/shadcn/ui/label";
@@ -11,6 +14,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "shared/shadcn/ui/select";
 import { CreateCoursePayload } from "../model/types/course_payload";
 
@@ -23,14 +27,45 @@ const Add_Course = () => {
     watch,
   } = useForm<CreateCoursePayload>();
 
+  const selectedOrganizationId = watch("organization_id");
+  const { data: me, isLoading: isMeLoading } = useQuery(userQueries.me());
 
-  const selectedCredit = watch("credit");
-  const selectedControlForm = watch("control_form");
+  const departments = useMemo(() => {
+    const employments = me?.employee_profile?.employments ?? [];
+    const unique = new Map<string, string>();
 
+    for (const job of employments) {
+      if (!job.organization_id || unique.has(job.organization_id)) continue;
+      unique.set(job.organization_id, job.organization_name);
+    }
+
+    return Array.from(unique, ([id, name]) => ({ id, name }));
+  }, [me]);
+
+  const setDepartment = (id: string) => {
+    const department = departments.find((item) => item.id === id);
+    setValue("organization_id", id, { shouldValidate: true });
+    setValue("organization_name", department?.name ?? "", {
+      shouldValidate: true,
+    });
+  };
+
+  useEffect(() => {
+    if (departments.length === 1 && !selectedOrganizationId) {
+      setDepartment(departments[0].id);
+    }
+  }, [departments, selectedOrganizationId]);
 
   const { mutate: add_course, isPending } = courseQueries.create_course();
   const onSubmit = async (data: CreateCoursePayload) => {
-    add_course(data);
+    const organization_name =
+      departments.find((item) => item.id === data.organization_id)?.name ??
+      data.organization_name;
+    add_course({
+      discipline_name: data.discipline_name,
+      organization_id: data.organization_id,
+      organization_name,
+    });
   };
 
   return (
@@ -39,11 +74,11 @@ const Add_Course = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="title" className="pb-2">
-              Дисциплина
+              Название курса
             </Label>
             <Input
               type="text"
-              placeholder="Введите название дисциплины"
+              placeholder="Введите название курса"
               maxLength={30}
               minLength={6}
               {...register("discipline_name", {
@@ -54,77 +89,58 @@ const Add_Course = () => {
             />
             {errors.discipline_name && (
               <span className="text-xs text-red-500 pt-1">
-                Название дисциплины должно быть от 6 до 30 символов
+                Название курса должно быть от 6 до 30 символов
               </span>
             )}
           </div>
-       
 
           <div className="flex flex-col">
-            <Label htmlFor="credit" className="pb-2">
-              Кредит
-              {/* ( опционный для частных) */}
+            <Label htmlFor="organization_id" className="pb-2">
+              Кафедра
             </Label>
             <Select
-              onValueChange={(value) => {
-                setValue("credit", Number(value), { shouldValidate: true });
-              }}
+              value={selectedOrganizationId || undefined}
+              onValueChange={setDepartment}
+              disabled={isMeLoading || departments.length === 0}
             >
               <SelectTrigger className="w-full">
-                <span>{selectedCredit || "Выберите количество кредитов"}</span>
+                <SelectValue
+                  placeholder={
+                    isMeLoading
+                      ? "Загрузка кафедр..."
+                      : departments.length === 0
+                        ? "Нет доступных кафедр"
+                        : "Выберите кафедру"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="3">3</SelectItem>
-                <SelectItem value="4">4</SelectItem>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="6">6</SelectItem>
+                {departments.map((department) => (
+                  <SelectItem key={department.id} value={department.id}>
+                    {department.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <input
               type="hidden"
-              {...register("credit", { required: "Кредит обязателен" })}
+              {...register("organization_id", {
+                required: "Кафедра обязательна",
+              })}
             />
-            {errors.credit && (
+            {errors.organization_id && (
               <span className="text-xs text-red-500 pt-1">
-                Кредит обязателен
+                Выберите кафедру
               </span>
             )}
-          </div>
-          <div className="flex flex-col">
-            <Label htmlFor="control" className="pb-2">
-              Форма контроля
-              {/* (Убрать возможно) */}
-            </Label>
-            <Select
-              onValueChange={(value) => {
-                setValue("control_form", value, { shouldValidate: true });
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <span>{selectedControlForm || "Выберите форму контроля"}</span>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Экзамен">Экзамен</SelectItem>
-                <SelectItem value="Устный">Устный</SelectItem>
-                <SelectItem value="СРС">СРС</SelectItem>
-                <SelectItem value="Отчет">Отчет</SelectItem>
-                <SelectItem value="Тестирование">Тестирование</SelectItem>
-              </SelectContent>
-            </Select>
-            <input
-              type="hidden"
-              {...register("control_form", { required: "Кредит обязателен" })}
-            />
-            {errors.control_form && (
-              <span className="text-xs text-red-500 pt-1 ">
-                Форма контроля обязательна
+            {!isMeLoading && departments.length === 0 && (
+              <span className="text-xs text-muted-foreground pt-1">
+                В профиле нет кафедр для привязки курса
               </span>
             )}
           </div>
 
-        
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-           
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload />
               {isPending ? "Загрузка..." : "Добавить курс"}

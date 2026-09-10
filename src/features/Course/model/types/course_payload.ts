@@ -1,9 +1,7 @@
 export interface CreateCoursePayload {
     discipline_name: string;
-  
-    credit: number;
-    control_form: string;
-
+    organization_id: string;
+    organization_name: string;
   }
 
   export interface FinishCourseFormPayload {
@@ -49,6 +47,8 @@ export interface CreateCoursePayload {
     audience?: boolean;
     requirements?: number[];
     description?: string[];
+    organization_id?: string;
+    organization_name?: string;
   }
 
 

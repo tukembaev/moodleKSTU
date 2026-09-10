@@ -1,5 +1,6 @@
 import { CourseStreams } from "./CourseStreams";
 import { DuplicateCourseCard } from "./DuplicateCourseCard";
+import { ReassignOrganizationCard } from "./ReassignOrganizationCard";
 
 interface CourseManagementTabProps {
   courseId: string;
@@ -17,7 +18,7 @@ export const CourseManagementTab = ({
           Управление курсом
         </h2>
         <p className="text-sm text-muted-foreground">
-          Потоки с доступом к курсу и служебные действия преподавателя.
+          Потоки с доступом к курсу, кафедра и служебные действия преподавателя.
         </p>
       </div>
 
@@ -25,7 +26,10 @@ export const CourseManagementTab = ({
         <div className="lg:col-span-2">
           <CourseStreams courseId={courseId} />
         </div>
-        <DuplicateCourseCard courseId={courseId} courseName={courseName} />
+        <div className="flex flex-col gap-6">
+          <ReassignOrganizationCard courseId={courseId} />
+          <DuplicateCourseCard courseId={courseId} courseName={courseName} />
+        </div>
       </div>
     </div>
   );

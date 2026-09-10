@@ -5,6 +5,7 @@ import {
   COURSE_INVITE_PATH,
   COURSE_THEMES_PATH,
   getHiddenId,
+  QUESTION_BANK_DETAIL_PATH,
   TEST_EDIT_PATH,
   TEST_PASS_PATH,
   TEST_QUIZ_PATH,
@@ -54,6 +55,14 @@ export function HiddenIdSync({ children }: { children: ReactNode }) {
     ];
     if (testPages.includes(location.pathname) && !getHiddenId("quizId")) {
       navigate("/test", { replace: true });
+      return;
+    }
+
+    if (
+      location.pathname === QUESTION_BANK_DETAIL_PATH &&
+      !getHiddenId("bankId")
+    ) {
+      navigate("/question-bank", { replace: true });
     }
   }, [location.pathname, navigate]);
 

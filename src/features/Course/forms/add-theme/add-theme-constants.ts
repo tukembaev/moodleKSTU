@@ -4,18 +4,25 @@ export const TYPE_LABELS: Record<string, string> = {
   lb: "Лабораторная работа",
   pr: "Практическое занятие",
   lc: "Лекционное занятие",
-  other: "Другое",
   srs: "СРС",
   test: "Тест",
+  rgz: "РГЗ",
+  rgr: 'РГР',
+  umk: 'УМК',
+  other: "Другое",
+
 };
 
 export const TYPE_LESS: Record<string, string> = {
   lb: "Лб",
   pr: "Пр",
   lc: "Лк",
-  other: "Другое",
   srs: "СРС",
   test: "Тест",
+  rgz: "РГЗ",
+  rgr: 'РГР',
+  umk: 'УМК',
+  other: "Другое",
 };
 
 export const LOCKED_OPTIONS = [

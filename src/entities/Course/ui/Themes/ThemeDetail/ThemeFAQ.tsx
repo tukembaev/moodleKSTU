@@ -28,7 +28,7 @@ const ThemeFAQ = ({ theme_id }: { theme_id: string }) => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 px-4 pb-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
@@ -42,10 +42,10 @@ const ThemeFAQ = ({ theme_id }: { theme_id: string }) => {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4">
+    <div className="flex h-full flex-col gap-4 px-4 pb-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium">Частые вопросы</p>
+          <p className="text-base font-semibold leading-none">Частые вопросы</p>
           <p className="text-sm text-muted-foreground">
             Ответы преподавателя по этой теме
           </p>

@@ -19,8 +19,8 @@ export interface CourseStudentInfo {
 export interface CourseInfo {
   id: string;
   discipline_name: string;
-  credit?: number;
-  control_form?: string;
+  organization_id?: string;
+  organization_name?: string;
   description?: string;
 }
 

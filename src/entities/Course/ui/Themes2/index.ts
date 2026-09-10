@@ -8,5 +8,5 @@ export { MaterialsSection } from "./MaterialsSection";
 export { MaterialAttachment } from "./MaterialAttachment";
 export { MaterialCard } from "./MaterialCard";
 export { AddMaterialCard } from "./AddMaterialCard";
-export { TabsSection } from "./TabsSection";
+export { ThemeWorkspace } from "./ThemeWorkspace";
 export { TestEditorPanel } from "./TestEditorPanel";

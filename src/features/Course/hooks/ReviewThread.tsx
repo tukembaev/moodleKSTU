@@ -76,47 +76,220 @@ export const sortMessagesByTime = <T extends { id: string; timestamp: string }>(
     return String(left.id).localeCompare(String(right.id));
   });
 
-export const reviewsToThreadMessages = (reviews: Review[]) =>
-  sortMessagesByTime(
-    reviews.flatMap((review) =>
-      review.messages.map((message) => ({
-        ...message,
-        reviewId: review.id,
-      }))
+export type ThreadMessage = ReviewMessage & { reviewId: string };
+
+export type ThreadMarkerType =
+  | "date"
+  | "remark_opened"
+  | "rejected"
+  | "approved"
+  | "teacher_replied"
+  | "awaiting_student"
+  | "awaiting_teacher";
+
+export interface ThreadMarker {
+  id: string;
+  type: ThreadMarkerType;
+  label: string;
+}
+
+export type ThreadItem =
+  | { kind: "marker"; marker: ThreadMarker }
+  | { kind: "message"; message: ThreadMessage };
+
+const THREAD_MARKER_LABELS: Record<Exclude<ThreadMarkerType, "date">, string> = {
+  remark_opened: "Замечание преподавателя",
+  rejected: "Преподаватель отклонил ответ",
+  approved: "Преподаватель одобрил работу",
+  teacher_replied: "Преподаватель ответил",
+  awaiting_student: "Ожидает ответа студента",
+  awaiting_teacher: "Студент ответил — ожидает проверки",
+};
+
+const calendarDayKey = (timestamp: string) => {
+  const date = new Date(timestamp);
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+};
+
+const classifyRemarkMessages = (
+  messages: ReviewMessage[],
+  status: ReviewStatus
+): ReviewMessage[] => {
+  let studentHasReplied = false;
+
+  return messages.map((message, index) => {
+    if (message.author_role === "student") {
+      studentHasReplied = true;
+      return { ...message, type: "student_reply" };
+    }
+
+    if (!studentHasReplied) {
+      return { ...message, type: "teacher_remark" };
+    }
+
+    const isLast = index === messages.length - 1;
+    if (isLast && status === "approved") {
+      return { ...message, type: "teacher_approval" };
+    }
+    if (status === "rejected" || status === "approved") {
+      return { ...message, type: "teacher_rejection" };
+    }
+    return { ...message, type: "teacher_remark" };
+  });
+};
+
+const teacherTransitionMarkerType = (
+  message: ReviewMessage
+): Exclude<ThreadMarkerType, "date" | "remark_opened"> => {
+  if (message.type === "teacher_approval") return "approved";
+  if (message.type === "teacher_rejection") return "rejected";
+  return "teacher_replied";
+};
+
+export const reviewsToThreadItems = (reviews: Review[]): ThreadItem[] => {
+  const items: ThreadItem[] = [];
+  let lastDateKey: string | undefined;
+
+  const ordered = [...reviews].sort((left, right) => {
+    const byTime = messageTime(left.created_at) - messageTime(right.created_at);
+    if (byTime !== 0) return byTime;
+    return String(left.id).localeCompare(String(right.id));
+  });
+
+  ordered.forEach((review, reviewIndex) => {
+    let hasApprovalMarker = false;
+
+    review.messages.forEach((message, messageIndex) => {
+      const dayKey = calendarDayKey(message.timestamp);
+      if (dayKey !== lastDateKey) {
+        items.push({
+          kind: "marker",
+          marker: {
+            id: `date-${dayKey}-${review.id}`,
+            type: "date",
+            label: formatMessageDate(message.timestamp),
+          },
+        });
+        lastDateKey = dayKey;
+      }
+
+      if (messageIndex === 0) {
+        items.push({
+          kind: "marker",
+          marker: {
+            id: `remark-open-${review.id}`,
+            type: "remark_opened",
+            label:
+              reviewIndex === 0
+                ? THREAD_MARKER_LABELS.remark_opened
+                : "Новое замечание",
+          },
+        });
+      } else {
+        const previous = review.messages[messageIndex - 1];
+        if (
+          previous.author_role === "student" &&
+          message.author_role === "teacher"
+        ) {
+          const type = teacherTransitionMarkerType(message);
+          if (type === "approved") hasApprovalMarker = true;
+          items.push({
+            kind: "marker",
+            marker: {
+              id: `transition-${message.id}`,
+              type,
+              label: THREAD_MARKER_LABELS[type],
+            },
+          });
+        }
+      }
+
+      items.push({
+        kind: "message",
+        message: { ...message, reviewId: review.id },
+      });
+    });
+
+    const lastMessage = review.messages[review.messages.length - 1];
+    const isLastReview = reviewIndex === ordered.length - 1;
+
+    if (review.status === "approved") {
+      if (!hasApprovalMarker) {
+        items.push({
+          kind: "marker",
+          marker: {
+            id: `approved-${review.id}`,
+            type: "approved",
+            label: THREAD_MARKER_LABELS.approved,
+          },
+        });
+      }
+    } else if (isLastReview) {
+      if (
+        review.needs_teacher_action ||
+        review.status === "student_replied"
+      ) {
+        items.push({
+          kind: "marker",
+          marker: {
+            id: `awaiting-teacher-${review.id}`,
+            type: "awaiting_teacher",
+            label: THREAD_MARKER_LABELS.awaiting_teacher,
+          },
+        });
+      } else if (lastMessage?.author_role === "teacher") {
+        items.push({
+          kind: "marker",
+          marker: {
+            id: `awaiting-student-${review.id}`,
+            type: "awaiting_student",
+            label: THREAD_MARKER_LABELS.awaiting_student,
+          },
+        });
+      }
+    }
+  });
+
+  return items;
+};
+
+export const reviewsToThreadMessages = (reviews: Review[]): ThreadMessage[] =>
+  reviewsToThreadItems(reviews)
+    .filter(
+      (item): item is Extract<ThreadItem, { kind: "message" }> =>
+        item.kind === "message"
     )
-  );
+    .map((item) => item.message);
 
 // Адаптер: Remark (из API /api/v1/remarks) -> Review (формат UI ReviewThread)
 export const remarkToReview = (remark: Remark): Review => {
   const mappedStatus = normalizeRemarkStatus(remark.status);
-  const messages: ReviewMessage[] = sortMessagesByTime(
-    (remark.messages ?? []).map((m) => {
-      const senderRole = String(m.sender_role ?? "").toLowerCase();
-      return {
-        id: m.id,
-        type: (senderRole === "student"
-          ? "student_reply"
-          : "teacher_remark") as ReviewMessageType,
-        message: m.message,
-        timestamp:
-          typeof m.created_at === "string"
-            ? m.created_at
-            : m.created_at
-              ? new Date(m.created_at).toISOString()
-              : new Date().toISOString(),
-        author_id: String(m.sender_id),
-        author_name: m.sender_name,
-        author_role: senderRole === "student" ? "student" : "teacher",
-      };
-    })
+  const messages = classifyRemarkMessages(
+    sortMessagesByTime(
+      (remark.messages ?? []).map((m) => {
+        const senderRole = String(m.sender_role ?? "").toLowerCase();
+        return {
+          id: m.id,
+          type: (senderRole === "student"
+            ? "student_reply"
+            : "teacher_remark") as ReviewMessageType,
+          message: m.message,
+          timestamp:
+            typeof m.created_at === "string"
+              ? m.created_at
+              : m.created_at
+                ? new Date(m.created_at).toISOString()
+                : new Date().toISOString(),
+          author_id: String(m.sender_id),
+          author_name: m.sender_name,
+          author_role: senderRole === "student" ? "student" : "teacher",
+        };
+      })
+    ),
+    mappedStatus
   );
 
   const lastMessage = messages[messages.length - 1];
-  if (lastMessage && lastMessage.author_role === "teacher") {
-    if (mappedStatus === "approved") lastMessage.type = "teacher_approval";
-    else if (mappedStatus === "rejected") lastMessage.type = "teacher_rejection";
-  }
-  const status = mappedStatus;
   const hasStudentReply = messages.some(
     (message) => message.author_role === "student"
   );
@@ -125,7 +298,7 @@ export const remarkToReview = (remark: Remark): Review => {
     id: remark.id,
     theme_id: remark.theme_id,
     student_id: String(remark.student_id),
-    status,
+    status: mappedStatus,
     messages,
     created_at:
       typeof remark.created_at === "string"
@@ -137,8 +310,8 @@ export const remarkToReview = (remark: Remark): Review => {
         : new Date(remark.updated_at).toISOString(),
     has_student_reply: hasStudentReply,
     needs_teacher_action:
-      status === "student_replied" ||
-      (status !== "approved" && lastMessage?.author_role === "student"),
+      mappedStatus === "student_replied" ||
+      (mappedStatus !== "approved" && lastMessage?.author_role === "student"),
   };
 };
 

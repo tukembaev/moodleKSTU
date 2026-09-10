@@ -5,7 +5,6 @@ import { LuHandCoins, LuPlus } from "react-icons/lu";
 import { CourseCardSkeleton } from "entities/Course";
 import { useNavigate } from "react-router-dom";
 import {
-  FadeIn,
   SpringPopupList,
   UseConfirmationDialog,
   UseTooltip,
@@ -131,19 +130,26 @@ const TestList = () => {
         )}
 
         {!isStudent && (
-        <FadeIn className="flex border rounded-xl py-4 px-5 w-full justify-center items-center min-h-48">
-          
+        <div
+          className="group flex flex-col border-2 border-dashed rounded-xl py-4 px-5 justify-center items-center w-full min-h-48 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer"
+          onClick={() => navigate("/test/add-quiz")}
+        >
             <UseTooltip text="Добавить тест">
-              <div
-                className="flex flex-col justify-center items-center cursor-pointer"
-                onClick={() => navigate("/test/add-quiz")}
-              >
-                <LuPlus size={35} className="text-muted-foreground" />
-                <p>Добавьте новый тест</p>
+              <div className="flex flex-col justify-center items-center gap-3">
+                <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                  <LuPlus size={32} className="text-primary" />
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
+                    Добавить тест
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Нажмите, чтобы создать новый тест
+                  </p>
+                </div>
               </div>
             </UseTooltip>
-          
-        </FadeIn>
+        </div>
         )}
       </div>
       {/* <Blog03Page /> */}

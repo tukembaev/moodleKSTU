@@ -5,10 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { cn } from "shared/lib/utils";
 import { openTestPass, useCourseId } from "shared/lib/navigation/hidden-ids";
-import { MaterialsSection } from "./MaterialsSection";
-import { TabsSection } from "./TabsSection";
 import { CourseItemKind, SelectedCourseItem, TasksList } from "./TasksList";
 import { TestEditorPanel } from "./TestEditorPanel";
+import { ThemeWorkspace } from "./ThemeWorkspace";
 
 export const CourseTasksLayout: FC = () => {
   const courseId = useCourseId();
@@ -60,14 +59,16 @@ export const CourseTasksLayout: FC = () => {
       <div
         className={cn(
           "min-h-0 overflow-hidden",
-          !hasSelection ? "hidden lg:block lg:h-full" : "block"
+          !hasSelection
+            ? "hidden lg:flex lg:h-full lg:flex-col"
+            : "flex h-[calc(100dvh-9rem)] flex-col lg:h-full"
         )}
       >
         {hasSelection && (
           <button
             type="button"
             onClick={() => setSelectedItem(null)}
-            className="mb-3 flex w-full min-h-[44px] items-center gap-2 rounded-lg border bg-background px-3.5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted active:bg-muted/80 lg:hidden"
+            className="mb-3 flex w-full min-h-[44px] shrink-0 items-center gap-2 rounded-lg border bg-background px-3.5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted active:bg-muted/80 lg:hidden"
           >
             <ArrowLeft className="h-4 w-4 shrink-0" />
             <span>Назад к списку</span>
@@ -75,7 +76,7 @@ export const CourseTasksLayout: FC = () => {
         )}
 
         {isTestSelected && courseId && selectedItem ? (
-          <div className="min-h-[50vh] overflow-hidden lg:h-full lg:pr-4">
+          <div className="min-h-0 flex-1 overflow-hidden lg:h-full lg:pr-4">
             <TestEditorPanel
               testId={selectedItem.id}
               courseId={courseId}
@@ -83,19 +84,8 @@ export const CourseTasksLayout: FC = () => {
             />
           </div>
         ) : (
-          <div className="grid min-h-[50vh] gap-3 sm:gap-4 lg:h-full lg:grid-rows-[minmax(0,2fr)_minmax(0,3fr)] lg:overflow-hidden lg:pr-4">
-            <div
-              className={cn(
-                "flex min-h-[200px] flex-col overflow-hidden rounded-lg border lg:min-h-0",
-                !selectedThemeId && "bg-muted/20"
-              )}
-            >
-              <MaterialsSection themeId={selectedThemeId} />
-            </div>
-
-            <div className="flex min-h-[280px] flex-col overflow-hidden rounded-lg border lg:min-h-0">
-              <TabsSection themeId={selectedThemeId} />
-            </div>
+          <div className="min-h-0 flex-1 overflow-hidden lg:h-full lg:pr-4">
+            <ThemeWorkspace themeId={selectedThemeId} />
           </div>
         )}
       </div>

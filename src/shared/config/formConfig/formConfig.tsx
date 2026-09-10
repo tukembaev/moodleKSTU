@@ -8,12 +8,14 @@ import {
   Add_Theme_FAQ,
   End_Course,
 } from "features/Course";
+import { Add_Bank } from "features/QuestionBank";
 import { Add_Test } from "features/Test";
 import Add_Quiz from "features/Course/forms/add-quiz";
 
 export enum FormQuery {
   //course
   ADD_COURSE = "add-course",
+  ADD_BANK = "add-bank",
   ADD_THEME = "add-theme",
   ADD_THEME_FAQ = "add-faq",
   ADD_MATERIAL = "add_material",
@@ -38,6 +40,12 @@ export const forms: FormConfig[] = [
     query: FormQuery.ADD_COURSE,
     title: "Создание курса",
     form: <Add_Course />,
+    is_student_allow: false,
+  },
+  {
+    query: FormQuery.ADD_BANK,
+    title: "Новая коллекция вопросов",
+    form: <Add_Bank />,
     is_student_allow: false,
   },
   {

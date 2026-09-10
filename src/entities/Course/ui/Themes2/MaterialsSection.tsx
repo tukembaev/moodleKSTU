@@ -2,11 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { DragEvent, FC, useRef, useState } from "react";
 import { LuFileText, LuUpload } from "react-icons/lu";
-import { FormQuery } from "shared/config";
-import { useAuth, useForm } from "shared/hooks";
+import { useAuth } from "shared/hooks";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
-import { Button } from "shared/shadcn/ui/button";
+
 import {
   Empty,
   EmptyContent,
@@ -20,11 +19,15 @@ import { MaterialAttachment } from "./MaterialAttachment";
 
 interface MaterialsSectionProps {
   themeId: string | null;
+  className?: string;
 }
 
-export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
+export const MaterialsSection: FC<MaterialsSectionProps> = ({
+  themeId,
+  className,
+}) => {
   const auth_data = useAuth();
-  const openForm = useForm();
+
   const courseId = useCourseId();
  
   const [isDragging, setIsDragging] = useState(false);
@@ -101,28 +104,15 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
   };
 
   if (!themeId) {
-    return (
-      <div className="flex h-full w-full items-center justify-center p-8">
-        <Empty>
-          <EmptyContent>
-            <EmptyMedia variant="icon">
-              <LuFileText size={24} />
-            </EmptyMedia>
-            <EmptyTitle>Выберите тему</EmptyTitle>
-            <EmptyDescription>
-              Выберите тему из списка слева для просмотра учебных материалов
-            </EmptyDescription>
-          </EmptyContent>
-        </Empty>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div 
+    <div
       className={cn(
-        "relative flex h-full min-h-0 flex-col p-3 sm:p-4",
-        isDragging && !auth_data.isStudent && "ring-2 ring-primary ring-inset"
+        "relative flex h-full min-h-0 flex-col px-3 pb-3 sm:px-4 sm:pb-4",
+        isDragging && !auth_data.isStudent && "ring-2 ring-primary ring-inset",
+        className
       )}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
@@ -140,20 +130,11 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({ themeId }) => {
         </div>
       )}
 
-      <div className="mb-3 flex shrink-0 flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-2">
-          <p className="text-lg font-semibold">Учебные материалы</p>
-        </div>
-        {!auth_data.isStudent && themeId && (
-          <Button
-            variant="outline"
-            className="h-11 w-full gap-2 sm:h-9 sm:w-auto"
-            onClick={() => openForm(FormQuery.ADD_MATERIAL, { id: themeId })}
-          >
-            <LuUpload className="h-4 w-4" />
-            Добавить файл
-          </Button>
-        )}
+      <div className="mb-2 flex shrink-0 items-center justify-between gap-2 sm:mb-3">
+        <p className="min-w-0 truncate text-base font-semibold sm:text-lg">
+          Учебные материалы
+        </p>
+       
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">

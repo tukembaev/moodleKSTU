@@ -10,6 +10,8 @@ import { UniversitiesPage } from "pages/UniversitiesPage";
 import { UserBilling, UserProfile } from "entities/User";
 
 import { TestingPage } from "pages/TestingPage";
+import { QuestionBankPage } from "pages/QuestionBankPage";
+import { BankDetails } from "entities/QuestionBank";
 import { AboutUsPage } from "pages/AboutUsPage";
 import { CollaboratePage } from "pages/CollaboratePage";
 import { CategoryPage } from "pages/CategoryPage";
@@ -44,6 +46,7 @@ export enum AppRoutes {
   PROFILE = "profile",
   TEST = "test",
 
+  QUESTION_BANK = "question_bank",
   GROUPS = "groups",
   BILLING = "billing",
   REMARKS = "remarks",
@@ -61,6 +64,7 @@ export enum AppSubRoutes {
   TEST_EDIT = "edit",
   TEST_QUIZ = "quiz",
   TEST_QUIZ_RESULT = "quiz-result",
+  QUESTION_BANK_DETAIL = "bank",
 }
 
 export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
@@ -86,6 +90,8 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppSubRoutes.TEST_QUIZ]: "/test/quiz/:id?",
   [AppSubRoutes.TEST_QUIZ_RESULT]: "/test/quiz-result/:id?",
 
+  [AppRoutes.QUESTION_BANK]: "/question-bank",
+  [AppSubRoutes.QUESTION_BANK_DETAIL]: "/question-bank/bank/:id?",
   [AppRoutes.GROUPS]: "/groups",
   [AppRoutes.BILLING]: "/billing",
   [AppRoutes.REMARKS]: "/remarks",
@@ -197,6 +203,18 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
     ],
   },
 
+  [AppRoutes.QUESTION_BANK]: {
+    path: RoutePath[AppRoutes.QUESTION_BANK],
+    element: <QuestionBankPage />,
+    breadcrumbName: "Коллекция вопросов",
+    children: [
+      {
+        path: RoutePath[AppSubRoutes.QUESTION_BANK_DETAIL],
+        element: <BankDetails />,
+        breadcrumbName: "Коллекция",
+      },
+    ],
+  },
   [AppRoutes.GROUPS]: {
     path: RoutePath.groups,
     element: <GroupPage />,

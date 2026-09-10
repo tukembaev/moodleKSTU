@@ -1,31 +1,64 @@
+import { PickQuestionsDialog } from "entities/QuestionBank";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
-import { LuBookDashed, LuImage, LuPlus, LuX } from "react-icons/lu";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { LuBookDashed, LuLibrary } from "react-icons/lu";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { UseTooltip } from "shared/components";
+import CheckboxCard from "shared/components/CheckboxCard";
+import {
+  emptyOptionDraft,
+  emptyQuestionDraft,
+  type QuestionDraft,
+} from "shared/components/QuestionEditor";
 import { useFormParam } from "shared/hooks";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
-import CheckboxCard from "shared/components/CheckboxCard";
+import { cn } from "shared/lib/utils";
 import { Button } from "shared/shadcn/ui/button";
-import { Card } from "shared/shadcn/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "shared/shadcn/ui/card";
 import { Checkbox } from "shared/shadcn/ui/checkbox";
 import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
+import { Separator } from "shared/shadcn/ui/separator";
+import { Textarea } from "shared/shadcn/ui/textarea";
+import QuizQuestionCard from "./quiz-question-card";
 
-interface QuestionForm {
-  question: string;
-  questionImage?: File | null;
-  questionImagePreview?: string;
-  options: {
-    text: string;
-    image?: File | null;
-    imagePreview?: string;
-  }[];
-  correctAnswer: string | string[]; // Может быть один или несколько ответов
-  multipleAnswers: boolean; // Режим множественного выбора
-}
+type QuestionForm = QuestionDraft;
 
+const isQuestionStarted = (question?: QuestionForm) => {
+  if (!question) return false;
+  if (question.question.trim()) return true;
+  if (question.questionImage || question.questionImagePreview) return true;
+  const hasCorrect = Array.isArray(question.correctAnswer)
+    ? question.correctAnswer.length > 0
+    : Boolean(question.correctAnswer);
+  if (hasCorrect) return true;
+  return question.options.some(
+    (option) => option.text.trim() || option.image || option.imagePreview
+  );
+};
 
+const toFormQuestion = (question: QuestionDraft): QuestionForm => ({
+  ...emptyQuestionDraft(),
+  question: question.question,
+  questionImage: question.questionImage ?? null,
+  questionImagePreview: question.questionImagePreview,
+  options: question.options.map((option) => ({
+    text: option.text,
+    image: option.image ?? null,
+    imagePreview: option.imagePreview,
+  })),
+  correctAnswer: question.correctAnswer,
+  multipleAnswers: question.multipleAnswers,
+});
 
 interface QuizFormData {
   title: string;
@@ -55,30 +88,7 @@ const Add_Quiz = () => {
       maxPoints: 100,
       minPoints: 0,
       showCorrectAnswers: false,
-      questions: [
-        {
-          question: "",
-          questionImage: null,
-          questionImagePreview: undefined,
-          options: [
-            { text: "", image: null, imagePreview: undefined },
-            { text: "", image: null, imagePreview: undefined },
-          ],
-          correctAnswer: "",
-          multipleAnswers: false,
-        },
-        {
-          question: "",
-          questionImage: null,
-          questionImagePreview: undefined,
-          options: [
-            { text: "", image: null, imagePreview: undefined },
-            { text: "", image: null, imagePreview: undefined },
-          ],
-          correctAnswer: "",
-          multipleAnswers: false,
-        },
-      ],
+      questions: [emptyQuestionDraft(), emptyQuestionDraft()],
     },
   });
 
@@ -90,6 +100,8 @@ const Add_Quiz = () => {
 
   const { mutate: createTest, isPending } = testQueries.create_test_with_formdata();
   const { mutate: attachTest } = testQueries.attach_test_to_course();
+  const [bankPickerOpen, setBankPickerOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const options = [
     {
@@ -121,13 +133,59 @@ const Add_Quiz = () => {
     fields: questionFields,
     append,
     remove,
+    replace,
   } = useFieldArray({
     control,
     name: "questions",
   });
 
+  const watchedQuestions = watch("questions");
+  const totalQuestions = questionFields.length;
+  const activeField = questionFields[activeIndex];
+  const canRemoveQuestion = totalQuestions > 2;
+  const isBankDisabled = isQuestionStarted(watchedQuestions?.[activeIndex]);
+
+  useEffect(() => {
+    setActiveIndex((prev) => {
+      if (totalQuestions === 0) return 0;
+      return Math.max(0, Math.min(prev, totalQuestions - 1));
+    });
+  }, [totalQuestions]);
+
+  const handleAppendQuestion = () => {
+    append(emptyQuestionDraft());
+    setActiveIndex(totalQuestions);
+  };
+
+  const handleRemoveActive = () => {
+    if (!canRemoveQuestion) return;
+    remove(activeIndex);
+    setActiveIndex((prev) => Math.max(0, Math.min(prev, totalQuestions - 2)));
+  };
+
+  const goPrev = () => setActiveIndex((prev) => Math.max(0, prev - 1));
+  const goNext = () =>
+    setActiveIndex((prev) => Math.min(totalQuestions - 1, prev + 1));
+
+  const handleInsertFromBank = (questions: QuestionDraft[]) => {
+    if (!questions.length) return;
+    const current = watchedQuestions ?? [];
+    const start = isQuestionStarted(current[activeIndex])
+      ? activeIndex + 1
+      : activeIndex;
+    const before = current.slice(0, start);
+    const after = current.slice(start).filter(isQuestionStarted);
+    const next = [
+      ...before,
+      ...questions.map(toFormQuestion),
+      ...after,
+      emptyQuestionDraft(),
+    ];
+    replace(next);
+    setActiveIndex(before.length + questions.length);
+  };
+
   const onSubmit = (formData: QuizFormData) => {
-    // Подготовка JSON данных согласно спецификации API
     const testData = {
       title: formData.title,
       description: formData.description || "",
@@ -153,20 +211,14 @@ const Add_Quiz = () => {
       })),
     };
 
-    // Создание FormData
     const formDataToSend = new FormData();
-
-    // Добавление JSON данных в поле 'data'
     formDataToSend.append("data", JSON.stringify(testData));
 
-    // Добавление медиа файлов
     formData.questions.forEach((question, qIndex) => {
-      // Изображение вопроса
       if (question.questionImage) {
         formDataToSend.append(`questions[${qIndex}][questionImage]`, question.questionImage);
       }
 
-      // Изображения вариантов ответов
       question.options.forEach((option, oIndex) => {
         if (option.image) {
           formDataToSend.append(`questions[${qIndex}][options][${oIndex}][image]`, option.image);
@@ -174,7 +226,6 @@ const Add_Quiz = () => {
       });
     });
 
-    // Отправка данных
     createTest(formDataToSend, {
       onSuccess: (created) => {
         if (courseId && created?.id) {
@@ -189,483 +240,282 @@ const Add_Quiz = () => {
     });
   };
 
-  const handleQuestionImageChange = (
-    qIndex: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setValue(`questions.${qIndex}.questionImage`, file);
-      setValue(`questions.${qIndex}.questionImagePreview`, preview);
+  const validateQuestion = (question?: QuestionForm) => {
+    if (!question?.question?.trim()) return "Введите текст вопроса";
+    if (question.options.some((option) => !option.text.trim())) {
+      return "Заполните все варианты ответов";
     }
-  };
-
-  const handleOptionImageChange = (
-    qIndex: number,
-    oIndex: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      const currentOptions = watchQuestions[qIndex]?.options || [];
-      const updatedOptions = [...currentOptions];
-      updatedOptions[oIndex] = {
-        ...updatedOptions[oIndex],
-        image: file,
-        imagePreview: preview,
-      };
-      setValue(`questions.${qIndex}.options`, updatedOptions);
+    if (question.multipleAnswers) {
+      if (
+        !Array.isArray(question.correctAnswer) ||
+        question.correctAnswer.length === 0
+      ) {
+        return "Выберите правильный ответ";
+      }
+    } else if (!question.correctAnswer) {
+      return "Выберите правильный ответ";
     }
+    return true;
   };
-
-  const removeQuestionImage = (qIndex: number) => {
-    setValue(`questions.${qIndex}.questionImage`, null);
-    setValue(`questions.${qIndex}.questionImagePreview`, undefined);
-  };
-
-  const removeOptionImage = (qIndex: number, oIndex: number) => {
-    const currentOptions = watchQuestions[qIndex]?.options || [];
-    const updatedOptions = [...currentOptions];
-    updatedOptions[oIndex] = {
-      ...updatedOptions[oIndex],
-      image: null,
-      imagePreview: undefined,
-    };
-    setValue(`questions.${qIndex}.options`, updatedOptions);
-  };
-
-  const handleMultipleAnswersToggle = (qIndex: number, checked: boolean) => {
-    setValue(`questions.${qIndex}.multipleAnswers`, checked);
-    // Сбрасываем правильные ответы при переключении режима
-    setValue(
-      `questions.${qIndex}.correctAnswer`,
-      checked ? [] : ""
-    );
-  };
-
-  const handleCorrectAnswerChange = (
-    qIndex: number,
-    value: string,
-    checked: boolean
-  ) => {
-    const question = watchQuestions[qIndex];
-    if (question?.multipleAnswers) {
-      const currentAnswers = Array.isArray(question.correctAnswer)
-        ? question.correctAnswer
-        : [];
-      const updatedAnswers = checked
-        ? [...currentAnswers, value]
-        : currentAnswers.filter((ans) => ans !== value);
-      setValue(`questions.${qIndex}.correctAnswer`, updatedAnswers);
-    } else {
-      setValue(`questions.${qIndex}.correctAnswer`, value);
-    }
-  };
-
-  const watchQuestions = watch("questions");
 
   return (
-    <Card className="p-6 h-full overflow-y-auto">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <Label className="pb-2">Название теста</Label>
-          <Input
-            {...register("title", { required: true })}
-            placeholder="Название теста"
-          />
-          {errors.title && <p className="text-destructive">Обязательно</p>}
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label>Описание</Label>
-          <Input
-            type="text"
-            placeholder="Введите описание"
-            {...register("description", { required: true })}
-          />
-          {errors.description && (
-            <span className="text-xs text-red-500">Описание обязательно</span>
-          )}
-        </div>
+    <Card className="w-full">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+        <CardHeader>
+          <CardTitle>Новый тест</CardTitle>
+          <CardDescription>
+            Заполните параметры и добавьте вопросы. Правильный ответ отмечается
+            нажатием на карточку варианта.
+          </CardDescription>
+        </CardHeader>
 
-        <div>
-          <Label className="pb-2">Время на прохождение (в минутах)</Label>
-          <Input
-            type="number"
-            {...register("timeLimit", { required: true, min: 1 })}
-            placeholder="Например, 2"
-          />
-          {errors.timeLimit && (
-            <p className="text-destructive">Минимум 1 минута</p>
-          )}
-        </div>
-        <div>
-          <Label className="pb-2">Максимальное количество баллов</Label>
-          <Input
-            type="number"
-            step={1}
-            {...register("maxPoints", { required: true, min: 0, valueAsNumber: true })}
-            placeholder="Например, 100"
-          />
-          {errors.maxPoints && (
-            <p className="text-destructive">Минимум 0 баллов</p>
-          )}
-        </div>
-        <div>
-          <Label className="pb-2">Минимальный балл</Label>
-          <Input
-            type="number"
-            step={1}
-            {...register("minPoints", {
-              required: true,
-              min: 0,
-              valueAsNumber: true,
-              validate: (value) =>
-                value <= (watch("maxPoints") || 0) ||
-                "Не больше максимального балла",
-            })}
-            placeholder="Например, 60"
-          />
-          {errors.minPoints && (
-            <p className="text-destructive">
-              {errors.minPoints.message || "Целое число от 0 до максимума"}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="showCorrectAnswers"
-            {...register("showCorrectAnswers")}
-            onCheckedChange={(checked) => setValue("showCorrectAnswers", !!checked)}
-          />
-          <Label
-            htmlFor="showCorrectAnswers"
-            className="text-sm font-normal cursor-pointer"
-          >
-            Показывать правильные ответы после отправки
-          </Label>
-        </div>
-        {!formParam?.includes("choose-test") && (
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="locked">Дополнительно</Label>
-            <CheckboxCard
-              options={options}
-              selectedValues={selectedValues}
-              onChange={handleCheckboxChange}
-            />
-          </div>
-        )}
+        <CardContent className="flex flex-col gap-6">
+          <div className="flex w-full flex-col gap-4">
+            <div className="flex w-full flex-col gap-1.5">
+              <Label htmlFor="quiz-title">Название теста</Label>
+              <Input
+                id="quiz-title"
+                {...register("title", { required: true })}
+                placeholder="Например, Проверка знаний по теме 1"
+              />
+              {errors.title && (
+                <p className="text-xs text-destructive">Обязательно</p>
+              )}
+            </div>
 
-        <div className="space-y-4 pt-2">
-          {questionFields.map((field, qIndex) => {
-            const question = watchQuestions[qIndex];
-            const options = question?.options || [];
-            const isMultipleMode = question?.multipleAnswers || false;
-            const correctAnswers = Array.isArray(question?.correctAnswer)
-              ? question.correctAnswer
-              : question?.correctAnswer
-                ? [question.correctAnswer]
-                : [];
+            <div className="flex w-full flex-col gap-1.5">
+              <Label htmlFor="quiz-description">Описание</Label>
+              <Textarea
+                id="quiz-description"
+                rows={2}
+                placeholder="Кратко опишите, что проверяет тест"
+                {...register("description", { required: true })}
+              />
+              {errors.description && (
+                <span className="text-xs text-destructive">
+                  Описание обязательно
+                </span>
+              )}
+            </div>
 
-            return (
-              <div key={field.id} className="border p-4 rounded-md space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>Вопрос {qIndex + 1}</Label>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id={`multiple-${qIndex}`}
-                      checked={isMultipleMode}
-                      onCheckedChange={(checked) =>
-                        handleMultipleAnswersToggle(qIndex, !!checked)
-                      }
-                    />
-                    <Label
-                      htmlFor={`multiple-${qIndex}`}
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      Несколько правильных ответов
-                    </Label>
-                  </div>
-                </div>
-
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex w-full flex-col gap-1.5">
+                <Label htmlFor="quiz-timelimit">Время, мин</Label>
                 <Input
-                  {...register(`questions.${qIndex}.question`, {
-                    required: true,
-                  })}
-                  placeholder="Введите текст вопроса"
+                  id="quiz-timelimit"
+                  type="number"
+                  {...register("timeLimit", { required: true, min: 1 })}
+                  placeholder="60"
                 />
-
-                {/* Загрузка изображения для вопроса */}
-                <div className="space-y-2">
-                  <Label>Изображение для вопроса (необязательно)</Label>
-                  {question?.questionImagePreview ? (
-                    <div className="relative inline-block">
-                      <img
-                        src={question.questionImagePreview}
-                        alt="Question preview"
-                        className="max-w-xs max-h-48 rounded-md border"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-0 right-0"
-                        onClick={() => removeQuestionImage(qIndex)}
-                      >
-                        <LuX />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleQuestionImageChange(qIndex, e)}
-                        className="hidden"
-                        id={`question-image-${qIndex}`}
-                      />
-                      <Label
-                        htmlFor={`question-image-${qIndex}`}
-                        className="cursor-pointer"
-                      >
-                        <Button type="button" variant="outline" asChild>
-                          <span>
-                            <LuImage className="mr-2" />
-                            Загрузить изображение
-                          </span>
-                        </Button>
-                      </Label>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Варианты ответов</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {options.map((option, oIndex) => (
-                      <div key={oIndex} className="p-3 border rounded-lg space-y-3 bg-muted/20 relative">
-                        <div className="flex gap-2 items-center">
-                          <Input
-                            {...register(
-                              `questions.${qIndex}.options.${oIndex}.text`,
-                              {
-                                required: true,
-                              }
-                            )}
-                            placeholder={`Вариант ${oIndex + 1}`}
-                            className="flex-1"
-                          />
-                          {options.length > 2 && (
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="h-8 w-8 shrink-0"
-                              onClick={() => {
-                                const updated = [...options];
-                                updated.splice(oIndex, 1);
-                                setValue(`questions.${qIndex}.options`, updated);
-                                // Удаляем из правильных ответов, если был выбран
-                                if (isMultipleMode) {
-                                  const updatedAnswers = correctAnswers.filter(
-                                    (ans) => ans !== option.text
-                                  );
-                                  setValue(
-                                    `questions.${qIndex}.correctAnswer`,
-                                    updatedAnswers
-                                  );
-                                } else if (
-                                  question?.correctAnswer === option.text
-                                ) {
-                                  setValue(`questions.${qIndex}.correctAnswer`, "");
-                                }
-                              }}
-                            >
-                              ✕
-                            </Button>
-                          )}
-                        </div>
-                        {/* Загрузка изображения для варианта ответа */}
-                        <div className="flex items-center gap-2">
-                          {option?.imagePreview ? (
-                            <div className="relative inline-block">
-                              <img
-                                src={option.imagePreview}
-                                alt="Option preview"
-                                className="max-w-full max-h-32 rounded-md border object-contain bg-background"
-                              />
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="absolute -top-2 -right-2 h-6 w-6"
-                                onClick={() => removeOptionImage(qIndex, oIndex)}
-                              >
-                                <LuX className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="w-full">
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) =>
-                                  handleOptionImageChange(qIndex, oIndex, e)
-                                }
-                                className="hidden"
-                                id={`option-image-${qIndex}-${oIndex}`}
-                              />
-                              <Label
-                                htmlFor={`option-image-${qIndex}-${oIndex}`}
-                                className="cursor-pointer w-full"
-                              >
-                                <Button type="button" variant="outline" size="sm" asChild className="w-full">
-                                  <span>
-                                    <LuImage className="mr-2 h-4 w-4" />
-                                    Изображение
-                                  </span>
-                                </Button>
-                              </Label>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {options.length < 6 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-full min-h-[100px] border-dashed flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
-                        onClick={() => {
-                          const currentOptions = watchQuestions[qIndex]?.options || [];
-                          setValue(`questions.${qIndex}.options`, [
-                            ...currentOptions,
-                            { text: "", image: null, imagePreview: undefined },
-                          ]);
-                        }}
-                      >
-                        <LuPlus className="h-6 w-6" />
-                        <span>Добавить вариант</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Правильный ответ</Label>
-                  {isMultipleMode ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                      {options
-                        .filter((opt) => opt.text.trim() !== "")
-                        .map((option, idx) => {
-                          const isChecked = correctAnswers.includes(option.text);
-                          return (
-                            <div
-                              key={idx}
-                              className="flex items-center space-x-2 p-2 border rounded"
-                            >
-                              <Checkbox
-                                id={`answer-${qIndex}-${idx}`}
-                                checked={isChecked}
-                                onCheckedChange={(checked) =>
-                                  handleCorrectAnswerChange(
-                                    qIndex,
-                                    option.text,
-                                    !!checked
-                                  )
-                                }
-                              />
-                              <Label
-                                htmlFor={`answer-${qIndex}-${idx}`}
-                                className="flex-1 cursor-pointer"
-                              >
-                                {option.text}
-                              </Label>
-                              {option.imagePreview && (
-                                <img
-                                  src={option.imagePreview}
-                                  alt="Option"
-                                  className="max-w-16 max-h-16 rounded"
-                                />
-                              )}
-                            </div>
-                          );
-                        })}
-                    </div>
-                  ) : (
-                    <select
-                      {...register(`questions.${qIndex}.correctAnswer`, {
-                        required: true,
-                      })}
-                      className="mt-1 w-full border rounded px-3 py-2 text-sm"
-                      value={
-                        typeof question?.correctAnswer === "string"
-                          ? question.correctAnswer
-                          : ""
-                      }
-                    >
-                      <option value="">Выберите вариант</option>
-                      {options
-                        .filter((opt) => opt.text.trim() !== "")
-                        .map((option, idx) => (
-                          <option key={idx} value={option.text}>
-                            {option.text}
-                          </option>
-                        ))}
-                    </select>
-                  )}
-                  {errors.questions?.[qIndex]?.correctAnswer && (
-                    <p className="text-destructive text-sm mt-1">
-                      Выберите правильный ответ
-                    </p>
-                  )}
-                </div>
-
-                {questionFields.length > 2 && (
-                  <Button
-                    variant="destructive"
-                    type="button"
-                    onClick={() => remove(qIndex)}
-                  >
-                    Удалить вопрос
-                  </Button>
+                {errors.timeLimit && (
+                  <p className="text-xs text-destructive">Минимум 1 минута</p>
                 )}
               </div>
-            );
-          })}
+              <div className="flex w-full flex-col gap-1.5">
+                <Label htmlFor="quiz-maxpoints">Макс. балл</Label>
+                <Input
+                  id="quiz-maxpoints"
+                  type="number"
+                  step={1}
+                  {...register("maxPoints", {
+                    required: true,
+                    min: 0,
+                    valueAsNumber: true,
+                  })}
+                  placeholder="100"
+                />
+                {errors.maxPoints && (
+                  <p className="text-xs text-destructive">Минимум 0 баллов</p>
+                )}
+              </div>
+              <div className="flex w-full flex-col gap-1.5">
+                <Label htmlFor="quiz-minpoints">Мин. балл</Label>
+                <Input
+                  id="quiz-minpoints"
+                  type="number"
+                  step={1}
+                  {...register("minPoints", {
+                    required: true,
+                    min: 0,
+                    valueAsNumber: true,
+                    validate: (value) =>
+                      value <= (watch("maxPoints") || 0) ||
+                      "Не больше максимального балла",
+                  })}
+                  placeholder="60"
+                />
+                {errors.minPoints && (
+                  <p className="text-xs text-destructive">
+                    {errors.minPoints.message || "От 0 до максимума"}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 rounded-xl border border-input px-3">
+                <Checkbox
+                  id="showCorrectAnswers"
+                  {...register("showCorrectAnswers")}
+                  onCheckedChange={(checked) =>
+                    setValue("showCorrectAnswers", !!checked)
+                  }
+                />
+                <Label
+                  htmlFor="showCorrectAnswers"
+                  className="cursor-pointer text-sm font-normal"
+                >
+                  Показывать ответы после сдачи
+                </Label>
+              </div>
+            </div>
 
-          {questionFields.length < 4 && (
-            <Button
-              type="button"
-              onClick={() =>
-                append({
-                  question: "",
-                  questionImage: null,
-                  questionImagePreview: undefined,
-                  options: [
-                    { text: "", image: null, imagePreview: undefined },
-                    { text: "", image: null, imagePreview: undefined },
-                  ],
-                  correctAnswer: "",
-                  multipleAnswers: false,
-                })
-              }
-            >
-              Добавить вопрос
-            </Button>
-          )}
-        </div>
+            {!formParam?.includes("choose-test") && (
+              <div className="flex flex-col gap-1.5">
+                <Label>Дополнительно</Label>
+                <CheckboxCard
+                  options={options}
+                  selectedValues={selectedValues}
+                  onChange={handleCheckboxChange}
+                />
+              </div>
+            )}
+          </div>
 
-        <div className="flex gap-4">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={isPending}>
-            Назад
-          </Button>
-          <Button type="submit" disabled={isPending}>
+          <Separator />
+
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-lg font-medium">Вопросы </p>
+               
+              </div>
+              <UseTooltip
+                text={
+                  isBankDisabled
+                    ? "Недоступно, пока вы заполняете этот вопрос"
+                    : "Вставить готовые вопросы из коллекции"
+                }
+              >
+                <span className={cn(isBankDisabled && "cursor-not-allowed")}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isBankDisabled}
+                    onClick={() => setBankPickerOpen(true)}
+                  >
+                    <LuLibrary />
+                    Из коллекции вопросов
+                  </Button>
+                </span>
+              </UseTooltip>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {questionFields.map((field, stepIndex) => (
+                <button
+                  key={field.id}
+                  type="button"
+                  onClick={() => setActiveIndex(stepIndex)}
+                  aria-current={stepIndex === activeIndex ? "step" : undefined}
+                  aria-label={`Перейти к вопросу ${stepIndex + 1}`}
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors",
+                    stepIndex === activeIndex
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                  )}
+                >
+                  {stepIndex + 1}
+                </button>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                onClick={handleAppendQuestion}
+                aria-label="Добавить вопрос"
+                className="rounded-full"
+              >
+                <Plus />
+              </Button>
+            </div>
+
+            {activeField && (
+              <Controller
+                key={activeField.id}
+                name={`questions.${activeIndex}`}
+                control={control}
+                rules={{ validate: validateQuestion }}
+                render={({ field: questionField, fieldState }) => (
+                  <QuizQuestionCard
+                    value={questionField.value || emptyQuestionDraft()}
+                    onChange={questionField.onChange}
+                    index={activeIndex}
+                    error={
+                      typeof fieldState.error?.message === "string"
+                        ? fieldState.error.message
+                        : undefined
+                    }
+                    canRemove={canRemoveQuestion}
+                    onRemove={handleRemoveActive}
+                    onAddOption={() => {
+                      const current =
+                        questionField.value || emptyQuestionDraft();
+                      questionField.onChange({
+                        ...current,
+                        options: [...current.options, emptyOptionDraft()],
+                      });
+                    }}
+                  />
+                )}
+              />
+            )}
+
+            <div className="flex items-center justify-between gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={goPrev}
+                disabled={activeIndex <= 0}
+              >
+                <ChevronLeft />
+                Назад
+              </Button>
+              {activeIndex >= totalQuestions - 1 ? (
+                <Button type="button" variant="outline" onClick={handleAppendQuestion}>
+                  <Plus />
+                  Добавить вопрос
+                </Button>
+              ) : (
+                <Button type="button" onClick={goNext}>
+                  Далее
+                  <ChevronRight />
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex-col gap-3 pt-2">
+          <Button type="submit" disabled={isPending} className="w-full">
             {isPending ? "Создание..." : "Создать тест"}
           </Button>
-        </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate(-1)}
+            disabled={isPending}
+            className="w-full"
+          >
+            Отмена
+          </Button>
+        </CardFooter>
       </form>
+
+      <PickQuestionsDialog
+        open={bankPickerOpen}
+        onOpenChange={setBankPickerOpen}
+        onInsert={handleInsertFromBank}
+      />
     </Card>
   );
 };

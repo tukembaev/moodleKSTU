@@ -13,7 +13,8 @@ import {
   import { Button } from "shared/shadcn/ui/button";
   import { LuCheck, LuX } from "react-icons/lu";
   import { LuEye } from "react-icons/lu";
-  import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
+  import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
+  import { studentAvatarSrc, studentInitials } from "./studentAvatar";
 
 const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
     const [open, setOpen] = useState(false);
@@ -86,7 +87,13 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
                
               <div className="min-w-0 flex gap-2">
                  <Avatar className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
-                <AvatarImage src={student.avatar || undefined} />
+                <AvatarImage
+                  src={studentAvatarSrc(student)}
+                  alt={`${student.first_name} ${student.last_name}`}
+                />
+                <AvatarFallback className="bg-primary/10 text-primary text-xs sm:text-sm">
+                  {studentInitials(student)}
+                </AvatarFallback>
               </Avatar>
               
                 <div className="flex flex-col">

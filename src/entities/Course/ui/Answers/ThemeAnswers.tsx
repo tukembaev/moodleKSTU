@@ -36,13 +36,15 @@ const ThemeAnswers = ({ id }: { id: string | null }) => {
   }
 
   return (
-    <ListOfStudentsWithAnswers
-      data={answersOfAllStudents ?? []}
-      isLoading={isStudentsLoading}
-      refetch={refetch}
-      error={listOfStudentsError}
-      theme_id={id}
-    />
+    <div className="h-full min-h-0 overflow-auto px-3 pb-3 sm:px-4 sm:pb-4">
+      <ListOfStudentsWithAnswers
+        data={answersOfAllStudents ?? []}
+        isLoading={isStudentsLoading}
+        refetch={refetch}
+        error={listOfStudentsError}
+        theme_id={id}
+      />
+    </div>
   );
 };
 

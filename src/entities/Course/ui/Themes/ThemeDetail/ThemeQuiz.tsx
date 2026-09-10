@@ -3,7 +3,6 @@ import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { LuHandCoins, LuPlus } from "react-icons/lu";
 import {
-  FadeIn,
   UseConfirmation,
   UseTooltip,
 } from "shared/components";
@@ -149,23 +148,30 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
           })}
 
           {!isStudent && (
-            <FadeIn className="flex border rounded-xl py-4 px-5 min-w-1/3 justify-center items-center min-h-48 text-center">
-              
+            <div
+              className="group flex flex-col border-2 border-dashed rounded-xl py-4 px-5 justify-center items-center min-w-1/3 min-h-48 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer"
+              onClick={() => openForm(FormQuery.ADD_QUIZ, {
+                course_id: course_id, 
+                course_name: course_name,
+                theme_id: theme_id
+              })}
+            >
                 <UseTooltip text="Добавить тест">
-                  <div
-                    className="flex flex-col justify-center items-center"
-                    onClick={() => openForm(FormQuery.ADD_QUIZ, {
-                      course_id: course_id, 
-                      course_name: course_name,
-                      theme_id: theme_id
-                    })}
-                  >
-                    <LuPlus size={35} className="text-muted-foreground" />
-                    <p>Добавьте новый тест</p>
+                  <div className="flex flex-col justify-center items-center gap-3">
+                    <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                      <LuPlus size={32} className="text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
+                        Добавить тест
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Нажмите, чтобы создать новый тест
+                      </p>
+                    </div>
                   </div>
                 </UseTooltip>
-              
-            </FadeIn>
+            </div>
           )}
         </div>
       </div>

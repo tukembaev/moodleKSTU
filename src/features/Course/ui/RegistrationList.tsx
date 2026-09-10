@@ -47,18 +47,9 @@ const RegistrationList = () => {
                     {/* <div className="mb-3 h-10 w-10 flex items-center justify-center bg-muted rounded-full">
                   <feature.icon className="h-6 w-6" />
                 </div> */}
-                    <div className="flex items-center justify-between py-2">
-                      <span className="font-medium text-xs text-muted-foreground">
-                        Кредитов : {course.credit}
-                      </span>
-                    </div>
                     <span className="text-lg font-semibold">
                       {course.discipline_name}
                     </span>
-
-                    <p className="mt-1 text-foreground/80 text-[15px]">
-                      Форма контроля : {course.control_form}
-                    </p>
                   </div>
                   <div className="mt-6 flex items-center justify-between align-middle">
                     <div className="flex items-center gap-2">

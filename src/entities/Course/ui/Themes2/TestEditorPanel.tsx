@@ -1,19 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { PickQuestionsDialog } from "entities/QuestionBank";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { TestDetails } from "entities/Test/model/types/test";
 import TestResults from "entities/Test/ui/TestResults";
-import { AlertCircle, BarChart3, Lock, LockOpen, Pencil, Plus, Trash2 } from "lucide-react";
-import { ChangeEvent, FC, useEffect, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
-import { LuImage, LuX } from "react-icons/lu";
-import { UseConfirmationDialog } from "shared/components";
+import { AlertCircle, BarChart3, ChevronLeft, ChevronRight, Lock, LockOpen, Pencil, Plus, Trash2 } from "lucide-react";
+import { FC, useEffect, useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { LuLibrary } from "react-icons/lu";
+import { UseConfirmationDialog, UseTooltip } from "shared/components";
+import {
+  emptyOptionDraft,
+  emptyQuestionDraft,
+  QuestionEditorCard,
+  type QuestionDraft,
+} from "shared/components/QuestionEditor";
+import { cn } from "shared/lib/utils";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Checkbox } from "shared/shadcn/ui/checkbox";
 import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
 import { ScrollArea } from "shared/shadcn/ui/scroll-area";
+import { Separator } from "shared/shadcn/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
 import {
   Empty,
@@ -23,22 +32,7 @@ import {
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
 
-interface OptionForm {
-  id?: string;
-  text: string;
-  image?: File | null;
-  imagePreview?: string;
-}
-
-interface QuestionForm {
-  id?: string;
-  question: string;
-  questionImage?: File | null;
-  questionImagePreview?: string;
-  options: OptionForm[];
-  correctAnswer: string | string[];
-  multipleAnswers: boolean;
-}
+type QuestionForm = QuestionDraft;
 
 interface QuizFormData {
   title: string;
@@ -52,16 +46,33 @@ interface QuizFormData {
   questions: QuestionForm[];
 }
 
-const emptyQuestion = (): QuestionForm => ({
-  question: "",
-  questionImage: null,
-  questionImagePreview: undefined,
-  options: [
-    { text: "", image: null, imagePreview: undefined },
-    { text: "", image: null, imagePreview: undefined },
-  ],
-  correctAnswer: "",
-  multipleAnswers: false,
+const emptyQuestion = (): QuestionForm => emptyQuestionDraft();
+
+const isQuestionStarted = (question?: QuestionForm) => {
+  if (!question) return false;
+  if (question.question.trim()) return true;
+  if (question.questionImage || question.questionImagePreview) return true;
+  const hasCorrect = Array.isArray(question.correctAnswer)
+    ? question.correctAnswer.length > 0
+    : Boolean(question.correctAnswer);
+  if (hasCorrect) return true;
+  return question.options.some(
+    (option) => option.text.trim() || option.image || option.imagePreview
+  );
+};
+
+const toFormQuestion = (question: QuestionDraft): QuestionForm => ({
+  ...emptyQuestionDraft(),
+  question: question.question,
+  questionImage: question.questionImage ?? null,
+  questionImagePreview: question.questionImagePreview,
+  options: question.options.map((option) => ({
+    text: option.text,
+    image: option.image ?? null,
+    imagePreview: option.imagePreview,
+  })),
+  correctAnswer: question.correctAnswer,
+  multipleAnswers: question.multipleAnswers,
 });
 
 const mapDetailsToForm = (data: TestDetails): QuizFormData => ({
@@ -133,6 +144,8 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   const canEdit = isOwnerEditorPayload(testDetails);
   const isSaving = isUpdatingJson || isUpdatingForm;
   const isCourseContext = Boolean(courseId);
+  const [bankPickerOpen, setBankPickerOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const {
     register,
@@ -156,16 +169,84 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
     },
   });
 
-  const { fields: questionFields, append, remove } = useFieldArray({
+  const {
+    fields: questionFields,
+    append,
+    remove,
+    replace,
+  } = useFieldArray({
     control,
     name: "questions",
   });
 
-  const watchQuestions = watch("questions");
+  const watchedQuestions = watch("questions");
+  const totalQuestions = questionFields.length;
+  const activeField = questionFields[activeIndex];
+  const canRemoveQuestion = totalQuestions > 1;
+  const isBankDisabled = isQuestionStarted(watchedQuestions?.[activeIndex]);
 
   useEffect(() => {
     setPanelTab("edit");
+    setActiveIndex(0);
   }, [testId]);
+
+  useEffect(() => {
+    setActiveIndex((prev) => {
+      if (totalQuestions === 0) return 0;
+      return Math.max(0, Math.min(prev, totalQuestions - 1));
+    });
+  }, [totalQuestions]);
+
+  const handleAppendQuestion = () => {
+    append(emptyQuestion());
+    setActiveIndex(totalQuestions);
+  };
+
+  const handleRemoveActive = () => {
+    if (!canRemoveQuestion) return;
+    remove(activeIndex);
+    setActiveIndex((prev) => Math.max(0, Math.min(prev, totalQuestions - 2)));
+  };
+
+  const goPrev = () => setActiveIndex((prev) => Math.max(0, prev - 1));
+  const goNext = () =>
+    setActiveIndex((prev) => Math.min(totalQuestions - 1, prev + 1));
+
+  const handleInsertFromBank = (questions: QuestionDraft[]) => {
+    if (!questions.length) return;
+    const current = watchedQuestions ?? [];
+    const start = isQuestionStarted(current[activeIndex])
+      ? activeIndex + 1
+      : activeIndex;
+    const before = current.slice(0, start);
+    const after = current.slice(start).filter(isQuestionStarted);
+    const next = [
+      ...before,
+      ...questions.map(toFormQuestion),
+      ...after,
+      emptyQuestionDraft(),
+    ];
+    replace(next);
+    setActiveIndex(before.length + questions.length);
+  };
+
+  const validateQuestion = (question?: QuestionForm) => {
+    if (!question?.question?.trim()) return "Введите текст вопроса";
+    if (question.options.some((option) => !option.text.trim())) {
+      return "Заполните все варианты ответов";
+    }
+    if (question.multipleAnswers) {
+      if (
+        !Array.isArray(question.correctAnswer) ||
+        question.correctAnswer.length === 0
+      ) {
+        return "Выберите правильный ответ";
+      }
+    } else if (!question.correctAnswer) {
+      return "Выберите правильный ответ";
+    }
+    return true;
+  };
 
   useEffect(() => {
     if (testDetails && canEdit) {
@@ -186,33 +267,6 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
       course_id: courseId,
       is_open: nextOpen,
     });
-  };
-
-  const handleQuestionImageChange = (
-    qIndex: number,
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setValue(`questions.${qIndex}.questionImage`, file);
-    setValue(`questions.${qIndex}.questionImagePreview`, URL.createObjectURL(file));
-  };
-
-  const handleOptionImageChange = (
-    qIndex: number,
-    oIndex: number,
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const currentOptions = watchQuestions[qIndex]?.options || [];
-    const updatedOptions = [...currentOptions];
-    updatedOptions[oIndex] = {
-      ...updatedOptions[oIndex],
-      image: file,
-      imagePreview: URL.createObjectURL(file),
-    };
-    setValue(`questions.${qIndex}.options`, updatedOptions);
   };
 
   const onSubmit = (formData: QuizFormData) => {
@@ -513,281 +567,133 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                 </div>
               </div>
 
-              {questionFields.map((field, qIndex) => {
-                const question = watchQuestions[qIndex];
-                const options = question?.options || [];
-                const isMultipleMode = question?.multipleAnswers || false;
-                const correctAnswers = Array.isArray(question?.correctAnswer)
-                  ? question.correctAnswer
-                  : question?.correctAnswer
-                    ? [question.correctAnswer]
-                    : [];
+              <Separator />
 
-                return (
-                  <div key={field.id} className="space-y-3 rounded-lg border p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <Label>Вопрос {qIndex + 1}</Label>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id={`multiple-${qIndex}`}
-                          checked={isMultipleMode}
-                          onCheckedChange={(checked) => {
-                            setValue(`questions.${qIndex}.multipleAnswers`, !!checked);
-                            setValue(
-                              `questions.${qIndex}.correctAnswer`,
-                              checked ? [] : ""
-                            );
-                          }}
-                        />
-                        <Label
-                          htmlFor={`multiple-${qIndex}`}
-                          className="cursor-pointer text-sm font-normal"
-                        >
-                          Несколько правильных
-                        </Label>
-                      </div>
-                    </div>
-
-                    <Input
-                      {...register(`questions.${qIndex}.question`, {
-                        required: true,
-                      })}
-                      placeholder="Текст вопроса"
-                    />
-
-                    <div className="space-y-2">
-                      {question?.questionImagePreview ? (
-                        <div className="relative inline-block">
-                          <img
-                            src={question.questionImagePreview}
-                            alt=""
-                            className="max-h-40 max-w-xs rounded-md border"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-1 right-1 h-7 w-7"
-                            onClick={() => {
-                              setValue(`questions.${qIndex}.questionImage`, null);
-                              setValue(
-                                `questions.${qIndex}.questionImagePreview`,
-                                undefined
-                              );
-                            }}
-                          >
-                            <LuX />
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            id={`question-image-${qIndex}`}
-                            onChange={(e) => handleQuestionImageChange(qIndex, e)}
-                          />
-                          <Label htmlFor={`question-image-${qIndex}`}>
-                            <Button type="button" variant="outline" size="sm" asChild>
-                              <span>
-                                <LuImage className="mr-2" />
-                                Изображение вопроса
-                              </span>
-                            </Button>
-                          </Label>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      {options.map((option, oIndex) => (
-                        <div
-                          key={option.id || oIndex}
-                          className="space-y-2 rounded-md border bg-muted/20 p-3"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Input
-                              {...register(
-                                `questions.${qIndex}.options.${oIndex}.text`,
-                                { required: true }
-                              )}
-                              placeholder={`Вариант ${oIndex + 1}`}
-                            />
-                            {options.length > 2 && (
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="h-8 w-8 shrink-0"
-                                onClick={() => {
-                                  const updated = [...options];
-                                  updated.splice(oIndex, 1);
-                                  setValue(`questions.${qIndex}.options`, updated);
-                                }}
-                              >
-                                <LuX />
-                              </Button>
-                            )}
-                          </div>
-                          {option.imagePreview ? (
-                            <div className="relative inline-block">
-                              <img
-                                src={option.imagePreview}
-                                alt=""
-                                className="max-h-24 rounded-md border"
-                              />
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="absolute -top-2 -right-2 h-6 w-6"
-                                onClick={() => {
-                                  const updated = [...options];
-                                  updated[oIndex] = {
-                                    ...updated[oIndex],
-                                    image: null,
-                                    imagePreview: undefined,
-                                  };
-                                  setValue(`questions.${qIndex}.options`, updated);
-                                }}
-                              >
-                                <LuX className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <>
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                id={`option-image-${qIndex}-${oIndex}`}
-                                onChange={(e) =>
-                                  handleOptionImageChange(qIndex, oIndex, e)
-                                }
-                              />
-                              <Label htmlFor={`option-image-${qIndex}-${oIndex}`}>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  asChild
-                                  className="w-full"
-                                >
-                                  <span>
-                                    <LuImage className="mr-2 h-4 w-4" />
-                                    Изображение
-                                  </span>
-                                </Button>
-                              </Label>
-                            </>
-                          )}
-                        </div>
-                      ))}
-                      {options.length < 6 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="h-full min-h-24 border-dashed text-muted-foreground"
-                          onClick={() =>
-                            setValue(`questions.${qIndex}.options`, [
-                              ...options,
-                              { text: "", image: null, imagePreview: undefined },
-                            ])
-                          }
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Вариант
-                        </Button>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label>Правильный ответ</Label>
-                      {isMultipleMode ? (
-                        <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
-                          {options
-                            .filter((option) => option.text.trim() !== "")
-                            .map((option, idx) => (
-                              <label
-                                key={idx}
-                                className="flex items-center gap-2 rounded border px-3 py-2"
-                              >
-                                <Checkbox
-                                  checked={correctAnswers.includes(option.text)}
-                                  onCheckedChange={(checked) => {
-                                    const next = checked
-                                      ? [...correctAnswers, option.text]
-                                      : correctAnswers.filter(
-                                          (answer) => answer !== option.text
-                                        );
-                                    setValue(
-                                      `questions.${qIndex}.correctAnswer`,
-                                      next
-                                    );
-                                  }}
-                                />
-                                <span className="text-sm">{option.text}</span>
-                              </label>
-                            ))}
-                        </div>
-                      ) : (
-                        <select
-                          className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                          value={
-                            typeof question?.correctAnswer === "string"
-                              ? question.correctAnswer
-                              : ""
-                          }
-                          onChange={(e) =>
-                            setValue(
-                              `questions.${qIndex}.correctAnswer`,
-                              e.target.value
-                            )
-                          }
-                        >
-                          <option value="">Выберите вариант</option>
-                          {options
-                            .filter((option) => option.text.trim() !== "")
-                            .map((option, idx) => (
-                              <option key={idx} value={option.text}>
-                                {option.text}
-                              </option>
-                            ))}
-                        </select>
-                      )}
-                    </div>
-
-                    {questionFields.length > 1 && (
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-lg font-medium">Вопросы</p>
+                  </div>
+                  <UseTooltip
+                    text={
+                      isBankDisabled
+                        ? "Недоступно, пока вы заполняете этот вопрос"
+                        : "Вставить готовые вопросы из коллекции"
+                    }
+                  >
+                    <span className={cn(isBankDisabled && "cursor-not-allowed")}>
                       <Button
                         type="button"
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
-                        onClick={() => remove(qIndex)}
+                        disabled={isBankDisabled}
+                        onClick={() => setBankPickerOpen(true)}
                       >
-                        Удалить вопрос
+                        <LuLibrary />
+                        Из коллекции вопросов
                       </Button>
-                    )}
-                  </div>
-                );
-              })}
+                    </span>
+                  </UseTooltip>
+                </div>
 
-              {questionFields.length < 20 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => append(emptyQuestion())}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Добавить вопрос
-                </Button>
-              )}
+                <div className="flex flex-wrap items-center gap-2">
+                  {questionFields.map((field, stepIndex) => (
+                    <button
+                      key={field.id}
+                      type="button"
+                      onClick={() => setActiveIndex(stepIndex)}
+                      aria-current={stepIndex === activeIndex ? "step" : undefined}
+                      aria-label={`Перейти к вопросу ${stepIndex + 1}`}
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors",
+                        stepIndex === activeIndex
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                      )}
+                    >
+                      {stepIndex + 1}
+                    </button>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={handleAppendQuestion}
+                    aria-label="Добавить вопрос"
+                    className="rounded-full"
+                  >
+                    <Plus />
+                  </Button>
+                </div>
+
+                {activeField && (
+                  <Controller
+                    key={activeField.id}
+                    name={`questions.${activeIndex}`}
+                    control={control}
+                    rules={{ validate: validateQuestion }}
+                    render={({ field: questionField, fieldState }) => (
+                      <QuestionEditorCard
+                        value={questionField.value || emptyQuestion()}
+                        onChange={questionField.onChange}
+                        index={activeIndex}
+                        error={
+                          typeof fieldState.error?.message === "string"
+                            ? fieldState.error.message
+                            : undefined
+                        }
+                        canRemove={canRemoveQuestion}
+                        onRemove={handleRemoveActive}
+                        onAddOption={() => {
+                          const current =
+                            questionField.value || emptyQuestion();
+                          questionField.onChange({
+                            ...current,
+                            options: [...current.options, emptyOptionDraft()],
+                          });
+                        }}
+                      />
+                    )}
+                  />
+                )}
+
+                <div className="flex items-center justify-between gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={goPrev}
+                    disabled={activeIndex <= 0}
+                  >
+                    <ChevronLeft />
+                    Назад
+                  </Button>
+                  {activeIndex >= totalQuestions - 1 ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleAppendQuestion}
+                    >
+                      <Plus />
+                      Добавить вопрос
+                    </Button>
+                  ) : (
+                    <Button type="button" onClick={goNext}>
+                      Далее
+                      <ChevronRight />
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </ScrollArea>
-
-     
         </form>
       )}
+      <PickQuestionsDialog
+        open={bankPickerOpen}
+        onOpenChange={setBankPickerOpen}
+        onInsert={handleInsertFromBank}
+      />
     </div>
   );
 };
+

@@ -118,7 +118,7 @@ export const ThemeFeed: React.FC<FeedProps> = ({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto px-1 py-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
         {isLoading ? (
           <div className="space-y-4 p-2">
             <Skeleton className="h-16 w-3/4 rounded-xl" />

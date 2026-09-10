@@ -33,7 +33,7 @@ import {
 } from "shared/shadcn/ui/input-group";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { RemarkMessageList } from "./RemarkMessageList";
-import { remarkToReview, reviewsToThreadMessages } from "./ReviewThread";
+import { remarkToReview, reviewsToThreadItems } from "./ReviewThread";
 
 interface SetCommentProps {
   text: string;
@@ -85,8 +85,8 @@ export function SetComment({
     return reviews.find((review) => review.needs_teacher_action);
   }, [reviews]);
 
-  const threadMessages = useMemo(
-    () => reviewsToThreadMessages(reviews),
+  const threadItems = useMemo(
+    () => reviewsToThreadItems(reviews),
     [reviews]
   );
 
@@ -192,7 +192,7 @@ export function SetComment({
                   <Skeleton className="ml-auto h-16 w-2/3 rounded-xl" />
                   <Skeleton className="h-16 w-3/4 rounded-xl" />
                 </div>
-              ) : threadMessages.length === 0 ? (
+              ) : threadItems.length === 0 ? (
                 <Empty className="h-full border-0">
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
@@ -206,7 +206,7 @@ export function SetComment({
                 </Empty>
               ) : (
                 <RemarkMessageList
-                  messages={threadMessages}
+                  items={threadItems}
                   ownRole="teacher"
                   isPending={isPending}
                 />

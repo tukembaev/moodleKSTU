@@ -3,7 +3,7 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 
 import { LuCheckCheck } from "react-icons/lu";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
-import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import {
@@ -15,9 +15,7 @@ import {
   TableRow,
 } from "shared/shadcn/ui/table";
 import StudentDetailDialog from "./StudentCourseDetail";
-
-// Компонент для отображения детальной статистики студента
-
+import { studentAvatarSrc, studentInitials } from "./studentAvatar";
 
 const CourseResultTable = () => {
   const id = useCourseId();
@@ -92,7 +90,13 @@ const CourseResultTable = () => {
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
-                      <AvatarImage src={student.avatar || undefined} />
+                      <AvatarImage
+                        src={studentAvatarSrc(student)}
+                        alt={`${student.first_name} ${student.last_name}`}
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs sm:text-sm">
+                        {studentInitials(student)}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
                       <p className="text-sm sm:text-base truncate">{`${student.first_name} ${student.last_name}`}</p>

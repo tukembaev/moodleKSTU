@@ -17,7 +17,7 @@ import {
 } from "shared/shadcn/ui/input-group";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { RemarkMessageList } from "./RemarkMessageList";
-import { remarkToReview, reviewsToThreadMessages } from "./ReviewThread";
+import { remarkToReview, reviewsToThreadItems } from "./ReviewThread";
 
 interface StudentCommentsProps {
   theme_id: string;
@@ -43,8 +43,8 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
     return openRemark ?? reviews[reviews.length - 1];
   }, [reviews]);
 
-  const threadMessages = useMemo(
-    () => reviewsToThreadMessages(reviews),
+  const threadItems = useMemo(
+    () => reviewsToThreadItems(reviews),
     [reviews]
   );
 
@@ -75,7 +75,7 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-transparent">
-        <div className="shrink-0 px-2 pb-3 pt-4">
+        <div className="shrink-0 px-4 pb-3">
           <h3 className="text-base font-semibold leading-none">
             Замечания преподавателя
           </h3>
@@ -93,7 +93,7 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
               <Skeleton className="ml-auto h-16 w-2/3 rounded-xl" />
               <Skeleton className="h-16 w-3/4 rounded-xl" />
             </div>
-          ) : threadMessages.length === 0 ? (
+          ) : threadItems.length === 0 ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -107,7 +107,7 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
             </Empty>
           ) : (
             <RemarkMessageList
-              messages={threadMessages}
+              items={threadItems}
               ownRole="student"
               isPending={isPending}
             />

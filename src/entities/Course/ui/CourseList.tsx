@@ -1,53 +1,126 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { ChevronRight } from "lucide-react";
-import {
-  LuBookCheck,
-  LuFlaskConical,
-  LuHammer,
-  LuPlus,
-} from "react-icons/lu";
+import { Building2, ChevronRight } from "lucide-react";
+import { LuBookCheck, LuPlus } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import {
-  CategoryBar,
   FadeInList,
   SpringPopupList,
-  UseTooltip
+  UseTooltip,
 } from "shared/components";
 import { FormQuery } from "shared/config";
 import { AppRoutes } from "shared/config/routeConfig/routeConfig";
 import { useAuth, useForm } from "shared/hooks";
 import { openCourse } from "shared/lib/navigation/hidden-ids";
-import { cn } from "shared/lib/utils";
-import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
 import CourseCardSkeleton from "../lib/skeletons/CourseCardSkeleton";
+import { Course } from "../model/types/course";
 import { courseQueries } from "../model/services/courseQueryFactory";
 
-const CourseList = () => {
+const ownerInitials = (name?: string) =>
+  (name || "П")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+const CourseCard = ({ course }: { course: Course }) => {
   const navigate = useNavigate();
+  const owner = course.course_owner?.[0];
+  const courseInitial = (course.discipline_name || "?")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
+
+  return (
+    <div className="group flex min-w-1/3 flex-col gap-3 rounded-2xl border bg-card p-3 shadow-sm transition-all duration-300 hover:border-foreground/15 hover:shadow-md">
+      <div className="relative overflow-hidden rounded-xl bg-muted/70 p-4 dark:bg-muted/40">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -bottom-4 -right-1 select-none text-8xl font-bold leading-none text-foreground/[0.06]"
+        >
+          {courseInitial}
+        </span>
+        <div className="relative flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-xl font-semibold leading-snug tracking-tight">
+              {course.discipline_name}
+            </h3>
+            {course.is_end && (
+              <UseTooltip text={`Сдано на ${course.course_points}`}>
+                <LuBookCheck className="mt-1 size-5 shrink-0 text-green-500 dark:text-green-400" />
+              </UseTooltip>
+            )}
+          </div>
+          {course.organization_name ? (
+            <div className="flex items-center gap-3 rounded-lg border bg-background/80 px-3 py-2.5">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                <Building2 className="size-4 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Кафедра
+                </p>
+                <p className="truncate text-sm font-medium">
+                  {course.organization_name}
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 px-1 pb-0.5">
+        {owner ? (
+          <Button
+            variant="ghost"
+            className="h-auto min-w-0 flex-1 justify-start gap-2.5 px-1 py-1"
+            onClick={() =>
+              navigate("/" + AppRoutes.PROFILE + "/" + owner.user_id)
+            }
+          >
+            <Avatar className="size-9">
+              <AvatarImage src={owner.avatar} className="object-cover" />
+              <AvatarFallback className="bg-muted text-xs font-semibold">
+                {ownerInitials(owner.owner_name)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="min-w-0 text-left">
+              <span className="block truncate text-sm font-semibold">
+                {owner.owner_name}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Преподаватель
+              </span>
+            </span>
+          </Button>
+        ) : (
+          <span />
+        )}
+
+        <Button
+          className="shrink-0 shadow-none"
+          variant="outline"
+          onClick={() => openCourse(navigate, course.id)}
+        >
+          Подробнее <ChevronRight />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const CourseList = () => {
   const openForm = useForm();
   const { isStudent } = useAuth();
-
   const { data, isLoading, error } = useQuery(courseQueries.allCourses());
-
 
   return (
     <div className="min-h-screen flex py-3 ">
       <div className="w-full">
-        {/* <div className="flex justify-between items-center">
-          <Select defaultValue="recommended">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recommended">Мои курсы</SelectItem>
-              <SelectItem value="popular">Все курсы</SelectItem>
-            </SelectContent>
-          </Select>
-        </div> */}
-        {/* {id && <UserFavorites />} */}
-
         <div className="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto">
           {isLoading ? (
             <SpringPopupList>
@@ -59,189 +132,29 @@ const CourseList = () => {
             <p>Произошла непредвиденная ошибка! {error.message} </p>
           ) : (
             <FadeInList>
-              {data?.map((course) => {
-                const progressThemes = [
-                  {
-                    name: "Лабораторные",
-                    done: course?.count_lb_pr?.lb_done,
-                    left: course?.count_lb_pr?.lb_left,
-                    icon: (
-                      <LuFlaskConical className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />
-                    ),
-                  },
-                  {
-                    name: "Практики",
-                    done: course?.count_lb_pr?.pr_done,
-                    left: course?.count_lb_pr?.pr_left,
-                    icon: (
-                      <LuHammer className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />
-                    ),
-                  },
-                ];
-                return (
-                  <div
-                    key={course.id}
-                    className="flex flex-col border rounded-xl py-4 px-5 justify-between min-w-1/3 hover:shadow-xl  transition-all duration-300 backdrop-blur-xl hover:shadow-zinc-200/20 dark:hover:shadow-zinc-900/20,
-                  hover:border-zinc-300/50 dark:hover:border-zinc-700/50"
-                  >
-                    <div>
-                      <div className="flex justify-end items-end">
-                        {/* <div className="flex gap-2 items-center pb-2">
-                          <Badge
-                            variant={"outline"}
-                            className="max-h-6 flex gap-2 pr-3"
-                          >
-                            <img
-                              src={course.category_icon}
-                              className="w-4"я
-                              alt=""
-                            />
-                            {course.category}
-                          </Badge>
-                         
-                        </div> */}
-
-
-                      </div>
-
-                      <div className="flex justify-between">
-                        <div className="flex gap-2 items-center">
-                          <span className="text-lg font-semibold flex gap-2 items-center ">
-                            {course.discipline_name}
-                            {course.is_end && (
-                              <UseTooltip
-                                text={`Сдано на ${course.course_points}`}
-                              >
-                                <LuBookCheck className="text-green-500 dark:text-green-400" />
-                              </UseTooltip>
-                            )}
-                          </span>
-
-                        </div>
-                      </div>
-
-                      <p className="mt-1 text-foreground/80 text-[15px]">
-                        Кредитов : {course.credit}
-                      </p>
-                      <p className="mt-1 text-foreground/80 text-[15px]">
-                        Форма контроля : {course.control_form}
-                      </p>
-                      {course.count_lb_pr && (
-                        <div className="py-2">
-                          <div className="space-y-2.5">
-                            {progressThemes?.map((theme) => (
-                              <div
-                                key={theme.name}
-                                className={cn(
-                                  "flex items-center gap-3",
-                                  "p-2 rounded-xl",
-
-                                  "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-                                  "transition-colors duration-200"
-                                )}
-                              >
-                                {theme.icon}
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between text-sm mb-1.5">
-                                    <span className="text-zinc-700 dark:text-zinc-300 font-medium">
-                                      {theme.name}
-                                    </span>
-                                  </div>
-                                  <div className="flex gap-1">
-                                    {[...Array(theme.done + theme.left)].map(
-                                      (_, i) => (
-                                        <div
-                                          key={i}
-                                          className={cn(
-                                            "h-1 rounded-full flex-1",
-                                            i < theme.done
-                                              ? "bg-zinc-900 dark:bg-zinc-100"
-                                              : "bg-zinc-200 dark:bg-zinc-700"
-                                          )}
-                                        />
-                                      )
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {course.progress && (
-                        <CategoryBar
-                          values={[74, 13, 14]}
-                          marker={{
-                            value: course.course_points,
-                            tooltip: `${course.course_points}`,
-                            showAnimation: true,
-                          }}
-                          colors={["red", "amber", "lime"]}
-                          className="pt-4"
-                          showLabels={false}
-                        />
-                      )}
-                    </div>
-                    <div className="mt-4 flex items-center justify-between align-middle">
-                      <Button
-                        variant={"ghost"}
-                        className="flex items-center gap-2 "
-                        onClick={() =>
-                          navigate(
-                            "/" +
-                            AppRoutes.PROFILE +
-                            "/" +
-                            course.course_owner[0].user_id
-                          )
-                        }
-                      >
-                        <Avatar>
-                          <AvatarImage src={course.course_owner[0].avatar} className="object-cover" />
-                        </Avatar>
-
-                        <span className="text-muted-foreground font-semibold flex flex-col text-md py-2">
-                          {course.course_owner[0].owner_name}
-                          <span className="font-medium text-xs text-muted-foreground">
-                            Преподаватель
-                          </span>
-                        </span>
-                      </Button>
-
-                      {/* <MemberListPreview /> */}
-
-                      <Button
-                        className="shadow-none"
-                        variant={"outline"}
-                        onClick={() => openCourse(navigate, course.id)}
-                      >
-                        Подробнее <ChevronRight />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+              {data?.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
               {!isStudent && (
                 <div
-                  className="group flex flex-col border-2 border-dashed rounded-xl py-4 px-5 justify-center items-center min-w-1/3 min-h-48 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer"
+                  className="group flex min-w-1/3 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-5 py-8 transition-all duration-300 hover:border-primary/50 hover:bg-primary/5"
                   onClick={() => openForm(FormQuery.ADD_COURSE)}
                 >
-                  
-                    <UseTooltip text="Создать курс">
-                      <div className="flex flex-col justify-center items-center gap-3">
-                        <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                          <LuPlus size={32} className="text-primary" />
-                        </div>
-                        <div className="text-center">
-                          <p className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                            Добавить курс
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Нажмите, чтобы создать новый курс
-                          </p>
-                        </div>
+                  <UseTooltip text="Создать курс">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="rounded-2xl bg-primary/10 p-4 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                        <LuPlus size={32} className="text-primary" />
                       </div>
-                    </UseTooltip>
-                  
+                      <div className="text-center">
+                        <p className="text-lg font-medium text-foreground transition-colors group-hover:text-primary">
+                          Добавить курс
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Нажмите, чтобы создать новый курс
+                        </p>
+                      </div>
+                    </div>
+                  </UseTooltip>
                 </div>
               )}
             </FadeInList>
@@ -249,7 +162,7 @@ const CourseList = () => {
         </div>
       </div>
     </div>
-  );  
+  );
 };
 
 export default CourseList;

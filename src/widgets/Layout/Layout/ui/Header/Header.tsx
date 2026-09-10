@@ -42,20 +42,38 @@ const Header = () => {
                 <span className="sm:hidden">Курсы</span>
               </NavLink>
               {!isStudent && (
-                <NavLink
-                  to={RoutePath[AppRoutes.TEST]}
-                  className={() =>
-                    cn(
-                      "rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
-                      location.pathname.includes(RoutePath[AppRoutes.TEST])
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                    )
-                  }
-                >
-                  <span className="hidden sm:inline">Тестирование</span>
-                  <span className="sm:hidden">Тесты</span>
-                </NavLink>
+                <>
+                  <NavLink
+                    to={RoutePath[AppRoutes.TEST]}
+                    className={() =>
+                      cn(
+                        "rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
+                        location.pathname.includes(RoutePath[AppRoutes.TEST])
+                          ? "bg-accent text-accent-foreground"
+                          : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                      )
+                    }
+                  >
+                    <span className="hidden sm:inline">Тестирование</span>
+                    <span className="sm:hidden">Тесты</span>
+                  </NavLink>
+                  <NavLink
+                    to={RoutePath[AppRoutes.QUESTION_BANK]}
+                    className={() =>
+                      cn(
+                        "rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
+                        location.pathname.includes(
+                          RoutePath[AppRoutes.QUESTION_BANK]
+                        )
+                          ? "bg-accent text-accent-foreground"
+                          : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                      )
+                    }
+                  >
+                    <span className="hidden sm:inline">Коллекция вопросов</span>
+                    <span className="sm:hidden">Коллекция</span>
+                  </NavLink>
+                </>
               )}
             </nav>
           </div>

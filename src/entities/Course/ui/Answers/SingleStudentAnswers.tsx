@@ -1,12 +1,14 @@
+import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { FileAnswer } from "entities/Course/model/types/course";
-import { LuFile, LuUpload } from "react-icons/lu";
-import { SpringPopupList } from "shared/components";
-import { FormQuery } from "shared/config";
-import { useForm } from "shared/hooks";
-import { Button } from "shared/shadcn/ui/button";
-import { Card, CardContent, CardHeader } from "shared/shadcn/ui/card";
+import { DragEvent, useRef, useState } from "react";
+import { LuUpload } from "react-icons/lu";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
+import { cn } from "shared/lib/utils";
+import { toast } from "sonner";
+import { AddAnswerCard } from "./AddAnswerCard";
 import { AnswerFileAttachment } from "./AnswerFileAttachment";
+
+const fileCardClass = "w-full sm:min-w-[240px] sm:flex-1 sm:max-w-md";
 
 const SingleStudentAnswers = ({
   data,
@@ -19,57 +21,52 @@ const SingleStudentAnswers = ({
   error: Error | null;
   id: string;
 }) => {
-  const openForm = useForm();
+  const { mutate: add_answer } = courseQueries.create_answer();
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
 
-  const renderCardSkeleton = () => (
-    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-      {Array.from({ length: 2 }).map((_, index) => (
-        <Card key={index} className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <Skeleton className="h-5 w-3/4" />
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-9 w-full" />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  };
 
-  const renderFileCards = () => {
-    if (!data.length) {
-      return (
-        <div className="flex w-full min-h-64 items-center justify-center py-8">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="p-4 rounded-2xl bg-muted/50">
-              <LuFile className="h-10 w-10 text-muted-foreground opacity-50" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium">Файлы отсутствуют</p>
-              <p className="text-sm text-muted-foreground">
-                Добавьте свой первый файл!
-              </p>
-            </div>
-          </div>
-        </div>
-      );
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+
+    const files = Array.from(e.dataTransfer.files);
+
+    if (files.length === 0) {
+      toast.error("Файлы не найдены");
+      return;
     }
 
-    return (
-      <div className="grid w-full gap-3 grid-cols-1 sm:grid-cols-2">
-        <SpringPopupList>
-          {data.map((material) => (
-            <AnswerFileAttachment
-              key={material.id}
-              file={material}
-              canDelete
-              className="w-full max-w-full"
-            />
-          ))}
-        </SpringPopupList>
-      </div>
-    );
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append(`list_files[${index}]`, file, file.name);
+    });
+    formData.append("task", id);
+    add_answer(formData);
   };
 
   if (error) {
@@ -79,17 +76,58 @@ const SingleStudentAnswers = ({
   }
 
   return (
-    <div className="flex flex-col gap-3 p-3 sm:p-4">
-      <Button
-        variant={data.length ? "outline" : "default"}
-        className="h-11 w-full gap-2 sm:h-9 sm:w-auto sm:self-end"
-        onClick={() => openForm(FormQuery.ADD_ANSWER, { id })}
-      >
-        <LuUpload className="h-4 w-4" />
-        Добавить файл
-      </Button>
+    <div
+      className={cn(
+        "relative flex h-full min-h-0 flex-col px-3 pb-3 sm:px-4 sm:pb-4",
+        isDragging && "ring-2 ring-primary ring-inset"
+      )}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm z-10 flex items-center justify-center pointer-events-none">
+          <div className="bg-background border-2 border-dashed border-primary rounded-lg p-8 flex flex-col items-center gap-3">
+            <LuUpload size={48} className="text-primary" />
+            <p className="text-lg font-semibold">Перетащите файлы сюда</p>
+            <p className="text-sm text-muted-foreground">
+              Файлы будут загружены как ответы по теме
+            </p>
+          </div>
+        </div>
+      )}
 
-      {isLoading ? renderCardSkeleton() : renderFileCards()}
+      <div className="mb-2 flex shrink-0 items-center justify-between gap-2 sm:mb-3">
+        <p className="min-w-0 truncate text-base font-semibold sm:text-lg">
+          Мои файлы
+        </p>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {isLoading ? (
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton
+                key={index}
+                className={cn("h-14 rounded-xl", fileCardClass)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {data.map((material) => (
+              <AnswerFileAttachment
+                key={material.id}
+                file={material}
+                canDelete
+                className={fileCardClass}
+              />
+            ))}
+            <AddAnswerCard themeId={id} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

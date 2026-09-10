@@ -8,7 +8,6 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import {
   LuCheckCheck,
-  LuEllipsisVertical,
   LuFile,
   LuKeyRound,
   LuLaugh,
@@ -27,7 +26,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent, CardHeader } from "shared/shadcn/ui/card";
-import { Checkbox } from "shared/shadcn/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
@@ -59,6 +57,21 @@ import {
 import { AnswerFileAttachment } from "./AnswerFileAttachment";
 
 type RemarksUiStatus = "none" | "pending" | "responded";
+
+const mockAvatarUrl = (seed: string | number) =>
+  `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(String(seed))}`;
+
+const studentAvatarSrc = (student: StudentsAnswers) => {
+  const avatar = student.avatar?.trim();
+  return avatar || mockAvatarUrl(student.user_id || student.fullname);
+};
+
+const studentInitials = (fullname: string) =>
+  fullname
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2);
 
 const getRemarksUiStatus = (
   student: StudentsAnswers,
@@ -152,7 +165,7 @@ const StudentRemarksBadge = ({
   );
 };
 
-const RemoveStudentFromCourseMenu = ({
+const RemoveStudentFromCourseButton = ({
   student,
   courseId,
   isPending,
@@ -164,36 +177,24 @@ const RemoveStudentFromCourseMenu = ({
   onRemove: (student: StudentsAnswers) => void;
 }) => {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <UseConfirmationDialog
+      title="Удалить студента с курса?"
+      description={`${student.fullname} будет исключён из курса. Это действие нельзя отменить.`}
+      onConfirm={() => onRemove(student)}
+      trigger={
         <Button
+          type="button"
           variant="ghost"
-          size="icon"
-          className="h-8 w-8 shrink-0"
+          size="icon-sm"
+          className="size-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-100 pointer-events-auto [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:pointer-events-none [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:focus-visible:pointer-events-auto"
           disabled={isPending || !courseId}
           onClick={(event) => event.stopPropagation()}
+          aria-label="Удалить из курса"
         >
-          <LuEllipsisVertical className="h-4 w-4" />
+          <LuTrash2 />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
-        <UseConfirmationDialog
-          title="Удалить студента с курса?"
-          description={`${student.fullname} будет исключён из курса. Это действие нельзя отменить.`}
-          onConfirm={() => onRemove(student)}
-          trigger={
-            <DropdownMenuItem
-              variant="destructive"
-              disabled={isPending || !courseId}
-              onSelect={(event) => event.preventDefault()}
-            >
-              <LuTrash2 />
-              Удалить из курса
-            </DropdownMenuItem>
-          }
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+      }
+    />
   );
 };
 
@@ -215,9 +216,6 @@ const ListOfStudentsWithAnswers = ({
   const [selectedGroup, setSelectedGroup] = useState<string | null>(
     "Все группы"
   );
-  const [selectedStudents, setSelectedStudents] = useState<Set<number>>(
-    new Set()
-  );
   const fallbackCourseId = useCourseId();
 
   const toggleExpand = (studentId: string) => {
@@ -226,27 +224,6 @@ const ListOfStudentsWithAnswers = ({
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value.toLowerCase());
-  };
-
-  const toggleSelectAll = () => {
-    const visibleStudentIds = filteredData.map((s) => s.user_id);
-    const allVisibleSelected =
-      visibleStudentIds.length > 0 &&
-      visibleStudentIds.every((id) => selectedStudents.has(id));
-
-    if (allVisibleSelected) {
-      setSelectedStudents((prev) => {
-        const newSet = new Set(prev);
-        visibleStudentIds.forEach((id) => newSet.delete(id));
-        return newSet;
-      });
-    } else {
-      setSelectedStudents((prev) => {
-        const newSet = new Set(prev);
-        visibleStudentIds.forEach((id) => newSet.add(id));
-        return newSet;
-      });
-    }
   };
 
   const uniqueGroups = [
@@ -286,16 +263,6 @@ const ListOfStudentsWithAnswers = ({
       data: {
         locked: !student.locked,
         users: [student.user_id],
-      },
-    });
-  };
-
-  const handleMultiplePermission = (lock: boolean) => {
-    change_permission({
-      id: filteredData[0]?.task,
-      data: {
-        locked: lock,
-        users: [...selectedStudents],
       },
     });
   };
@@ -376,7 +343,7 @@ const ListOfStudentsWithAnswers = ({
                 open={isExpanded}
                 onOpenChange={() => toggleExpand(student.id)}
               >
-                <Card className={`overflow-hidden transition-all duration-300 ${
+                <Card className={`group overflow-hidden transition-all duration-300 ${
                   isExpanded
                     ? "ring-2 ring-primary/20 shadow-md"
                     : remarksStatus === "responded"
@@ -388,14 +355,20 @@ const ListOfStudentsWithAnswers = ({
                       {/* Student info */}
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <Avatar className="h-10 w-10 shrink-0">
-                          <AvatarImage src={student.avatar} />
+                          <AvatarImage src={studentAvatarSrc(student)} alt={student.fullname} />
                           <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                            {student.fullname.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                            {studentInitials(student.fullname)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0">
                             <p className="font-medium text-sm truncate">{student.fullname}</p>
+                            <RemoveStudentFromCourseButton
+                              student={student}
+                              courseId={studentCourseId(student)}
+                              isPending={isRemovePending}
+                              onRemove={handleRemoveStudent}
+                            />
                             {hasUnreadFiles ? (
                               <UseTooltip text="Есть непрочитанные файлы">
                                 <Badge className="gap-1 bg-orange-50 text-orange-600 border-orange-200 text-xs px-1.5 py-0 shrink-0 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800">
@@ -414,12 +387,6 @@ const ListOfStudentsWithAnswers = ({
                       </div>
                       
                       <div className="flex items-center gap-1 shrink-0">
-                        <RemoveStudentFromCourseMenu
-                          student={student}
-                          courseId={studentCourseId(student)}
-                          isPending={isRemovePending}
-                          onRemove={handleRemoveStudent}
-                        />
                         {student.files.length > 0 && (
                           <CollapsibleTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
@@ -536,9 +503,6 @@ const ListOfStudentsWithAnswers = ({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-10">
-              <Skeleton className="h-4 w-4 rounded-sm" />
-            </TableHead>
             <TableHead className="w-[300px]">Имя студента</TableHead>
             <TableHead className="w-[100px]">Баллы</TableHead>
             <TableHead>Статус сдачи</TableHead>
@@ -547,9 +511,6 @@ const ListOfStudentsWithAnswers = ({
         <TableBody>
           {[...Array(5)].map((_, index) => (
             <TableRow key={index} className="py-2">
-              <TableCell>
-                <Skeleton className="h-4 w-4 rounded-sm" />
-              </TableCell>
               <TableCell className="flex items-center gap-3">
                 <Skeleton className="h-8 w-8 rounded-full" />
                 <Skeleton className="h-4 w-40" />
@@ -576,19 +537,6 @@ const ListOfStudentsWithAnswers = ({
       <Table>
         <TableHeader className="bg-muted">
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-10">
-              <Checkbox
-                checked={
-                  filteredData.length > 0 &&
-                  filteredData.every((student) =>
-                    selectedStudents.has(student.user_id)
-                  )
-                }
-                onCheckedChange={toggleSelectAll}
-                className="cursor-pointer"
-                disabled={filteredData.length === 0}
-              />
-            </TableHead>
             <TableHead className="w-[150px]">Студент</TableHead>
             <TableHead className="w-[130px]">Статус сдачи</TableHead>
             <TableHead className="w-[130px]">Доступ</TableHead>
@@ -605,39 +553,28 @@ const ListOfStudentsWithAnswers = ({
             return (
             <React.Fragment key={student.user_id}>
               <TableRow
-                className={`${expandedId === student.id ? "border-b-0" : ""} ${
+                className={`group ${expandedId === student.id ? "border-b-0" : ""} ${
                   remarksStatus === "responded"
                     ? "bg-blue-50/70 dark:bg-blue-950/20"
                     : ""
                 }`}
               >
-                <TableCell>
-                  <Checkbox
-                    checked={selectedStudents.has(student.user_id)}
-                    onCheckedChange={() => {
-                      setSelectedStudents((prev) => {
-                        const newSet = new Set(prev);
-                        if (newSet.has(student.user_id)) {
-                          newSet.delete(student.user_id);
-                        } else {
-                          newSet.add(student.user_id);
-                        }
-                        return newSet;
-                      });
-                    }}
-                    className="cursor-pointer"
-                  />
-                </TableCell>
                 <TableCell className="font-medium flex items-center gap-3">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <Avatar>
-                      <AvatarImage src={student.avatar} />
+                      <AvatarImage src={studentAvatarSrc(student)} alt={student.fullname} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                        {studentInitials(student.fullname)}
+                      </AvatarFallback>
                     </Avatar>
 
-                    <p>{student.fullname}</p>
-                    {/* <Badge className="bg-primary/5 text-primary shadow-none text-xs">
-                      {student.group}
-                    </Badge> */}
+                    <p className="truncate">{student.fullname}</p>
+                    <RemoveStudentFromCourseButton
+                      student={student}
+                      courseId={studentCourseId(student)}
+                      isPending={isRemovePending}
+                      onRemove={handleRemoveStudent}
+                    />
                   </div>
 
                   {student.files.some((file) => !file.is_read.is_read) ? (
@@ -706,12 +643,6 @@ const ListOfStudentsWithAnswers = ({
 
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <RemoveStudentFromCourseMenu
-                      student={student}
-                      courseId={studentCourseId(student)}
-                      isPending={isRemovePending}
-                      onRemove={handleRemoveStudent}
-                    />
                     {student.files.length > 0 && (
                       <button
                         type="button"
@@ -734,7 +665,6 @@ const ListOfStudentsWithAnswers = ({
                   key={`expanded-${student.id}`}
                   className="hover:bg-transparent"
                 >
-                  <TableCell />
                   <TableCell colSpan={5} className="pt-0 pb-3">
                     <div className="flex flex-wrap gap-2 py-1">
                       {student.files.map((item) => (
@@ -824,29 +754,6 @@ const ListOfStudentsWithAnswers = ({
               <LuKeyRound className="text-green-400" />
               Открыть всем
             </Button>
-            {selectedStudents.size > 0 &&
-              selectedStudents.size !== uniqueData.length && (
-                <>
-                  <Button
-                    onClick={() => handleMultiplePermission(true)}
-                    variant="outline"
-                    size="sm"
-                    disabled={isAccessPending}
-                  >
-                    <LuLock className="text-red-400" />
-                    Закрыть выбранным
-                  </Button>
-                  <Button
-                    onClick={() => handleMultiplePermission(false)}
-                    variant="outline"
-                    size="sm"
-                    disabled={isAccessPending}
-                  >
-                    <LuKeyRound className="text-green-400" />
-                    Открыть выбранным
-                  </Button>
-                </>
-              )}
           </div>
         </div>
         <DropdownMenu>
