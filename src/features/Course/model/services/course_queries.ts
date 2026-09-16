@@ -2,11 +2,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { registerToCourse } from 'entities/User';
 
 import { createCourse, createTheme } from 'entities/Course';
-import { bindCourseStreams, createAnswer, createComment, createFAQ, createMaterial, deleteAnswer, deleteCourseStream, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setExtraPoints } from 'entities/Course/model/services/courseAPI';
+import { apiErrorDetail } from 'entities/Course/lib/apiErrorDetail';
+import { bindCourseStreams, createAnswer, createComment, createCourseAnnouncement, createCourseInviteLink, createFAQ, createMaterial, deleteAnswer, deleteCourseAnnouncement, deleteCourseInviteLink, deleteCourseStream, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setExtraPoints, themeAttendanceThemeKey, updateCourseAnnouncement, updateThemeAttendance } from 'entities/Course/model/services/courseAPI';
+import { CreateAnnouncementPayload, CreateCourseInvitePayload, ThemeAttendance, ThemeAttendanceStudent, UpdateAnnouncementPayload, UpdateThemeAttendancePayload } from 'entities/Course/model/types/course';
 import { toast } from 'sonner';
 import { BindCourseStreamsPayload, CreateCoursePayload, CreateFAQPayload, CreateThemePayload, EditThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload } from '../types/course_payload';
 
-
+const MY_SUBMISSIONS_QUERY_KEY = ['course', 'my-submissions'] as const;
+const COURSE_MATERIALS_QUERY_KEY = ['course', 'course-materials'] as const;
+const COURSE_ANNOUNCEMENTS_QUERY_KEY = ['course', 'announcements'] as const;
+const COURSE_FEED_QUERY_KEY = ['course', 'feed'] as const;
 
 export const useRegistrateCourse = () => {
   const queryClient = useQueryClient();
@@ -116,6 +121,8 @@ export const useRegistrateCourse = () => {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['course','task-materials'], exact: false });
+        queryClient.invalidateQueries({ queryKey: COURSE_MATERIALS_QUERY_KEY, exact: false });
+        queryClient.invalidateQueries({ queryKey: COURSE_FEED_QUERY_KEY, exact: false });
       },
     });
   };
@@ -128,17 +135,18 @@ export const useRegistrateCourse = () => {
         toast.promise(mutationPromise, {
           loading: "Загружаем вашу работу...",
           success: "Загрузка работы прошла успешно!",
-          // error: "Ошибка при загрузке материала. Попробуйте снова.",
+          error: (error) => apiErrorDetail(error, "Не удалось загрузить работу"),
         });
         return mutationPromise;
       },
       onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
-
         console.log(error.message);
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['student-answer-task'] });
+        queryClient.invalidateQueries({ queryKey: ['student-answer-task'], exact: false });
+        queryClient.invalidateQueries({ queryKey: ['answer-task'], exact: false });
+        queryClient.invalidateQueries({ queryKey: ['remarks'], exact: false });
+        queryClient.invalidateQueries({ queryKey: MY_SUBMISSIONS_QUERY_KEY, exact: false });
       },
     });
   };
@@ -170,7 +178,7 @@ export const useRegistrateCourse = () => {
       const queryClient = useQueryClient();
       return useMutation({
         mutationFn: (data: RateAnswerPayload) => {
-          if (!data.answer) {
+          if (!data.answer && !data.result) {
             toast.warning("Студент не отвечал на задание, оценивание невозможно");
             return Promise.reject("Нет ID ответа");
           }
@@ -178,7 +186,6 @@ export const useRegistrateCourse = () => {
           toast.promise(mutationPromise, {
             loading: "Оцениваем работу...",
             success: "Оценивание работы прошло успешно!",
-            // error: "Ошибка при оценивании работы. Попробуйте снова.",
           });
           return mutationPromise;
         },
@@ -191,6 +198,16 @@ export const useRegistrateCourse = () => {
             queryKey: ['answer-task'],
             exact: false,
           });
+          queryClient.invalidateQueries({
+            queryKey: ['student-answer-task'],
+            exact: false,
+          });
+          queryClient.invalidateQueries({ queryKey: ['course', 'course-all-themes'] });
+          queryClient.invalidateQueries({ queryKey: ['course', 'course-theme'] });
+          queryClient.invalidateQueries({ queryKey: ['course', 'tests'] });
+          queryClient.invalidateQueries({ queryKey: ['test'] });
+          queryClient.invalidateQueries({ queryKey: ['statistics'], exact: false });
+          queryClient.invalidateQueries({ queryKey: MY_SUBMISSIONS_QUERY_KEY, exact: false });
         },});
       
     };
@@ -279,6 +296,7 @@ export const useRegistrateCourse = () => {
             queryClient.invalidateQueries({ queryKey: ['course', 'course-theme'], exact: false });
             queryClient.invalidateQueries({ queryKey: ['week', 'themes'], exact: false });
             queryClient.invalidateQueries({ queryKey: ['course', 'task-materials'], exact: false });
+            queryClient.invalidateQueries({ queryKey: COURSE_MATERIALS_QUERY_KEY, exact: false });
           },
         });
       };
@@ -302,6 +320,7 @@ export const useRegistrateCourse = () => {
             queryClient.invalidateQueries({ queryKey: ['course', 'course-theme'], exact: false });
             queryClient.invalidateQueries({ queryKey: ['week', 'themes'], exact: false });
             queryClient.invalidateQueries({ queryKey: ['course', 'task-materials'], exact: false });
+            queryClient.invalidateQueries({ queryKey: COURSE_MATERIALS_QUERY_KEY, exact: false });
           },
         });
       };
@@ -443,15 +462,17 @@ export const useDeleteAnswer = () => {
       toast.promise(mutationPromise, {
         loading: "Удаляем файл...",
         success: "Файл успешно удалён!",
+        error: (error) => apiErrorDetail(error, "Не удалось удалить файл"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+      console.log(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student-answer-task'], exact: false });
       queryClient.invalidateQueries({ queryKey: ['answer-task'], exact: false });
+      queryClient.invalidateQueries({ queryKey: MY_SUBMISSIONS_QUERY_KEY, exact: false });
     },
   });
 };
@@ -475,6 +496,8 @@ export const delete_material = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course','task-materials'], exact: false });
+      queryClient.invalidateQueries({ queryKey: COURSE_MATERIALS_QUERY_KEY, exact: false });
+      queryClient.invalidateQueries({ queryKey: COURSE_FEED_QUERY_KEY, exact: false });
  
     },
   });
@@ -546,6 +569,181 @@ export const useDeleteCourseStream = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course', 'streams'], exact: false });
+    },
+  });
+};
+
+export const useCreateCourseInvite = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateCourseInvitePayload) => {
+      const mutationPromise = createCourseInviteLink(data);
+      toast.promise(mutationPromise, {
+        loading: "Создаём приглашение...",
+        success: "Приглашение на курс создано",
+      });
+      return mutationPromise;
+    },
+    onError: (error) => {
+      toast.error(`Ошибка: ${error?.message || "Не удалось создать приглашение"}`);
+    },
+    onSuccess: (data, variables) => {
+      if (data) {
+        queryClient.setQueryData(['course', 'invite-link', variables.course_id], data);
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ['course', 'invite-link', variables.course_id],
+        });
+      }
+    },
+  });
+};
+
+export const useDeleteCourseInvite = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (courseId: string) => {
+      const mutationPromise = deleteCourseInviteLink(courseId);
+      toast.promise(mutationPromise, {
+        loading: "Удаляем приглашение...",
+        success: "Приглашение удалено",
+      });
+      return mutationPromise;
+    },
+    onError: (error) => {
+      toast.error(`Ошибка: ${error?.message || "Не удалось удалить приглашение"}`);
+    },
+    onSuccess: (_data, courseId) => {
+      queryClient.setQueryData(['course', 'invite-link', courseId], null);
+    },
+  });
+};
+
+export const useCreateAnnouncement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      ...payload
+    }: CreateAnnouncementPayload & { courseId: string }) => {
+      const mutationPromise = createCourseAnnouncement(courseId, payload);
+      toast.promise(mutationPromise, {
+        loading: "Публикуем объявление...",
+        success: "Объявление опубликовано",
+      });
+      return mutationPromise;
+    },
+    onError: (error) => {
+      toast.error(`Ошибка: ${apiErrorDetail(error, "Не удалось опубликовать объявление")}`);
+    },
+    onSuccess: (_data, { courseId }) => {
+      queryClient.invalidateQueries({
+        queryKey: [...COURSE_ANNOUNCEMENTS_QUERY_KEY, courseId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...COURSE_FEED_QUERY_KEY, courseId],
+      });
+    },
+  });
+};
+
+export const useUpdateAnnouncement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      announcementId,
+      ...payload
+    }: UpdateAnnouncementPayload & { courseId: string; announcementId: string }) => {
+      const mutationPromise = updateCourseAnnouncement(
+        courseId,
+        announcementId,
+        payload
+      );
+      toast.promise(mutationPromise, {
+        loading: "Сохраняем объявление...",
+        success: "Объявление обновлено",
+      });
+      return mutationPromise;
+    },
+    onError: (error) => {
+      toast.error(`Ошибка: ${apiErrorDetail(error, "Не удалось обновить объявление")}`);
+    },
+    onSuccess: (_data, { courseId }) => {
+      queryClient.invalidateQueries({
+        queryKey: [...COURSE_ANNOUNCEMENTS_QUERY_KEY, courseId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...COURSE_FEED_QUERY_KEY, courseId],
+      });
+    },
+  });
+};
+
+export const useDeleteAnnouncement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      announcementId,
+    }: {
+      courseId: string;
+      announcementId: string;
+    }) => {
+      const mutationPromise = deleteCourseAnnouncement(courseId, announcementId);
+      toast.promise(mutationPromise, {
+        loading: "Удаляем объявление...",
+        success: "Объявление удалено",
+      });
+      return mutationPromise;
+    },
+    onError: (error) => {
+      toast.error(`Ошибка: ${apiErrorDetail(error, "Не удалось удалить объявление")}`);
+    },
+    onSuccess: (_data, { courseId }) => {
+      queryClient.invalidateQueries({
+        queryKey: [...COURSE_ANNOUNCEMENTS_QUERY_KEY, courseId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...COURSE_FEED_QUERY_KEY, courseId],
+      });
+    },
+  });
+};
+
+function patchAttendanceStudent(
+  current: ThemeAttendance | undefined,
+  row: ThemeAttendanceStudent
+): ThemeAttendance | undefined {
+  if (!current) return current;
+  return {
+    ...current,
+    students: current.students.map((student) =>
+      student.student_id === row.student_id ? { ...student, ...row } : student
+    ),
+  };
+}
+
+export const useUpdateThemeAttendance = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      themeId,
+      data,
+    }: {
+      themeId: string;
+      data: UpdateThemeAttendancePayload;
+    }) => updateThemeAttendance(themeId, data),
+    onError: (error) => {
+      toast.error(
+        `Ошибка: ${apiErrorDetail(error, "Не удалось сохранить посещаемость")}`
+      );
+    },
+    onSuccess: (row, { themeId }) => {
+      queryClient.setQueriesData<ThemeAttendance>(
+        { queryKey: themeAttendanceThemeKey(themeId) },
+        (current) => patchAttendanceStudent(current, row)
+      );
     },
   });
 };

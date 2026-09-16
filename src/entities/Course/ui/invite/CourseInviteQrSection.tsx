@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import QRCode from "qrcode";
-import { Download, QrCode } from "lucide-react";
-import { getCourseInviteUrl } from "shared/lib/navigation/hidden-ids";
+import { ChevronDown, Download, QrCode, Trash2 } from "lucide-react";
+import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { Button } from "shared/shadcn/ui/button";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "shared/shadcn/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +22,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "shared/shadcn/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "shared/shadcn/ui/dropdown-menu";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyMedia,
+  EmptyTitle,
+} from "shared/shadcn/ui/empty";
 import { toast } from "sonner";
+
+const INVITE_DURATIONS: { label: string; duration: string | null }[] = [
+  { label: "1 день", duration: "P1D" },
+  { label: "3 дня", duration: "P3D" },
+  { label: "Неделя", duration: "P7D" },
+  { label: "Месяц", duration: "P30D" },
+  { label: "Год", duration: "P365D" },
+  { label: "Бессрочно", duration: null },
+];
 
 function wrapCanvasText(
   ctx: CanvasRenderingContext2D,
@@ -183,14 +216,33 @@ export function CourseInviteQrButton({
   teacherName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [dataUrl, setDataUrl] = useState("");
   const [downloading, setDownloading] = useState(false);
-  const inviteUrl = courseId ? getCourseInviteUrl(courseId) : "";
   const title = courseName?.trim() || "Курс";
   const teacher = teacherName?.trim() || "";
 
+  const {
+    data: invite,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    ...courseQueries.courseInviteLink(courseId),
+    enabled: open && Boolean(courseId),
+  });
+  const { mutate: createInvite, isPending: isCreating } =
+    courseQueries.create_course_invite();
+  const { mutate: deleteInvite, isPending: isDeleting } =
+    courseQueries.delete_course_invite();
+
+  const inviteUrl = invite?.link ?? "";
+
   useEffect(() => {
-    if (!open || !inviteUrl) return;
+    if (!open || !inviteUrl) {
+      setDataUrl("");
+      return;
+    }
     let cancelled = false;
     QRCode.toDataURL(inviteUrl, {
       width: 512,
@@ -207,6 +259,16 @@ export function CourseInviteQrButton({
       cancelled = true;
     };
   }, [open, inviteUrl]);
+
+  const onCreate = (duration: string | null) => {
+    createInvite({ course_id: courseId, duration });
+  };
+
+  const onDelete = () => {
+    deleteInvite(courseId, {
+      onSuccess: () => setConfirmDelete(false),
+    });
+  };
 
   const onDownload = async () => {
     if (!dataUrl) return;
@@ -227,48 +289,144 @@ export function CourseInviteQrButton({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          aria-label="QR-код курса"
-          className="h-auto self-stretch aspect-square shrink-0 px-0"
-        >
-          <QrCode className="h-6 w-6 sm:h-7 sm:w-7" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Приглашение на курс</DialogTitle>
-          <DialogDescription>
-            {title}
-            {teacher ? `. Преподаватель: ${teacher}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col items-center py-2">
-          {dataUrl ? (
-            <img
-              src={dataUrl}
-              alt="QR-код приглашения на курс"
-              className="h-56 w-56 rounded-md border bg-white p-2"
-            />
-          ) : (
-            <div className="h-56 w-56 animate-pulse rounded-md bg-muted" />
-          )}
-        </div>
-        <DialogFooter>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
           <Button
             type="button"
-            className="w-full gap-2"
-            onClick={onDownload}
-            disabled={!dataUrl || downloading}
+            variant="outline"
+            aria-label="QR-код курса"
+            className="h-auto self-stretch aspect-square shrink-0 px-0"
           >
-            <Download className="h-4 w-4" />
-            {downloading ? "Готовим файл..." : "Скачать PNG"}
+            <QrCode className="h-6 w-6 sm:h-7 sm:w-7" />
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Приглашение на курс</DialogTitle>
+            <DialogDescription>
+              {title}
+              {teacher ? `. Преподаватель: ${teacher}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoading ? (
+            <div className="flex flex-col items-center py-2">
+              <div className="h-56 w-56 animate-pulse rounded-md bg-muted" />
+            </div>
+          ) : isError ? (
+            <Empty className="border border-dashed p-6 md:p-6">
+              <EmptyContent>
+                <EmptyMedia variant="icon">
+                  <QrCode />
+                </EmptyMedia>
+                <EmptyTitle>Не удалось загрузить приглашение</EmptyTitle>
+                <EmptyDescription>
+                  {error instanceof Error
+                    ? error.message
+                    : "Попробуйте открыть окно ещё раз"}
+                </EmptyDescription>
+              </EmptyContent>
+            </Empty>
+          ) : inviteUrl ? (
+            <div className="flex flex-col items-center py-2">
+              {dataUrl ? (
+                <img
+                  src={dataUrl}
+                  alt="QR-код приглашения на курс"
+                  className="h-56 w-56 rounded-md border bg-white p-2"
+                />
+              ) : (
+                <div className="h-56 w-56 animate-pulse rounded-md bg-muted" />
+              )}
+            </div>
+          ) : (
+            <Empty className="border border-dashed p-6 md:p-6">
+              <EmptyContent>
+                <EmptyMedia variant="icon">
+                  <QrCode />
+                </EmptyMedia>
+                <EmptyTitle>Приглашение ещё не создано</EmptyTitle>
+                <EmptyDescription>
+                  Создайте ссылку и выберите срок действия — студенты смогут
+                  вступить на курс по QR-коду.
+                </EmptyDescription>
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button type="button" disabled={isCreating} className="gap-2">
+                      {isCreating ? "Создаём..." : "Создать приглашение"}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-52">
+                    <DropdownMenuLabel>Срок действия</DropdownMenuLabel>
+                    {INVITE_DURATIONS.map((item) => (
+                      <DropdownMenuItem
+                        key={item.label}
+                        disabled={isCreating}
+                        onSelect={() => onCreate(item.duration)}
+                      >
+                        {item.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </EmptyContent>
+            </Empty>
+          )}
+
+          {inviteUrl ? (
+            <DialogFooter className="flex-col gap-2 sm:flex-col">
+              <Button
+                type="button"
+                className="w-full gap-2"
+                onClick={onDownload}
+                disabled={!dataUrl || downloading}
+              >
+                <Download className="h-4 w-4" />
+                {downloading ? "Готовим файл..." : "Скачать PNG"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2 text-destructive hover:text-destructive"
+                onClick={() => setConfirmDelete(true)}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4" />
+                Удалить приглашение
+              </Button>
+            </DialogFooter>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={confirmDelete}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && !isDeleting) setConfirmDelete(false);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить приглашение?</AlertDialogTitle>
+            <AlertDialogDescription>
+              QR-код и ссылка перестанут работать. Чтобы пригласить студентов
+              снова, нужно будет создать новое приглашение.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Отмена</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={onDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Удаляем..." : "Удалить"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

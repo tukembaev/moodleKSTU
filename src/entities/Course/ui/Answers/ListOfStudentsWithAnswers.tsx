@@ -1,4 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import {
+  currentSubmissionIdFromStudent,
+  groupsFromStudent,
+} from "entities/Course/lib/answerSubmissions";
+import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentsAnswers } from "entities/Course/model/types/course";
 import { Remark, RemarkStatus, remarksQueries } from "entities/Remarks";
@@ -54,7 +59,7 @@ import {
   TableHeader,
   TableRow,
 } from "shared/shadcn/ui/table";
-import { AnswerFileAttachment } from "./AnswerFileAttachment";
+import { AnswerVersionList } from "./AnswerVersionList";
 
 type RemarksUiStatus = "none" | "pending" | "responded";
 
@@ -125,6 +130,7 @@ const StudentRemarksBadge = ({
       id={student.id}
       theme_id={theme_id}
       student_id={student.user_id}
+      submission_id={currentSubmissionIdFromStudent(student)}
     >
       <Badge
         variant="outline"
@@ -333,7 +339,7 @@ const ListOfStudentsWithAnswers = ({
       ) : (
         <SpringPopupList>
           {filteredData.map((student) => {
-            const hasUnreadFiles = student.files.some((file) => !file.is_read.is_read);
+            const hasUnreadFiles = student.files.some((file) => !file.is_read?.is_read);
             const isExpanded = expandedId === student.id;
             const remarksStatus = getRemarksUiStatus(student, themeRemarks);
             
@@ -404,33 +410,37 @@ const ListOfStudentsWithAnswers = ({
                     {/* Status badges */}
                     <div className="flex flex-wrap gap-2 mt-2">
                       {/* Submission status */}
-                      <SetMark
-                        text="Выставить баллы"
-                        points={student.points}
-                        max_points={student.max_points}
-                        id={student.id}
-                      >
-                        <Badge
-                          variant="outline"
-                          className={`gap-1 text-xs cursor-pointer ${
-                            student.status 
-                              ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800" 
-                              : ""
-                          }`}
+                      <div className="flex flex-col items-start gap-1.5">
+                        <SetMark
+                          text="Выставить баллы"
+                          points={student.points}
+                          max_points={student.max_points}
+                          comment={student.comment}
+                          id={student.id}
                         >
-                          {student.status ? (
-                            <>
-                              <LuThumbsUp className="h-3 w-3" />
-                              Сдано на {student.points}
-                            </>
-                          ) : (
-                            <>
-                              <LuX className="h-3 w-3" />
-                              Не сдано
-                            </>
-                          )}
-                        </Badge>
-                      </SetMark>
+                          <Badge
+                            variant="outline"
+                            className={`gap-1 text-xs cursor-pointer ${
+                              student.status 
+                                ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800" 
+                                : ""
+                            }`}
+                          >
+                            {student.status ? (
+                              <>
+                                <LuThumbsUp className="h-3 w-3" />
+                                Сдано на {student.points}
+                              </>
+                            ) : (
+                              <>
+                                <LuX className="h-3 w-3" />
+                                Не сдано
+                              </>
+                            )}
+                          </Badge>
+                        </SetMark>
+                        <TeacherGradeComment comment={student.comment} />
+                      </div>
                       
                       {/* Access status */}
                       <UseTooltip text={student.locked ? "Открыть доступ" : "Закрыть доступ"}>
@@ -474,17 +484,13 @@ const ListOfStudentsWithAnswers = ({
                           <LuFile className="h-3.5 w-3.5" />
                           Файлы ({student.files.length})
                         </p>
-                        <div className="flex flex-col gap-2">
-                          {student.files.map((item) => (
-                            <AnswerFileAttachment
-                              key={item.id}
-                              file={item}
-                              markAsReadOnOpen
-                              onRead={refetch}
-                              className="w-full max-w-full"
-                            />
-                          ))}
-                        </div>
+                        <AnswerVersionList
+                          groups={groupsFromStudent(student)}
+                          layout="stack"
+                          fileClassName="w-full max-w-full"
+                          markAsReadOnOpen
+                          onRead={refetch}
+                        />
                       </div>
                     </CardContent>
                   </CollapsibleContent>
@@ -588,11 +594,12 @@ const ListOfStudentsWithAnswers = ({
                   )}
                 </TableCell>
                 <TableCell>
-                  
+                    <div className="flex flex-col items-start gap-1.5">
                     <SetMark
                       text="Выставить баллы"
                       points={student.points}
                       max_points={student.max_points}
+                      comment={student.comment}
                       id={student.id}
                     >
                       <Badge
@@ -609,7 +616,8 @@ const ListOfStudentsWithAnswers = ({
                           : "Не сдано"}
                       </Badge>
                     </SetMark>
-                  
+                    <TeacherGradeComment comment={student.comment} compact />
+                    </div>
                 </TableCell>
                 <TableCell>
                   <UseTooltip
@@ -666,16 +674,13 @@ const ListOfStudentsWithAnswers = ({
                   className="hover:bg-transparent"
                 >
                   <TableCell colSpan={5} className="pt-0 pb-3">
-                    <div className="flex flex-wrap gap-2 py-1">
-                      {student.files.map((item) => (
-                        <AnswerFileAttachment
-                          key={item.id}
-                          file={item}
-                          markAsReadOnOpen
-                          onRead={refetch}
-                          className="min-w-[240px] flex-1 max-w-md"
-                        />
-                      ))}
+                    <div className="py-1">
+                      <AnswerVersionList
+                        groups={groupsFromStudent(student)}
+                        fileClassName="min-w-[240px] flex-1 max-w-md"
+                        markAsReadOnOpen
+                        onRead={refetch}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>

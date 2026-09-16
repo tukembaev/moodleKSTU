@@ -1,11 +1,20 @@
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "shared/hooks";
+import {
+  COURSE_ANNOUNCEMENT_TYPE,
+  COURSE_FEED_MATERIAL_TYPES,
+  COURSE_FEED_TAB,
+  openCourse,
+  parseCourseAnnouncementCourseId,
+} from "shared/lib/navigation/hidden-ids";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const NotificationWebSocket = () => {
     const auth = useAuth();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const wsRef = useRef<WebSocket | null>(null);
 
     useEffect(() => {
@@ -23,14 +32,42 @@ export const NotificationWebSocket = () => {
                 try {
                     const data = JSON.parse(event.data);
                     console.log("New notification received via WS:", data);
+                    const announcementCourseId = parseCourseAnnouncementCourseId(
+                        data.link
+                    );
+                    const isFeedEvent =
+                        data.type === COURSE_ANNOUNCEMENT_TYPE ||
+                        (COURSE_FEED_MATERIAL_TYPES as readonly string[]).includes(
+                            String(data.type ?? "")
+                        ) ||
+                        Boolean(announcementCourseId);
 
-                    // Show toast
                     toast.info(data.type || "Новое уведомление", {
                         description: data.text || "У вас новое уведомление",
+                        action: announcementCourseId
+                            ? {
+                                  label: "Открыть",
+                                  onClick: () =>
+                                      openCourse(navigate, announcementCourseId, {
+                                          tab: COURSE_FEED_TAB,
+                                      }),
+                              }
+                            : undefined,
                     });
 
-                    // Invalidate notifications query to update UI and count
                     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+                    if (isFeedEvent) {
+                        queryClient.invalidateQueries({
+                            queryKey: announcementCourseId
+                                ? ["course", "announcements", announcementCourseId]
+                                : ["course", "announcements"],
+                        });
+                        queryClient.invalidateQueries({
+                            queryKey: announcementCourseId
+                                ? ["course", "feed", announcementCourseId]
+                                : ["course", "feed"],
+                        });
+                    }
                 } catch (error) {
                     console.error("Error parsing WS notification:", error);
                 }
@@ -59,7 +96,7 @@ export const NotificationWebSocket = () => {
                 wsRef.current.close(1000, "Component unmounting");
             }
         };
-    }, [auth?.id, queryClient]);
+    }, [auth?.id, navigate, queryClient]);
 
     return null;
 };

@@ -11,6 +11,7 @@ export type HiddenIdKey =
   | "themeId"
   | "taskId"
   | "inviteCourseId"
+  | "inviteLinkId"
   | "bankId";
 
 const STORAGE_PREFIX = "hidden:";
@@ -19,6 +20,19 @@ const CHANGED_EVENT = "hidden-ids:changed";
 
 export const COURSE_THEMES_PATH = "/courses/course_themes";
 export const COURSE_INVITE_PATH = "/courses/invite";
+export const COURSE_FEED_TAB = "feed";
+export const COURSE_ANNOUNCEMENTS_TAB = "announcements";
+export const COURSE_ANNOUNCEMENT_TYPE = "Объявление курса";
+export const COURSE_FEED_MATERIAL_TYPES = [
+  "Материал курса",
+  "Добавлен материал курса",
+  "Удалён материал курса",
+  "Изменён материал курса",
+] as const;
+
+export function isCourseFeedTab(value: string | null | undefined) {
+  return value === COURSE_FEED_TAB || value === COURSE_ANNOUNCEMENTS_TAB;
+}
 export const TEST_PASS_PATH = "/test/pass";
 export const TEST_EDIT_PATH = "/test/edit";
 export const TEST_QUIZ_PATH = "/test/quiz";
@@ -130,21 +144,97 @@ export function getPostLoginPath(): string {
   return "/courses";
 }
 
-export function getCourseInviteUrl(courseId: string): string {
+export function getCourseInviteUrl(
+  courseId: string,
+  linkId?: string | null
+): string {
   const origin =
     typeof window !== "undefined" ? window.location.origin : "";
-  return `${origin}${COURSE_THEMES_PATH}/${courseId}/invite`;
+  const params = new URLSearchParams({ course_id: courseId });
+  if (linkId) params.set("link_id", linkId);
+  return `${origin}${COURSE_INVITE_PATH}?${params.toString()}`;
+}
+
+function firstUuid(...values: Array<string | null | undefined>): string | null {
+  for (const value of values) {
+    if (value && isUuid(value)) return value;
+  }
+  return null;
+}
+
+export function parseCourseInviteIds(
+  pathname: string,
+  search: string
+): { courseId: string | null; linkId: string | null } {
+  const params = new URLSearchParams(
+    search.startsWith("?") ? search.slice(1) : search
+  );
+  const themeInvite = pathname.match(
+    /^\/courses\/course_themes\/([^/]+)\/invite(?:\/([^/]+))?\/?$/
+  );
+  const invitePair = pathname.match(/^\/courses\/invite\/([^/]+)\/([^/]+)\/?$/);
+
+  return {
+    courseId: firstUuid(
+      params.get("course_id"),
+      params.get("courseId"),
+      themeInvite?.[1],
+      invitePair?.[1]
+    ),
+    linkId: firstUuid(
+      params.get("link_id"),
+      params.get("linkId"),
+      themeInvite?.[2],
+      invitePair?.[2]
+    ),
+  };
+}
+
+export function parseCourseInviteIdsFromHref(href: string): {
+  courseId: string | null;
+  linkId: string | null;
+} {
+  const trimmed = href.trim();
+  if (!trimmed) return { courseId: null, linkId: null };
+  try {
+    const url = new URL(trimmed, "https://local.invalid");
+    return parseCourseInviteIds(url.pathname, url.search);
+  } catch {
+    const [path, query] = trimmed.split("?");
+    return parseCourseInviteIds(path, query ? `?${query}` : "");
+  }
+}
+
+export function parseCourseAnnouncementCourseId(
+  href?: string | null
+): string | null {
+  if (!href?.trim()) return null;
+  const pattern =
+    /\/courses\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(?:announcements|feed)\/?$/i;
+  try {
+    const url = new URL(href.trim(), "https://local.invalid");
+    return url.pathname.match(pattern)?.[1] ?? null;
+  } catch {
+    const [path] = href.trim().split("?");
+    return path.match(pattern)?.[1] ?? null;
+  }
 }
 
 export function openCourse(
   navigate: NavigateFunction,
   courseId: string | null | undefined,
-  options?: { themeId?: string; replace?: boolean }
+  options?: { themeId?: string; replace?: boolean; tab?: string }
 ) {
   if (!courseId) return;
   setHiddenId("courseId", courseId);
   if (options?.themeId) setHiddenId("themeId", options.themeId);
-  navigate(COURSE_THEMES_PATH, { replace: options?.replace });
+  const search = options?.tab
+    ? `?tab=${encodeURIComponent(options.tab)}`
+    : "";
+  navigate(
+    { pathname: COURSE_THEMES_PATH, search },
+    { replace: options?.replace }
+  );
 }
 
 export function openTestPass(
@@ -209,21 +299,46 @@ export function captureHiddenIdsFromLocation(
   let path = pathname;
   let changed = false;
   const formHidden: Record<string, string> = {};
-
-  const inviteMatch = path.match(
-    /^\/courses\/course_themes\/([^/]+)\/invite\/?$/
+  const params = new URLSearchParams(
+    search.startsWith("?") ? search.slice(1) : search
   );
-  if (inviteMatch && isUuid(inviteMatch[1])) {
-    setHiddenId("inviteCourseId", inviteMatch[1]);
-    setHiddenId("courseId", inviteMatch[1]);
-    path = COURSE_INVITE_PATH;
-    changed = true;
+
+  const inviteIds = parseCourseInviteIds(path, search);
+  const isInvitePath =
+    path === COURSE_INVITE_PATH ||
+    /^\/courses\/course_themes\/[^/]+\/invite(?:\/[^/]+)?\/?$/.test(path) ||
+    /^\/courses\/invite\/[^/]+(?:\/[^/]+)?\/?$/.test(path);
+
+  if (inviteIds.courseId && (isInvitePath || Boolean(inviteIds.linkId))) {
+    setHiddenId("inviteCourseId", inviteIds.courseId);
+    setHiddenId("courseId", inviteIds.courseId);
+    if (inviteIds.linkId) setHiddenId("inviteLinkId", inviteIds.linkId);
+    if (path !== COURSE_INVITE_PATH) {
+      path = COURSE_INVITE_PATH;
+      changed = true;
+    }
+    for (const key of ["course_id", "courseId", "link_id", "linkId"]) {
+      if (params.has(key)) {
+        params.delete(key);
+        changed = true;
+      }
+    }
   }
 
   const courseMatch = path.match(/^\/courses\/course_themes\/([^/]+)\/?$/);
   if (courseMatch && isUuid(courseMatch[1])) {
     setHiddenId("courseId", courseMatch[1]);
     path = COURSE_THEMES_PATH;
+    changed = true;
+  }
+
+  const announcementMatch = path.match(
+    /^\/courses\/([^/]+)\/(?:announcements|feed)\/?$/
+  );
+  if (announcementMatch && isUuid(announcementMatch[1])) {
+    setHiddenId("courseId", announcementMatch[1]);
+    path = COURSE_THEMES_PATH;
+    params.set("tab", COURSE_FEED_TAB);
     changed = true;
   }
 
@@ -243,7 +358,6 @@ export function captureHiddenIdsFromLocation(
     changed = true;
   }
 
-  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
   const queryMap: Record<string, HiddenIdKey | "form"> = {
     course_id: "courseId",
     themeId: "themeId",

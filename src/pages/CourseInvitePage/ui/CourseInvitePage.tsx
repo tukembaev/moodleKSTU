@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import {
   getHiddenId,
   isUuid,
+  parseCourseInviteIds,
   setHiddenId,
 } from "shared/lib/navigation/hidden-ids";
 import { Loader2 } from "lucide-react";
@@ -11,12 +12,27 @@ import { Loader2 } from "lucide-react";
 const CourseInvitePage = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id, courseId, linkId } = useParams();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    if (id && isUuid(id)) {
-      setHiddenId("inviteCourseId", id);
-      setHiddenId("courseId", id);
+    const parsed = parseCourseInviteIds(
+      window.location.pathname,
+      searchParams.toString()
+    );
+    const nextCourseId =
+      parsed.courseId ||
+      (courseId && isUuid(courseId) ? courseId : null) ||
+      (id && isUuid(id) ? id : null);
+    const nextLinkId =
+      parsed.linkId || (linkId && isUuid(linkId) ? linkId : null);
+
+    if (nextCourseId) {
+      setHiddenId("inviteCourseId", nextCourseId);
+      setHiddenId("courseId", nextCourseId);
+    }
+    if (nextLinkId) {
+      setHiddenId("inviteLinkId", nextLinkId);
     }
 
     const inviteId = getHiddenId("inviteCourseId");
@@ -27,7 +43,7 @@ const CourseInvitePage = () => {
     if (!isAuthenticated) {
       navigate("/", { replace: true });
     }
-  }, [id, isAuthenticated, navigate]);
+  }, [id, courseId, linkId, searchParams, isAuthenticated, navigate]);
 
   return (
     <div className="flex min-h-[40vh] items-center justify-center text-muted-foreground">

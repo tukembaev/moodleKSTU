@@ -34,6 +34,7 @@ import { Test } from "entities/Test/model/types/test";
 import { FormQuery } from "shared/config";
 import ThemeFiles from "./ThemeDetail/ThemeFiles";
 import { Progress } from "shared/shadcn/ui/progress";
+import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 
 export const categories: {
   key: string;
@@ -569,7 +570,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                   
                   {/* Progress indicator for student */}
                   {isStudent && theme.status && theme.max_points && (
-                    <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                    <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 space-y-2">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-green-700 dark:text-green-400">
                           Ваш результат
@@ -582,6 +583,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                         value={(Number(theme.result) / theme.max_points) * 100} 
                         className="h-2"
                       />
+                      <TeacherGradeComment comment={theme.comment} />
                     </div>
                   )}
                   

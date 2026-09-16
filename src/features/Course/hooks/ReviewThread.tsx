@@ -43,6 +43,7 @@ export interface Review {
   updated_at: string;
   has_student_reply: boolean; // Ключ для UI: студент ответил на замечание
   needs_teacher_action: boolean; // Ключ для UI: требуется действие учителя
+  submission_version?: number | null;
 }
 
 const normalizeRemarkStatus = (
@@ -174,15 +175,19 @@ export const reviewsToThreadItems = (reviews: Review[]): ThreadItem[] => {
       }
 
       if (messageIndex === 0) {
+        const versionSuffix =
+          review.submission_version != null
+            ? ` · к версии ${review.submission_version}`
+            : "";
         items.push({
           kind: "marker",
           marker: {
             id: `remark-open-${review.id}`,
             type: "remark_opened",
             label:
-              reviewIndex === 0
+              (reviewIndex === 0
                 ? THREAD_MARKER_LABELS.remark_opened
-                : "Новое замечание",
+                : "Новое замечание") + versionSuffix,
           },
         });
       } else {
@@ -312,6 +317,7 @@ export const remarkToReview = (remark: Remark): Review => {
     needs_teacher_action:
       mappedStatus === "student_replied" ||
       (mappedStatus !== "approved" && lastMessage?.author_role === "student"),
+    submission_version: remark.submission_version,
   };
 };
 

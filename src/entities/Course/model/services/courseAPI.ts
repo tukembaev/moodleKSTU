@@ -1,9 +1,24 @@
+import axios from "axios";
 import { BindCourseStreamsPayload, CreateCoursePayload, CreateFAQPayload, CreateThemePayload, EditThemePayload, editPermissionPayload } from "features/Course";
 import { ExtraPointPayload, FinishCoursePayload, RateAnswerPayload } from "features/Course/model/types/course_payload";
 import $api_base_edu from "shared/api/api_base_edu";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
-import { Course, CourseAllMaterials, CourseMaterials, CourseModulesResponse, CourseStream, FeedItem, FileAnswer, StudentsAnswers, TablePerfomance, ThemeFaq, WeekTheme } from "../types/course";
+import {
+  getCourseInviteUrl,
+  isUuid,
+  parseCourseInviteIdsFromHref,
+} from "shared/lib/navigation/hidden-ids";
+import {
+  fallbackSpreadsheetFileName,
+  filenameFromContentDisposition,
+  saveBlobAsFile,
+} from "shared/lib/downloadFile";
+import {
+  normalizeFeedItem,
+  unwrapList,
+} from "entities/Course/lib/courseFeed";
+import { Course, CourseAllMaterials, CourseAnnouncement, CourseFeedItem, CourseFeedQuery, CourseInviteLink, CourseMaterialFile, CourseMaterials, CourseModulesResponse, CourseStream, CreateAnnouncementPayload, CreateCourseInvitePayload, FeedItem, FileAnswer, MySubmissionsResponse, RegisterToCoursePayload, StudentsAnswers, TablePerfomance, ThemeAttendance, ThemeAttendanceStudent, ThemeFaq, UpdateAnnouncementPayload, UpdateThemeAttendancePayload, WeekTheme } from "../types/course";
 import { Test } from "entities/Test/model/types/test";
 
 
@@ -45,6 +60,135 @@ export const getCourseTablePerfomance = async (id: string | null):Promise<TableP
     const response = await $api_edu.get(`table-performance/${id}/`); 
     return response.data;
   };
+export const exportCoursePerformance = async (
+  courseId: string,
+  fallbackFileName?: string
+): Promise<void> => {
+  const response = await $api_edu.get(`table-performance/${courseId}/export/`, {
+    responseType: "blob",
+    headers: {
+      Accept:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/octet-stream, */*",
+    },
+  });
+  const blob = response.data as Blob;
+  const mime = blob.type || "";
+  if (mime.includes("json") || mime.includes("text/html")) {
+    const text = await blob.text();
+    let message = "Не удалось экспортировать ведомость";
+    try {
+      const parsed = JSON.parse(text) as { detail?: unknown };
+      if (typeof parsed.detail === "string" && parsed.detail.trim()) {
+        message = parsed.detail.trim();
+      }
+    } catch {
+      // keep fallback
+    }
+    throw new Error(message);
+  }
+  const disposition =
+    typeof response.headers.get === "function"
+      ? response.headers.get("content-disposition")
+      : response.headers["content-disposition"];
+  const fileName = filenameFromContentDisposition(
+    disposition,
+    fallbackFileName || fallbackSpreadsheetFileName()
+  );
+  saveBlobAsFile(blob, fileName);
+};
+export const getMySubmissions = async (courseId: string): Promise<MySubmissionsResponse> => {
+  const response = await $api_edu.get(`my-submissions/${courseId}/`);
+  return response.data;
+};
+export const getCourseAnnouncements = async (
+  courseId: string
+): Promise<CourseAnnouncement[]> => {
+  const response = await $api_edu.get(`course-announcements/${courseId}/`);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getCourseFeed = async (
+  courseId: string,
+  query: CourseFeedQuery = {}
+): Promise<CourseFeedItem[]> => {
+  const response = await $api_edu.get(`course-feed/${courseId}/`, {
+    params: {
+      sort: query.sort ?? "desc",
+      kind: query.kind ?? "all",
+    },
+  });
+  return unwrapList(response.data)
+    .map(normalizeFeedItem)
+    .filter((item): item is CourseFeedItem => item != null);
+};
+
+export const themeAttendanceQueryKey = (
+  themeId: string | null,
+  group?: string | null
+) => ["course", "attendance", themeId, group || ""] as const;
+
+export const themeAttendanceThemeKey = (themeId: string | null) =>
+  ["course", "attendance", themeId] as const;
+
+export const getThemeAttendance = async (
+  themeId: string,
+  group?: string
+): Promise<ThemeAttendance> => {
+  const trimmed = group?.trim();
+  const response = await $api_edu.get(`attendance/${themeId}/`, {
+    params: trimmed ? { group: trimmed } : undefined,
+  });
+  return response.data;
+};
+
+export const updateThemeAttendance = async (
+  themeId: string,
+  data: UpdateThemeAttendancePayload
+): Promise<ThemeAttendanceStudent> => {
+  const response = await $api_edu.patch(`attendance/${themeId}/`, data);
+  return response.data;
+};
+
+export const createCourseAnnouncement = async (
+  courseId: string,
+  data: CreateAnnouncementPayload
+): Promise<CourseAnnouncement> => {
+  const response = await $api_edu.post(`course-announcements/${courseId}/`, data);
+  return response.data;
+};
+
+export const updateCourseAnnouncement = async (
+  courseId: string,
+  announcementId: string,
+  data: UpdateAnnouncementPayload
+): Promise<CourseAnnouncement> => {
+  const response = await $api_edu.patch(
+    `course-announcements/${courseId}/${announcementId}/`,
+    data
+  );
+  return response.data;
+};
+
+export const deleteCourseAnnouncement = async (
+  courseId: string,
+  announcementId: string
+) => {
+  const response = await $api_edu.delete(
+    `course-announcements/${courseId}/${announcementId}/`
+  );
+  return response.data;
+};
+
+export const getCourseMaterials = async (
+  courseId: string,
+  search?: string
+): Promise<CourseMaterialFile[]> => {
+  const q = search?.trim();
+  const response = await $api_edu.get(`course-materials/${courseId}/`, {
+    params: q ? { search: q } : undefined,
+  });
+  return Array.isArray(response.data) ? response.data : [];
+};
 export const getCourseModules = async (course_id: string):Promise<CourseModulesResponse> => {
     const response = await $api_edu.get(`modules/${course_id}/`); 
     return response.data;
@@ -177,9 +321,10 @@ export const getCourseTests = async (courseId: string | null): Promise<Test[]> =
 };
 
 // Отправить заявку на вступление на курс (по приглашению/QR-коду)
-export const registerToCourse = async (courseId: string) => {
+export const registerToCourse = async (data: RegisterToCoursePayload) => {
   const response = await $api_users.post(`registration-course/`, {
-    course_id: courseId,
+    course_id: data.course_id,
+    link_id: data.link_id,
   });
   return response.data;
 };
@@ -189,5 +334,86 @@ export const removeStudentFromCourse = async (
   studentId: number
 ) => {
   const response = await $api_users.delete(`remove/${courseId}/${studentId}/`);
+  return response.data;
+};
+
+function pickInviteLink(data: unknown): string | null {
+  if (typeof data === "string") {
+    const trimmed = data.trim();
+    return trimmed || null;
+  }
+  if (!data || typeof data !== "object") return null;
+  const record = data as Record<string, unknown>;
+  for (const key of ["link", "url", "invite_link", "inviteLink"]) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+function pickUuid(record: Record<string, unknown>, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && isUuid(value)) return value;
+  }
+  return null;
+}
+
+function normalizeCourseInvite(
+  data: unknown,
+  fallbackCourseId: string
+): CourseInviteLink | null {
+  const rawLink = pickInviteLink(data);
+  const record =
+    data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+  const fromLink = rawLink
+    ? parseCourseInviteIdsFromHref(rawLink)
+    : { courseId: null, linkId: null };
+
+  const courseId =
+    fromLink.courseId ||
+    (record ? pickUuid(record, ["course_id", "course"]) : null) ||
+    fallbackCourseId ||
+    null;
+  const linkId =
+    fromLink.linkId ||
+    (record ? pickUuid(record, ["link_id", "linkId", "id"]) : null);
+
+  if (!rawLink && !linkId) return null;
+
+  const link =
+    courseId && linkId ? getCourseInviteUrl(courseId, linkId) : rawLink;
+  if (!link) return null;
+
+  return {
+    link,
+    course_id: courseId || undefined,
+    link_id: linkId || undefined,
+  };
+}
+
+export const getCourseInviteLink = async (
+  courseId: string
+): Promise<CourseInviteLink | null> => {
+  try {
+    const response = await $api_edu.get(`course-link/${courseId}/`);
+    return normalizeCourseInvite(response.data, courseId);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+};
+
+export const createCourseInviteLink = async (
+  data: CreateCourseInvitePayload
+): Promise<CourseInviteLink | null> => {
+  const response = await $api_edu.post(`course-link/`, data);
+  return normalizeCourseInvite(response.data, data.course_id);
+};
+
+export const deleteCourseInviteLink = async (courseId: string) => {
+  const response = await $api_edu.delete(`course-link/${courseId}/`);
   return response.data;
 };

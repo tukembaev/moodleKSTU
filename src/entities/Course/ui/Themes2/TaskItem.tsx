@@ -1,5 +1,6 @@
 import { FC } from "react";
-import { CheckCircle2, Circle, Lock, LockOpen, MoreVertical, Pencil, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Lock, LockOpen, MoreVertical, Pencil, Trash2, XCircle } from "lucide-react";
+import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import { cn } from "shared/lib/utils";
 import {
   DropdownMenu,
@@ -30,6 +31,8 @@ interface TaskItemProps {
   isTest?: boolean;
   isOpen?: boolean | null;
   passed?: boolean | null;
+  comment?: string | null;
+  needsReview?: boolean | null;
 }
 
 export const TaskItem: FC<TaskItemProps> = ({
@@ -47,10 +50,12 @@ export const TaskItem: FC<TaskItemProps> = ({
   isTest = false,
   isOpen,
   passed = null,
+  comment,
+  needsReview = null,
 }) => {
   const showTeacherActions = !isStudent && !isTest && (onEdit || onDelete);
   const isBlockedTest =
-    isTest && isStudent && !studentCanTakeTest({ passed, is_open: isOpen });
+    isTest && isStudent && !studentCanTakeTest({ passed, is_open: isOpen, needsReview });
   const isBlockedTheme = !isTest && isStudent && locked;
   const isBlocked = isBlockedTest || isBlockedTheme;
   const isItemOpen = isTest ? Boolean(isOpen) : !locked;
@@ -69,7 +74,9 @@ export const TaskItem: FC<TaskItemProps> = ({
       {isStudent && (
         <div className="shrink-0">
           {isTest ? (
-            passed === true ? (
+            needsReview ? (
+              <Clock className="h-5 w-5 text-amber-500" />
+            ) : passed === true ? (
               <CheckCircle2 className="h-5 w-5 text-green-500" />
             ) : passed === false ? (
               <XCircle className="h-5 w-5 text-red-500" />
@@ -93,6 +100,7 @@ export const TaskItem: FC<TaskItemProps> = ({
             </span>
           )}
         </h4>
+        {isStudent ? <TeacherGradeComment comment={comment} compact className="mt-0.5 line-clamp-2 max-w-none" /> : null}
       </div>
 
       <Badge variant={isItemOpen ? "default" : "outline"} className="shrink-0 gap-1 px-1.5 sm:px-2.5">

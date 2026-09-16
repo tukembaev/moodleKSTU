@@ -2,12 +2,17 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { testQueries } from "entities/Test";
 import { submitTestAnswers } from "entities/Test/model/services/testAPI";
-import { TestAnswer, TestDetails, TestQuestion } from "entities/Test/model/types/test";
+import { TestAnswer, TestDetails, TestQuestion, isFilledTestQuestion } from "entities/Test/model/types/test";
 import { AlertCircle, FileQuestion } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LuTrash2 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { cn } from "shared/lib/utils";
+import {
+  isTextQuestionType,
+  QUESTION_TYPE_LABELS,
+  resolveQuestionType,
+} from "shared/components/QuestionEditor";
 import {
   openCourse,
   openTestResult,
@@ -31,10 +36,12 @@ import {
   QuestionnaireChoices,
   QuestionnaireDescription,
   QuestionnaireError,
+  QuestionnaireInput,
   QuestionnaireItem,
   QuestionnaireNext,
   QuestionnairePrevious,
   QuestionnaireProgress,
+  QuestionnaireSkip,
   QuestionnaireSubmit,
   QuestionnaireTitle,
 } from "shared/shadcn/ui/questionnaire";
@@ -48,10 +55,17 @@ const collectAnswers = (
   questions: TestQuestion[]
 ): TestAnswer[] => {
   const formData = new FormData(form);
-  return questions.map((question) => ({
-    questionId: question.id,
-    selectedOptions: formData.getAll(question.id).map(String),
-  }));
+  return questions.map((question) => {
+    const type = resolveQuestionType(question);
+    if (isTextQuestionType(type)) {
+      const textAnswer = String(formData.get(question.id) ?? "").trim();
+      return { questionId: question.id, textAnswer };
+    }
+    return {
+      questionId: question.id,
+      selectedOptions: formData.getAll(question.id).map(String),
+    };
+  });
 };
 
 const QuizTestPage = () => {
@@ -67,7 +81,13 @@ const QuizTestPage = () => {
   const { data: testQuestionsData, isLoading, isError } = useQuery(
     testQueries.TestQuestions(id as string)
   );
-  const quizData = testQuestionsData ?? null;
+  const quizData = useMemo(() => {
+    if (!testQuestionsData) return null;
+    return {
+      ...testQuestionsData,
+      questions: testQuestionsData.questions.filter(isFilledTestQuestion),
+    };
+  }, [testQuestionsData]);
 
   const formRef = useRef<HTMLFormElement>(null);
   const timeRemainingRef = useRef<number>(0);
@@ -122,10 +142,12 @@ const QuizTestPage = () => {
 
     const formattedAnswers = formRef.current
       ? collectAnswers(formRef.current, quizData.questions)
-      : quizData.questions.map((question) => ({
-          questionId: question.id,
-          selectedOptions: [],
-        }));
+      : quizData.questions.map((question) => {
+          const type = resolveQuestionType(question);
+          return isTextQuestionType(type)
+            ? { questionId: question.id, textAnswer: "" }
+            : { questionId: question.id, selectedOptions: [] };
+        });
 
     setIsSubmitted(true);
     submitAnswers(formattedAnswers, 0);
@@ -203,6 +225,27 @@ const QuizTestPage = () => {
     );
   }
 
+  if (quizData.questions.length === 0) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileQuestion />
+            </EmptyMedia>
+            <EmptyTitle>В тесте нет вопросов</EmptyTitle>
+            <EmptyDescription>
+              Этот тест ещё не содержит заполненных вопросов.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button onClick={goToCourse}>Вернуться к курсу</Button>
+          </EmptyContent>
+        </Empty>
+      </div>
+    );
+  }
+
   if (!isStudent) {
     return (
       <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6">
@@ -264,7 +307,7 @@ const QuizTestPage = () => {
                       <div>
                         <h3 className="text-lg font-medium text-gray-900">{question.question}</h3>
                         <span className="inline-flex mt-2 items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                          {question.multipleAnswers ? "Множественный выбор" : "Один вариант"}
+                          {QUESTION_TYPE_LABELS[resolveQuestionType(question)]}
                         </span>
                       </div>
 
@@ -336,17 +379,23 @@ function StudentQuiz({
 }) {
   const items = useMemo(
     () =>
-      quizData.questions.map((question) => ({
-        name: question.id,
-        required: true,
-        choices: question.options.map((option) => ({ value: option.id })),
-      })),
+      quizData.questions.map((question) => {
+        const type = resolveQuestionType(question);
+        return {
+          name: question.id,
+          required: type !== "essay",
+          choices: isTextQuestionType(type)
+            ? undefined
+            : question.options.map((option) => ({ value: option.id })),
+        };
+      }),
     [quizData.questions]
   );
 
-  const useNumberShortcuts = quizData.questions.every(
-    (question) => question.options.length <= 9
-  );
+  const useNumberShortcuts = quizData.questions.every((question) => {
+    const type = resolveQuestionType(question);
+    return !isTextQuestionType(type) && question.options.length <= 9;
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col gap-6 py-2">
@@ -409,44 +458,78 @@ function StudentQuiz({
             />
 
             {quizData.questions.map((question) => {
+              const type = resolveQuestionType(question);
+              const isText = isTextQuestionType(type);
+              const isEssay = type === "essay";
               const hasOptionImages = question.options.some((option) => option.image);
+              const description =
+                type === "multiple_choice"
+                  ? "Выберите один или несколько вариантов."
+                  : type === "short_answer"
+                    ? "Введите короткий ответ."
+                    : type === "essay"
+                      ? "Напишите развёрнутый ответ. Можно пропустить вопрос."
+                      : "Выберите один вариант.";
 
               return (
                 <QuestionnaireItem
                   key={question.id}
                   name={question.id}
-                  required
-                  multiple={question.multipleAnswers}
+                  required={!isEssay}
+                  multiple={type === "multiple_choice"}
                 >
                   <QuestionnaireTitle>{question.question}</QuestionnaireTitle>
-                  <QuestionnaireDescription>
-                    {question.multipleAnswers
-                      ? "Выберите один или несколько вариантов."
-                      : "Выберите один вариант."}
-                  </QuestionnaireDescription>
+                  <QuestionnaireDescription>{description}</QuestionnaireDescription>
 
                   <QuestionMedia question={question} />
 
-                  <QuestionnaireChoices
-                    className={hasOptionImages ? "grid-cols-1 sm:grid-cols-2" : undefined}
-                  >
-                    {question.options.map((option) => (
-                      <QuestionnaireChoice key={option.id} value={option.id}>
-                        <span className="font-medium">{option.text}</span>
-                        {option.image ? (
-                          <img
-                            src={option.image}
-                            alt=""
-                            className="mt-1 max-h-32 w-full rounded-md border object-cover"
+                  {isEssay ? (
+                    <QuestionnaireInput
+                      placeholder="Введите развёрнутый ответ"
+                      render={(props) => {
+                        const { type: _inputType, ...rest } = props as typeof props & {
+                          type?: string;
+                        };
+                        return (
+                          <textarea
+                            {...rest}
+                            rows={8}
+                            className={cn(
+                              typeof rest.className === "string" ? rest.className : undefined,
+                              "min-h-32 field-sizing-content py-2.5"
+                            )}
                           />
-                        ) : null}
-                      </QuestionnaireChoice>
-                    ))}
-                  </QuestionnaireChoices>
+                        );
+                      }}
+                    />
+                  ) : type === "short_answer" ? (
+                    <QuestionnaireInput placeholder="Введите ответ" />
+                  ) : (
+                    <QuestionnaireChoices
+                      className={hasOptionImages ? "grid-cols-1 sm:grid-cols-2" : undefined}
+                    >
+                      {question.options.map((option) => (
+                        <QuestionnaireChoice key={option.id} value={option.id}>
+                          <span className="font-medium">{option.text}</span>
+                          {option.image ? (
+                            <img
+                              src={option.image}
+                              alt=""
+                              className="mt-1 max-h-32 w-full rounded-md border object-cover"
+                            />
+                          ) : null}
+                        </QuestionnaireChoice>
+                      ))}
+                    </QuestionnaireChoices>
+                  )}
                   <QuestionnaireError>
-                    {question.multipleAnswers
-                      ? "Выберите хотя бы один вариант, чтобы продолжить."
-                      : "Выберите ответ, чтобы продолжить."}
+                    {isEssay
+                      ? "Напишите ответ или пропустите вопрос."
+                      : isText
+                        ? "Введите ответ, чтобы продолжить."
+                        : type === "multiple_choice"
+                          ? "Выберите хотя бы один вариант, чтобы продолжить."
+                          : "Выберите ответ, чтобы продолжить."}
                   </QuestionnaireError>
                 </QuestionnaireItem>
               );
@@ -454,6 +537,7 @@ function StudentQuiz({
 
             <QuestionnaireActions>
               <QuestionnairePrevious />
+              <QuestionnaireSkip>Пропустить</QuestionnaireSkip>
               <QuestionnaireNext>Далее</QuestionnaireNext>
               <QuestionnaireSubmit disabled={isSubmitted || isSubmitting}>
                 {isSubmitting ? "Отправка..." : isSubmitted ? "Отправлено" : "Завершить тест"}

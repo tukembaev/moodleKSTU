@@ -5,9 +5,12 @@ import { COURSE_INVITE_PATH } from "shared/lib/navigation/hidden-ids";
 
 const CoursePage = () => {
   const location = useLocation();
+  const isAnnouncementPath =
+    /^\/courses\/[^/]+\/(?:announcements|feed)\/?$/.test(location.pathname);
   const isCourseTheme =
     location.pathname.includes(AppSubRoutes.COURSE_THEMES) ||
-    location.pathname === COURSE_INVITE_PATH;
+    location.pathname === COURSE_INVITE_PATH ||
+    isAnnouncementPath;
 
   return (
     <div>

@@ -18,6 +18,7 @@ import {
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { UseTooltip } from "shared/components";
+import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import { useAuth } from "shared/hooks";
 import { openCourse, openTestPass } from "shared/lib/navigation/hidden-ids";
 import { getFormattedDate } from "shared/lib";
@@ -30,7 +31,16 @@ import { studentCanTakeTest, Test } from "../model/types/test";
 const TestStatusBadge: React.FC<{
   passed?: boolean | null;
   result: number | null;
-}> = ({ passed, result }) => {
+  needsReview?: boolean | null;
+}> = ({ passed, result, needsReview }) => {
+  if (needsReview) {
+    return (
+      <Badge className="gap-1.5 bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800">
+        <Clock className="h-3 w-3" />
+        На проверке{result !== null ? `: ${result}` : ""}
+      </Badge>
+    );
+  }
   if (passed === true) {
     return (
       <Badge className="gap-1.5 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800">
@@ -152,7 +162,11 @@ const TestCard = ({
               
               {/* Status for student */}
               {isStudent && (
-                <TestStatusBadge passed={item.passed} result={item.result} />
+                <TestStatusBadge
+                  passed={item.passed}
+                  result={item.result}
+                  needsReview={item.needsReview}
+                />
               )}
               
               {/* Action button */}
@@ -205,7 +219,11 @@ const TestCard = ({
               {item.is_open ? "Открыт" : "Закрыт"}
             </Badge>
             {isStudent && (
-              <TestStatusBadge passed={item.passed} result={item.result} />
+              <TestStatusBadge
+                passed={item.passed}
+                result={item.result}
+                needsReview={item.needsReview}
+              />
             )}
           </div>
         </div>
@@ -264,19 +282,35 @@ const TestCard = ({
               <PlayCircle className="h-4 w-4" />
               Пройти тест
             </Button>
+          ) : item.needsReview ? (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                  На проверке: {item.result ?? 0} / {item.max_points} баллов
+                </span>
+              </div>
+              <TeacherGradeComment comment={item.comment} />
+            </div>
           ) : item.passed === true ? (
-            <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-              <Trophy className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                Пройден: {item.result ?? 0} / {item.max_points} баллов
-              </span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                <Trophy className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                  Пройден: {item.result ?? 0} / {item.max_points} баллов
+                </span>
+              </div>
+              <TeacherGradeComment comment={item.comment} />
             </div>
           ) : item.passed === false ? (
-            <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-              <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-              <span className="text-sm font-medium text-red-700 dark:text-red-400">
-                Не пройден: {item.result ?? 0} / {item.max_points} баллов
-              </span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+                <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <span className="text-sm font-medium text-red-700 dark:text-red-400">
+                  Не пройден: {item.result ?? 0} / {item.max_points} баллов
+                </span>
+              </div>
+              <TeacherGradeComment comment={item.comment} />
             </div>
           ) : null}
         </div>

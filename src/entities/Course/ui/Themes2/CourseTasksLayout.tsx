@@ -1,6 +1,6 @@
 import { studentCanTakeTest } from "entities/Test/model/types/test";
 import { ArrowLeft } from "lucide-react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { cn } from "shared/lib/utils";
@@ -9,22 +9,42 @@ import { CourseItemKind, SelectedCourseItem, TasksList } from "./TasksList";
 import { TestEditorPanel } from "./TestEditorPanel";
 import { ThemeWorkspace } from "./ThemeWorkspace";
 
-export const CourseTasksLayout: FC = () => {
+interface CourseTasksLayoutProps {
+  openThemeRequest?: { id: string; nonce: number } | null;
+}
+
+export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
+  openThemeRequest,
+}) => {
   const courseId = useCourseId();
   const navigate = useNavigate();
   const auth = useAuth();
   const isStudent = Boolean(auth?.isStudent);
   const [selectedItem, setSelectedItem] = useState<SelectedCourseItem | null>(
-    null
+    openThemeRequest ? { kind: "theme", id: openThemeRequest.id } : null
   );
+
+  useEffect(() => {
+    if (!openThemeRequest) return;
+    setSelectedItem({ kind: "theme", id: openThemeRequest.id });
+  }, [openThemeRequest]);
 
   const handleItemClick = (
     itemId: string,
     kind: CourseItemKind,
-    meta?: { passed: boolean | null; is_open: boolean | null; locked?: boolean }
+    meta?: {
+      passed: boolean | null;
+      is_open: boolean | null;
+      locked?: boolean;
+      needsReview?: boolean | null;
+    }
   ) => {
     if (kind === "test" && isStudent) {
-      if (!studentCanTakeTest({ passed: meta?.passed, is_open: meta?.is_open })) {
+      if (!studentCanTakeTest({
+        passed: meta?.passed,
+        is_open: meta?.is_open,
+        needsReview: meta?.needsReview,
+      })) {
         return;
       }
       openTestPass(navigate, itemId, courseId);

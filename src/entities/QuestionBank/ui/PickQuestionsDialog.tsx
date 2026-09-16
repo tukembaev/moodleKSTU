@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { Search, Shuffle } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { QuestionDraft } from "shared/components/QuestionEditor";
+import {
+  QUESTION_TYPE_LABELS,
+  resolveQuestionType,
+  type QuestionDraft,
+} from "shared/components/QuestionEditor";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Checkbox } from "shared/shadcn/ui/checkbox";
@@ -22,14 +27,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "shared/shadcn/ui/select";
-import { bankQuestionToDraft } from "../model/services/questionBankAPI";
+import { Tabs, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
+import { sampleRandomIds } from "../lib/sampleRandom";
+import { bankQuestionToInsertDraft } from "../model/services/questionBankAPI";
 import { questionBankQueries } from "../model/services/questionBankQueryFactory";
+import {
+  bankQuestionsCount,
+  type BankQuestion,
+} from "../model/types/questionBank";
 
 interface PickQuestionsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInsert: (questions: QuestionDraft[]) => void;
 }
+
+type PickMode = "manual" | "random";
+
+const DEFAULT_SAMPLE_SIZE = "5";
 
 const PickQuestionsDialog = ({
   open,
@@ -44,14 +59,41 @@ const PickQuestionsDialog = ({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isInserting, setIsInserting] = useState(false);
+  const [mode, setMode] = useState<PickMode>("manual");
+  const [sampleSize, setSampleSize] = useState(DEFAULT_SAMPLE_SIZE);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
-  const selectedBank = banks.find((bank) => bank.id === bankId);
+  const { data: selectedBank, isLoading: isBankLoading } = useQuery({
+    ...questionBankQueries.bank(bankId || null),
+    enabled: open && !!bankId,
+  });
+
   const questions = useMemo(() => {
     const list = selectedBank?.questions ?? [];
     const q = search.trim().toLowerCase();
     if (!q) return list;
     return list.filter((item) => item.question.toLowerCase().includes(q));
   }, [selectedBank, search]);
+
+  const visibleQuestions = useMemo(() => {
+    if (selected.size === 0) return questions;
+    const picked: BankQuestion[] = [];
+    const rest: BankQuestion[] = [];
+    questions.forEach((question) => {
+      if (selected.has(question.id)) picked.push(question);
+      else rest.push(question);
+    });
+    return [...picked, ...rest];
+  }, [questions, selected]);
+
+  const availableCount = questions.length;
+  const parsedSampleSize = Number.parseInt(sampleSize, 10);
+  const sampleCount = Number.isFinite(parsedSampleSize) ? parsedSampleSize : 0;
+  const canGenerate =
+    !!bankId &&
+    !isBankLoading &&
+    availableCount > 0 &&
+    sampleCount >= 1;
 
   const toggle = (id: string, checked: boolean) => {
     setSelected((prev) => {
@@ -62,12 +104,27 @@ const PickQuestionsDialog = ({
     });
   };
 
+  const resetTransientState = () => {
+    setSelected(new Set());
+    setSearch("");
+    setMode("manual");
+    setSampleSize(DEFAULT_SAMPLE_SIZE);
+    setHasGenerated(false);
+  };
+
   const handleOpenChange = (next: boolean) => {
-    if (!next) {
-      setSelected(new Set());
-      setSearch("");
-    }
+    if (!next) resetTransientState();
     onOpenChange(next);
+  };
+
+  const generateSample = () => {
+    if (!canGenerate) return;
+    const ids = sampleRandomIds(
+      questions.map((question) => question.id),
+      sampleCount
+    );
+    setSelected(new Set(ids));
+    setHasGenerated(true);
   };
 
   const insertSelected = async () => {
@@ -77,7 +134,7 @@ const PickQuestionsDialog = ({
       const picked = selectedBank.questions.filter((item) =>
         selected.has(item.id)
       );
-      const drafts = await Promise.all(picked.map(bankQuestionToDraft));
+      const drafts = await Promise.all(picked.map(bankQuestionToInsertDraft));
       onInsert(drafts);
       handleOpenChange(false);
     } finally {
@@ -88,14 +145,30 @@ const PickQuestionsDialog = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-xl">
-        <DialogHeader>  
+        <DialogHeader>
           <DialogTitle>Добавить из коллекции вопросов</DialogTitle>
           <DialogDescription>
-            Выберите Коллекция и отметьте вопросы, которые нужно вставить в тест.
+            Выберите коллекцию и отметьте вопросы вручную или сгенерируйте
+            случайную выборку. В тест попадут выбранные вопросы как обычный
+            список.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
+          <Tabs
+            value={mode}
+            onValueChange={(value) => setMode(value as PickMode)}
+          >
+            <TabsList className="w-full">
+              <TabsTrigger value="manual" className="flex-1">
+                Вручную
+              </TabsTrigger>
+              <TabsTrigger value="random" className="flex-1">
+                Случайная выборка
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <div className="flex flex-col gap-2">
             <Label>Коллекция</Label>
             <Select
@@ -103,43 +176,98 @@ const PickQuestionsDialog = ({
               onValueChange={(value) => {
                 setBankId(value);
                 setSelected(new Set());
+                setHasGenerated(false);
               }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue
-                  placeholder={isLoading ? "Загрузка..." : "Выберите Коллекция"}
+                  placeholder={isLoading ? "Загрузка..." : "Выберите коллекцию"}
                 />
               </SelectTrigger>
               <SelectContent>
                 {banks.map((bank) => (
                   <SelectItem key={bank.id} value={bank.id}>
-                    {bank.name} ({bank.questions.length})
+                    {bank.name} ({bankQuestionsCount(bank)})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {!isLoading && banks.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Сначала создайте Коллекция на странице «Коллекция вопросов».
+                Сначала создайте коллекцию на странице «Коллекция вопросов».
               </p>
             )}
           </div>
 
-          {selectedBank && (
+          {bankId && (
             <>
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Поиск по тексту вопроса"
-              />
+              {mode === "random" && (
+                <div className="rounded-md border p-3">
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex min-w-28 flex-1 flex-col gap-2">
+                      <Label htmlFor="random-sample-size">
+                        Количество вопросов
+                      </Label>
+                      <Input
+                        id="random-sample-size"
+                        type="number"
+                        min={1}
+                        max={Math.max(availableCount, 1)}
+                        inputMode="numeric"
+                        value={sampleSize}
+                        onChange={(e) => setSampleSize(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant={hasGenerated ? "outline" : "default"}
+                      disabled={!canGenerate}
+                      onClick={generateSample}
+                    >
+                      <Shuffle className="h-4 w-4" />
+                      {hasGenerated ? "Перегенерировать" : "Сгенерировать"}
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {isBankLoading
+                      ? "Загрузка вопросов..."
+                      : availableCount === 0
+                        ? "В текущем фильтре нет вопросов для выборки."
+                        : `Доступно в выборке: ${availableCount}. Случайные вопросы подставятся в список ниже, как если бы вы отметили их вручную.`}
+                  </p>
+                  {hasGenerated && selected.size > 0 && (
+                    <p className="mt-1 text-sm">
+                      Выбрано {selected.size} из {availableCount}. Можно
+                      перегенерировать или поправить отметки до вставки.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <ScrollArea className="h-72 rounded-md border">
-                <div className="space-y-1 p-2">
-                  {questions.length === 0 ? (
+                <div className="sticky top-0 z-10 bg-background px-2 pt-2 pb-1">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Поиск по тексту вопроса"
+                      className="h-8 rounded-none border-0  bg-transparent px-2 pl-8 shadow-none focus-visible:border-0 focus-visible:ring-0"
+                      aria-label="Поиск по тексту вопроса"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1 px-2 pb-2">
+                  {isBankLoading ? (
+                    <p className="p-3 text-sm text-muted-foreground">
+                      Загрузка вопросов...
+                    </p>
+                  ) : visibleQuestions.length === 0 ? (
                     <p className="p-3 text-sm text-muted-foreground">
                       Вопросы не найдены
                     </p>
                   ) : (
-                    questions.map((question) => (
+                    visibleQuestions.map((question) => (
                       <label
                         key={question.id}
                         className="flex cursor-pointer items-start gap-3 rounded-md px-2 py-2 hover:bg-muted/50"
@@ -153,11 +281,9 @@ const PickQuestionsDialog = ({
                         />
                         <span className="min-w-0 flex-1 text-sm">
                           {question.question}
-                          {question.multipleAnswers && (
-                            <Badge variant="secondary" className="ml-2">
-                              Несколько ответов
-                            </Badge>
-                          )}
+                          <Badge variant="secondary" className="ml-2">
+                            {QUESTION_TYPE_LABELS[resolveQuestionType(question)]}
+                          </Badge>
                         </span>
                       </label>
                     ))

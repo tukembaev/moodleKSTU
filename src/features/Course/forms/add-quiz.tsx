@@ -3,18 +3,21 @@ import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { LuBookDashed, LuLibrary } from "react-icons/lu";
+import { LuBookDashed, LuEye, LuLibrary } from "react-icons/lu";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { UseTooltip } from "shared/components";
 import CheckboxCard from "shared/components/CheckboxCard";
 import {
   emptyOptionDraft,
   emptyQuestionDraft,
+  isQuestionDraftStarted,
+  resolveQuestionType,
+  toApiQuestionPayload,
+  validateQuestionDraft,
   type QuestionDraft,
 } from "shared/components/QuestionEditor";
-import { useFormParam } from "shared/hooks";
-import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
+import { toast } from "sonner";
 import { Button } from "shared/shadcn/ui/button";
 import {
   Card,
@@ -24,7 +27,6 @@ import {
   CardHeader,
   CardTitle,
 } from "shared/shadcn/ui/card";
-import { Checkbox } from "shared/shadcn/ui/checkbox";
 import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
 import { Separator } from "shared/shadcn/ui/separator";
@@ -33,21 +35,8 @@ import QuizQuestionCard from "./quiz-question-card";
 
 type QuestionForm = QuestionDraft;
 
-const isQuestionStarted = (question?: QuestionForm) => {
-  if (!question) return false;
-  if (question.question.trim()) return true;
-  if (question.questionImage || question.questionImagePreview) return true;
-  const hasCorrect = Array.isArray(question.correctAnswer)
-    ? question.correctAnswer.length > 0
-    : Boolean(question.correctAnswer);
-  if (hasCorrect) return true;
-  return question.options.some(
-    (option) => option.text.trim() || option.image || option.imagePreview
-  );
-};
-
 const toFormQuestion = (question: QuestionDraft): QuestionForm => ({
-  ...emptyQuestionDraft(),
+  ...emptyQuestionDraft(resolveQuestionType(question)),
   question: question.question,
   questionImage: question.questionImage ?? null,
   questionImagePreview: question.questionImagePreview,
@@ -57,7 +46,8 @@ const toFormQuestion = (question: QuestionDraft): QuestionForm => ({
     imagePreview: option.imagePreview,
   })),
   correctAnswer: question.correctAnswer,
-  multipleAnswers: question.multipleAnswers,
+  multipleAnswers: resolveQuestionType(question) === "multiple_choice",
+  questionType: resolveQuestionType(question),
 });
 
 interface QuizFormData {
@@ -88,18 +78,14 @@ const Add_Quiz = () => {
       maxPoints: 100,
       minPoints: 0,
       showCorrectAnswers: false,
-      questions: [emptyQuestionDraft(), emptyQuestionDraft()],
+      questions: [emptyQuestionDraft()],
     },
   });
 
   const [searchParams] = useSearchParams();
   const formParam = searchParams.get("form");
-  const formCourseId = useFormParam("course_id");
-  const storedCourseId = useCourseId();
-  const courseId = formCourseId || storedCourseId;
 
   const { mutate: createTest, isPending } = testQueries.create_test_with_formdata();
-  const { mutate: attachTest } = testQueries.attach_test_to_course();
   const [bankPickerOpen, setBankPickerOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -110,12 +96,27 @@ const Add_Quiz = () => {
       value: "required",
       icon: LuBookDashed,
     },
+    {
+      label: "Показывать ответы",
+      description: "После сдачи теста студент увидит правильные ответы",
+      value: "showCorrectAnswers",
+      icon: LuEye,
+    },
   ];
 
-  const selectedValues = watch("required") ? ["required"] : [];
+  const selectedValues = [
+    ...(watch("required") ? ["required"] : []),
+    ...(watch("showCorrectAnswers") ? ["showCorrectAnswers"] : []),
+  ];
 
-  const handleCheckboxChange = (_value: string, checked: boolean) => {
-    setValue("required", checked);
+  const handleCheckboxChange = (value: string, checked: boolean) => {
+    if (value === "required") {
+      setValue("required", checked);
+      return;
+    }
+    if (value === "showCorrectAnswers") {
+      setValue("showCorrectAnswers", checked);
+    }
   };
 
   const [date] = useState<Date | undefined>(new Date());
@@ -142,8 +143,8 @@ const Add_Quiz = () => {
   const watchedQuestions = watch("questions");
   const totalQuestions = questionFields.length;
   const activeField = questionFields[activeIndex];
-  const canRemoveQuestion = totalQuestions > 2;
-  const isBankDisabled = isQuestionStarted(watchedQuestions?.[activeIndex]);
+  const canRemoveQuestion = totalQuestions > 1;
+  const isBankDisabled = isQuestionDraftStarted(watchedQuestions?.[activeIndex]);
 
   useEffect(() => {
     setActiveIndex((prev) => {
@@ -170,11 +171,11 @@ const Add_Quiz = () => {
   const handleInsertFromBank = (questions: QuestionDraft[]) => {
     if (!questions.length) return;
     const current = watchedQuestions ?? [];
-    const start = isQuestionStarted(current[activeIndex])
+    const start = isQuestionDraftStarted(current[activeIndex])
       ? activeIndex + 1
       : activeIndex;
     const before = current.slice(0, start);
-    const after = current.slice(start).filter(isQuestionStarted);
+    const after = current.slice(start).filter(isQuestionDraftStarted);
     const next = [
       ...before,
       ...questions.map(toFormQuestion),
@@ -185,7 +186,34 @@ const Add_Quiz = () => {
     setActiveIndex(before.length + questions.length);
   };
 
+  const validateFilledQuestion = (question?: QuestionForm) =>
+    validateQuestionDraft(question);
+
+  const validateQuestionField = (question?: QuestionForm) => {
+    if (!isQuestionDraftStarted(question)) return true;
+    return validateFilledQuestion(question);
+  };
+
   const onSubmit = (formData: QuizFormData) => {
+    const filledQuestions = formData.questions.filter(isQuestionDraftStarted);
+
+    if (filledQuestions.length === 0) {
+      toast.error("Добавьте хотя бы один вопрос");
+      setActiveIndex(0);
+      return;
+    }
+
+    for (let index = 0; index < formData.questions.length; index++) {
+      const question = formData.questions[index];
+      if (!isQuestionDraftStarted(question)) continue;
+      const result = validateFilledQuestion(question);
+      if (result !== true) {
+        setActiveIndex(index);
+        toast.error(result);
+        return;
+      }
+    }
+
     const testData = {
       title: formData.title,
       description: formData.description || "",
@@ -195,67 +223,32 @@ const Add_Quiz = () => {
       maxPoints: formData.maxPoints || 0,
       minPoints: formData.minPoints || 0,
       showCorrectAnswers: formData.showCorrectAnswers || false,
-      questions: formData.questions.map((question) => ({
-        question: question.question,
-        multipleAnswers: question.multipleAnswers || false,
-        correctAnswer: question.multipleAnswers && Array.isArray(question.correctAnswer)
-          ? question.correctAnswer
-          : typeof question.correctAnswer === "string"
-            ? question.correctAnswer
-            : "",
-        options: question.options
-          .filter((opt) => opt.text.trim() !== "")
-          .map((option) => ({
-            text: option.text,
-          })),
-      })),
+      questions: filledQuestions.map((question) => toApiQuestionPayload(question)),
     };
 
     const formDataToSend = new FormData();
     formDataToSend.append("data", JSON.stringify(testData));
 
-    formData.questions.forEach((question, qIndex) => {
+    filledQuestions.forEach((question, qIndex) => {
       if (question.questionImage) {
         formDataToSend.append(`questions[${qIndex}][questionImage]`, question.questionImage);
       }
 
-      question.options.forEach((option, oIndex) => {
-        if (option.image) {
-          formDataToSend.append(`questions[${qIndex}][options][${oIndex}][image]`, option.image);
-        }
-      });
+      if (
+        resolveQuestionType(question) === "single_choice" ||
+        resolveQuestionType(question) === "multiple_choice"
+      ) {
+        question.options.forEach((option, oIndex) => {
+          if (option.image) {
+            formDataToSend.append(`questions[${qIndex}][options][${oIndex}][image]`, option.image);
+          }
+        });
+      }
     });
 
     createTest(formDataToSend, {
-      onSuccess: (created) => {
-        if (courseId && created?.id) {
-          attachTest(
-            { test_id: created.id, course_id: courseId },
-            { onSettled: () => navigate(-1) }
-          );
-          return;
-        }
-        navigate(-1);
-      },
+      onSuccess: () => navigate(-1),
     });
-  };
-
-  const validateQuestion = (question?: QuestionForm) => {
-    if (!question?.question?.trim()) return "Введите текст вопроса";
-    if (question.options.some((option) => !option.text.trim())) {
-      return "Заполните все варианты ответов";
-    }
-    if (question.multipleAnswers) {
-      if (
-        !Array.isArray(question.correctAnswer) ||
-        question.correctAnswer.length === 0
-      ) {
-        return "Выберите правильный ответ";
-      }
-    } else if (!question.correctAnswer) {
-      return "Выберите правильный ответ";
-    }
-    return true;
   };
 
   return (
@@ -264,8 +257,8 @@ const Add_Quiz = () => {
         <CardHeader>
           <CardTitle>Новый тест</CardTitle>
           <CardDescription>
-            Заполните параметры и добавьте вопросы. Правильный ответ отмечается
-            нажатием на карточку варианта.
+            Заполните параметры и добавьте вопросы. Тип вопроса выбирается
+            в карточке: варианты, верно/неверно, короткий или развёрнутый ответ.
           </CardDescription>
         </CardHeader>
 
@@ -298,7 +291,7 @@ const Add_Quiz = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="flex w-full flex-col gap-1.5">
                 <Label htmlFor="quiz-timelimit">Время, мин</Label>
                 <Input
@@ -329,7 +322,7 @@ const Add_Quiz = () => {
                 )}
               </div>
               <div className="flex w-full flex-col gap-1.5">
-                <Label htmlFor="quiz-minpoints">Мин. балл</Label>
+                <Label htmlFor="quiz-minpoints">Мин. балл для сдачи</Label>
                 <Input
                   id="quiz-minpoints"
                   type="number"
@@ -349,21 +342,6 @@ const Add_Quiz = () => {
                     {errors.minPoints.message || "От 0 до максимума"}
                   </p>
                 )}
-              </div>
-              <div className="flex items-center gap-2 rounded-xl border border-input px-3">
-                <Checkbox
-                  id="showCorrectAnswers"
-                  {...register("showCorrectAnswers")}
-                  onCheckedChange={(checked) =>
-                    setValue("showCorrectAnswers", !!checked)
-                  }
-                />
-                <Label
-                  htmlFor="showCorrectAnswers"
-                  className="cursor-pointer text-sm font-normal"
-                >
-                  Показывать ответы после сдачи
-                </Label>
               </div>
             </div>
 
@@ -444,7 +422,7 @@ const Add_Quiz = () => {
                 key={activeField.id}
                 name={`questions.${activeIndex}`}
                 control={control}
-                rules={{ validate: validateQuestion }}
+                rules={{ validate: validateQuestionField }}
                 render={({ field: questionField, fieldState }) => (
                   <QuizQuestionCard
                     value={questionField.value || emptyQuestionDraft()}

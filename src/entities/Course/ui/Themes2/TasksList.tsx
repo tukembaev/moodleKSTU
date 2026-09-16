@@ -42,6 +42,8 @@ export interface CourseListTask {
   is_open?: boolean | null;
   passed?: boolean | null;
   min_points?: number;
+  comment?: string | null;
+  needsReview?: boolean | null;
 }
 
 interface TasksListProps {
@@ -50,7 +52,12 @@ interface TasksListProps {
   onItemClick: (
     taskId: string,
     kind: CourseItemKind,
-    meta?: { passed: boolean | null; is_open: boolean | null; locked?: boolean }
+    meta?: {
+      passed: boolean | null;
+      is_open: boolean | null;
+      locked?: boolean;
+      needsReview?: boolean | null;
+    }
   ) => void;
 }
 
@@ -106,6 +113,8 @@ export const TasksList: FC<TasksListProps> = ({
       is_open: test.is_open,
       passed: test.passed ?? null,
       min_points: test.min_points ?? 0,
+      comment: test.comment,
+      needsReview: test.needsReview ?? null,
     }));
   }, [courseTests]);
 

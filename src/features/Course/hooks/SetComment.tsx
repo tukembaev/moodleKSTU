@@ -43,6 +43,8 @@ interface SetCommentProps {
   theme_id?: string | null;
   /** ID студента (user_id), которому ставится замечание */
   student_id?: number | null;
+  /** Текущая версия сдачи — если известна, уходит в createRemark */
+  submission_id?: string;
   children: React.ReactNode;
 }
 
@@ -50,6 +52,7 @@ export function SetComment({
   text,
   theme_id,
   student_id,
+  submission_id,
   children,
 }: SetCommentProps) {
   const [note, setNote] = useState("");
@@ -112,6 +115,7 @@ export function SetComment({
           student_id,
           title: text || "Замечание",
           message: note,
+          ...(submission_id ? { submission_id } : {}),
         },
         {
           onSuccess: () => setNote(""),

@@ -18,6 +18,7 @@ import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { questionBankQueries } from "../model/services/questionBankQueryFactory";
+import { bankQuestionsCount } from "../model/types/questionBank";
 
 const BankCardSkeleton = () => (
   <div className="flex min-w-1/3 flex-col justify-between rounded-xl border px-5 py-6">
@@ -49,52 +50,55 @@ const BankList = () => {
             <p>Произошла непредвиденная ошибка! {error.message}</p>
           ) : (
             <FadeInList>
-              {data?.map((bank) => (
-                <Card key={bank.id} className="transition-all duration-300">
-                  <CardContent className="flex flex-col gap-2 p-4">
-                    <span className="text-lg font-semibold">{bank.name}</span>
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                      <Badge variant="outline">
-                        {bank.questions.length}{" "}
-                        {bank.questions.length === 1 ? "вопрос" : "вопросов"}
-                      </Badge>
-                      <span>
-                        {format(new Date(bank.createdAt), "d MMMM yyyy", {
-                          locale: ru,
-                        })}
+              {data?.map((bank) => {
+                const count = bankQuestionsCount(bank);
+                const createdAt = bank.createdAt ? new Date(bank.createdAt) : null;
+                return (
+                  <Card key={bank.id} className="transition-all duration-300">
+                    <CardContent className="flex flex-col gap-2 p-4">
+                      <span className="text-lg font-semibold">{bank.name}</span>
+                      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                        <Badge variant="outline">
+                          {count} {count === 1 ? "вопрос" : "вопросов"}
+                        </Badge>
+                        {createdAt && !Number.isNaN(createdAt.getTime()) && (
+                          <span>
+                            {format(createdAt, "d MMMM yyyy", { locale: ru })}
+                          </span>
+                        )}
+                      </div>
+                      <span className="line-clamp-2 text-md text-foreground/80">
+                        {bank.description || "Без описания"}
                       </span>
-                    </div>
-                    <span className="line-clamp-2 text-md text-foreground/80">
-                      {bank.description || "Без описания"}
-                    </span>
-                    <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                      <Button
-                        className="h-8 w-full text-sm shadow-none sm:flex-1"
-                        variant="outline"
-                        onClick={() => openBank(navigate, bank.id)}
-                      >
-                        Открыть
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                      <UseConfirmationDialog
-                        title="Удалить Коллекция?"
-                        description={`«${bank.name}» будет удалён вместе со всеми вопросами.`}
-                        onConfirm={() => removeBank(bank.id)}
-                        trigger={
-                          <Button
-                            className="h-8 w-full text-sm shadow-none sm:flex-1"
-                            variant="destructive"
-                            disabled={isDeleting}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Удалить
-                          </Button>
-                        }
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                        <Button
+                          className="h-8 w-full text-sm shadow-none sm:flex-1"
+                          variant="outline"
+                          onClick={() => openBank(navigate, bank.id)}
+                        >
+                          Открыть
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        <UseConfirmationDialog
+                          title="Удалить Коллекция?"
+                          description={`«${bank.name}» будет удалён вместе со всеми вопросами.`}
+                          onConfirm={() => removeBank(bank.id)}
+                          trigger={
+                            <Button
+                              className="h-8 w-full text-sm shadow-none sm:flex-1"
+                              variant="destructive"
+                              disabled={isDeleting}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Удалить
+                            </Button>
+                          }
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
               <div
                 className="group flex min-h-48 min-w-1/3 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-5 py-4 transition-all duration-300 hover:border-primary/50 hover:bg-primary/5"
                 onClick={() => openForm(FormQuery.ADD_BANK)}

@@ -12,7 +12,12 @@ interface TaskGroupProps {
   onItemClick?: (
     taskId: string,
     kind: CourseItemKind,
-    meta?: { passed: boolean | null; is_open: boolean | null; locked?: boolean }
+    meta?: {
+      passed: boolean | null;
+      is_open: boolean | null;
+      locked?: boolean;
+      needsReview?: boolean | null;
+    }
   ) => void;
   selectedTaskId?: string | null;
   isTestsGroup?: boolean;
@@ -94,6 +99,7 @@ export const TaskGroup: FC<TaskGroupProps> = ({
                 passed: task.passed ?? null,
                 is_open: task.is_open ?? null,
                 locked: task.locked,
+                needsReview: task.needsReview ?? null,
               })
             }
             isActive={selectedTaskId === task.id}
@@ -102,6 +108,8 @@ export const TaskGroup: FC<TaskGroupProps> = ({
             isTest={task.itemKind === "test"}
             isOpen={task.is_open}
             passed={task.passed ?? null}
+            comment={task.comment}
+            needsReview={task.needsReview ?? null}
           />
         ))}
       </div>

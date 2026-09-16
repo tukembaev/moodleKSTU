@@ -230,6 +230,14 @@ const RemarkChat = ({
                   <h4 className="font-semibold text-sm truncate">
                     {remark.theme_title}
                   </h4>
+                  {remark.submission_version != null && (
+                    <Badge
+                      variant="outline"
+                      className="gap-1 text-xs shrink-0"
+                    >
+                      к версии {remark.submission_version}
+                    </Badge>
+                  )}
                   {remark.type === RemarkType.FILE && (
                     <Badge
                       variant="outline"

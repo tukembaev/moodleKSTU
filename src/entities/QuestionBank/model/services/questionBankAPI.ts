@@ -1,122 +1,273 @@
-import type { QuestionDraft } from "shared/components/QuestionEditor";
-import { dataUrlToFile, fileToDataUrl } from "shared/lib/files";
+import axios from "axios";
+import {
+  resolveQuestionType,
+  serializeCorrectAnswer,
+  type QuestionCorrectAnswer,
+  type QuestionDraft,
+} from "shared/components/QuestionEditor";
+import { dataUrlToFile } from "shared/lib/files";
+import $api_edu from "shared/api/api_edu";
 import type { BankQuestion, CreateBankPayload, QuestionBank } from "../types/questionBank";
 
-const STORAGE_KEY = "qbank:banks";
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 
-const delay = <T>(value: T): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(value), 40));
-
-function readBanks(): QuestionBank[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as QuestionBank[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+const pick = <T>(raw: Record<string, unknown>, ...keys: string[]): T | undefined => {
+  for (const key of keys) {
+    if (raw[key] !== undefined && raw[key] !== null) return raw[key] as T;
   }
+  return undefined;
+};
+
+const optionalUrl = (value: unknown): string | undefined => {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+function apiErrorMessage(error: unknown, fallback: string): string {
+  if (!axios.isAxiosError(error)) {
+    return error instanceof Error ? error.message : fallback;
+  }
+  const data = error.response?.data;
+  if (typeof data === "string" && data.trim()) return data;
+  const record = asRecord(data);
+  if (record) {
+    const detail = record.detail ?? record.message;
+    if (typeof detail === "string" && detail.trim()) return detail;
+    const firstKey = Object.keys(record)[0];
+    const first = firstKey ? record[firstKey] : undefined;
+    if (typeof first === "string" && first.trim()) return first;
+    if (Array.isArray(first) && first[0]) return String(first[0]);
+  }
+  if (error.response?.status === 404) return "Коллекция вопросов не найдена";
+  return error.message || fallback;
 }
 
-function writeBanks(banks: QuestionBank[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(banks));
+function unwrapList(data: unknown): unknown[] {
+  if (Array.isArray(data)) return data;
+  const record = asRecord(data);
+  if (record && Array.isArray(record.results)) return record.results;
+  return [];
 }
 
-async function persistDraft(draft: QuestionDraft, id?: string): Promise<BankQuestion> {
-  const questionImagePreview = draft.questionImage
-    ? await fileToDataUrl(draft.questionImage)
-    : draft.questionImagePreview;
-
-  const options = await Promise.all(
-    draft.options.map(async (option) => ({
-      id: option.id || crypto.randomUUID(),
-      text: option.text,
-      imagePreview: option.image
-        ? await fileToDataUrl(option.image)
-        : option.imagePreview,
-    }))
-  );
-
+function normalizeOption(raw: unknown): BankQuestion["options"][number] {
+  const record = asRecord(raw) ?? {};
   return {
-    id: id || draft.id || crypto.randomUUID(),
-    question: draft.question,
-    questionImagePreview,
-    options,
-    correctAnswer: draft.correctAnswer,
-    multipleAnswers: draft.multipleAnswers,
+    id: String(pick(record, "id") ?? crypto.randomUUID()),
+    text: String(pick(record, "text") ?? ""),
+    imagePreview: optionalUrl(pick(record, "imagePreview", "image_preview", "image")),
   };
 }
 
-export async function bankQuestionToDraft(
-  question: BankQuestion
-): Promise<QuestionDraft> {
-  const questionImage = question.questionImagePreview
-    ? await dataUrlToFile(question.questionImagePreview, `question-${question.id}`)
-    : null;
+function normalizeCorrectAnswer(
+  raw: unknown,
+  questionType: ReturnType<typeof resolveQuestionType>
+): QuestionCorrectAnswer {
+  if (raw == null) return questionType === "essay" ? null : "";
+  if (typeof raw === "boolean") return raw;
+  if (Array.isArray(raw)) return raw.map(String);
+  if (typeof raw === "string") {
+    if (questionType === "true_false") {
+      const trimmed = raw.trim().toLowerCase();
+      if (["true", "верно", "1", "yes", "да"].includes(trimmed)) return true;
+      if (["false", "неверно", "0", "no", "нет"].includes(trimmed)) return false;
+    }
+    if (raw.trim().startsWith("[")) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.map(String);
+      } catch {
+        return raw;
+      }
+    }
+    return raw;
+  }
+  return String(raw);
+}
 
-  const options = await Promise.all(
-    question.options.map(async (option) => ({
+function normalizeQuestion(raw: unknown): BankQuestion {
+  const record = asRecord(raw) ?? {};
+  const options = Array.isArray(record.options) ? record.options.map(normalizeOption) : [];
+  const multipleAnswers = Boolean(pick(record, "multipleAnswers", "multiple_answers"));
+  const questionType = resolveQuestionType({
+    questionType: pick<string>(record, "questionType", "question_type"),
+    multipleAnswers,
+  });
+  return {
+    id: String(pick(record, "id") ?? ""),
+    question: String(pick(record, "question") ?? ""),
+    questionImagePreview: optionalUrl(
+      pick(record, "questionImagePreview", "question_image_preview", "questionImage")
+    ),
+    options,
+    correctAnswer: normalizeCorrectAnswer(
+      pick(record, "correctAnswer", "correct_answer"),
+      questionType
+    ),
+    multipleAnswers,
+    questionType,
+  };
+}
+
+function normalizeBank(raw: unknown): QuestionBank {
+  const record = asRecord(raw) ?? {};
+  const questions = Array.isArray(record.questions)
+    ? record.questions.map(normalizeQuestion)
+    : [];
+  const questionsCount = Number(
+    pick(record, "questionsCount", "questions_count") ?? questions.length
+  );
+  return {
+    id: String(pick(record, "id") ?? ""),
+    name: String(pick(record, "name") ?? ""),
+    description: String(pick(record, "description") ?? ""),
+    createdAt: String(pick(record, "createdAt", "created_at") ?? ""),
+    questions,
+    questionsCount: Number.isFinite(questionsCount) ? questionsCount : questions.length,
+  };
+}
+
+function questionFormData(draft: QuestionDraft): FormData {
+  const questionType = resolveQuestionType(draft);
+  const formData = new FormData();
+  formData.append("question", draft.question);
+  formData.append("questionType", questionType);
+  formData.append("multipleAnswers", questionType === "multiple_choice" ? "true" : "false");
+  if (questionType !== "essay") {
+    formData.append("correctAnswer", serializeCorrectAnswer(draft.correctAnswer));
+  }
+  if (questionType === "single_choice" || questionType === "multiple_choice") {
+    formData.append(
+      "options",
+      JSON.stringify(
+        draft.options.map((option) =>
+          option.id ? { id: option.id, text: option.text } : { text: option.text }
+        )
+      )
+    );
+  }
+  if (draft.questionImage instanceof File) {
+    formData.append("questionImage", draft.questionImage);
+  }
+  if (questionType === "single_choice" || questionType === "multiple_choice") {
+    draft.options.forEach((option, index) => {
+      if (option.image instanceof File) {
+        formData.append(`optionImage_${index}`, option.image);
+      }
+    });
+  }
+  return formData;
+}
+
+async function fileFromPreview(url: string | undefined, filename: string): Promise<File | null> {
+  if (!url) return null;
+  try {
+    return await dataUrlToFile(url, filename);
+  } catch {
+    return null;
+  }
+}
+
+export function bankQuestionToDraft(question: BankQuestion): QuestionDraft {
+  const questionType = resolveQuestionType(question);
+  return {
+    id: question.id,
+    question: question.question,
+    questionImage: null,
+    questionImagePreview: question.questionImagePreview,
+    options: question.options.map((option) => ({
       id: option.id,
       text: option.text,
-      image: option.imagePreview
-        ? await dataUrlToFile(option.imagePreview, `option-${option.id || crypto.randomUUID()}`)
-        : null,
+      image: null,
+      imagePreview: option.imagePreview,
+    })),
+    correctAnswer: question.correctAnswer,
+    multipleAnswers: questionType === "multiple_choice",
+    questionType,
+  };
+}
+
+export async function bankQuestionToInsertDraft(
+  question: BankQuestion
+): Promise<QuestionDraft> {
+  const draft = bankQuestionToDraft(question);
+  const questionImage = await fileFromPreview(
+    question.questionImagePreview,
+    `question-${question.id}`
+  );
+  const options = await Promise.all(
+    question.options.map(async (option) => ({
+      text: option.text,
+      image: await fileFromPreview(
+        option.imagePreview,
+        `option-${option.id || crypto.randomUUID()}`
+      ),
       imagePreview: option.imagePreview,
     }))
   );
-
   return {
-    question: question.question,
+    ...draft,
+    id: undefined,
     questionImage,
-    questionImagePreview: question.questionImagePreview,
     options,
-    correctAnswer: question.correctAnswer,
-    multipleAnswers: question.multipleAnswers,
   };
 }
 
 export async function getBanks(): Promise<QuestionBank[]> {
-  return delay(readBanks());
+  try {
+    const response = await $api_edu.get("question-banks/");
+    return unwrapList(response.data).map(normalizeBank);
+  } catch (error) {
+    throw new Error(apiErrorMessage(error, "Не удалось загрузить коллекции"));
+  }
 }
 
-export async function getBank(id: string): Promise<QuestionBank | null> {
-  const banks = await getBanks();
-  return banks.find((bank) => bank.id === id) ?? null;
+export async function getBank(id: string): Promise<QuestionBank> {
+  try {
+    const response = await $api_edu.get(`question-banks/${id}/`);
+    return normalizeBank(response.data);
+  } catch (error) {
+    throw new Error(apiErrorMessage(error, "Коллекция вопросов не найдена"));
+  }
 }
 
 export async function createBank(payload: CreateBankPayload): Promise<QuestionBank> {
-  const banks = readBanks();
-  const bank: QuestionBank = {
-    id: crypto.randomUUID(),
-    name: payload.name.trim(),
-    description: payload.description.trim(),
-    createdAt: new Date().toISOString(),
-    questions: [],
-  };
-  writeBanks([bank, ...banks]);
-  return delay(bank);
+  try {
+    const response = await $api_edu.post("question-banks/", {
+      name: payload.name.trim(),
+      description: payload.description.trim(),
+    });
+    return normalizeBank(response.data);
+  } catch (error) {
+    throw new Error(apiErrorMessage(error, "Не удалось создать коллекцию"));
+  }
 }
 
 export async function deleteBank(id: string): Promise<void> {
-  writeBanks(readBanks().filter((bank) => bank.id !== id));
-  return delay(undefined);
+  try {
+    await $api_edu.delete(`question-banks/${id}/`);
+  } catch (error) {
+    throw new Error(apiErrorMessage(error, "Не удалось удалить коллекцию"));
+  }
 }
 
 export async function addQuestion(
   bankId: string,
   draft: QuestionDraft
 ): Promise<BankQuestion> {
-  const banks = readBanks();
-  const index = banks.findIndex((bank) => bank.id === bankId);
-  if (index === -1) throw new Error("Коллекция вопросов не найден");
-  const question = await persistDraft(draft);
-  banks[index] = {
-    ...banks[index],
-    questions: [...banks[index].questions, question],
-  };
-  writeBanks(banks);
-  return delay(question);
+  try {
+    const response = await $api_edu.post(
+      `question-banks/${bankId}/questions/`,
+      questionFormData(draft),
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return normalizeQuestion(response.data);
+  } catch (error) {
+    throw new Error(apiErrorMessage(error, "Не удалось сохранить вопрос"));
+  }
 }
 
 export async function updateQuestion(
@@ -124,31 +275,25 @@ export async function updateQuestion(
   questionId: string,
   draft: QuestionDraft
 ): Promise<BankQuestion> {
-  const banks = readBanks();
-  const bankIndex = banks.findIndex((bank) => bank.id === bankId);
-  if (bankIndex === -1) throw new Error("Коллекция вопросов не найден");
-  const question = await persistDraft(draft, questionId);
-  banks[bankIndex] = {
-    ...banks[bankIndex],
-    questions: banks[bankIndex].questions.map((item) =>
-      item.id === questionId ? question : item
-    ),
-  };
-  writeBanks(banks);
-  return delay(question);
+  try {
+    const response = await $api_edu.put(
+      `question-banks/${bankId}/questions/${questionId}/`,
+      questionFormData(draft),
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return normalizeQuestion(response.data);
+  } catch (error) {
+    throw new Error(apiErrorMessage(error, "Не удалось обновить вопрос"));
+  }
 }
 
 export async function deleteQuestion(
   bankId: string,
   questionId: string
 ): Promise<void> {
-  const banks = readBanks();
-  const bankIndex = banks.findIndex((bank) => bank.id === bankId);
-  if (bankIndex === -1) throw new Error("Коллекция вопросов не найден");
-  banks[bankIndex] = {
-    ...banks[bankIndex],
-    questions: banks[bankIndex].questions.filter((item) => item.id !== questionId),
-  };
-  writeBanks(banks);
-  return delay(undefined);
+  try {
+    await $api_edu.delete(`question-banks/${bankId}/questions/${questionId}/`);
+  } catch (error) {
+    throw new Error(apiErrorMessage(error, "Не удалось удалить вопрос"));
+  }
 }

@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { remarksQueries } from "entities/Remarks";
 import { StudentComments } from "features/Course/hooks/StudentComments";
 import { AnimatePresence, motion } from "motion/react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import type { IconType } from "react-icons";
 import {
   LuClipboardList,
@@ -11,6 +12,7 @@ import {
   LuInfo,
   LuList,
   LuMessageSquareText,
+  LuUserCheck,
 } from "react-icons/lu";
 import { useAuth } from "shared/hooks";
 import { cn } from "shared/lib/utils";
@@ -33,8 +35,10 @@ import ThemeAnswers from "../Answers/ThemeAnswers";
 import ThemeFAQ from "../Themes/ThemeDetail/ThemeFAQ";
 import { ThemeFeed } from "../Themes/ThemeDetail/ThemeFeed";
 import { MaterialsSection } from "./MaterialsSection";
+import { ThemeAttendanceSection } from "./ThemeAttendanceSection";
 
 const FILES_TAB = "theme_answers";
+const ATTENDANCE_TAB = "attendance";
 
 type WorkspaceTab = {
   name: string;
@@ -154,6 +158,20 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
     enabled: !!themeId && auth_data.isStudent,
   });
 
+  const { error: attendanceError } = useQuery(
+    courseQueries.themeAttendance(auth_data.isStudent ? null : themeId)
+  );
+  const attendanceForbidden =
+    axios.isAxiosError(attendanceError) &&
+    attendanceError.response?.status === 403;
+  const showAttendance = Boolean(themeId) && !auth_data.isStudent && !attendanceForbidden;
+
+  useEffect(() => {
+    if (attendanceForbidden && activeTab === ATTENDANCE_TAB) {
+      setActiveTab(FILES_TAB);
+    }
+  }, [activeTab, attendanceForbidden]);
+
   const tabs: WorkspaceTab[] = [
     {
       name: auth_data.isStudent ? "Мои файлы" : "Список студентов",
@@ -162,6 +180,17 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
       icon: LuList,
       count: 0,
     },
+    ...(showAttendance
+      ? [
+          {
+            name: "Посещаемость",
+            shortName: "Посещение",
+            value: ATTENDANCE_TAB,
+            icon: LuUserCheck,
+            count: 0,
+          },
+        ]
+      : []),
     {
       name: "Обсуждение",
       shortName: "Чат",
@@ -238,6 +267,15 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
                 </div>
               </div>
             </TabsContent>
+
+            {showAttendance ? (
+              <TabsContent
+                value={ATTENDANCE_TAB}
+                className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
+              >
+                <ThemeAttendanceSection key={themeId} themeId={themeId} />
+              </TabsContent>
+            ) : null}
 
             <TabsContent
               value="feed"

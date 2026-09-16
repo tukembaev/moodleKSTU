@@ -5,6 +5,7 @@ import { userQueries } from "entities/User";
 import { Bell } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { COURSE_FEED_TAB, openCourse, parseCourseAnnouncementCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
 import { Button } from "shared/shadcn/ui/button";
 import {
@@ -33,13 +34,17 @@ export function HeaderNotifications() {
     if (!status) {
       markAsRead(id);
     }
-    if (link) {
-      setOpen(false);
-      if (/^https?:\/\//.test(link)) {
-        window.open(link, "_blank", "noopener,noreferrer");
-      } else {
-        navigate(link);
-      }
+    if (!link) return;
+    setOpen(false);
+    const announcementCourseId = parseCourseAnnouncementCourseId(link);
+    if (announcementCourseId) {
+      openCourse(navigate, announcementCourseId, { tab: COURSE_FEED_TAB });
+      return;
+    }
+    if (/^https?:\/\//.test(link)) {
+      window.open(link, "_blank", "noopener,noreferrer");
+    } else {
+      navigate(link);
     }
   };
 

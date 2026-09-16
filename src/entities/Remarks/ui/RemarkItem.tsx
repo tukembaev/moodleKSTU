@@ -148,6 +148,11 @@ const RemarkItem = ({
               <span className="text-sm font-medium truncate">
                 {remark.theme_title}
               </span>
+              {remark.submission_version != null && (
+                <Badge variant="secondary" className="text-xs shrink-0">
+                  к версии {remark.submission_version}
+                </Badge>
+              )}
               {remark.type === RemarkType.FILE && (
                 <Badge variant="secondary" className="gap-1 text-xs shrink-0">
                   <LuPaperclip className="h-3 w-3" />

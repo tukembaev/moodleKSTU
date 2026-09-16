@@ -131,7 +131,27 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
         breadcrumbName: "Опр курс",
       },
       {
+        path: "/courses/:courseId/announcements",
+        element: <CourseDetails />,
+        breadcrumbName: "Лента курса",
+      },
+      {
+        path: "/courses/:courseId/feed",
+        element: <CourseDetails />,
+        breadcrumbName: "Лента курса",
+      },
+      {
         path: "/courses/course_themes/:id/invite",
+        element: <CourseInvitePage />,
+        breadcrumbName: "Приглашение",
+      },
+      {
+        path: "/courses/course_themes/:id/invite/:linkId",
+        element: <CourseInvitePage />,
+        breadcrumbName: "Приглашение",
+      },
+      {
+        path: "/courses/invite/:courseId/:linkId",
         element: <CourseInvitePage />,
         breadcrumbName: "Приглашение",
       },

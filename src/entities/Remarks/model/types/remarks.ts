@@ -56,6 +56,8 @@ export interface Remark {
   updated_at: Date | string;
   archived_at?: Date | string | null;
   pending_remarks?: number;
+  submission_id?: string | null;
+  submission_version?: number | null;
   // UI-only поля (не приходят с API)
   type?: RemarkType;
   original_file?: RemarkAttachment;
@@ -71,6 +73,7 @@ export interface CreateRemarkPayload {
   student_id: number;
   title: string;
   message: string;
+  submission_id?: string;
 }
 
 export interface AddRemarkMessagePayload {

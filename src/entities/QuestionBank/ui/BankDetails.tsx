@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   emptyQuestionDraft,
+  QUESTION_TYPE_LABELS,
   QuestionEditorCard,
+  resolveQuestionType,
+  validateQuestionDraft,
   type QuestionDraft,
 } from "shared/components/QuestionEditor";
 import { UseConfirmationDialog } from "shared/components";
@@ -18,28 +21,21 @@ import { questionBankQueries } from "../model/services/questionBankQueryFactory"
 import type { BankQuestion } from "../model/types/questionBank";
 
 const isDraftValid = (draft: QuestionDraft) => {
-  if (!draft.question.trim()) return "Введите текст вопроса";
-  if (draft.options.some((option) => !option.text.trim())) {
-    return "Заполните все варианты ответов";
-  }
-  if (draft.multipleAnswers) {
-    if (!Array.isArray(draft.correctAnswer) || draft.correctAnswer.length === 0) {
-      return "Выберите хотя бы один правильный ответ";
-    }
-  } else if (!draft.correctAnswer) {
-    return "Выберите правильный ответ";
-  }
-  return null;
+  const result = validateQuestionDraft(draft);
+  return result === true ? null : result;
 };
 
 const correctSet = (question: BankQuestion) => {
   const answers = Array.isArray(question.correctAnswer)
     ? question.correctAnswer
-    : question.correctAnswer
+    : typeof question.correctAnswer === "string" && question.correctAnswer
       ? [question.correctAnswer]
       : [];
   return new Set(answers);
 };
+
+const trueFalseLabel = (value: BankQuestion["correctAnswer"]) =>
+  value === true || value === "Верно" ? "Верно" : "Неверно";
 
 const BankDetails = () => {
   const navigate = useNavigate();
@@ -68,9 +64,9 @@ const BankDetails = () => {
     setEditorOpen(true);
   };
 
-  const startEdit = async (question: BankQuestion) => {
+  const startEdit = (question: BankQuestion) => {
     setEditingId(question.id);
-    setDraft(await bankQuestionToDraft(question));
+    setDraft(bankQuestionToDraft(question));
     setDraftError(undefined);
     setEditorOpen(true);
   };
@@ -137,7 +133,7 @@ const BankDetails = () => {
             <p className="mt-1 text-muted-foreground">{bank.description}</p>
           )}
           <p className="mt-1 text-sm text-muted-foreground">
-            {bank.questions.length} вопроса в коллекции
+            {bank.questions.length} {bank.questions.length === 1 ? "вопрос" : "вопросов"} в коллекции
           </p>
         </div>
         <Button type="button" onClick={startCreate}>
@@ -176,6 +172,7 @@ const BankDetails = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {bank.questions.map((question, index) => {
+              const type = resolveQuestionType(question);
               const answers = correctSet(question);
               return (
                 <div
@@ -192,13 +189,13 @@ const BankDetails = () => {
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5">
                         <Badge variant="secondary" className="font-normal">
-                          {question.multipleAnswers
-                            ? "Несколько ответов"
-                            : "Один ответ"}
+                          {QUESTION_TYPE_LABELS[type]}
                         </Badge>
-                        <span className="text-xs text-muted-foreground tabular-nums">
-                          {question.options.length} вариантов
-                        </span>
+                        {(type === "single_choice" || type === "multiple_choice") && (
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            {question.options.length} вариантов
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex shrink-0 gap-1">
@@ -243,6 +240,31 @@ const BankDetails = () => {
                     />
                   )}
 
+                  {type === "true_false" && (
+                    <p className="text-sm">
+                      Правильный ответ:{" "}
+                      <span className="font-medium">{trueFalseLabel(question.correctAnswer)}</span>
+                    </p>
+                  )}
+
+                  {type === "short_answer" && (
+                    <p className="text-sm">
+                      Эталон:{" "}
+                      <span className="font-medium">
+                        {typeof question.correctAnswer === "string"
+                          ? question.correctAnswer
+                          : "—"}
+                      </span>
+                    </p>
+                  )}
+
+                  {type === "essay" && (
+                    <p className="text-sm text-muted-foreground">
+                      Требует ручной проверки преподавателем
+                    </p>
+                  )}
+
+                  {(type === "single_choice" || type === "multiple_choice") && (
                   <ul
                     className={cn(
                       "mt-auto grid min-w-0 auto-rows-fr gap-2",
@@ -266,7 +288,7 @@ const BankDetails = () => {
                             aria-hidden="true"
                             className={cn(
                               "relative mt-0.5 flex size-5 shrink-0 items-center justify-center border text-[10px] font-medium",
-                              question.multipleAnswers
+                              type === "multiple_choice"
                                 ? "rounded-[4px]"
                                 : "rounded-full",
                               isCorrect
@@ -275,7 +297,7 @@ const BankDetails = () => {
                             )}
                           >
                             {isCorrect ? (
-                              question.multipleAnswers ? (
+                              type === "multiple_choice" ? (
                                 <Check className="size-3.5" />
                               ) : (
                                 <span className="size-2 rounded-full bg-primary-foreground" />
@@ -300,6 +322,7 @@ const BankDetails = () => {
                       );
                     })}
                   </ul>
+                  )}
                 </div>
               );
             })}

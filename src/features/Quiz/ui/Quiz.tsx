@@ -35,10 +35,18 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
     { questionId: string; selected: string }[]
   >([]);
 
-  const quiz: QuizPayload =
+  const sourceQuiz: QuizPayload =
     quizData ||
     mockQuizData.find((q) => q.quizId === id_quiz) ||
     mockQuizData[0];
+  const quiz: QuizPayload = {
+    ...sourceQuiz,
+    questions: sourceQuiz.questions.filter(
+      (question) =>
+        Boolean(question.question?.trim()) ||
+        (question.options?.some((option) => Boolean(option?.trim())) ?? false)
+    ),
+  };
 
   const finishQuiz = useCallback(
     (lastAnswer: string) => {
@@ -123,6 +131,10 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
 
   if (!quiz) {
     return <div className="text-center mt-8">Викторина не найдена</div>;
+  }
+
+  if (!quiz.questions.length) {
+    return <div className="text-center mt-8">В тесте нет вопросов</div>;
   }
 
   const currentQuestion = quiz.questions[currentQuestionIndex];

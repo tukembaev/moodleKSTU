@@ -1,13 +1,18 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "shared/shadcn/ui/card";
 import { Button } from "shared/shadcn/ui/button";
-import { LuX, LuArrowLeft, LuCheck } from "react-icons/lu";
+import { LuX, LuArrowLeft, LuCheck, LuClock } from "react-icons/lu";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { TestSubmissionResponse, TestDetails } from "entities/Test/model/types/test";
 import { openCourse, useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { cn } from "shared/lib/utils";
+import {
+  isTextQuestionType,
+  resolveQuestionType,
+} from "shared/components/QuestionEditor";
+import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 
 interface QuizResultsState {
   results: TestSubmissionResponse;
@@ -50,7 +55,8 @@ const QuizResultsPage = () => {
   const score = results.score ?? results.correctAnswers;
   const maxPoints = results.maxPoints ?? quizData.maxPoints;
   const minPoints = results.minPoints ?? quizData.minPoints ?? 0;
-  const isPassed = results.passed === true;
+  const needsReview = results.needsReview === true;
+  const isPassed = !needsReview && results.passed === true;
 
   const minutesSpent = Math.floor((results.timeSpent || 0) / 60);
   const secondsSpent = (results.timeSpent || 0) % 60;
@@ -77,27 +83,37 @@ const QuizResultsPage = () => {
       <Card
         className={cn(
           "border-2",
-          isPassed
-            ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20"
-            : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20"
+          needsReview
+            ? "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20"
+            : isPassed
+              ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20"
+              : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20"
         )}
       >
         <CardContent className="flex flex-col items-center gap-3 py-8">
           <Badge
             className={cn(
               "px-3 py-1 text-sm",
-              isPassed
-                ? "bg-green-600 text-white hover:bg-green-600"
-                : "bg-red-600 text-white hover:bg-red-600"
+              needsReview
+                ? "bg-amber-600 text-white hover:bg-amber-600"
+                : isPassed
+                  ? "bg-green-600 text-white hover:bg-green-600"
+                  : "bg-red-600 text-white hover:bg-red-600"
             )}
           >
-            {isPassed ? "Тест пройден" : "Тест не пройден"}
+            {needsReview
+              ? "Ожидает проверки преподавателя"
+              : isPassed
+                ? "Тест пройден"
+                : "Тест не пройден"}
           </Badge>
           <p className="text-4xl font-bold">
             {score ?? "—"} / {maxPoints}
           </p>
           <p className="text-sm text-muted-foreground">
-            Проходной балл: {minPoints}
+            {needsReview
+              ? "Промежуточный балл, пока развёрнутые ответы не проверены"
+              : `Проходной балл: ${minPoints}`}
           </p>
         </CardContent>
       </Card>
@@ -137,11 +153,13 @@ const QuizResultsPage = () => {
 
           <Card>
             <CardHeader className="p-3 sm:p-6">
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Пропущено</CardTitle>
+              <CardTitle className="text-sm sm:text-base lg:text-lg">
+                {results.pendingReview ? "На проверке" : "Пропущено"}
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
               <p className="text-2xl sm:text-3xl font-bold text-orange-600">
-                {results.skippedQuestions}
+                {results.pendingReview || results.skippedQuestions}
               </p>
             </CardContent>
           </Card>
@@ -194,7 +212,18 @@ const QuizResultsPage = () => {
           </CardHeader>
           <CardContent className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 pt-0">
             {results.detailedResults.map((result, index) => {
-              const hasAnswer = result.selectedOptions.length > 0;
+              const type = resolveQuestionType({
+                questionType: result.questionType,
+                multipleAnswers: false,
+              });
+              const isText = isTextQuestionType(type);
+              const textAnswer = result.textAnswer?.trim() || "";
+              const hasAnswer = isText
+                ? Boolean(textAnswer)
+                : result.selectedOptions.length > 0;
+              const awaitingReview =
+                result.needsReview === true ||
+                (type === "essay" && result.isCorrect == null && hasAnswer);
 
               return (
                 <div
@@ -227,43 +256,18 @@ const QuizResultsPage = () => {
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-xs sm:text-sm font-medium">Ваш ответ:</span>
                           </div>
-                          <div className="flex flex-col gap-2">
-                            {result.selectedOptions.map((option) => (
-                              <div
-                                key={option.id}
-                                className="flex items-start gap-2 p-2 rounded bg-blue-50 border border-blue-200"
-                              >
-                                <div className="w-2 h-2 rounded-full mt-1.5 bg-blue-600 flex-shrink-0" />
-                                <span className="font-medium text-sm sm:text-base break-words">
-                                  {option.text}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            {result.isCorrect ? (
-                              <div className="flex items-center gap-2 text-green-600">
-                                <LuCheck className="h-4 w-4" />
-                                <span className="text-xs sm:text-sm font-medium">Правильно!</span>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2 text-red-600">
-                                <LuX className="h-4 w-4" />
-                                <span className="text-xs sm:text-sm font-medium">Неправильно. Правильный ответ:</span>
-                              </div>
-                            )}
-                          </div>
-                          {!result.isCorrect && (
+                          {isText ? (
+                            <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm whitespace-pre-wrap break-words">
+                              {textAnswer}
+                            </div>
+                          ) : (
                             <div className="flex flex-col gap-2">
-                              {result.correctOptions.map((option) => (
+                              {result.selectedOptions.map((option) => (
                                 <div
                                   key={option.id}
-                                  className="flex items-start gap-2 p-2 rounded bg-green-50 border border-green-200"
+                                  className="flex items-start gap-2 p-2 rounded bg-blue-50 border border-blue-200"
                                 >
-                                  <div className="w-2 h-2 rounded-full mt-1.5 bg-green-600 flex-shrink-0" />
+                                  <div className="w-2 h-2 rounded-full mt-1.5 bg-blue-600 flex-shrink-0" />
                                   <span className="font-medium text-sm sm:text-base break-words">
                                     {option.text}
                                   </span>
@@ -272,6 +276,47 @@ const QuizResultsPage = () => {
                             </div>
                           )}
                         </div>
+
+                        {awaitingReview ? (
+                          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                            <LuClock className="h-4 w-4" />
+                            <span className="text-xs sm:text-sm font-medium">
+                              Ожидает проверки преподавателя
+                            </span>
+                          </div>
+                        ) : result.isCorrect ? (
+                          <div className="flex items-center gap-2 text-green-600">
+                            <LuCheck className="h-4 w-4" />
+                            <span className="text-xs sm:text-sm font-medium">Правильно!</span>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="flex items-center gap-2 text-red-600 mb-2">
+                              <LuX className="h-4 w-4" />
+                              <span className="text-xs sm:text-sm font-medium">
+                                {result.correctOptions.length > 0
+                                  ? "Неправильно. Правильный ответ:"
+                                  : "Неправильно."}
+                              </span>
+                            </div>
+                            {!result.isCorrect && result.correctOptions.length > 0 && (
+                              <div className="flex flex-col gap-2">
+                                {result.correctOptions.map((option, optionIndex) => (
+                                  <div
+                                    key={option.id || `${option.text}-${optionIndex}`}
+                                    className="flex items-start gap-2 p-2 rounded bg-green-50 border border-green-200"
+                                  >
+                                    <div className="w-2 h-2 rounded-full mt-1.5 bg-green-600 flex-shrink-0" />
+                                    <span className="font-medium text-sm sm:text-base break-words">
+                                      {option.text}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <TeacherGradeComment comment={result.comment} />
                       </>
                     )}
                   </div>

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { PickQuestionsDialog } from "entities/QuestionBank";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
-import { TestDetails } from "entities/Test/model/types/test";
+import { isFilledTestQuestion, TestDetails } from "entities/Test/model/types/test";
 import TestResults from "entities/Test/ui/TestResults";
 import { AlertCircle, BarChart3, ChevronLeft, ChevronRight, Lock, LockOpen, Pencil, Plus, Trash2 } from "lucide-react";
 import { FC, useEffect, useState } from "react";
@@ -12,7 +12,11 @@ import { UseConfirmationDialog, UseTooltip } from "shared/components";
 import {
   emptyOptionDraft,
   emptyQuestionDraft,
+  isQuestionDraftStarted,
   QuestionEditorCard,
+  resolveQuestionType,
+  toApiQuestionPayload,
+  validateQuestionDraft,
   type QuestionDraft,
 } from "shared/components/QuestionEditor";
 import { cn } from "shared/lib/utils";
@@ -31,6 +35,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
+import { toast } from "sonner";
 
 type QuestionForm = QuestionDraft;
 
@@ -48,21 +53,8 @@ interface QuizFormData {
 
 const emptyQuestion = (): QuestionForm => emptyQuestionDraft();
 
-const isQuestionStarted = (question?: QuestionForm) => {
-  if (!question) return false;
-  if (question.question.trim()) return true;
-  if (question.questionImage || question.questionImagePreview) return true;
-  const hasCorrect = Array.isArray(question.correctAnswer)
-    ? question.correctAnswer.length > 0
-    : Boolean(question.correctAnswer);
-  if (hasCorrect) return true;
-  return question.options.some(
-    (option) => option.text.trim() || option.image || option.imagePreview
-  );
-};
-
 const toFormQuestion = (question: QuestionDraft): QuestionForm => ({
-  ...emptyQuestionDraft(),
+  ...emptyQuestionDraft(resolveQuestionType(question)),
   question: question.question,
   questionImage: question.questionImage ?? null,
   questionImagePreview: question.questionImagePreview,
@@ -72,7 +64,8 @@ const toFormQuestion = (question: QuestionDraft): QuestionForm => ({
     imagePreview: option.imagePreview,
   })),
   correctAnswer: question.correctAnswer,
-  multipleAnswers: question.multipleAnswers,
+  multipleAnswers: resolveQuestionType(question) === "multiple_choice",
+  questionType: resolveQuestionType(question),
 });
 
 const mapDetailsToForm = (data: TestDetails): QuizFormData => ({
@@ -84,33 +77,57 @@ const mapDetailsToForm = (data: TestDetails): QuizFormData => ({
   maxPoints: data.maxPoints,
   minPoints: data.minPoints ?? 0,
   showCorrectAnswers: data.showCorrectAnswers,
-  questions: data.questions.map((question) => {
-    const correctTexts = question.options
-      .filter((option) => option.is_correct)
-      .map((option) => option.text);
-    return {
-      id: question.id,
-      question: question.question,
-      questionImage: null,
-      questionImagePreview: question.questionImage || undefined,
-      multipleAnswers: question.multipleAnswers,
-      correctAnswer: question.multipleAnswers ? correctTexts : correctTexts[0] || "",
-      options: question.options.map((option) => ({
-        id: option.id,
-        text: option.text,
-        image: null,
-        imagePreview: option.image || undefined,
-      })),
-    };
-  }),
+  questions: (() => {
+    const mapped = data.questions.filter(isFilledTestQuestion).map((question) => {
+      const type = resolveQuestionType(question);
+      const correctTexts = question.options
+        .filter((option) => option.is_correct)
+        .map((option) => option.text);
+      let correctAnswer: QuestionDraft["correctAnswer"] = question.correctAnswer ?? "";
+      if (type === "true_false") {
+        if (typeof question.correctAnswer === "boolean") {
+          correctAnswer = question.correctAnswer;
+        } else {
+          const correctOption = question.options.find((option) => option.is_correct);
+          const text = (correctOption?.text || "").trim().toLowerCase();
+          correctAnswer = ["верно", "true", "1", "yes", "да"].includes(text);
+        }
+      } else if (type === "essay") {
+        correctAnswer = null;
+      } else if (type === "short_answer") {
+        correctAnswer =
+          typeof question.correctAnswer === "string" ? question.correctAnswer : "";
+      } else if (correctAnswer === undefined || correctAnswer === "") {
+        correctAnswer = type === "multiple_choice" ? correctTexts : correctTexts[0] || "";
+      }
+      return {
+        id: question.id,
+        question: question.question,
+        questionImage: null,
+        questionImagePreview: question.questionImage || undefined,
+        multipleAnswers: type === "multiple_choice",
+        questionType: type,
+        correctAnswer,
+        options: question.options.map((option) => ({
+          id: option.id,
+          text: option.text,
+          image: null,
+          imagePreview: option.image || undefined,
+        })),
+      };
+    });
+    return mapped.length ? mapped : [emptyQuestion()];
+  })(),
 });
 
 const isOwnerEditorPayload = (data?: TestDetails) =>
   Boolean(
     data &&
       (data.questions.length === 0 ||
-        data.questions.some((question) =>
-          question.options?.some((option) => typeof option.is_correct === "boolean")
+        data.questions.some(
+          (question) =>
+            question.correctAnswer !== undefined ||
+            question.options?.some((option) => typeof option.is_correct === "boolean")
         ))
   );
 
@@ -183,7 +200,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   const totalQuestions = questionFields.length;
   const activeField = questionFields[activeIndex];
   const canRemoveQuestion = totalQuestions > 1;
-  const isBankDisabled = isQuestionStarted(watchedQuestions?.[activeIndex]);
+  const isBankDisabled = isQuestionDraftStarted(watchedQuestions?.[activeIndex]);
 
   useEffect(() => {
     setPanelTab("edit");
@@ -215,11 +232,11 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   const handleInsertFromBank = (questions: QuestionDraft[]) => {
     if (!questions.length) return;
     const current = watchedQuestions ?? [];
-    const start = isQuestionStarted(current[activeIndex])
+    const start = isQuestionDraftStarted(current[activeIndex])
       ? activeIndex + 1
       : activeIndex;
     const before = current.slice(0, start);
-    const after = current.slice(start).filter(isQuestionStarted);
+    const after = current.slice(start).filter(isQuestionDraftStarted);
     const next = [
       ...before,
       ...questions.map(toFormQuestion),
@@ -230,22 +247,12 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
     setActiveIndex(before.length + questions.length);
   };
 
-  const validateQuestion = (question?: QuestionForm) => {
-    if (!question?.question?.trim()) return "Введите текст вопроса";
-    if (question.options.some((option) => !option.text.trim())) {
-      return "Заполните все варианты ответов";
-    }
-    if (question.multipleAnswers) {
-      if (
-        !Array.isArray(question.correctAnswer) ||
-        question.correctAnswer.length === 0
-      ) {
-        return "Выберите правильный ответ";
-      }
-    } else if (!question.correctAnswer) {
-      return "Выберите правильный ответ";
-    }
-    return true;
+  const validateFilledQuestion = (question?: QuestionForm) =>
+    validateQuestionDraft(question);
+
+  const validateQuestionField = (question?: QuestionForm) => {
+    if (!isQuestionDraftStarted(question)) return true;
+    return validateFilledQuestion(question);
   };
 
   useEffect(() => {
@@ -270,6 +277,25 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   };
 
   const onSubmit = (formData: QuizFormData) => {
+    const filledQuestions = formData.questions.filter(isQuestionDraftStarted);
+
+    if (filledQuestions.length === 0) {
+      toast.error("Добавьте хотя бы один вопрос");
+      setActiveIndex(0);
+      return;
+    }
+
+    for (let index = 0; index < formData.questions.length; index++) {
+      const question = formData.questions[index];
+      if (!isQuestionDraftStarted(question)) continue;
+      const result = validateFilledQuestion(question);
+      if (result !== true) {
+        setActiveIndex(index);
+        toast.error(result);
+        return;
+      }
+    }
+
     const payload = {
       title: formData.title,
       description: formData.description || "",
@@ -279,37 +305,21 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
       maxPoints: Number(formData.maxPoints) || 0,
       minPoints: Number(formData.minPoints) || 0,
       showCorrectAnswers: formData.showCorrectAnswers || false,
-      questions: formData.questions.map((question) => {
-        const correctAnswers = Array.isArray(question.correctAnswer)
-          ? question.correctAnswer
-          : question.correctAnswer
-            ? [question.correctAnswer]
-            : [];
-        return {
-          ...(question.id ? { id: question.id } : {}),
-          question: question.question,
-          multipleAnswers: question.multipleAnswers || false,
-          options: question.options
-            .filter((option) => option.text.trim() !== "")
-            .map((option) => ({
-              ...(option.id ? { id: option.id } : {}),
-              text: option.text,
-              is_correct: correctAnswers.includes(option.text),
-            })),
-        };
-      }),
+      questions: filledQuestions.map((question) => toApiQuestionPayload(question)),
     };
 
-    const hasNewFiles = formData.questions.some(
+    const hasNewFiles = filledQuestions.some(
       (question) =>
         question.questionImage instanceof File ||
-        question.options.some((option) => option.image instanceof File)
+        ((resolveQuestionType(question) === "single_choice" ||
+          resolveQuestionType(question) === "multiple_choice") &&
+          question.options.some((option) => option.image instanceof File))
     );
 
     if (hasNewFiles) {
       const formDataToSend = new FormData();
       formDataToSend.append("data", JSON.stringify(payload));
-      formData.questions.forEach((question, qIndex) => {
+      filledQuestions.forEach((question, qIndex) => {
         if (question.questionImage instanceof File) {
           formDataToSend.append(
             `questions[${qIndex}][questionImage]`,
@@ -317,7 +327,11 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
           );
         }
         question.options.forEach((option, oIndex) => {
-          if (option.image instanceof File) {
+          if (
+            option.image instanceof File &&
+            (resolveQuestionType(question) === "single_choice" ||
+              resolveQuestionType(question) === "multiple_choice")
+          ) {
             formDataToSend.append(
               `questions[${qIndex}][options][${oIndex}][image]`,
               option.image
@@ -631,7 +645,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                     key={activeField.id}
                     name={`questions.${activeIndex}`}
                     control={control}
-                    rules={{ validate: validateQuestion }}
+                    rules={{ validate: validateQuestionField }}
                     render={({ field: questionField, fieldState }) => (
                       <QuestionEditorCard
                         value={questionField.value || emptyQuestion()}

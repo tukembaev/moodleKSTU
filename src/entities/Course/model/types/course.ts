@@ -25,6 +25,7 @@ export interface CourseDetail {
 
   status: boolean;
   result: number
+  comment?: string | null;
   locked: boolean;
   is_favorite: boolean;
   discipline_name: string
@@ -165,6 +166,7 @@ export interface CourseAllMaterials {
     discipline_name: string;
     is_favorite: boolean;
     result: string;
+    comment?: string | null;
     active_remarks_count: number;
   }>;
 }
@@ -177,6 +179,19 @@ export interface FileAnswer {
     is_read: boolean;
     read: string | null ;
   };
+  submission_id?: string | null;
+  version?: number | null;
+  is_current?: boolean;
+  can_resubmit?: boolean;
+  can_delete?: boolean;
+}
+
+export interface TaskSubmission {
+  id: string;
+  version: number;
+  is_current: boolean;
+  created_at: string;
+  files: FileAnswer[];
 }
 
 export interface StudentsAnswers {
@@ -201,10 +216,14 @@ export interface StudentsAnswers {
   course_id?: string;
   status: string;
   points: number;
+  comment?: string | null;
   remarks: number;
   pending_remarks: number;
   responded_remarks?: number;
   files: FileAnswer[];
+  submissions?: TaskSubmission[];
+  can_resubmit?: boolean;
+  current_version?: number | null;
 }
 export interface ThemeItem {
   id: string;
@@ -212,6 +231,7 @@ export interface ThemeItem {
   max_points: number;
   id_answer_task?: string | null;
   stud_points?: number | null;
+  comment?: string | null;
 }
 
 export interface TestItem {
@@ -220,6 +240,7 @@ export interface TestItem {
   max_points: number;
   id_result: string | null;
   result: number;
+  comment?: string | null;
 }
 
 export interface ModuleThemes {
@@ -241,6 +262,7 @@ export interface StudentTheme {
   max_points: number;
   id_answer_task: string | null;
   stud_points: number | null;
+  comment?: string | null;
   due_date: string | null; // Обычно ISO дата или null
 }
 export interface TablePerfomance {
@@ -289,6 +311,7 @@ export interface WeekTheme {
   discipline_name: string;
   is_favorite: boolean;
   result: string;
+  comment?: string | null;
 }
 
 export interface CourseModulesResponse {
@@ -325,3 +348,158 @@ export interface CourseStream {
   stream_id: string;
   title: string;
 }
+
+export interface CourseInviteLink {
+  link: string;
+  course_id?: string;
+  link_id?: string;
+}
+
+export interface RegisterToCoursePayload {
+  course_id: string;
+  link_id: string;
+}
+
+export interface CreateCourseInvitePayload {
+  course_id: string;
+  /** ISO 8601 Duration (`P1D`, `P7D`, …) или `null` для бессрочного приглашения */
+  duration: string | null;
+}
+
+export type SubmissionStatus = "submitted" | "not_submitted" | "overdue";
+
+export type MySubmissionItem = {
+  theme_id: string;
+  title: string;
+  type_less: string;
+  week: number | null;
+  deadline: string | null;
+  status: SubmissionStatus;
+  points: number | null;
+  max_points: number;
+  comment: string | null;
+  current_version: number | null;
+  submission_id: string | null;
+  task_file_id: string | null;
+  submitted_at: string | null;
+};
+
+export type CourseExtraPoint = {
+  id: string;
+  course: string;
+  points: number;
+  reason: string;
+};
+
+export type MySubmissionsResponse = {
+  course_id: string;
+  discipline_name: string;
+  extra_points: CourseExtraPoint[];
+  results: MySubmissionItem[];
+};
+
+export type CourseMaterialFile = {
+  id: string;
+  file_name: string;
+  file: string;
+  file_id: string;
+  theme: { id: string; title: string };
+  uploaded_at: string;
+};
+
+export type AnnouncementAuthor = {
+  id: number;
+  first_name: string | null;
+  last_name: string | null;
+  middle_name: string | null;
+  avatar: string | null;
+  full_name: string;
+};
+
+export type CourseAnnouncement = {
+  id: string;
+  course_id: string;
+  author: AnnouncementAuthor;
+  text: string;
+  is_pinned: boolean;
+  can_manage: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CreateAnnouncementPayload = {
+  text: string;
+  is_pinned?: boolean;
+};
+
+export type UpdateAnnouncementPayload = Partial<{
+  text: string;
+  is_pinned: boolean;
+}>;
+
+export type CourseFeedKind =
+  | "announcement"
+  | "material_created"
+  | "material_updated"
+  | "material_replaced"
+  | "material_deleted";
+
+export type CourseFeedMaterial = {
+  id?: string | null;
+  file_name: string;
+  previous_file_name?: string | null;
+  file?: string | null;
+  theme?: { id: string; title: string } | null;
+};
+
+export type CourseFeedItem = {
+  id: string;
+  kind: CourseFeedKind;
+  created_at: string;
+  updated_at?: string | null;
+  author?: AnnouncementAuthor | null;
+  is_pinned?: boolean;
+  can_manage?: boolean;
+  text?: string | null;
+  material?: CourseFeedMaterial | null;
+  announcement?: CourseAnnouncement | null;
+};
+
+export type CourseFeedKindFilter = "all" | "announcement" | "materials";
+
+export type CourseFeedQuery = {
+  sort?: "desc" | "asc";
+  kind?: CourseFeedKindFilter;
+};
+
+export type ThemeAttendanceStatusValue =
+  | "present"
+  | "absent"
+  | "excused"
+  | "late";
+
+export type ThemeAttendanceStatusOption = {
+  value: ThemeAttendanceStatusValue | string;
+  label: string;
+};
+
+export type ThemeAttendanceStudent = {
+  student_id: number;
+  fio: string;
+  group: string | null;
+  status: ThemeAttendanceStatusValue | string | null;
+};
+
+export type ThemeAttendance = {
+  theme_id: string;
+  course_id: string;
+  title: string;
+  type_less: string | null;
+  statuses: ThemeAttendanceStatusOption[];
+  students: ThemeAttendanceStudent[];
+};
+
+export type UpdateThemeAttendancePayload = {
+  student_id: number;
+  status: ThemeAttendanceStatusValue | string | null;
+};

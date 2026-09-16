@@ -1,9 +1,10 @@
-import { queryOptions } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 
-import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseStreams, getCourseTablePerfomance, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests } from './courseAPI';
+import axios from 'axios';
+import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseAnnouncements, getCourseFeed, getCourseInviteLink, getCourseMaterials, getCourseStreams, getCourseTablePerfomance, getMySubmissions, getStudentAnswers, getTaskMaterials, getThemeAttendance, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests, themeAttendanceQueryKey } from './courseAPI';
 import { getStudentCourseDetail, getStudentDashboard, getTeacherCourseDetail, getTeacherDashboard } from './statisticsAPI';
 
-import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnswer, useCreateCourse, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnswer, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetThemeAccessForAll } from 'features/Course/model/services/course_queries';
+import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnnouncement, useCreateAnswer, useCreateCourse, useCreateCourseInvite, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnnouncement, useDeleteAnswer, useDeleteCourseInvite, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetThemeAccessForAll, useUpdateAnnouncement, useUpdateThemeAttendance } from 'features/Course/model/services/course_queries';
 
 
 
@@ -45,6 +46,73 @@ export const courseQueries = {
                 queryFn: () => getCourseTablePerfomance(id as string),
                 enabled: !!id,
               }),
+      mySubmissions: (courseId: string | null) =>
+              queryOptions({
+                queryKey: ['course', 'my-submissions', courseId],
+                queryFn: () => getMySubmissions(courseId as string),
+                enabled: !!courseId,
+                retry: (failureCount, error) => {
+                  if (
+                    axios.isAxiosError(error) &&
+                    [401, 403, 404].includes(error.response?.status ?? 0)
+                  ) {
+                    return false;
+                  }
+                  return failureCount < 2;
+                },
+              }),
+      courseMaterials: (courseId: string | null, search?: string) =>
+              queryOptions({
+                queryKey: ['course', 'course-materials', courseId, search || ''],
+                queryFn: () => getCourseMaterials(courseId as string, search),
+                enabled: !!courseId,
+                placeholderData: keepPreviousData,
+                retry: (failureCount, error) => {
+                  if (
+                    axios.isAxiosError(error) &&
+                    [401, 403, 404].includes(error.response?.status ?? 0)
+                  ) {
+                    return false;
+                  }
+                  return failureCount < 2;
+                },
+              }),
+      announcements: (courseId: string | null) =>
+              queryOptions({
+                queryKey: ['course', 'announcements', courseId],
+                queryFn: () => getCourseAnnouncements(courseId as string),
+                enabled: !!courseId,
+                retry: (failureCount, error) => {
+                  if (
+                    axios.isAxiosError(error) &&
+                    [401, 403, 404].includes(error.response?.status ?? 0)
+                  ) {
+                    return false;
+                  }
+                  return failureCount < 2;
+                },
+              }),
+      feed: (
+        courseId: string | null,
+        sort: "desc" | "asc" = "desc",
+        kind: "all" | "announcement" | "materials" = "all"
+      ) =>
+              queryOptions({
+                queryKey: ['course', 'feed', courseId, sort, kind],
+                queryFn: () =>
+                  getCourseFeed(courseId as string, { sort, kind }),
+                enabled: !!courseId,
+                placeholderData: keepPreviousData,
+                retry: (failureCount, error) => {
+                  if (
+                    axios.isAxiosError(error) &&
+                    [401, 403, 404].includes(error.response?.status ?? 0)
+                  ) {
+                    return false;
+                  }
+                  return failureCount < 2;
+                },
+              }),
     allThemeFAQ: (theme: string | null) =>
               queryOptions({
                 queryKey: ['faq',theme],
@@ -83,6 +151,28 @@ export const courseQueries = {
                   queryFn: () => getCourseStreams(courseId),
                   enabled: !!courseId,
                 }),
+      courseInviteLink: (courseId: string | null) =>
+                queryOptions({
+                  queryKey: ['course', 'invite-link', courseId],
+                  queryFn: () => getCourseInviteLink(courseId as string),
+                  enabled: !!courseId,
+                }),
+      themeAttendance: (themeId: string | null, group?: string | null) =>
+                queryOptions({
+                  queryKey: themeAttendanceQueryKey(themeId, group),
+                  queryFn: () => getThemeAttendance(themeId as string, group || undefined),
+                  enabled: !!themeId,
+                  placeholderData: keepPreviousData,
+                  retry: (failureCount, error) => {
+                    if (
+                      axios.isAxiosError(error) &&
+                      [401, 403, 404].includes(error.response?.status ?? 0)
+                    ) {
+                      return false;
+                    }
+                    return failureCount < 2;
+                  },
+                }),
       studentDashboard: () =>
                 queryOptions({
                   queryKey: ['statistics', 'student', 'dashboard'],
@@ -117,6 +207,10 @@ export const courseQueries = {
   rate_answer: () => useRateAnswerAndComment(),
   finish_course: () => useFinishCourse(),
   bind_course_streams: () => useBindCourseStreams(),
+  create_course_invite: () => useCreateCourseInvite(),
+  create_announcement: () => useCreateAnnouncement(),
+  edit_announcement: () => useUpdateAnnouncement(),
+  update_attendance: () => useUpdateThemeAttendance(),
 
 
   add_comment: () => useAddComment(),
@@ -139,8 +233,10 @@ export const courseQueries = {
   delete_material: () => delete_material(),
   delete_answer: () => useDeleteAnswer(),
   delete_course_stream: () => useDeleteCourseStream(),
+  delete_course_invite: () => useDeleteCourseInvite(),
   delete_theme: () => useDeleteTheme(),
   remove_student: () => useRemoveStudentFromCourse(),
+  delete_announcement: () => useDeleteAnnouncement(),
 
 
 };

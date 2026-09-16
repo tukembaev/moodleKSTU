@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import type { TaskByType, TaskListItem, TestListItem } from "entities/Course/model/types/statistics";
 import { LuClock } from "react-icons/lu";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
@@ -231,9 +232,12 @@ export const StudentCourseStatisticsTab = () => {
                             </TableCell>
                             <TableCell>
                               {task.task_files ? (
-                                <span className="font-medium">
-                                  {task.task_files.points} / {task.course_detail.max_points}
-                                </span>
+                                <div className="flex flex-col gap-1">
+                                  <span className="font-medium">
+                                    {task.task_files.points} / {task.course_detail.max_points}
+                                  </span>
+                                  <TeacherGradeComment comment={task.task_files.comment} compact />
+                                </div>
                               ) : (
                                 <span className="text-muted-foreground">-</span>
                               )}

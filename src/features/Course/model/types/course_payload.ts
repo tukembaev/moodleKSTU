@@ -62,8 +62,10 @@ export interface CreateCoursePayload {
   
   export interface RateAnswerPayload {
     points?: number;
-    comment?: string;
-    answer: string;
+    comment?: string | null;
+    answer?: string;
+    result?: string;
+    questionId?: string;
   }
   export interface CreateThemePayload {
       course?: string;

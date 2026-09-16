@@ -25,6 +25,7 @@ export function CourseInviteJoinDialog() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const inviteCourseId = useHiddenId("inviteCourseId");
+  const inviteLinkId = useHiddenId("inviteLinkId");
   const [open, setOpen] = useState(false);
   const [joining, setJoining] = useState(false);
 
@@ -39,6 +40,7 @@ export function CourseInviteJoinDialog() {
 
   const closeInvite = () => {
     clearHiddenId("inviteCourseId");
+    clearHiddenId("inviteLinkId");
     setOpen(false);
     if (window.location.pathname === COURSE_INVITE_PATH) {
       navigate("/courses", { replace: true });
@@ -47,10 +49,14 @@ export function CourseInviteJoinDialog() {
 
   const onJoin = async () => {
     const courseId = inviteCourseId || getHiddenId("inviteCourseId");
-    if (!courseId) return;
+    const linkId = inviteLinkId || getHiddenId("inviteLinkId");
+    if (!courseId || !linkId) {
+      toast.error("Недействительная ссылка приглашения");
+      return;
+    }
     setJoining(true);
     try {
-      await joinCourseByInvite(courseId);
+      await joinCourseByInvite({ course_id: courseId, link_id: linkId });
       toast.success("Заявка на вступление отправлена");
       closeInvite();
     } catch (error: unknown) {
@@ -82,7 +88,7 @@ export function CourseInviteJoinDialog() {
           <Button variant="outline" onClick={closeInvite} disabled={joining}>
             Отмена
           </Button>
-          <Button onClick={onJoin} disabled={joining}>
+          <Button onClick={onJoin} disabled={joining || !inviteLinkId}>
             {joining ? "Отправка..." : "Присоединиться"}
           </Button>
         </DialogFooter>

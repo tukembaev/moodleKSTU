@@ -9,6 +9,7 @@ import {
   import { SetMark } from "features/Course/hooks/SetMark";
   import { useState } from "react";
   import { TablePerfomance } from "entities/Course/model/types/course";
+  import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
   import { Badge } from "shared/shadcn/ui/badge";
   import { Button } from "shared/shadcn/ui/button";
   import { LuCheck, LuX } from "react-icons/lu";
@@ -29,12 +30,14 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
       maxPoints,
       id,
       deadline,
+      comment,
     }: {
       title: string;
       points: number | null;
       maxPoints: number;
       id?: string | null;
       deadline?: string;
+      comment?: string | null;
     }) => {
       const isPassed = points !== null && points >= maxPoints * 0.5;
       
@@ -44,6 +47,7 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
           id={id ?? undefined}
           max_points={maxPoints}
           points={points ?? 0}
+          comment={comment}
         >
           <div className="flex items-center justify-between py-2 sm:py-3 px-3 sm:px-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer gap-2">
             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
@@ -61,6 +65,7 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
                     Дата сдачи: {new Date(deadline).toLocaleDateString('ru-RU')}
                   </p>
                 )}
+                <TeacherGradeComment comment={comment} compact className="mt-1 max-w-none" />
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -124,6 +129,7 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
                         maxPoints={theme.max_points}
                         id={theme.id_answer_task}
                         deadline={theme.due_date || undefined}
+                        comment={theme.comment}
                       />
                     ))}
                   </div>
