@@ -44,9 +44,11 @@ export interface CreateCoursePayload {
   }
 
   export interface editDetailPayload {
-    audience?: boolean;
-    requirements?: number[];
-    description?: string[];
+    discipline_name?: string;
+    category?: string;
+    audience?: string;
+    requirements?: string;
+    description?: string;
     organization_id?: string;
     organization_name?: string;
   }

@@ -80,23 +80,18 @@ const Add_Course = () => {
             <Input
               type="text"
               placeholder="Введите название курса"
-              maxLength={30}
-              minLength={6}
+              maxLength={100}
               {...register("discipline_name", {
                 ...requiredField("Заполните название курса"),
-                minLength: {
-                  value: 6,
-                  message: "Название курса должно быть от 6 до 30 символов",
-                },
                 maxLength: {
-                  value: 30,
-                  message: "Название курса должно быть от 6 до 30 символов",
+                  value: 100,
+                  message: "Название курса не должно превышать 100 символов",
                 },
               })}
             />
             {errors.discipline_name && (
               <span className="text-xs text-red-500 pt-1">
-                Название курса должно быть от 6 до 30 символов
+                {errors.discipline_name.message}
               </span>
             )}
           </div>

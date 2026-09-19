@@ -15,9 +15,11 @@ export function FieldLabel({
   return (
     <Label className={cn("flex-wrap items-baseline", className)} {...props}>
       {children}
-      <span className="shrink-0 text-xs font-normal text-muted-foreground">
-        {required ? "обязательное поле" : "необязательное поле"}
-      </span>
+      {required ? (
+        <span className="shrink-0 text-destructive" aria-hidden="true">
+          *
+        </span>
+      ) : null}
     </Label>
   );
 }

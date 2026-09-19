@@ -20,7 +20,10 @@ import {
 import { Textarea } from "shared/shadcn/ui/textarea";
 import { useEffect } from "react";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { TYPE_LABELS, isGradableThemeType } from "./add-theme/add-theme-constants";
+import {
+  isGradableThemeType,
+  resolveThemeTypeLabel,
+} from "./add-theme/add-theme-constants";
 import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 
 interface EditTaskFormData {
@@ -47,7 +50,7 @@ interface EditTaskFormProps {
   };
 }
 
-const toTypeLabel = (value: string) => TYPE_LABELS[value] || value;
+const toTypeLabel = (value: string) => resolveThemeTypeLabel(value);
 
 export const EditTaskForm = ({
   open,

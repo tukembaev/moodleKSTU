@@ -410,6 +410,7 @@ export const useRegistrateCourse = () => {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['course','course-theme'] });
             queryClient.invalidateQueries({ queryKey: ['course','course-all-themes'] });
+            queryClient.invalidateQueries({ queryKey: ['course', 'modules'] });
             queryClient.invalidateQueries({ queryKey: ['course'], exact: true });
           },
         });

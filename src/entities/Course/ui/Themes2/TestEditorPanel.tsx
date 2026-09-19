@@ -602,8 +602,8 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                   <div className="min-w-0">
                     <p className="flex items-baseline gap-2 text-lg font-medium">
                       Вопросы
-                      <span className="text-xs font-normal text-muted-foreground">
-                        обязательное поле
+                      <span className="text-destructive" aria-hidden="true">
+                        *
                       </span>
                     </p>
                   </div>

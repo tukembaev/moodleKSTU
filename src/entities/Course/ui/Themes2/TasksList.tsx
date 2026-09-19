@@ -16,7 +16,8 @@ import {
 import { Test } from "entities/Test/model/types/test";
 import {
   TYPE_LABELS,
-  themeTypeSortIndex,
+  TYPE_LABEL_ORDER,
+  resolveThemeTypeLabel,
 } from "features/Course/forms/add-theme/add-theme-constants";
 
 export type CourseItemKind = "theme" | "test";
@@ -105,7 +106,7 @@ export const TasksList: FC<TasksListProps> = ({
       max_points: test.max_points,
       status: test.status,
       locked: test.is_open === false,
-      type_less: "Тесты",
+      type_less: TYPE_LABELS.test,
       deadline: test.opening_date,
       active_remarks_count: 0,
       open_date: test.opening_date,
@@ -125,11 +126,11 @@ export const TasksList: FC<TasksListProps> = ({
     const groups: Record<string, CourseListTask[]> = {};
 
     if (testTasks.length > 0) {
-      groups["Тесты"] = testTasks;
+      groups[TYPE_LABELS.test] = testTasks;
     }
 
     uniqueTasks.forEach((task) => {
-      const type = TYPE_LABELS[task.type_less] || task.type_less || "Другое";
+      const type = resolveThemeTypeLabel(task.type_less);
       if (!groups[type]) {
         groups[type] = [];
       }
@@ -139,11 +140,18 @@ export const TasksList: FC<TasksListProps> = ({
       });
     });
 
-    return Object.fromEntries(
-      Object.entries(groups).sort(
-        ([left], [right]) => themeTypeSortIndex(left) - themeTypeSortIndex(right)
-      )
-    );
+    const ordered: Record<string, CourseListTask[]> = {};
+    for (const label of TYPE_LABEL_ORDER) {
+      if (groups[label]?.length) {
+        ordered[label] = groups[label];
+      }
+    }
+    for (const [label, items] of Object.entries(groups)) {
+      if (!ordered[label] && items.length) {
+        ordered[label] = items;
+      }
+    }
+    return ordered;
   }, [uniqueTasks, testTasks]);
 
   const hasTypeLessGroup = Object.keys(groupedTasks).some(
@@ -160,7 +168,7 @@ export const TasksList: FC<TasksListProps> = ({
           isStudent={isStudent}
           onItemClick={onItemClick}
           selectedTaskId={selectedTaskId}
-          isTestsGroup={type === "Тесты"}
+          isTestsGroup={type === TYPE_LABELS.test}
         />
       ))}
 

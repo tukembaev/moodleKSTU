@@ -5,7 +5,7 @@ import { CreateThemePayload } from "../../model/types/course_payload";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { useFormParam } from "shared/hooks";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
-import { isGradableThemeType } from "./add-theme-constants";
+import { isGradableThemeType, isTestThemeType, resolveThemeTypeLabel } from "./add-theme-constants";
 import { requiredField } from "shared/lib/onFormInvalid";
 
 export const useAddThemeForm = () => {
@@ -41,16 +41,15 @@ export const useAddThemeForm = () => {
     return allTests;
   }, [allTests]);
 
-  // Предустановка типа из URL параметра - only once
   useEffect(() => {
-    if (typeParam) {
-      setSelectedType(typeParam);
-      setValue("type_less", typeParam, { shouldValidate: true });
-      if (!isGradableThemeType(typeParam)) {
-        setValue("locked", false);
-        setValue("max_points", 0);
-        setValue("week", 1);
-      }
+    if (!typeParam || typeParam === "type_less") return;
+    const nextType = resolveThemeTypeLabel(typeParam);
+    setSelectedType(nextType);
+    setValue("type_less", nextType, { shouldValidate: true });
+    if (!isGradableThemeType(nextType)) {
+      setValue("locked", false);
+      setValue("max_points", 0);
+      setValue("week", 1);
     }
   }, [typeParam, setValue]);
 
@@ -65,7 +64,7 @@ export const useAddThemeForm = () => {
     }
   };
 
-  const isTestType = selectedType === "Тест";
+  const isTestType = isTestThemeType(selectedType);
   const canReceivePoints = isGradableThemeType(selectedType);
 
   useEffect(() => {

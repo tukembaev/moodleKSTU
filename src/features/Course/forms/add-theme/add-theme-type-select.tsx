@@ -2,13 +2,11 @@ import { FieldLabel } from "shared/components/FieldLabel";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "shared/shadcn/ui/select";
-import { TYPE_LABELS, TYPE_SELECT_GROUPS } from "./add-theme-constants";
+import { TYPE_LABELS, TYPE_SELECT_ORDER } from "./add-theme-constants";
 
 interface AddThemeTypeSelectProps {
   value: string;
@@ -18,15 +16,10 @@ interface AddThemeTypeSelectProps {
 
 export const ThemeTypeSelectItems = () => (
   <>
-    {TYPE_SELECT_GROUPS.map((group) => (
-      <SelectGroup key={group.label}>
-        <SelectLabel>{group.label}</SelectLabel>
-        {group.keys.map((key) => (
-          <SelectItem key={key} value={TYPE_LABELS[key]}>
-            {TYPE_LABELS[key]}
-          </SelectItem>
-        ))}
-      </SelectGroup>
+    {TYPE_SELECT_ORDER.map((key) => (
+      <SelectItem key={key} value={TYPE_LABELS[key]}>
+        {TYPE_LABELS[key]}
+      </SelectItem>
     ))}
   </>
 );

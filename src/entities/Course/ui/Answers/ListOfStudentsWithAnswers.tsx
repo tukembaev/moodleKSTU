@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent, CardHeader } from "shared/shadcn/ui/card";
+import { Checkbox } from "shared/shadcn/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
@@ -228,6 +229,7 @@ const ListOfStudentsWithAnswers = ({
   const [selectedGroup, setSelectedGroup] = useState<string | null>(
     "Все группы"
   );
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const fallbackCourseId = useCourseId();
 
   const toggleExpand = (studentId: string) => {
@@ -291,6 +293,7 @@ const ListOfStudentsWithAnswers = ({
 
   useEffect(() => {
     syncedThemeKey.current = null;
+    setSelectedUserIds([]);
   }, [theme_id]);
 
   useEffect(() => {
@@ -354,6 +357,61 @@ const ListOfStudentsWithAnswers = ({
       locked,
       users: uniqueData.map((student) => student.user_id),
     });
+  };
+
+  const toggleStudentSelected = (userId: number, checked: boolean) => {
+    setSelectedUserIds((prev) => {
+      if (checked) {
+        return prev.includes(userId) ? prev : [...prev, userId];
+      }
+      return prev.filter((id) => id !== userId);
+    });
+  };
+
+  const filteredSelectedCount = filteredData.filter((student) =>
+    selectedUserIds.includes(student.user_id)
+  ).length;
+  const allFilteredSelected =
+    filteredData.length > 0 && filteredSelectedCount === filteredData.length;
+  const someFilteredSelected =
+    filteredSelectedCount > 0 && !allFilteredSelected;
+
+  const toggleSelectAllFiltered = (checked: boolean) => {
+    const filteredIds = filteredData.map((student) => student.user_id);
+    if (checked) {
+      setSelectedUserIds((prev) => [...new Set([...prev, ...filteredIds])]);
+      return;
+    }
+    const filteredIdSet = new Set(filteredIds);
+    setSelectedUserIds((prev) => prev.filter((id) => !filteredIdSet.has(id)));
+  };
+
+  const handleAccessForSelected = (locked: boolean) => {
+    const taskId = theme_id || uniqueData[0]?.task;
+    if (!taskId || selectedUserIds.length === 0) return;
+
+    const selectedSet = new Set(selectedUserIds);
+    const nextStudents = uniqueData.map((item) =>
+      selectedSet.has(item.user_id) ? { ...item, locked } : item
+    );
+    const nextThemeClosed = areAllStudentsLocked(nextStudents);
+    const currentlyThemeClosed = areAllStudentsLocked(uniqueData);
+
+    change_permission(
+      {
+        id: taskId,
+        data: {
+          locked,
+          users: selectedUserIds,
+        },
+        ...(nextThemeClosed !== currentlyThemeClosed
+          ? { themeLocked: nextThemeClosed }
+          : {}),
+      },
+      {
+        onSuccess: () => setSelectedUserIds([]),
+      }
+    );
   };
 
   const handleRemoveStudent = (student: StudentsAnswers) => {
@@ -433,6 +491,15 @@ const ListOfStudentsWithAnswers = ({
                     <div className="flex items-start justify-between gap-3">
                       {/* Student info */}
                       <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Checkbox
+                          checked={selectedUserIds.includes(student.user_id)}
+                          onCheckedChange={(checked) =>
+                            toggleStudentSelected(student.user_id, !!checked)
+                          }
+                          onClick={(event) => event.stopPropagation()}
+                          aria-label={`Выбрать ${student.fullname}`}
+                          className="shrink-0"
+                        />
                         <Avatar className="h-10 w-10 shrink-0">
                           <AvatarImage src={studentAvatarSrc(student)} alt={student.fullname} />
                           <AvatarFallback className="bg-primary/10 text-primary text-sm">
@@ -582,6 +649,7 @@ const ListOfStudentsWithAnswers = ({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
+            <TableHead className="w-10" />
             <TableHead className="w-[300px]">Имя студента</TableHead>
             {canReceivePoints && (
               <TableHead className="w-[100px]">Статус сдачи</TableHead>
@@ -592,6 +660,9 @@ const ListOfStudentsWithAnswers = ({
         <TableBody>
           {[...Array(5)].map((_, index) => (
             <TableRow key={index} className="py-2">
+              <TableCell>
+                <Skeleton className="h-4 w-4" />
+              </TableCell>
               <TableCell className="flex items-center gap-3">
                 <Skeleton className="h-8 w-8 rounded-full" />
                 <Skeleton className="h-4 w-40" />
@@ -622,6 +693,22 @@ const ListOfStudentsWithAnswers = ({
       <Table>
         <TableHeader className="bg-muted">
           <TableRow className="hover:bg-transparent">
+            <TableHead className="w-10">
+              <Checkbox
+                checked={
+                  allFilteredSelected
+                    ? true
+                    : someFilteredSelected
+                      ? "indeterminate"
+                      : false
+                }
+                onCheckedChange={(checked) =>
+                  toggleSelectAllFiltered(checked === true)
+                }
+                aria-label="Выбрать всех студентов"
+                disabled={filteredData.length === 0}
+              />
+            </TableHead>
             <TableHead className="w-[150px]">Студент</TableHead>
             {canReceivePoints && (
               <TableHead className="w-[130px]">Статус сдачи</TableHead>
@@ -646,6 +733,16 @@ const ListOfStudentsWithAnswers = ({
                     : ""
                 }`}
               >
+                <TableCell className="w-10">
+                  <Checkbox
+                    checked={selectedUserIds.includes(student.user_id)}
+                    onCheckedChange={(checked) =>
+                      toggleStudentSelected(student.user_id, !!checked)
+                    }
+                    onClick={(event) => event.stopPropagation()}
+                    aria-label={`Выбрать ${student.fullname}`}
+                  />
+                </TableCell>
                 <TableCell className="font-medium flex items-center gap-3">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <Avatar>
@@ -755,7 +852,7 @@ const ListOfStudentsWithAnswers = ({
                   key={`expanded-${student.id}`}
                   className="hover:bg-transparent"
                 >
-                  <TableCell colSpan={canReceivePoints ? 5 : 3} className="pt-0 pb-3">
+                  <TableCell colSpan={canReceivePoints ? 6 : 4} className="pt-0 pb-3">
                     <div className="py-1">
                       <AnswerVersionList
                         groups={groupsFromStudent(student)}
@@ -841,6 +938,30 @@ const ListOfStudentsWithAnswers = ({
               <LuKeyRound className="text-green-400" />
               Открыть всем
             </Button>
+            <Button
+              onClick={() => handleAccessForSelected(true)}
+              variant="outline"
+              size="sm"
+              disabled={
+                isPermissionPending || selectedUserIds.length === 0
+              }
+            >
+              <LuLock className="text-red-400" />
+              Закрыть доступ выбранным
+              {selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ""}
+            </Button>
+            <Button
+              onClick={() => handleAccessForSelected(false)}
+              variant="outline"
+              size="sm"
+              disabled={
+                isPermissionPending || selectedUserIds.length === 0
+              }
+            >
+              <LuKeyRound className="text-green-400" />
+              Открыть выбранным
+              {selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ""}
+            </Button>
           </div>
         </div>
         <DropdownMenu>
@@ -863,7 +984,25 @@ const ListOfStudentsWithAnswers = ({
       </div>
 
       {/* Mobile and Tablet view (cards) */}
-      <div className="block lg:hidden">
+      <div className="block lg:hidden space-y-3">
+        {filteredData.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={
+                allFilteredSelected
+                  ? true
+                  : someFilteredSelected
+                    ? "indeterminate"
+                    : false
+              }
+              onCheckedChange={(checked) =>
+                toggleSelectAllFiltered(checked === true)
+              }
+              aria-label="Выбрать всех студентов"
+            />
+            <span className="text-sm text-muted-foreground">Выбрать всех</span>
+          </div>
+        )}
         {renderStudentCards()}
       </div>
 
