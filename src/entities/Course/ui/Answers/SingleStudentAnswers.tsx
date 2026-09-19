@@ -8,8 +8,9 @@ import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { FileAnswer } from "entities/Course/model/types/course";
 import { remarksQueries } from "entities/Remarks";
+import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { DragEvent, useMemo, useRef, useState } from "react";
-import { LuUpload } from "react-icons/lu";
+import { LuChevronDown, LuUpload } from "react-icons/lu";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
@@ -24,22 +25,32 @@ const SingleStudentAnswers = ({
   isLoading,
   error,
   id,
+  collapsible = false,
+  open = true,
+  onOpenChange,
 }: {
   data: FileAnswer[];
   isLoading: boolean;
   error: Error | null;
   id: string;
+  collapsible?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) => {
   const { mutate: add_answer } = courseQueries.create_answer();
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
   const courseId = useCourseId();
   const { data: courseDetails } = useQuery(courseQueries.allTasks(courseId || null));
-  const { data: themeRemarks = [] } = useQuery(remarksQueries.byTheme(id));
   const theme = courseDetails?.detail?.find((item) => item.id === id);
+  const canReceivePoints = isGradableThemeType(theme?.type_less);
+  const { data: themeRemarks = [] } = useQuery({
+    ...remarksQueries.byTheme(id),
+    enabled: canReceivePoints,
+  });
 
   const groups = useMemo(() => groupAnswerFiles(data), [data]);
-  const canUpload = canUploadAnswerFiles(data);
+  const canUpload = canReceivePoints && canUploadAnswerFiles(data);
   const blockedCaption = blockedUploadCaption(themeRemarks);
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
@@ -99,7 +110,9 @@ const SingleStudentAnswers = ({
   return (
     <div
       className={cn(
-        "relative flex h-full min-h-0 flex-col px-3 pb-3 sm:px-4 sm:pb-4",
+        "relative flex min-h-0 flex-col px-3 lg:px-4",
+        (!collapsible || open) && "h-full",
+        (!collapsible || open) ? "pb-3 sm:pb-4" : "pb-1",
         canUpload && isDragging && "ring-2 ring-primary ring-inset"
       )}
       onDragEnter={handleDragEnter}
@@ -120,44 +133,65 @@ const SingleStudentAnswers = ({
       )}
 
       <div className="mb-2 flex shrink-0 flex-col gap-2 sm:mb-3">
-        <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          disabled={!collapsible}
+          onClick={() => onOpenChange?.(!open)}
+          className={cn(
+            "flex w-full items-center justify-between gap-2 text-left",
+            collapsible &&
+              "min-h-10 rounded-lg px-1 -mx-1 active:bg-accent/50 lg:pointer-events-none lg:min-h-0 lg:px-0 lg:mx-0"
+          )}
+        >
           <p className="min-w-0 truncate text-base font-semibold sm:text-lg">
             Мои файлы
           </p>
-          {theme?.result != null && theme.result !== "—" ? (
-            <p className="shrink-0 text-sm text-muted-foreground">
-              Оценка: {theme.result}
-              {theme.max_points != null ? ` / ${theme.max_points}` : ""}
-            </p>
-          ) : null}
-        </div>
-        <TeacherGradeComment comment={theme?.comment} />
+          <span className="flex shrink-0 items-center gap-2">
+            {canReceivePoints && theme?.result != null && theme.result !== "—" ? (
+              <p className="text-sm text-muted-foreground">
+                Оценка: {theme.result}
+                {theme.max_points != null ? ` / ${theme.max_points}` : ""}
+              </p>
+            ) : null}
+            {collapsible && (
+              <LuChevronDown
+                className={cn(
+                  "size-4 text-muted-foreground transition-transform lg:hidden",
+                  open && "rotate-180"
+                )}
+              />
+            )}
+          </span>
+        </button>
+        {canReceivePoints && (!collapsible || open) && <TeacherGradeComment comment={theme?.comment} />}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {isLoading ? (
-          <div className="flex flex-wrap gap-2">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton
-                key={index}
-                className={cn("h-14 rounded-xl", fileCardClass)}
+      {(!collapsible || open) && (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  className={cn("h-14 rounded-xl", fileCardClass)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <AnswerVersionList
+                groups={groups}
+                fileClassName={fileCardClass}
+                deleteFallback
+                currentExtra={canUpload ? <AddAnswerCard themeId={id} /> : null}
               />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <AnswerVersionList
-              groups={groups}
-              fileClassName={fileCardClass}
-              deleteFallback
-              currentExtra={canUpload ? <AddAnswerCard themeId={id} /> : null}
-            />
-            {!canUpload && data.length > 0 ? (
-              <p className="text-xs text-muted-foreground">{blockedCaption}</p>
-            ) : null}
-          </div>
-        )}
-      </div>
+              {!canUpload && data.length > 0 ? (
+                <p className="text-xs text-muted-foreground">{blockedCaption}</p>
+              ) : null}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -7,7 +7,8 @@ import { LuCloudUpload } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { useFormParam } from "shared/hooks";
 import { Card } from "shared/shadcn/ui/card";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 import { UploadMaterialPayload } from "../model/types/course_payload";
 import { useEffect } from "react";
 
@@ -47,13 +48,15 @@ const Add_Material_file = () => {
   return (
     <section className="py-4">
       <Card className="flex flex-col gap-4 p-6 ">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="course">Описание материала</Label>
+            <FieldLabel htmlFor="course" required>
+              Описание материала
+            </FieldLabel>
             <Input
               type="text"
               placeholder="Введите описание"
-              {...register("description", { required: true })}
+              {...register("description", requiredField("Заполните описание материала"))}
             />
             {errors.description && (
               <span className="text-xs text-red-500">Вопрос обязателен</span>
@@ -61,7 +64,7 @@ const Add_Material_file = () => {
           </div>
           {!watch("file")?.length && (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="course">Ссылка на файл/видео/фото</Label>
+              <FieldLabel htmlFor="course">Ссылка на файл/видео/фото</FieldLabel>
               <Input
                 type="text"
                 placeholder="Добавьте ссылку"
@@ -71,7 +74,7 @@ const Add_Material_file = () => {
           )}
           {!watch("url")?.length && (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="title">Материал</Label>
+              <FieldLabel htmlFor="title">Материал</FieldLabel>
               <Input
                 type="file"
                 placeholder="Выберите файл.."

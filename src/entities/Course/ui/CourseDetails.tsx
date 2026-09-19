@@ -28,6 +28,7 @@ import { CourseManagementTab } from "./Details/OwnerDetails/CourseManagement";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
 import { CourseTasksLayout } from "./Themes2";
 import { CourseInviteQrButton } from "./invite/CourseInviteQrSection";
+import { CourseSectionPicker } from "./Details/CourseSectionPicker";
 import { Badge } from "shared/shadcn/ui/badge";
 import {
   Tabs,
@@ -56,8 +57,19 @@ const CourseDetails = () => {
   const { data: courseModulesData, isLoading } = useQuery(
     courseQueries.courseModules(safeId)
   );
-  const { isLoading: isLoadingDetails } = useQuery(
+  const { data: courseDetails, isLoading: isLoadingDetails } = useQuery(
     courseQueries.allTasks(safeId)
+  );
+  const { data: courseTests } = useQuery(courseQueries.courseTests(safeId));
+  const { data: feedItems } = useQuery(courseQueries.feed(safeId));
+  const { data: courseMaterialFiles } = useQuery(
+    courseQueries.courseMaterials(safeId)
+  );
+  const { data: mySubmissions } = useQuery(
+    courseQueries.mySubmissions(isStudent ? safeId : null)
+  );
+  const { data: studentsProgress } = useQuery(
+    courseQueries.allStudentPerfomance(isStudent ? null : safeId)
   );
 
   const handleTabChange = (value: string) => {
@@ -89,24 +101,31 @@ const CourseDetails = () => {
     }
   }, [searchParams]);
 
+  const studyCount =
+    (courseDetails?.detail?.length || 0) + (courseTests?.length || 0);
+  const feedCount = feedItems?.length || 0;
+  const materialsCount = courseMaterialFiles?.length || 0;
+  const submissionsCount = mySubmissions?.results?.length || 0;
+  const studentsCount = studentsProgress?.length || 0;
+
   const tabs = [
     {
       name: "Учебный процесс",
       value: "study_proccess",
       icon: LuInfo,
-      count: 0,
+      count: studyCount,
     },
     {
       name: "Лента курса",
       value: COURSE_FEED_TAB,
       icon: LuHistory,
-      count: 0,
+      count: feedCount,
     },
     {
       name: "Материалы",
       value: "course_materials",
       icon: LuFolderOpen,
-      count: 0,
+      count: materialsCount,
     },
     ...(isStudent
       ? [
@@ -114,7 +133,7 @@ const CourseDetails = () => {
             name: "Мои сдачи",
             value: "my_submissions",
             icon: LuClipboardList,
-            count: 0,
+            count: submissionsCount,
           },
         ]
       : []),
@@ -129,7 +148,7 @@ const CourseDetails = () => {
         name: "Успеваемость студентов",
         value: "students_progress",
         icon: LuBookA,
-        count: 0,
+        count: studentsCount,
       },
       {
         name: "Управление курсом",
@@ -146,12 +165,12 @@ const CourseDetails = () => {
 
   return (
     <div className="flex min-h-0 flex-col gap-3 sm:gap-4 lg:h-full lg:overflow-hidden">
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col">
-        <div className="flex flex-col gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <div className="flex w-full min-w-0 items-stretch gap-3 pt-1 sm:w-auto sm:pt-2">
-            <div className="flex w-full min-w-0 flex-col items-center gap-2 text-center sm:w-auto sm:items-start sm:gap-3 sm:text-left">
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-              <h1 className="text-xl font-bold tracking-tight break-words sm:text-2xl md:text-4xl">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-3 md:gap-0">
+        <div className="flex flex-col gap-3 shrink-0 md:flex-row md:items-center md:justify-between md:gap-4">
+          <div className="flex min-w-0 items-start gap-1.5 md:gap-3 md:pt-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5 md:gap-3">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h1 className="min-w-0 text-lg font-bold leading-snug tracking-tight break-words md:text-2xl lg:text-4xl">
                 {courseModulesData?.discipline_name}
               </h1>
               {!isStudent && safeId && (
@@ -164,22 +183,28 @@ const CourseDetails = () => {
               </div>
           
               
-              <div className="flex items-center gap-2.5">
-                <Avatar className="h-8 w-8 border-2 border-border shrink-0">
+              <div className="flex min-w-0 items-center gap-2">
+                <Avatar className="size-7 shrink-0 border border-border md:size-8 md:border-2">
                   <AvatarImage src={courseModulesData?.course_owner?.[0]?.avatar} />
                   <AvatarFallback className="bg-muted">
                     <LuUser className="h-4 w-4 text-muted-foreground" />
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-muted-foreground font-medium truncate sm:text-base">
+                <span className="truncate text-xs font-medium text-muted-foreground md:text-base">
                   {courseModulesData?.course_owner?.[0]?.owner_name}
                 </span>
               </div>
             </div>
-           
+            <CourseSectionPicker
+              sections={tabs}
+              activeValue={activeTab}
+              onChange={handleTabChange}
+              className="self-center md:hidden"
+            />
           </div>
 
-          <div className="w-full min-w-0 overflow-x-auto pb-1 -mx-1 px-1 sm:w-auto sm:overflow-visible sm:pb-0 sm:mx-0 sm:px-0">
+          {/* На мобильных табы заменены на CourseSectionPicker — 6 разделов в ряд не влезают */}
+          <div className="hidden min-w-0 overflow-x-auto pb-1 md:flex md:w-auto lg:overflow-visible lg:pb-0">
             <TabsList className="h-auto w-max flex-shrink-0 justify-start gap-1.5 rounded-xl bg-muted p-1 sm:gap-2 sm:justify-center">
           {tabs.map(({ icon: Icon, name, value, count }) => {
             return (
@@ -225,7 +250,7 @@ const CourseDetails = () => {
               transition={{ duration: 0.3 }}
               className="h-full min-h-0"
             >
-              <div className="relative flex h-full min-h-0 flex-col gap-4 pt-2">
+              <div className="relative flex h-full min-h-0 flex-col gap-3 pt-0 md:gap-4 md:pt-2">
                 {isLocked && (
                   <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80">
                     <LuLock className="w-12 h-12 text-gray-700" />

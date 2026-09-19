@@ -11,8 +11,9 @@ import {
   type QuestionDraft,
 } from "shared/components/QuestionEditor";
 import { UseConfirmationDialog } from "shared/components";
-import { AppRoutes, RoutePath } from "shared/config";
+import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
 import { cn } from "shared/lib/utils";
+import { toastRequiredField } from "shared/lib/onFormInvalid";
 import { useBankId } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
@@ -82,6 +83,7 @@ const BankDetails = () => {
     const message = isDraftValid(draft);
     if (message) {
       setDraftError(message);
+      toastRequiredField(message);
       return;
     }
     if (!bankId) return;

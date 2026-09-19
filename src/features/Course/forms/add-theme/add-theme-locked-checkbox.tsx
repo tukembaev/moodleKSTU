@@ -1,6 +1,6 @@
 import { UseFormSetValue, UseFormWatch } from "react-hook-form";
 import CheckboxCard from "shared/components/CheckboxCard";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { CreateThemePayload } from "../../model/types/course_payload";
 import { LOCKED_OPTIONS } from "./add-theme-constants";
 
@@ -21,7 +21,7 @@ export const AddThemeLockedCheckbox = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor="locked">Дополнительно</Label>
+      <FieldLabel htmlFor="locked">Дополнительно</FieldLabel>
       <CheckboxCard
         options={LOCKED_OPTIONS}
         selectedValues={selectedValues}

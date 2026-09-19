@@ -51,6 +51,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
+import { FieldLabel } from "shared/components/FieldLabel";
+import { toastRequiredField } from "shared/lib/onFormInvalid";
 import { Label } from "shared/shadcn/ui/label";
 import {
   Select,
@@ -167,6 +169,7 @@ function AnnouncementFormDialog({
     const nextText = text.trim();
     if (!nextText) {
       setTextError("Введите текст объявления");
+      toastRequiredField("Заполните обязательное поле: Текст");
       return;
     }
     try {
@@ -187,7 +190,9 @@ function AnnouncementFormDialog({
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="announcement-text">Текст</Label>
+            <FieldLabel htmlFor="announcement-text" required>
+              Текст
+            </FieldLabel>
             <Textarea
               id="announcement-text"
               value={text}

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentComments } from "features/Course/hooks/StudentComments";
+import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import {
   LuClipboardList,
   LuFile,
@@ -10,8 +11,9 @@ import {
   LuUpload,
 } from "react-icons/lu";
 import { UseTabs } from "shared/components";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useAuth, useForm } from "shared/hooks";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import ThemeAnswers from "../../Answers/ThemeAnswers";
@@ -31,14 +33,26 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
 
   const auth_data = useAuth();
   const openForm = useForm();
+  const courseId = useCourseId();
+  const { data: courseDetails } = useQuery({
+    ...courseQueries.allTasks(courseId || null),
+    enabled: Boolean(courseId && id),
+  });
+  const currentTheme = courseDetails?.detail?.find((task) => task.id === id);
+  const canReceivePoints = isGradableThemeType(currentTheme?.type_less);
+  const showStudentSubmissions = !auth_data.isStudent || canReceivePoints;
 
   const tabs = [
-    {
-      name: auth_data.isStudent ? "Мои файлы" : "Список студентов",
-      value: "theme_answers",
-      content: <ThemeAnswers id={id} />,
-      icon: <LuList />,
-    },
+    ...(showStudentSubmissions
+      ? [
+          {
+            name: auth_data.isStudent ? "Мои файлы" : "Список студентов",
+            value: "theme_answers",
+            content: <ThemeAnswers id={id} />,
+            icon: <LuList />,
+          },
+        ]
+      : []),
     {
       name: "Обсуждение",
       value: "feed",
@@ -57,7 +71,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
       content: <ThemeFAQ theme_id={id} />,
       icon: <LuGlasses />,
     },
-    ...(auth_data.isStudent
+    ...(auth_data.isStudent && canReceivePoints
       ? [
         {
           name: "Замечания",

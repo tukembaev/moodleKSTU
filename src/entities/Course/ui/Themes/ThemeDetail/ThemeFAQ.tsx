@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LuCircleHelp, LuPlus } from "react-icons/lu";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useAuth, useForm } from "shared/hooks";
 import {
   Accordion,

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { remarksQueries } from "entities/Remarks";
+import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { StudentComments } from "features/Course/hooks/StudentComments";
 import { AnimatePresence, motion } from "motion/react";
 import { FC, useEffect, useState } from "react";
@@ -12,11 +12,12 @@ import {
   LuInfo,
   LuList,
   LuMessageSquareText,
-  LuUserCheck,
 } from "react-icons/lu";
 import { useAuth } from "shared/hooks";
+import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
 import { Badge } from "shared/shadcn/ui/badge";
+import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
 import {
   Empty,
   EmptyContent,
@@ -35,10 +36,8 @@ import ThemeAnswers from "../Answers/ThemeAnswers";
 import ThemeFAQ from "../Themes/ThemeDetail/ThemeFAQ";
 import { ThemeFeed } from "../Themes/ThemeDetail/ThemeFeed";
 import { MaterialsSection } from "./MaterialsSection";
-import { ThemeAttendanceSection } from "./ThemeAttendanceSection";
 
 const FILES_TAB = "theme_answers";
-const ATTENDANCE_TAB = "attendance";
 
 type WorkspaceTab = {
   name: string;
@@ -64,7 +63,7 @@ const WorkspaceTabsList: FC<WorkspaceTabsListProps> = ({
   onTabChange,
 }) => {
   return (
-    <div className="mx-3 mb-0 min-w-0 overflow-x-auto sm:mx-4">
+    <div className="mx-0 mb-0 min-w-0 overflow-x-auto sm:mx-1">
       <TabsList className="h-auto w-max flex-shrink-0 cursor-pointer justify-start gap-1.5 rounded-xl bg-muted p-1 sm:gap-2">
         {tabs.map(({ icon: Icon, name, shortName, value, count }) => {
           const isActive = activeTab === value;
@@ -147,50 +146,69 @@ const WorkspaceTabsList: FC<WorkspaceTabsListProps> = ({
 
 export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
   const auth_data = useAuth();
+  const courseId = useCourseId();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState(FILES_TAB);
+  const [materialsOpen, setMaterialsOpen] = useState(true);
+  const [answersOpen, setAnswersOpen] = useState(true);
 
   const { data: comments, isLoading: isLoadingComments } = useQuery(
     courseQueries.allThemeFeed(themeId)
   );
 
+  const { data: courseDetails } = useQuery({
+    ...courseQueries.allTasks(courseId || null),
+    enabled: Boolean(courseId && themeId),
+  });
+  const currentTheme = courseDetails?.detail?.find((task) => task.id === themeId);
+  const canReceivePoints = isGradableThemeType(currentTheme?.type_less);
+  const showStudentSubmissions = canReceivePoints;
+  const showAnswersPane = !auth_data.isStudent || showStudentSubmissions;
+
   const { data: themeRemarks } = useQuery({
     ...remarksQueries.byTheme(themeId),
-    enabled: !!themeId && auth_data.isStudent,
+    enabled: !!themeId && auth_data.isStudent && showStudentSubmissions,
   });
 
-  const { error: attendanceError } = useQuery(
-    courseQueries.themeAttendance(auth_data.isStudent ? null : themeId)
-  );
-  const attendanceForbidden =
-    axios.isAxiosError(attendanceError) &&
-    attendanceError.response?.status === 403;
-  const showAttendance = Boolean(themeId) && !auth_data.isStudent && !attendanceForbidden;
-
   useEffect(() => {
-    if (attendanceForbidden && activeTab === ATTENDANCE_TAB) {
-      setActiveTab(FILES_TAB);
-    }
-  }, [activeTab, attendanceForbidden]);
+    setMaterialsOpen(true);
+    setAnswersOpen(true);
+    setActiveTab(FILES_TAB);
+  }, [themeId]);
+
+  const bothCollapsed =
+    isMobile &&
+    activeTab === FILES_TAB &&
+    !materialsOpen &&
+    (!showAnswersPane || !answersOpen);
+  const filesGridRows = !showAnswersPane
+    ? "minmax(0,1fr)"
+    : !isMobile
+    ? "minmax(0,35%) auto minmax(0,1fr)"
+    : materialsOpen && answersOpen
+      ? "minmax(0,35%) auto minmax(0,1fr)"
+      : materialsOpen
+        ? "minmax(0,1fr) max-content max-content"
+        : answersOpen
+          ? "max-content max-content minmax(0,1fr)"
+          : "max-content max-content max-content";
 
   const tabs: WorkspaceTab[] = [
     {
-      name: auth_data.isStudent ? "Мои файлы" : "Список студентов",
-      shortName: auth_data.isStudent ? "Файлы" : "Студенты",
+      name: auth_data.isStudent
+        ? showAnswersPane
+          ? "Мои файлы"
+          : "Материалы"
+        : "Список студентов",
+      shortName: auth_data.isStudent
+        ? showAnswersPane
+          ? "Файлы"
+          : "Материалы"
+        : "Студенты",
       value: FILES_TAB,
       icon: LuList,
       count: 0,
     },
-    ...(showAttendance
-      ? [
-          {
-            name: "Посещаемость",
-            shortName: "Посещение",
-            value: ATTENDANCE_TAB,
-            icon: LuUserCheck,
-            count: 0,
-          },
-        ]
-      : []),
     {
       name: "Обсуждение",
       shortName: "Чат",
@@ -205,7 +223,7 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
       icon: LuGlasses,
       count: 0,
     },
-    ...(auth_data.isStudent
+    ...(auth_data.isStudent && showStudentSubmissions
       ? [
           {
             name: "Замечания",
@@ -221,7 +239,8 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col overflow-hidden rounded-lg border bg-card",
+        "flex min-h-0 flex-col overflow-hidden bg-card lg:rounded-lg lg:border",
+        bothCollapsed ? "h-auto" : "h-full",
         !themeId && "bg-muted/20"
       )}
     >
@@ -244,44 +263,84 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex h-full min-h-0 flex-col gap-0 pt-3 sm:pt-4"
+          className={cn(
+            "flex min-h-0 flex-col gap-0 lg:pt-4",
+            bothCollapsed ? "h-auto" : "h-full"
+          )}
         >
-          <WorkspaceTabsList
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
+          <div className="flex min-w-0 items-center px-1 lg:px-3">
+            <div className="min-w-0 flex-1">
+              <WorkspaceTabsList
+                tabs={tabs}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+              />
+            </div>
+          </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-3">
+          <div
+            className={cn(
+              "flex min-h-0 flex-col overflow-hidden lg:pt-3",
+              bothCollapsed ? "flex-none" : "flex-1"
+            )}
+          >
             <TabsContent
               value={FILES_TAB}
-              className="m-0 h-full min-h-0 data-[state=inactive]:hidden"
+              className={cn(
+                "m-0 min-h-0 data-[state=inactive]:hidden",
+                bothCollapsed ? "h-auto" : "h-full"
+              )}
             >
-              <div className="grid h-full min-h-0 grid-rows-[minmax(0,35%)_auto_minmax(0,1fr)]">
-                <div className="min-h-0 overflow-hidden bg-muted/15">
-                  <MaterialsSection themeId={themeId} />
+              <div
+                className={cn(
+                  "grid min-h-0",
+                  bothCollapsed ? "h-auto" : "h-full",
+                  isMobile &&
+                    showAnswersPane &&
+                    !(materialsOpen && answersOpen) &&
+                    "content-start"
+                )}
+                style={{ gridTemplateRows: filesGridRows }}
+              >
+                <div
+                  className={cn(
+                    "min-h-0 overflow-hidden bg-muted/15",
+                    isMobile && !materialsOpen && "self-start"
+                  )}
+                >
+                  <MaterialsSection
+                    themeId={themeId}
+                    collapsible={isMobile}
+                    open={materialsOpen}
+                    onOpenChange={setMaterialsOpen}
+                  />
                 </div>
-                <Separator  className="mb-4"/>
-                <div className="min-h-0 overflow-hidden">
-                  <ThemeAnswers id={themeId} />
-                </div>
+                {showAnswersPane && (
+                  <>
+                    <Separator className="mb-0 lg:mb-4" />
+                    <div
+                      className={cn(
+                        "min-h-0 overflow-hidden",
+                        isMobile && !answersOpen && "self-start"
+                      )}
+                    >
+                      <ThemeAnswers
+                        id={themeId}
+                        collapsible={isMobile}
+                        open={answersOpen}
+                        onOpenChange={setAnswersOpen}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </TabsContent>
-
-            {showAttendance ? (
-              <TabsContent
-                value={ATTENDANCE_TAB}
-                className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
-              >
-                <ThemeAttendanceSection key={themeId} themeId={themeId} />
-              </TabsContent>
-            ) : null}
 
             <TabsContent
               value="feed"
               className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
             >
-              <div className="flex h-full min-h-0 flex-col px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="flex h-full min-h-0 flex-col px-3 pb-3 lg:px-4 sm:pb-4">
                 <ThemeFeed
                   items={comments || []}
                   isLoading={isLoadingComments}
@@ -301,7 +360,9 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
               value="comments"
               className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
             >
-              {auth_data.isStudent && <StudentComments theme_id={themeId} />}
+              {auth_data.isStudent && showStudentSubmissions && (
+                <StudentComments theme_id={themeId} />
+              )}
             </TabsContent>
           </div>
         </Tabs>

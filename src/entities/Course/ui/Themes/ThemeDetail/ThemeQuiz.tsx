@@ -6,7 +6,7 @@ import {
   UseConfirmation,
   UseTooltip,
 } from "shared/components";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useAuth, useForm } from "shared/hooks";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";

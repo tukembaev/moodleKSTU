@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "shared/shadcn/ui/card";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import {
   Select,
   SelectContent,
@@ -93,7 +93,9 @@ export const ReassignOrganizationCard = ({
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="course-organization">Кафедра</Label>
+          <FieldLabel htmlFor="course-organization" required>
+            Кафедра
+          </FieldLabel>
           <Select
             value={selectedOrganizationId || undefined}
             onValueChange={setSelectedOrganizationId}

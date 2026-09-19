@@ -5,7 +5,7 @@ import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import React, { useRef, useState } from "react";
 import { LuPlus } from "react-icons/lu";
 import { UseTooltip } from "shared/components";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useAuth, useForm } from "shared/hooks";
 import { useHiddenId } from "shared/lib/navigation/hidden-ids";
 import { useIsMobile } from "shared/shadcn/hooks/use-mobile";

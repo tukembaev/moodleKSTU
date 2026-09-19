@@ -4,6 +4,7 @@ import { useAuth } from "shared/hooks";
 import { useQuizId } from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
 import { Progress } from "shared/shadcn/ui/progress";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 import { toast } from "sonner";
 import { mockQuizData } from "../model/feedMock";
 import {
@@ -118,12 +119,8 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
   };
 
   const onSubmit = handleSubmit((data) => {
-    if (!data.answer) {
-      toast.error("Выберите ответ перед отправкой");
-      return;
-    }
     handleNextQuestion(data.answer);
-  });
+  }, onFormInvalid);
 
   if (isLoading) {
     return <div className="text-center mt-8">Загрузка...</div>;
@@ -162,7 +159,7 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
                 type="radio"
                 id={`option-${index}`}
                 value={option}
-                {...register("answer", { required: true })}
+                {...register("answer", requiredField("Выберите ответ"))}
                 className="h-4 w-4"
               />
               <label htmlFor={`option-${index}`} className="text-sm">

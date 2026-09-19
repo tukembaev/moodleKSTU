@@ -83,7 +83,7 @@ export function MaterialAttachment({
         <AttachmentAction
           variant="ghost"
           aria-label={`Удалить ${sourceName}`}
-          className="text-destructive hover:text-destructive"
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
         >
           <Trash2Icon />
         </AttachmentAction>

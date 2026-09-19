@@ -6,7 +6,7 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 import { LuCloudUpload, LuOctagonAlert, LuX } from "react-icons/lu";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "shared/shadcn/ui/card";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { FinishCourseFormPayload } from "../model/types/course_payload";
 import { UseConfirmationDialog } from "shared/components";
 
@@ -45,9 +45,9 @@ const End_Course = () => {
       <Card className="flex flex-col gap-4 p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="title" className="pb-2">
+            <FieldLabel htmlFor="title" className="pb-2">
               Причина дополнительных баллов
-            </Label>
+            </FieldLabel>
             <Input
               type="text"
               placeholder="Введите причину"
@@ -61,9 +61,9 @@ const End_Course = () => {
             />
           </div>
           <div className="flex flex-col ">
-            <Label htmlFor="points" className="pb-2">
+            <FieldLabel htmlFor="points" className="pb-2">
               Количество доп. баллов
-            </Label>
+            </FieldLabel>
             <Input
               type="number"
               placeholder={`Макс: ${maxAvailable}`}

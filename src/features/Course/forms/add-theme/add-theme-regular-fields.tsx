@@ -1,5 +1,5 @@
 import { UseFormRegister, FieldErrors, Control, Controller } from "react-hook-form";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { Input } from "shared/shadcn/ui/input";
 import { Textarea } from "shared/shadcn/ui/textarea";
 import {
@@ -10,12 +10,14 @@ import {
   SelectValue,
 } from "shared/shadcn/ui/select";
 import { CreateThemePayload } from "../../model/types/course_payload";
+import { requiredField } from "shared/lib/onFormInvalid";
 
 interface AddThemeRegularFieldsProps {
   register: UseFormRegister<CreateThemePayload>;
   errors: FieldErrors<CreateThemePayload>;
   isTestType: boolean;
   control: Control<CreateThemePayload>;
+  canReceivePoints: boolean;
 }
 
 export const AddThemeRegularFields = ({
@@ -23,15 +25,19 @@ export const AddThemeRegularFields = ({
   errors,
   isTestType,
   control,
+  canReceivePoints,
 }: AddThemeRegularFieldsProps) => {
   return (
     <>
+      {canReceivePoints && (
       <div className="flex flex-col gap-2">
-        <Label htmlFor="week">Неделя</Label>
+        <FieldLabel htmlFor="week" required>
+          Неделя
+        </FieldLabel>
         <Controller
           name="week"
           control={control}
-          rules={{ required: true }}
+          rules={requiredField("Выберите неделю")}
           render={({ field }) => (
             <Select
               onValueChange={(value) => field.onChange(parseInt(value, 10))}
@@ -54,14 +60,17 @@ export const AddThemeRegularFields = ({
           <span className="text-xs text-red-500">Выберите неделю</span>
         )}
       </div>
+      )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="title">Название</Label>
+        <FieldLabel htmlFor="title" required={!isTestType}>
+          Название
+        </FieldLabel>
         <Textarea
           placeholder="Введите название"
           className="resize-none break-words w-full max-w-full"
           style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-          {...register("title", { required: !isTestType })}
+          {...register("title", requiredField("Заполните название"))}
         />
         {errors.title && (
           <span className="text-xs text-red-500">Название обязательно</span>
@@ -69,12 +78,14 @@ export const AddThemeRegularFields = ({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="description">Описание</Label>
+        <FieldLabel htmlFor="description" required={!isTestType}>
+          Описание
+        </FieldLabel>
         <Textarea
           placeholder="Введите описание"
           className="resize-none break-words w-full max-w-full"
           style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-          {...register("description", { required: !isTestType })}
+          {...register("description", requiredField("Заполните описание"))}
           rows={4}
         />
         {errors.description && (
@@ -82,13 +93,16 @@ export const AddThemeRegularFields = ({
         )}
       </div>
 
+      {canReceivePoints && (
       <div className="flex flex-col gap-2">
-        <Label htmlFor="max_points">Макс. баллы</Label>
+        <FieldLabel htmlFor="max_points" required={!isTestType && canReceivePoints}>
+          Макс. баллы
+        </FieldLabel>
         <Input
           type="number"
           placeholder="Введите баллы"
           {...register("max_points", {
-            required: !isTestType,
+            ...requiredField("Укажите количество баллов"),
             valueAsNumber: true,
           })}
         />
@@ -98,6 +112,7 @@ export const AddThemeRegularFields = ({
           </span>
         )}
       </div>
+      )}
     </>
   );
 };

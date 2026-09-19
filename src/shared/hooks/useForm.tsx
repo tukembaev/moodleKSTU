@@ -1,5 +1,5 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import {
   clearFormHiddenParams,
   getFormHiddenParam,

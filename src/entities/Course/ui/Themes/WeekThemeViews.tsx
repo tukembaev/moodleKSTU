@@ -31,7 +31,7 @@ import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
 import { TestCard } from "entities/Test";
 import { Test } from "entities/Test/model/types/test";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import ThemeFiles from "./ThemeDetail/ThemeFiles";
 import { Progress } from "shared/shadcn/ui/progress";
 import { TeacherGradeComment } from "entities/Course/lib/teacherComment";

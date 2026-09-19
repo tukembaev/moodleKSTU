@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import {
   Command,
@@ -6,8 +7,15 @@ import {
   CommandInput,
   CommandList,
 } from "shared/shadcn/ui/command";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyMedia,
+  EmptyTitle,
+} from "shared/shadcn/ui/empty";
+import { cn } from "shared/lib/utils";
 import { searchQueries } from "../model/globalSearchAPI";
-import CommandsGroup from "./CommandGroups/CommandsGroup";
 import CoursesGroup from "./CommandGroups/CoursesGroup";
 import EmployeesGroup from "./CommandGroups/EmployeesGroup";
 import FilesGroup from "./CommandGroups/FilesGroup";
@@ -17,21 +25,56 @@ import SearchLoader from "./SearchLoader";
 interface CommandSearchBarProps {
   autoFocus?: boolean;
   onCollapse?: () => void;
+  /** Список всегда раскрыт (мобильный шит) */
+  alwaysOpen?: boolean;
+  variant?: "card" | "plain";
 }
 
-const CommandSearchBar = ({ autoFocus, onCollapse }: CommandSearchBarProps) => {
+function SearchHint() {
+  return (
+    <Empty className="border-0 py-10">
+      <EmptyContent>
+        <EmptyMedia variant="icon">
+          <Search />
+        </EmptyMedia>
+        <EmptyTitle>Что можно найти</EmptyTitle>
+        <EmptyDescription>
+          Введите название курса, фамилию преподавателя или имя файла.
+          Результаты появятся сразу — так быстрее, чем листать длинные списки.
+        </EmptyDescription>
+      </EmptyContent>
+    </Empty>
+  );
+}
+
+const CommandSearchBar = ({
+  autoFocus,
+  onCollapse,
+  alwaysOpen = false,
+  variant = "card",
+}: CommandSearchBarProps) => {
   const [text, setText] = useState("");
-  const [isActive, setIsActive] = useState(false);
-  const { data, isLoading } = useQuery(searchQueries.searchResults(text));
+  const [isActive, setIsActive] = useState(alwaysOpen);
+  const query = text.trim();
+  const { data, isLoading } = useQuery(searchQueries.searchResults(query));
+  const showList = alwaysOpen || isActive;
 
   return (
-    <Command className="rounded-lg border shadow-md md:min-w-[350px] z-50">
+    <Command
+      className={cn(
+        variant === "plain"
+          ? "rounded-none border-0 bg-transparent shadow-none"
+          : "z-50 rounded-lg border shadow-md md:min-w-[350px]",
+        alwaysOpen && "h-full min-h-0"
+      )}
+    >
       <CommandInput
         autoFocus={autoFocus}
         value={text}
-        onValueChange={(e) => setText(e)}
+        onValueChange={setText}
         onFocus={() => setIsActive(true)}
         onBlur={() => {
+          if (alwaysOpen) return;
           setTimeout(() => {
             setIsActive(false);
             onCollapse?.();
@@ -39,46 +82,38 @@ const CommandSearchBar = ({ autoFocus, onCollapse }: CommandSearchBarProps) => {
         }}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
-            setIsActive(false);
+            if (!alwaysOpen) {
+              setIsActive(false);
+              onCollapse?.();
+            }
             (e.target as HTMLInputElement).blur();
-            onCollapse?.();
           }
         }}
-        placeholder="Введите команду или поиск..."
+        placeholder="Курс, преподаватель или файл"
       />
-      {isActive && (
-        <CommandList>
-          {isLoading ? (
-            <SearchLoader />
-          ) : (
-            <>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CoursesGroup data={data?.courses || []} />
-              <EmployeesGroup data={data?.employees || []} />
-              <FilesGroup data={data?.files || []} />
-              <StudyTasksGroup data={data?.study_tasks || []} />
-              <CommandsGroup />
-              {/* <CommandGroup heading="Settings">
-                <CommandItem>
-                  <User />
-                  <span>Profile</span>
-                  <CommandShortcut>⌘P</CommandShortcut>
-                </CommandItem>
-                <CommandItem>
-                  <CreditCard />
-                  <span>Billing</span>
-                  <CommandShortcut>⌘B</CommandShortcut>
-                </CommandItem>
-                <CommandItem>
-                  <Settings />
-                  <span>Settings</span>
-                  <CommandShortcut>⌘S</CommandShortcut>
-                </CommandItem>
-              </CommandGroup> */}
-            </>
-          )}
-        </CommandList>
-      )}
+      {showList &&
+        (!query ? (
+          <SearchHint />
+        ) : (
+          <CommandList
+            className={cn(alwaysOpen && "max-h-none min-h-0 flex-1")}
+          >
+            {isLoading ? (
+              <SearchLoader />
+            ) : (
+              <>
+                <CommandEmpty>
+                  Ничего не найдено. Попробуйте другое название курса, фамилию
+                  или файл.
+                </CommandEmpty>
+                <CoursesGroup data={data?.courses || []} />
+                <EmployeesGroup data={data?.employees || []} />
+                <FilesGroup data={data?.files || []} />
+                <StudyTasksGroup data={data?.study_tasks || []} />
+              </>
+            )}
+          </CommandList>
+        ))}
     </Command>
   );
 };

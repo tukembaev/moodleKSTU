@@ -1,9 +1,6 @@
-import { FormQuery, forms , FormConfig } from "./formConfig/formConfig"
-import { AppRoutes, AppSubRoutes, routeConfig, RoutePath } from "./routeConfig/routeConfig"
-
-
-
-
-export {FormQuery,forms}
-export type {FormConfig}
-export {AppRoutes, AppSubRoutes, routeConfig, RoutePath}
+export { FormQuery } from "./formConfig/formQuery";
+export type { FormConfig } from "./formConfig/formConfig";
+export { forms } from "./formConfig/formConfig";
+export { AppRoutes, AppSubRoutes, RoutePath } from "./routeConfig/routePath";
+export { routeConfig } from "./routeConfig/routeConfig";
+export type { AppRoutesProps } from "./routeConfig/routeConfig";

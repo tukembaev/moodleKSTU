@@ -4,7 +4,7 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 import { useAuth, useForm } from "shared/hooks";
 import { TaskGroup } from "./TaskGroup";
 import { Plus } from "lucide-react";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import {
   Empty,
@@ -14,7 +14,10 @@ import {
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
 import { Test } from "entities/Test/model/types/test";
-import { TYPE_LABELS } from "features/Course/forms/add-theme/add-theme-constants";
+import {
+  TYPE_LABELS,
+  themeTypeSortIndex,
+} from "features/Course/forms/add-theme/add-theme-constants";
 
 export type CourseItemKind = "theme" | "test";
 
@@ -136,7 +139,11 @@ export const TasksList: FC<TasksListProps> = ({
       });
     });
 
-    return groups;
+    return Object.fromEntries(
+      Object.entries(groups).sort(
+        ([left], [right]) => themeTypeSortIndex(left) - themeTypeSortIndex(right)
+      )
+    );
   }, [uniqueTasks, testTasks]);
 
   const hasTypeLessGroup = Object.keys(groupedTasks).some(

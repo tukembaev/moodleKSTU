@@ -10,6 +10,7 @@ import {
   SubmissionStatus,
 } from "entities/Course/model/types/course";
 import { teacherCommentText } from "entities/Course/lib/teacherComment";
+import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Input } from "shared/shadcn/ui/input";
@@ -119,7 +120,9 @@ export const MySubmissionsTab = ({
     }
   }, [status, navigate]);
 
-  const results = data?.results ?? [];
+  const results = (data?.results ?? []).filter((item) =>
+    isGradableThemeType(item.type_less)
+  );
   const extraPoints = data?.extra_points ?? [];
   const extraPointsTotal = extraPoints.reduce(
     (sum, item) => sum + (item.points || 0),
@@ -267,9 +270,9 @@ export const MySubmissionsTab = ({
             <EmptyMedia variant="icon">
               <LuClipboardList />
             </EmptyMedia>
-            <EmptyTitle>В курсе пока нет тем</EmptyTitle>
+            <EmptyTitle>Нет заданий для сдачи</EmptyTitle>
             <EmptyDescription>
-              Когда преподаватель добавит темы, они появятся в этой таблице.
+              Когда преподаватель добавит темы с баллами, они появятся в этой таблице.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

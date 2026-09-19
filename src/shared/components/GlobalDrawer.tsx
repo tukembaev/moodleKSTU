@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { forms } from "shared/config";
+import { forms } from "shared/config/formConfig/formConfig";
 import { useAuth } from "shared/hooks";
 import { closeFormSearch } from "shared/hooks/useForm";
 import { cn } from "shared/lib/utils";

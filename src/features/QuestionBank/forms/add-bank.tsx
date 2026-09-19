@@ -6,7 +6,8 @@ import { openBank } from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
 import { Card } from "shared/shadcn/ui/card";
 import { Input } from "shared/shadcn/ui/input";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 import { Textarea } from "shared/shadcn/ui/textarea";
 
 const Add_Bank = () => {
@@ -37,15 +38,21 @@ const Add_Bank = () => {
   return (
     <section className="py-4">
       <Card className="flex flex-col gap-4 p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="bank-name" className="pb-2">
+            <FieldLabel htmlFor="bank-name" className="pb-2" required>
               Название
-            </Label>
+            </FieldLabel>
             <Input
               id="bank-name"
               placeholder="Программирование"
-              {...register("name", { required: true, minLength: 2 })}
+              {...register("name", {
+                ...requiredField("Заполните название коллекции"),
+                minLength: {
+                  value: 2,
+                  message: "Название коллекции должно быть не короче 2 символов",
+                },
+              })}
             />
             {errors.name && (
               <span className="text-xs text-red-500 pt-1">
@@ -54,9 +61,9 @@ const Add_Bank = () => {
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="bank-description" className="pb-2">
+            <FieldLabel htmlFor="bank-description" className="pb-2">
               Описание
-            </Label>
+            </FieldLabel>
             <Textarea
               id="bank-description"
               placeholder="Вопросы по основам языка и алгоритмам"

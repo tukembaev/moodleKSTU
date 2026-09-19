@@ -33,6 +33,7 @@ interface TaskItemProps {
   passed?: boolean | null;
   comment?: string | null;
   needsReview?: boolean | null;
+  canReceivePoints?: boolean;
 }
 
 export const TaskItem: FC<TaskItemProps> = ({
@@ -52,6 +53,7 @@ export const TaskItem: FC<TaskItemProps> = ({
   passed = null,
   comment,
   needsReview = null,
+  canReceivePoints = true,
 }) => {
   const showTeacherActions = !isStudent && !isTest && (onEdit || onDelete);
   const isBlockedTest =
@@ -71,7 +73,7 @@ export const TaskItem: FC<TaskItemProps> = ({
         isActive && "bg-primary/10 border-l-4 border-l-primary"
       )}
     >
-      {isStudent && (
+      {isStudent && canReceivePoints && (
         <div className="shrink-0">
           {isTest ? (
             needsReview ? (
@@ -94,13 +96,15 @@ export const TaskItem: FC<TaskItemProps> = ({
       <div className="flex-1 min-w-0">
         <h4 className="font-medium text-sm text-foreground line-clamp-2">
           {title}
-          {!isTest && week && (
+          {!isTest && week && canReceivePoints && (
             <span className="text-xs text-muted-foreground pl-1 sm:pl-2">
               {week} неделя
             </span>
           )}
         </h4>
-        {isStudent ? <TeacherGradeComment comment={comment} compact className="mt-0.5 line-clamp-2 max-w-none" /> : null}
+        {isStudent && canReceivePoints ? (
+          <TeacherGradeComment comment={comment} compact className="mt-0.5 line-clamp-2 max-w-none" />
+        ) : null}
       </div>
 
       <Badge variant={isItemOpen ? "default" : "outline"} className="shrink-0 gap-1 px-1.5 sm:px-2.5">
@@ -112,6 +116,7 @@ export const TaskItem: FC<TaskItemProps> = ({
         <span className="hidden sm:inline">{isItemOpen ? "Открыт" : "Закрыт"}</span>
       </Badge>
 
+      {canReceivePoints && (
       <div className="shrink-0">
         {isStudent ? (
           <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
@@ -121,6 +126,7 @@ export const TaskItem: FC<TaskItemProps> = ({
           <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{maxPoints} б.</span>
         )}
       </div>
+      )}
 
       {showTeacherActions && (
         <div className="shrink-0" onClick={(e) => e.stopPropagation()}>

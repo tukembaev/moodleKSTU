@@ -1,10 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
 import { registerToCourse } from 'entities/User';
 
 import { createCourse, createTheme } from 'entities/Course';
 import { apiErrorDetail } from 'entities/Course/lib/apiErrorDetail';
-import { bindCourseStreams, createAnswer, createComment, createCourseAnnouncement, createCourseInviteLink, createFAQ, createMaterial, deleteAnswer, deleteCourseAnnouncement, deleteCourseInviteLink, deleteCourseStream, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setExtraPoints, themeAttendanceThemeKey, updateCourseAnnouncement, updateThemeAttendance } from 'entities/Course/model/services/courseAPI';
-import { CreateAnnouncementPayload, CreateCourseInvitePayload, ThemeAttendance, ThemeAttendanceStudent, UpdateAnnouncementPayload, UpdateThemeAttendancePayload } from 'entities/Course/model/types/course';
+import { bindCourseStreams, createAnswer, createComment, createCourseAnnouncement, createCourseInviteLink, createFAQ, createMaterial, deleteAnswer, deleteCourseAnnouncement, deleteCourseInviteLink, deleteCourseStream, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setExtraPoints, updateCourseAnnouncement } from 'entities/Course/model/services/courseAPI';
+import { CreateAnnouncementPayload, CreateCourseInvitePayload, UpdateAnnouncementPayload } from 'entities/Course/model/types/course';
 import { toast } from 'sonner';
 import { BindCourseStreamsPayload, CreateCoursePayload, CreateFAQPayload, CreateThemePayload, EditThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload } from '../types/course_payload';
 
@@ -12,6 +12,26 @@ const MY_SUBMISSIONS_QUERY_KEY = ['course', 'my-submissions'] as const;
 const COURSE_MATERIALS_QUERY_KEY = ['course', 'course-materials'] as const;
 const COURSE_ANNOUNCEMENTS_QUERY_KEY = ['course', 'announcements'] as const;
 const COURSE_FEED_QUERY_KEY = ['course', 'feed'] as const;
+const COURSE_ALL_THEMES_QUERY_KEY = ['course', 'course-all-themes'] as const;
+
+const patchThemeLockedInList = (
+  queryClient: QueryClient,
+  themeId: string,
+  locked: boolean
+) => {
+  queryClient.setQueriesData(
+    { queryKey: COURSE_ALL_THEMES_QUERY_KEY },
+    (old: { detail?: Array<{ id: string; locked: boolean }> } | undefined) => {
+      if (!old?.detail) return old;
+      return {
+        ...old,
+        detail: old.detail.map((task) =>
+          task.id === themeId ? { ...task, locked } : task
+        ),
+      };
+    }
+  );
+};
 
 export const useRegistrateCourse = () => {
   const queryClient = useQueryClient();
@@ -168,8 +188,10 @@ export const useRegistrateCourse = () => {
         console.log(error.message);
       },
       onSuccess: () => {
-
-        queryClient.invalidateQueries({ queryKey: ['course','course-theme'] });
+        queryClient.invalidateQueries({ queryKey: COURSE_ALL_THEMES_QUERY_KEY, exact: false });
+        queryClient.invalidateQueries({ queryKey: ['course', 'course-theme'], exact: false });
+        queryClient.invalidateQueries({ queryKey: ['week', 'themes'], exact: false });
+        queryClient.invalidateQueries({ queryKey: ['course', 'modules'], exact: false });
       },
     });
     }
@@ -215,8 +237,22 @@ export const useRegistrateCourse = () => {
       export const useChangePermission = () => {
         const queryClient = useQueryClient();
         return useMutation({
-          mutationFn: ({ id, data }: { id: string; data: editPermissionPayload }) => {
-            const mutationPromise = editPermissionTheme(id,data);
+          mutationFn: ({
+            id,
+            data,
+            themeLocked,
+          }: {
+            id: string;
+            data: editPermissionPayload;
+            themeLocked?: boolean;
+          }) => {
+            const mutationPromise =
+              typeof themeLocked === "boolean"
+                ? Promise.all([
+                    editPermissionTheme(id, data),
+                    editTheme(id, { locked: themeLocked }),
+                  ])
+                : editPermissionTheme(id, data);
             toast.promise(mutationPromise, {
               loading: "Меняем доступ...",
               success: "Изменение доступа прошло успешно!",
@@ -229,11 +265,18 @@ export const useRegistrateCourse = () => {
 
             console.log(error.message);
           },
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['course','course-theme'] });
-            queryClient.invalidateQueries({ queryKey: ['course', 'course-all-themes'], exact: false });
-            queryClient.invalidateQueries({ queryKey: [
-              'answer-task'] });
+          onSuccess: async (_data, { id, themeLocked }) => {
+            if (typeof themeLocked === "boolean") {
+              patchThemeLockedInList(queryClient, id, themeLocked);
+            }
+            await Promise.all([
+              queryClient.invalidateQueries({ queryKey: ['course','course-theme'] }),
+              queryClient.invalidateQueries({ queryKey: ['course', 'course-all-themes'], exact: false }),
+              queryClient.invalidateQueries({ queryKey: ['answer-task'] }),
+            ]);
+            if (typeof themeLocked === "boolean") {
+              patchThemeLockedInList(queryClient, id, themeLocked);
+            }
           },
         });
       };
@@ -269,10 +312,14 @@ export const useRegistrateCourse = () => {
           onError: (error) => {
             toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
           },
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['course', 'course-all-themes'], exact: false });
-            queryClient.invalidateQueries({ queryKey: ['course', 'course-theme'], exact: false });
-            queryClient.invalidateQueries({ queryKey: ['answer-task'] });
+          onSuccess: async (_data, { id, locked }) => {
+            patchThemeLockedInList(queryClient, id, locked);
+            await Promise.all([
+              queryClient.invalidateQueries({ queryKey: COURSE_ALL_THEMES_QUERY_KEY, exact: false }),
+              queryClient.invalidateQueries({ queryKey: ['course', 'course-theme'], exact: false }),
+              queryClient.invalidateQueries({ queryKey: ['answer-task'] }),
+            ]);
+            patchThemeLockedInList(queryClient, id, locked);
           },
         });
       };
@@ -280,23 +327,41 @@ export const useRegistrateCourse = () => {
       export const useEditTheme = () => {
         const queryClient = useQueryClient();
         return useMutation({
-          mutationFn: ({ id, data }: { id: string; data: EditThemePayload }) => {
+          mutationFn: ({
+            id,
+            data,
+            silent,
+          }: {
+            id: string;
+            data: EditThemePayload;
+            silent?: boolean;
+          }) => {
             const mutationPromise = editTheme(id, data);
-            toast.promise(mutationPromise, {
-              loading: "Сохраняем тему...",
-              success: "Тема успешно изменена!",
-            });
+            if (!silent) {
+              toast.promise(mutationPromise, {
+                loading: "Сохраняем тему...",
+                success: "Тема успешно изменена!",
+              });
+            }
             return mutationPromise;
           },
           onError: (error) => {
             toast.error(`Ошибка: ${error?.message || "Не удалось изменить тему"}`);
           },
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['course', 'course-all-themes'], exact: false });
-            queryClient.invalidateQueries({ queryKey: ['course', 'course-theme'], exact: false });
-            queryClient.invalidateQueries({ queryKey: ['week', 'themes'], exact: false });
-            queryClient.invalidateQueries({ queryKey: ['course', 'task-materials'], exact: false });
-            queryClient.invalidateQueries({ queryKey: COURSE_MATERIALS_QUERY_KEY, exact: false });
+          onSuccess: async (_data, { id, data }) => {
+            if (typeof data.locked === "boolean") {
+              patchThemeLockedInList(queryClient, id, data.locked);
+            }
+            await Promise.all([
+              queryClient.invalidateQueries({ queryKey: COURSE_ALL_THEMES_QUERY_KEY, exact: false }),
+              queryClient.invalidateQueries({ queryKey: ['course', 'course-theme'], exact: false }),
+              queryClient.invalidateQueries({ queryKey: ['week', 'themes'], exact: false }),
+              queryClient.invalidateQueries({ queryKey: ['course', 'task-materials'], exact: false }),
+              queryClient.invalidateQueries({ queryKey: COURSE_MATERIALS_QUERY_KEY, exact: false }),
+            ]);
+            if (typeof data.locked === "boolean") {
+              patchThemeLockedInList(queryClient, id, data.locked);
+            }
           },
         });
       };
@@ -707,43 +772,6 @@ export const useDeleteAnnouncement = () => {
       queryClient.invalidateQueries({
         queryKey: [...COURSE_FEED_QUERY_KEY, courseId],
       });
-    },
-  });
-};
-
-function patchAttendanceStudent(
-  current: ThemeAttendance | undefined,
-  row: ThemeAttendanceStudent
-): ThemeAttendance | undefined {
-  if (!current) return current;
-  return {
-    ...current,
-    students: current.students.map((student) =>
-      student.student_id === row.student_id ? { ...student, ...row } : student
-    ),
-  };
-}
-
-export const useUpdateThemeAttendance = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      themeId,
-      data,
-    }: {
-      themeId: string;
-      data: UpdateThemeAttendancePayload;
-    }) => updateThemeAttendance(themeId, data),
-    onError: (error) => {
-      toast.error(
-        `Ошибка: ${apiErrorDetail(error, "Не удалось сохранить посещаемость")}`
-      );
-    },
-    onSuccess: (row, { themeId }) => {
-      queryClient.setQueriesData<ThemeAttendance>(
-        { queryKey: themeAttendanceThemeKey(themeId) },
-        (current) => patchAttendanceStudent(current, row)
-      );
     },
   });
 };

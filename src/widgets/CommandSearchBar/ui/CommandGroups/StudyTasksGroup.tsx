@@ -1,5 +1,6 @@
 import { CommandSeparator } from "cmdk";
 import { StudyTask } from "entities/Course";
+import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { LuListTodo } from "react-icons/lu";
 import { CommandGroup, CommandItem } from "shared/shadcn/ui/command";
 
@@ -32,9 +33,11 @@ const StudyTasksGroup = ({ data }: { data: StudyTask[] }) => {
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground whitespace-nowrap font-medium">
                             {item.type_less}
                         </span>
+                        {isGradableThemeType(item.type_less) && (
                         <span className="text-xs text-muted-foreground">
                             {item.result !== null ? `${item.result} / ` : ""}{item.max_points} баллов
                         </span>
+                        )}
                         {item.deadline && (
                             <span className="text-xs text-muted-foreground">
                                 • до {new Date(item.deadline).toLocaleDateString()}

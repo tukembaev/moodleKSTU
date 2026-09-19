@@ -7,6 +7,7 @@ import { AlertCircle, FileQuestion } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LuTrash2 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
+import { toastRequiredField } from "shared/lib/onFormInvalid";
 import { cn } from "shared/lib/utils";
 import {
   isTextQuestionType,
@@ -392,6 +393,17 @@ function StudentQuiz({
     [quizData.questions]
   );
 
+  const invalidToastLock = useRef(false);
+
+  const handleInvalid = () => {
+    if (invalidToastLock.current) return;
+    invalidToastLock.current = true;
+    toastRequiredField("Ответьте на все обязательные вопросы");
+    window.setTimeout(() => {
+      invalidToastLock.current = false;
+    }, 400);
+  };
+
   const useNumberShortcuts = quizData.questions.every((question) => {
     const type = resolveQuestionType(question);
     return !isTextQuestionType(type) && question.options.length <= 9;
@@ -421,7 +433,7 @@ function StudentQuiz({
       </div>
 
       <Card>
-        <CardContent>
+        <CardContent onInvalidCapture={handleInvalid}>
           <Questionnaire
             ref={formRef}
             items={items}

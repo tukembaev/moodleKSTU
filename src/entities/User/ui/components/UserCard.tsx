@@ -24,7 +24,7 @@ import {
 } from "shared/shadcn/ui/dialog";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Input } from "shared/shadcn/ui/input";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 
 const genderLabel = (gender?: string | null) => {
   if (gender === "M") return "Мужской";
@@ -331,9 +331,9 @@ const UserCard = ({
           <div className="grid gap-4 py-4">
             {["bio", "telegram_username"].map((field) => (
               <div key={field} className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor={field} className="capitalize">
+                <FieldLabel htmlFor={field}>
                   {field.replace("_", " ")}
-                </Label>
+                </FieldLabel>
                 <Input
                   id={field}
                   value={form[field as keyof typeof form]}
@@ -345,7 +345,7 @@ const UserCard = ({
               </div>
             ))}
             <div className="flex gap-2 items-center ">
-              <Label htmlFor="number_phone">Номер телефона</Label>
+              <FieldLabel htmlFor="number_phone">Номер телефона</FieldLabel>
               <PhoneInput value={numberPhone} onChange={setNumberPhone} />
             </div>
           </div>

@@ -19,7 +19,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { Textarea } from "shared/shadcn/ui/textarea";
 import {
   Table,
@@ -57,7 +57,9 @@ const EssayGradeForm = ({
 
   return (
     <div className="mt-3 space-y-2 rounded-lg border bg-background p-3">
-      <Label className="text-xs text-muted-foreground">Комментарий к ответу</Label>
+      <FieldLabel className="text-xs text-muted-foreground">
+        Комментарий к ответу
+      </FieldLabel>
       <Textarea
         value={teacherComment}
         onChange={(event) => setTeacherComment(event.target.value)}

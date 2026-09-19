@@ -60,9 +60,11 @@ export interface UsersMeStudentProfile {
   specialty?: string | null;
 }
 
-export interface UsersMe {
+/** GET users/api/v1/users/{user_id} */
+export interface UserServiceProfile {
   id: string;
   username: string;
+  full_name?: string;
   first_name: string;
   last_name: string;
   middle_name: string | null;
@@ -71,12 +73,16 @@ export interface UsersMe {
   birth_date: string | null;
   gender: string | null;
   is_active: boolean;
+  /** employments — та же структура, что в users/me */
+  employee_profile: UsersMeEmployeeProfile | null;
+  avatar_url: string | null;
+}
+
+export interface UsersMe extends UserServiceProfile {
   permissions: string[];
   institute_id: string | null;
   institute_name: string | null;
-  employee_profile: UsersMeEmployeeProfile | null;
   student_profile: UsersMeStudentProfile | null;
-  avatar_url: string | null;
 }
 
 export interface UserProfileData {

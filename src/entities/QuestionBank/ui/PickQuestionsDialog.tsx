@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "shared/shadcn/ui/dialog";
 import { Input } from "shared/shadcn/ui/input";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { ScrollArea } from "shared/shadcn/ui/scroll-area";
 import {
   Select,
@@ -170,7 +170,7 @@ const PickQuestionsDialog = ({
           </Tabs>
 
           <div className="flex flex-col gap-2">
-            <Label>Коллекция</Label>
+            <FieldLabel required>Коллекция</FieldLabel>
             <Select
               value={bankId}
               onValueChange={(value) => {
@@ -205,9 +205,9 @@ const PickQuestionsDialog = ({
                 <div className="rounded-md border p-3">
                   <div className="flex flex-wrap items-end gap-3">
                     <div className="flex min-w-28 flex-1 flex-col gap-2">
-                      <Label htmlFor="random-sample-size">
+                      <FieldLabel htmlFor="random-sample-size" required>
                         Количество вопросов
-                      </Label>
+                      </FieldLabel>
                       <Input
                         id="random-sample-size"
                         type="number"

@@ -17,7 +17,6 @@ import {
   type QuestionDraft,
 } from "shared/components/QuestionEditor";
 import { cn } from "shared/lib/utils";
-import { toast } from "sonner";
 import { Button } from "shared/shadcn/ui/button";
 import {
   Card,
@@ -28,7 +27,8 @@ import {
   CardTitle,
 } from "shared/shadcn/ui/card";
 import { Input } from "shared/shadcn/ui/input";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
+import { onFormInvalid, requiredField, toastRequiredField } from "shared/lib/onFormInvalid";
 import { Separator } from "shared/shadcn/ui/separator";
 import { Textarea } from "shared/shadcn/ui/textarea";
 import QuizQuestionCard from "./quiz-question-card";
@@ -144,7 +144,6 @@ const Add_Quiz = () => {
   const totalQuestions = questionFields.length;
   const activeField = questionFields[activeIndex];
   const canRemoveQuestion = totalQuestions > 1;
-  const isBankDisabled = isQuestionDraftStarted(watchedQuestions?.[activeIndex]);
 
   useEffect(() => {
     setActiveIndex((prev) => {
@@ -198,7 +197,7 @@ const Add_Quiz = () => {
     const filledQuestions = formData.questions.filter(isQuestionDraftStarted);
 
     if (filledQuestions.length === 0) {
-      toast.error("Добавьте хотя бы один вопрос");
+      toastRequiredField("Добавьте хотя бы один вопрос");
       setActiveIndex(0);
       return;
     }
@@ -209,7 +208,7 @@ const Add_Quiz = () => {
       const result = validateFilledQuestion(question);
       if (result !== true) {
         setActiveIndex(index);
-        toast.error(result);
+        toastRequiredField(result);
         return;
       }
     }
@@ -253,7 +252,7 @@ const Add_Quiz = () => {
 
   return (
     <Card className="w-full">
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="flex flex-col gap-6">
         <CardHeader>
           <CardTitle>Новый тест</CardTitle>
           <CardDescription>
@@ -265,10 +264,12 @@ const Add_Quiz = () => {
         <CardContent className="flex flex-col gap-6">
           <div className="flex w-full flex-col gap-4">
             <div className="flex w-full flex-col gap-1.5">
-              <Label htmlFor="quiz-title">Название теста</Label>
+              <FieldLabel htmlFor="quiz-title" required>
+                Название теста
+              </FieldLabel>
               <Input
                 id="quiz-title"
-                {...register("title", { required: true })}
+                {...register("title", requiredField("Заполните название теста"))}
                 placeholder="Например, Проверка знаний по теме 1"
               />
               {errors.title && (
@@ -277,12 +278,14 @@ const Add_Quiz = () => {
             </div>
 
             <div className="flex w-full flex-col gap-1.5">
-              <Label htmlFor="quiz-description">Описание</Label>
+              <FieldLabel htmlFor="quiz-description" required>
+                Описание
+              </FieldLabel>
               <Textarea
                 id="quiz-description"
                 rows={2}
                 placeholder="Кратко опишите, что проверяет тест"
-                {...register("description", { required: true })}
+                {...register("description", requiredField("Заполните описание теста"))}
               />
               {errors.description && (
                 <span className="text-xs text-destructive">
@@ -293,11 +296,17 @@ const Add_Quiz = () => {
 
             <div className="grid grid-cols-3 gap-3">
               <div className="flex w-full flex-col gap-1.5">
-                <Label htmlFor="quiz-timelimit">Время, мин</Label>
+                <FieldLabel htmlFor="quiz-timelimit" required>
+                  Время, мин
+                </FieldLabel>
                 <Input
                   id="quiz-timelimit"
                   type="number"
-                  {...register("timeLimit", { required: true, min: 1 })}
+                  {...register("timeLimit", {
+                    ...requiredField("Укажите время теста"),
+                    min: { value: 1, message: "Минимум 1 минута" },
+                    valueAsNumber: true,
+                  })}
                   placeholder="60"
                 />
                 {errors.timeLimit && (
@@ -305,14 +314,16 @@ const Add_Quiz = () => {
                 )}
               </div>
               <div className="flex w-full flex-col gap-1.5">
-                <Label htmlFor="quiz-maxpoints">Макс. балл</Label>
+                <FieldLabel htmlFor="quiz-maxpoints" required>
+                  Макс. балл
+                </FieldLabel>
                 <Input
                   id="quiz-maxpoints"
                   type="number"
                   step={1}
                   {...register("maxPoints", {
-                    required: true,
-                    min: 0,
+                    ...requiredField("Укажите максимальный балл"),
+                    min: { value: 0, message: "Минимум 0 баллов" },
                     valueAsNumber: true,
                   })}
                   placeholder="100"
@@ -322,18 +333,26 @@ const Add_Quiz = () => {
                 )}
               </div>
               <div className="flex w-full flex-col gap-1.5">
-                <Label htmlFor="quiz-minpoints">Мин. балл для сдачи</Label>
+                <FieldLabel htmlFor="quiz-minpoints" required>
+                  Мин. балл для сдачи
+                </FieldLabel>
                 <Input
                   id="quiz-minpoints"
                   type="number"
                   step={1}
                   {...register("minPoints", {
-                    required: true,
-                    min: 0,
+                    required: "Укажите минимальный балл для сдачи",
+                    min: { value: 0, message: "От 0 до максимума" },
                     valueAsNumber: true,
-                    validate: (value) =>
-                      value <= (watch("maxPoints") || 0) ||
-                      "Не больше максимального балла",
+                    validate: (value) => {
+                      if (!Number.isFinite(value)) {
+                        return "Укажите минимальный балл для сдачи";
+                      }
+                      return (
+                        value <= (watch("maxPoints") || 0) ||
+                        "Не больше максимального балла"
+                      );
+                    },
                   })}
                   placeholder="60"
                 />
@@ -347,7 +366,7 @@ const Add_Quiz = () => {
 
             {!formParam?.includes("choose-test") && (
               <div className="flex flex-col gap-1.5">
-                <Label>Дополнительно</Label>
+                <FieldLabel>Дополнительно</FieldLabel>
                 <CheckboxCard
                   options={options}
                   selectedValues={selectedValues}
@@ -362,28 +381,24 @@ const Add_Quiz = () => {
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-lg font-medium">Вопросы </p>
+                <p className="flex items-baseline gap-2 text-lg font-medium">
+                  Вопросы
+                  <span className="text-xs font-normal text-muted-foreground">
+                    обязательное поле
+                  </span>
+                </p>
                
               </div>
-              <UseTooltip
-                text={
-                  isBankDisabled
-                    ? "Недоступно, пока вы заполняете этот вопрос"
-                    : "Вставить готовые вопросы из коллекции"
-                }
-              >
-                <span className={cn(isBankDisabled && "cursor-not-allowed")}>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={isBankDisabled}
-                    onClick={() => setBankPickerOpen(true)}
-                  >
-                    <LuLibrary />
-                    Из коллекции вопросов
-                  </Button>
-                </span>
+              <UseTooltip text="Вставить готовые вопросы из коллекции">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBankPickerOpen(true)}
+                >
+                  <LuLibrary />
+                  Из коллекции вопросов
+                </Button>
               </UseTooltip>
             </div>
 

@@ -1,10 +1,10 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 
 import axios from 'axios';
-import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseAnnouncements, getCourseFeed, getCourseInviteLink, getCourseMaterials, getCourseStreams, getCourseTablePerfomance, getMySubmissions, getStudentAnswers, getTaskMaterials, getThemeAttendance, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests, themeAttendanceQueryKey } from './courseAPI';
+import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseAnnouncements, getCourseFeed, getCourseInviteLink, getCourseMaterials, getCourseStreams, getCourseTablePerfomance, getMySubmissions, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests } from './courseAPI';
 import { getStudentCourseDetail, getStudentDashboard, getTeacherCourseDetail, getTeacherDashboard } from './statisticsAPI';
 
-import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnnouncement, useCreateAnswer, useCreateCourse, useCreateCourseInvite, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnnouncement, useDeleteAnswer, useDeleteCourseInvite, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetThemeAccessForAll, useUpdateAnnouncement, useUpdateThemeAttendance } from 'features/Course/model/services/course_queries';
+import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnnouncement, useCreateAnswer, useCreateCourse, useCreateCourseInvite, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnnouncement, useDeleteAnswer, useDeleteCourseInvite, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetThemeAccessForAll, useUpdateAnnouncement } from 'features/Course/model/services/course_queries';
 
 
 
@@ -157,22 +157,6 @@ export const courseQueries = {
                   queryFn: () => getCourseInviteLink(courseId as string),
                   enabled: !!courseId,
                 }),
-      themeAttendance: (themeId: string | null, group?: string | null) =>
-                queryOptions({
-                  queryKey: themeAttendanceQueryKey(themeId, group),
-                  queryFn: () => getThemeAttendance(themeId as string, group || undefined),
-                  enabled: !!themeId,
-                  placeholderData: keepPreviousData,
-                  retry: (failureCount, error) => {
-                    if (
-                      axios.isAxiosError(error) &&
-                      [401, 403, 404].includes(error.response?.status ?? 0)
-                    ) {
-                      return false;
-                    }
-                    return failureCount < 2;
-                  },
-                }),
       studentDashboard: () =>
                 queryOptions({
                   queryKey: ['statistics', 'student', 'dashboard'],
@@ -210,7 +194,6 @@ export const courseQueries = {
   create_course_invite: () => useCreateCourseInvite(),
   create_announcement: () => useCreateAnnouncement(),
   edit_announcement: () => useUpdateAnnouncement(),
-  update_attendance: () => useUpdateThemeAttendance(),
 
 
   add_comment: () => useAddComment(),

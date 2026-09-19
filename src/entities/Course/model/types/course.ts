@@ -471,35 +471,3 @@ export type CourseFeedQuery = {
   sort?: "desc" | "asc";
   kind?: CourseFeedKindFilter;
 };
-
-export type ThemeAttendanceStatusValue =
-  | "present"
-  | "absent"
-  | "excused"
-  | "late";
-
-export type ThemeAttendanceStatusOption = {
-  value: ThemeAttendanceStatusValue | string;
-  label: string;
-};
-
-export type ThemeAttendanceStudent = {
-  student_id: number;
-  fio: string;
-  group: string | null;
-  status: ThemeAttendanceStatusValue | string | null;
-};
-
-export type ThemeAttendance = {
-  theme_id: string;
-  course_id: string;
-  title: string;
-  type_less: string | null;
-  statuses: ThemeAttendanceStatusOption[];
-  students: ThemeAttendanceStudent[];
-};
-
-export type UpdateThemeAttendancePayload = {
-  student_id: number;
-  status: ThemeAttendanceStatusValue | string | null;
-};

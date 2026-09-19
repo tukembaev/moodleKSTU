@@ -4,6 +4,7 @@ import { Card } from "shared/shadcn/ui/card";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { CreateThemePayload } from "../../model/types/course_payload";
+import { onFormInvalid } from "shared/lib/onFormInvalid";
 import { useAddThemeForm } from "./use-add-theme-form";
 import { AddThemeTypeSelect } from "./add-theme-type-select";
 import { AddThemeTestFields } from "./add-theme-test-fields";
@@ -21,6 +22,7 @@ const Add_Theme = () => {
     selectedType,
     handleTypeChange,
     isTestType,
+    canReceivePoints,
     userTests,
   } = useAddThemeForm();
 
@@ -30,26 +32,24 @@ const Add_Theme = () => {
   const isPending = isThemePending || isTestPending;
 
   const onSubmit = async (data: CreateThemePayload) => {
-    // Validate test_id when test type is selected
-    if (isTestType && !data.test_id) {
-      return;
-    }
-
     if (isTestType && data.test_id) {
       attach_test({
         course_id: data.course || "",
         test_id: data.test_id,
       });
     } else {
-      // Use the old API for regular themes
-      add_theme(data);
+      add_theme(
+        canReceivePoints
+          ? data
+          : { ...data, max_points: 0, locked: false, week: data.week || 1 }
+      );
     }
   };
 
   return (
     <section className="py-4">
       <Card className="flex flex-col gap-4 p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <AddThemeTypeSelect
             value={selectedType}
             onChange={handleTypeChange}
@@ -68,10 +68,11 @@ const Add_Theme = () => {
               errors={errors}
               isTestType={isTestType}
               control={control}
+              canReceivePoints={canReceivePoints}
             />
           )}
 
-          {!isTestType && (
+          {!isTestType && canReceivePoints && (
             <AddThemeLockedCheckbox setValue={setValue} watch={watch} />
           )}
 

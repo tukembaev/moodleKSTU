@@ -10,7 +10,7 @@ import {
   UseConfirmationDialog,
   UseTooltip,
 } from "shared/components";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useForm } from "shared/hooks";
 import { openBank } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";

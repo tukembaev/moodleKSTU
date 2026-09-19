@@ -9,5 +9,4 @@ export { MaterialAttachment } from "./MaterialAttachment";
 export { MaterialCard } from "./MaterialCard";
 export { AddMaterialCard } from "./AddMaterialCard";
 export { ThemeWorkspace } from "./ThemeWorkspace";
-export { ThemeAttendanceSection } from "./ThemeAttendanceSection";
 export { TestEditorPanel } from "./TestEditorPanel";

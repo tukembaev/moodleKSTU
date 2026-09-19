@@ -4,13 +4,21 @@ import {
   hasAuthSession,
   restoreSessionFromCookie,
 } from "shared/lib/auth";
-import { getPostLoginPath } from "shared/lib/navigation/hidden-ids";
+import {
+  captureHiddenIdsFromLocation,
+  getPostLoginPath,
+} from "shared/lib/navigation/hidden-ids";
 import { Loader2 } from "lucide-react";
 
 function hasGoogleOAuthHash() {
   if (typeof window === "undefined") return false;
   const hash = window.location.hash;
   return hash.includes("id_token") || hash.includes("access_token");
+}
+
+function stashInviteFromCurrentUrl() {
+  if (typeof window === "undefined") return;
+  captureHiddenIdsFromLocation(window.location.pathname, window.location.search);
 }
 
 /**
@@ -27,6 +35,7 @@ export function SessionBootstrap({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    stashInviteFromCurrentUrl();
 
     const run = async () => {
       if (hasGoogleOAuthHash()) {

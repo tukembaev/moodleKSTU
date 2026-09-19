@@ -1,5 +1,5 @@
 import { UseFormSetValue, UseFormWatch } from "react-hook-form";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { Input } from "shared/shadcn/ui/input";
 import {
   Select,
@@ -26,7 +26,9 @@ export const AddThemeTestFields = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor="test_id">Выберите тест</Label>
+      <FieldLabel htmlFor="test_id" required>
+        Выберите тест
+      </FieldLabel>
       {userTests.length === 0 ? (
         <div className="flex flex-col gap-2">
           <Input

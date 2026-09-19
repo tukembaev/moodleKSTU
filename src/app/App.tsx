@@ -1,6 +1,7 @@
 import { Layout } from "widgets/Layout";
 
 import { AppRouter } from "./providers/router";
+import { RequireAuth } from "./providers/router/ui/RequireAuth";
 import { ThemeProvider } from "./providers/ThemeProvider/ThemeProvider";
 import { SessionBootstrap } from "./providers/SessionBootstrap";
 import { HiddenIdSync } from "./providers/HiddenIdSync";
@@ -12,7 +13,9 @@ function App() {
         <HiddenIdSync>
           <div className="h-dvh w-full">
             <Layout>
-              <AppRouter />
+              <RequireAuth>
+                <AppRouter />
+              </RequireAuth>
             </Layout>
           </div>
         </HiddenIdSync>

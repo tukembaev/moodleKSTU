@@ -1,7 +1,7 @@
 import { CommandSeparator } from "cmdk";
 import { UserGroupList } from "entities/User";
 import { useNavigate } from "react-router-dom";
-import { AppRoutes } from "shared/config";
+import { AppRoutes } from "shared/config/routeConfig/routePath";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { CommandGroup, CommandItem } from "shared/shadcn/ui/command";
 

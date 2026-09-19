@@ -4,17 +4,14 @@ import { ReactNode } from "react";
 import { CoursePage } from "pages/CoursePage";
 import { GroupPage } from "pages/GroupPage";
 import { LoginPage } from "pages/LoginPage";
-import { MainPage } from "pages/MainPage";
 import { NotFoundPage } from "pages/NotFoundPage";
 import { UniversitiesPage } from "pages/UniversitiesPage";
-import { UserBilling, UserProfile } from "entities/User";
+import UserBilling from "entities/User/ui/UserBilling";
+import UserProfile from "entities/User/ui/UserProfile";
 
 import { TestingPage } from "pages/TestingPage";
 import { QuestionBankPage } from "pages/QuestionBankPage";
 import { BankDetails } from "entities/QuestionBank";
-import { AboutUsPage } from "pages/AboutUsPage";
-import { CollaboratePage } from "pages/CollaboratePage";
-import { CategoryPage } from "pages/CategoryPage";
 import { StatisticPage } from "pages/StatisticPage";
 import AddQuizPage from "features/Quiz/ui/AddQuizPage";
 import EditQuizPage from "features/Quiz/ui/EditQuizPage";
@@ -23,101 +20,27 @@ import { QuizResultsPage } from "pages/QuizResultsPage";
 import { RemarksPage } from "pages/RemarksPage";
 import CourseDetails from "entities/Course/ui/CourseDetails";
 import CourseInvitePage from "pages/CourseInvitePage/ui/CourseInvitePage";
+import { WorkloadPage } from "pages/WorkloadPage";
+import {
+  AppRoutes,
+  AppSubRoutes,
+  RoutePath,
+} from "./routePath";
+
+export { AppRoutes, AppSubRoutes, RoutePath };
 
 export interface AppRoutesProps {
   path: string;
   element: ReactNode;
   breadcrumbName: string;
   children?: AppRoutesProps[];
+  aliases?: string[];
 }
-
-export enum AppRoutes {
-  LOGIN = "login",
-  ABOUT_US = "about_us",
-  COLLABORATE = "collaborate",
-
-  MAIN = "main",
-  COURSES = "courses",
-  CATEGORY = "category",
-
-  STATISTIC = "statistic",
-
-  // REGISTRATION = "registration",
-  PROFILE = "profile",
-  TEST = "test",
-
-  QUESTION_BANK = "question_bank",
-  GROUPS = "groups",
-  BILLING = "billing",
-  REMARKS = "remarks",
-
-  UNIVERSITIES = "universities",
-  NOT_FOUND = "not_found",
-}
-
-export enum AppSubRoutes {
-  COURSE_THEMES = "course_themes",
-  COURSE_INVITE = "invite",
-
-  TEST_PASS = "pass",
-  TEST_ADD_QUIZ = "add-quiz",
-  TEST_EDIT = "edit",
-  TEST_QUIZ = "quiz",
-  TEST_QUIZ_RESULT = "quiz-result",
-  QUESTION_BANK_DETAIL = "bank",
-}
-
-export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
-  [AppRoutes.LOGIN]: "/",
-  [AppRoutes.ABOUT_US]: "/about_us",
-  [AppRoutes.COLLABORATE]: "/collaborate",
-
-  [AppRoutes.MAIN]: "/main",
-  [AppRoutes.COURSES]: "/courses",
-  [AppSubRoutes.COURSE_THEMES]: "/courses/course_themes/:id?",
-  [AppSubRoutes.COURSE_INVITE]: "/courses/invite",
-
-  [AppRoutes.CATEGORY]: "/category",
-
-  [AppRoutes.STATISTIC]: "/statistic",
-
-  // [AppRoutes.REGISTRATION]: "/registration",
-  [AppRoutes.PROFILE]: "/profile",
-  [AppRoutes.TEST]: "/test",
-  [AppSubRoutes.TEST_PASS]: "/test/pass/:id?",
-  [AppSubRoutes.TEST_ADD_QUIZ]: "/test/add-quiz",
-  [AppSubRoutes.TEST_EDIT]: "/test/edit/:id?",
-  [AppSubRoutes.TEST_QUIZ]: "/test/quiz/:id?",
-  [AppSubRoutes.TEST_QUIZ_RESULT]: "/test/quiz-result/:id?",
-
-  [AppRoutes.QUESTION_BANK]: "/question-bank",
-  [AppSubRoutes.QUESTION_BANK_DETAIL]: "/question-bank/bank/:id?",
-  [AppRoutes.GROUPS]: "/groups",
-  [AppRoutes.BILLING]: "/billing",
-  [AppRoutes.REMARKS]: "/remarks",
-  [AppRoutes.UNIVERSITIES]: "/universities",
-  [AppRoutes.NOT_FOUND]: "*",
-};
 
 export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
   [AppRoutes.LOGIN]: {
     path: RoutePath.login,
     element: <LoginPage />,
-    breadcrumbName: "Главная",
-  },
-  [AppRoutes.ABOUT_US]: {
-    path: RoutePath.about_us,
-    element: <AboutUsPage />,
-    breadcrumbName: "О нас",
-  },
-  [AppRoutes.COLLABORATE]: {
-    path: RoutePath.collaborate,
-    element: <CollaboratePage />,
-    breadcrumbName: "Связаться с нами",
-  },
-  [AppRoutes.MAIN]: {
-    path: RoutePath.main,
-    element: <MainPage />,
     breadcrumbName: "Главная",
   },
   [AppRoutes.COURSES]: {
@@ -140,37 +63,24 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
         element: <CourseDetails />,
         breadcrumbName: "Лента курса",
       },
-      {
-        path: "/courses/course_themes/:id/invite",
-        element: <CourseInvitePage />,
-        breadcrumbName: "Приглашение",
-      },
-      {
-        path: "/courses/course_themes/:id/invite/:linkId",
-        element: <CourseInvitePage />,
-        breadcrumbName: "Приглашение",
-      },
-      {
-        path: "/courses/invite/:courseId/:linkId",
-        element: <CourseInvitePage />,
-        breadcrumbName: "Приглашение",
-      },
-      {
-        path: RoutePath[AppSubRoutes.COURSE_INVITE],
-        element: <CourseInvitePage />,
-        breadcrumbName: "Приглашение",
-      },
     ],
   },
-  [AppRoutes.CATEGORY]: {
-    path: RoutePath.category,
-    element: <CategoryPage />,
-    breadcrumbName: "Категории",
+  [AppRoutes.WORKLOAD]: {
+    path: RoutePath[AppRoutes.WORKLOAD],
+    element: <WorkloadPage />,
+    breadcrumbName: "Нагрузка",
   },
-  // [AppRoutes.REGISTRATION]: {
-  //   path: RoutePath.registration,
-  //   element: <RegistrationPage />,
-  // },
+  [AppRoutes.COURSE_INVITE]: {
+    path: RoutePath[AppRoutes.COURSE_INVITE],
+    element: <CourseInvitePage />,
+    breadcrumbName: "Приглашение",
+    aliases: [
+      "/course/:courseId/:linkId/invite",
+      "/courses/invite/:courseId/:linkId",
+      "/courses/course_themes/:id/invite",
+      "/courses/course_themes/:id/invite/:linkId",
+    ],
+  },
   [AppRoutes.STATISTIC]: {
     path: RoutePath.statistic,
     element: <StatisticPage />,

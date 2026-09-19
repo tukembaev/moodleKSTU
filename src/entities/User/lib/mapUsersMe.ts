@@ -1,13 +1,17 @@
-import { UserProfileData, UsersMe } from "../types/user";
+import { UserProfileData, UserServiceProfile, UsersMe } from "../types/user";
 
 export function mapUsersMeToProfile(
-  me: UsersMe,
+  me: UsersMe | UserServiceProfile,
   lms?: UserProfileData
 ): UserProfileData {
+  const instituteName =
+    "institute_name" in me ? me.institute_name : null;
+  const studentProfile =
+    "student_profile" in me ? me.student_profile : null;
   const employments = me.employee_profile?.employments ?? [];
   const activeJob = employments.find((job) => job.is_active) ?? employments[0];
   const studentGroup =
-    me.student_profile?.group_name || me.student_profile?.group || "";
+    studentProfile?.group_name || studentProfile?.group || "";
 
   return {
     id: lms?.id ?? 0,
@@ -19,7 +23,7 @@ export function mapUsersMeToProfile(
     is_employee: Boolean(me.employee_profile) || Boolean(lms?.is_employee),
     position: activeJob?.position || lms?.position || "",
     group:
-      me.institute_name ||
+      instituteName ||
       studentGroup ||
       activeJob?.organization_name ||
       lms?.group ||
@@ -32,7 +36,7 @@ export function mapUsersMeToProfile(
     username: me.username,
     birth_date: me.birth_date,
     gender: me.gender,
-    institute_name: me.institute_name,
+    institute_name: instituteName,
     employments,
   };
 }

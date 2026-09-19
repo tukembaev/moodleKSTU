@@ -1,10 +1,10 @@
-import { useEffect, useLayoutEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   captureHiddenIdsFromLocation,
-  COURSE_INVITE_PATH,
   COURSE_THEMES_PATH,
   getHiddenId,
+  isCourseInvitePath,
   QUESTION_BANK_DETAIL_PATH,
   TEST_EDIT_PATH,
   TEST_PASS_PATH,
@@ -13,20 +13,38 @@ import {
 } from "shared/lib/navigation/hidden-ids";
 import { getActiveContext, hasAuthSession } from "shared/lib/auth";
 
+function isAuthed() {
+  return hasAuthSession() && Boolean(getActiveContext());
+}
+
 export function HiddenIdSync({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const lastLocation = useRef("");
+  const locationKey = `${location.pathname}${location.search}`;
+
+  if (lastLocation.current !== locationKey) {
+    lastLocation.current = locationKey;
+    captureHiddenIdsFromLocation(location.pathname, location.search);
+  }
 
   useLayoutEffect(() => {
     const captured = captureHiddenIdsFromLocation(
       location.pathname,
       location.search
     );
-    if (captured.changed) {
-      navigate(
-        { pathname: captured.pathname, search: captured.search },
-        { replace: true }
-      );
+    let pathname = captured.pathname;
+    let search = captured.search;
+    let changed = captured.changed;
+
+    if (isCourseInvitePath(location.pathname) && !isAuthed()) {
+      pathname = "/";
+      search = "";
+      changed = true;
+    }
+
+    if (changed) {
+      navigate({ pathname, search }, { replace: true });
     }
   }, [location.pathname, location.search, navigate]);
 
@@ -36,12 +54,12 @@ export function HiddenIdSync({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (location.pathname === COURSE_INVITE_PATH) {
+    if (isCourseInvitePath(location.pathname)) {
       if (!getHiddenId("inviteCourseId")) {
         navigate("/courses", { replace: true });
         return;
       }
-      if (!hasAuthSession() || !getActiveContext()) {
+      if (!isAuthed()) {
         navigate("/", { replace: true });
       }
       return;

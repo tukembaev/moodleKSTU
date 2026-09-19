@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "shared/shadcn/ui/button";
 import { Card } from "shared/shadcn/ui/card";
 import { Input } from "shared/shadcn/ui/input";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { useEffect, useState } from "react";
@@ -71,13 +72,13 @@ const Add_Test = () => {
   return (
     <section className="py-4">
       <Card className="flex flex-col gap-4 p-6 h-full overflow-y-auto">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <Label>Название теста</Label>
+            <FieldLabel required>Название теста</FieldLabel>
             <Input
               type="text"
               placeholder="Введите название"
-              {...register("title", { required: true })}
+              {...register("title", requiredField("Заполните название теста"))}
             />
             {errors.title && (
               <span className="text-xs text-red-500">Название обязательно</span>
@@ -85,18 +86,20 @@ const Add_Test = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Описание</Label>
+            <FieldLabel required>Описание</FieldLabel>
             <Input
               type="text"
               placeholder="Введите описание"
-              {...register("description", { required: true })}
+              {...register("description", requiredField("Заполните описание теста"))}
             />
             {errors.description && (
               <span className="text-xs text-red-500">Описание обязательно</span>
             )}
           </div>
           <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="deadline">Дата открытия</Label>
+            <FieldLabel htmlFor="deadline" required>
+              Дата открытия
+            </FieldLabel>
             <UseDatePicker
               control={control}
               name="opening_date"
@@ -109,7 +112,9 @@ const Add_Test = () => {
             )}
           </div>
           <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="deadline">Дедлайн</Label>
+            <FieldLabel htmlFor="deadline" required>
+              Дедлайн
+            </FieldLabel>
             <UseDatePicker
               control={control}
               name="deadline"
@@ -120,9 +125,9 @@ const Add_Test = () => {
             )}
           </div>
           <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="deadline">
+            <FieldLabel htmlFor="deadline">
               Выберите курсы для закрепления теста
-            </Label>
+            </FieldLabel>
             <UseMultiSelect
               options={courseOptions}
               onValueChange={setSelectedCourses}
@@ -135,11 +140,15 @@ const Add_Test = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Максимальное количество баллов</Label>
+            <FieldLabel required>Максимальное количество баллов</FieldLabel>
             <Input
               type="number"
               placeholder="Введите число"
-              {...register("max_points", { required: true, min: 0 })}
+              {...register("max_points", {
+                ...requiredField("Укажите максимальное количество баллов"),
+                min: { value: 0, message: "Укажите корректное число" },
+                valueAsNumber: true,
+              })}
             />
             {errors.max_points && (
               <span className="text-xs text-red-500">
@@ -149,11 +158,11 @@ const Add_Test = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Ссылка на форму</Label>
+            <FieldLabel required>Ссылка на форму</FieldLabel>
             <Input
               type="url"
               placeholder="https://example.com/form"
-              {...register("link_form", { required: true })}
+              {...register("link_form", requiredField("Укажите ссылку на форму"))}
             />
             {errors.link_form && (
               <span className="text-xs text-red-500">Ссылка обязательна</span>
@@ -161,11 +170,11 @@ const Add_Test = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Ссылка на документ</Label>
+            <FieldLabel required>Ссылка на документ</FieldLabel>
             <Input
               type="url"
               placeholder="https://example.com/doc"
-              {...register("link_doc", { required: true })}
+              {...register("link_doc", requiredField("Укажите ссылку на документ"))}
             />
             {errors.link_doc && (
               <span className="text-xs text-red-500">Ссылка обязательна</span>

@@ -8,7 +8,7 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 import { userQueries } from "entities/User";
 import { LuCloudUpload } from "react-icons/lu";
 import { Card } from "shared/shadcn/ui/card";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "shared/shadcn/ui/select";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 import { CreateCoursePayload } from "../model/types/course_payload";
 
 const Add_Course = () => {
@@ -71,20 +72,26 @@ const Add_Course = () => {
   return (
     <section className="py-4">
       <Card className="flex flex-col gap-4 p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="title" className="pb-2">
+            <FieldLabel htmlFor="title" className="pb-2" required>
               Название курса
-            </Label>
+            </FieldLabel>
             <Input
               type="text"
               placeholder="Введите название курса"
               maxLength={30}
               minLength={6}
               {...register("discipline_name", {
-                required: true,
-                minLength: 6,
-                maxLength: 30,
+                ...requiredField("Заполните название курса"),
+                minLength: {
+                  value: 6,
+                  message: "Название курса должно быть от 6 до 30 символов",
+                },
+                maxLength: {
+                  value: 30,
+                  message: "Название курса должно быть от 6 до 30 символов",
+                },
               })}
             />
             {errors.discipline_name && (
@@ -95,9 +102,9 @@ const Add_Course = () => {
           </div>
 
           <div className="flex flex-col">
-            <Label htmlFor="organization_id" className="pb-2">
+            <FieldLabel htmlFor="organization_id" className="pb-2" required>
               Кафедра
-            </Label>
+            </FieldLabel>
             <Select
               value={selectedOrganizationId || undefined}
               onValueChange={setDepartment}
@@ -124,9 +131,7 @@ const Add_Course = () => {
             </Select>
             <input
               type="hidden"
-              {...register("organization_id", {
-                required: "Кафедра обязательна",
-              })}
+              {...register("organization_id", requiredField("Выберите кафедру"))}
             />
             {errors.organization_id && (
               <span className="text-xs text-red-500 pt-1">

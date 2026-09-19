@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { LuCheckCheck, LuDownload } from "react-icons/lu";
 import { toast } from "sonner";
@@ -27,7 +27,7 @@ import { studentAvatarSrc, studentInitials } from "./studentAvatar";
 
 const CourseResultTable = () => {
   const id = useCourseId();
-  const { id: userId } = useAuth();
+  const { isStudent, isAuthenticated } = useAuth();
   const [exportForbidden, setExportForbidden] = useState(false);
   const { data, isLoading } = useQuery(
     courseQueries.allStudentPerfomance(id as string)
@@ -36,14 +36,8 @@ const CourseResultTable = () => {
     courseQueries.courseModules(id || "")
   );
 
-  const canExport = useMemo(() => {
-    if (!id || exportForbidden || !userId) return false;
-    return (
-      courseModules?.course_owner?.some(
-        (owner) => Number(owner.user_id) === Number(userId)
-      ) ?? false
-    );
-  }, [courseModules?.course_owner, exportForbidden, id, userId]);
+  const canExport =
+    Boolean(id) && isAuthenticated && !isStudent && !exportForbidden;
 
   const exportMutation = useMutation({
     mutationFn: () =>

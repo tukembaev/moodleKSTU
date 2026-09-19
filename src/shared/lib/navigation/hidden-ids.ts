@@ -150,8 +150,10 @@ export function getCourseInviteUrl(
 ): string {
   const origin =
     typeof window !== "undefined" ? window.location.origin : "";
+  if (linkId) {
+    return `${origin}/course/${courseId}/${linkId}/invite`;
+  }
   const params = new URLSearchParams({ course_id: courseId });
-  if (linkId) params.set("link_id", linkId);
   return `${origin}${COURSE_INVITE_PATH}?${params.toString()}`;
 }
 
@@ -160,6 +162,15 @@ function firstUuid(...values: Array<string | null | undefined>): string | null {
     if (value && isUuid(value)) return value;
   }
   return null;
+}
+
+export function isCourseInvitePath(pathname: string): boolean {
+  return (
+    pathname === COURSE_INVITE_PATH ||
+    /^\/courses\/course_themes\/[^/]+\/invite(?:\/[^/]+)?\/?$/.test(pathname) ||
+    /^\/courses\/invite\/[^/]+(?:\/[^/]+)?\/?$/.test(pathname) ||
+    /^\/course\/[^/]+\/[^/]+\/invite\/?$/.test(pathname)
+  );
 }
 
 export function parseCourseInviteIds(
@@ -173,19 +184,24 @@ export function parseCourseInviteIds(
     /^\/courses\/course_themes\/([^/]+)\/invite(?:\/([^/]+))?\/?$/
   );
   const invitePair = pathname.match(/^\/courses\/invite\/([^/]+)\/([^/]+)\/?$/);
+  const backendInvite = pathname.match(
+    /^\/course\/([^/]+)\/([^/]+)\/invite\/?$/
+  );
 
   return {
     courseId: firstUuid(
       params.get("course_id"),
       params.get("courseId"),
       themeInvite?.[1],
-      invitePair?.[1]
+      invitePair?.[1],
+      backendInvite?.[1]
     ),
     linkId: firstUuid(
       params.get("link_id"),
       params.get("linkId"),
       themeInvite?.[2],
-      invitePair?.[2]
+      invitePair?.[2],
+      backendInvite?.[2]
     ),
   };
 }
@@ -304,10 +320,7 @@ export function captureHiddenIdsFromLocation(
   );
 
   const inviteIds = parseCourseInviteIds(path, search);
-  const isInvitePath =
-    path === COURSE_INVITE_PATH ||
-    /^\/courses\/course_themes\/[^/]+\/invite(?:\/[^/]+)?\/?$/.test(path) ||
-    /^\/courses\/invite\/[^/]+(?:\/[^/]+)?\/?$/.test(path);
+  const isInvitePath = isCourseInvitePath(path);
 
   if (inviteIds.courseId && (isInvitePath || Boolean(inviteIds.linkId))) {
     setHiddenId("inviteCourseId", inviteIds.courseId);

@@ -1,6 +1,6 @@
 import { PlusIcon } from "lucide-react";
 import { FC } from "react";
-import { FormQuery } from "shared/config";
+import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useForm } from "shared/hooks";
 import {
   Attachment,

@@ -1,6 +1,6 @@
 // Tremor Tracker [v0.1.3]
 
-import { SetMark } from "features/Course";
+import { SetMark } from "features/Course/hooks/SetMark";
 import React from "react";
 import { cx } from "../cx";
 

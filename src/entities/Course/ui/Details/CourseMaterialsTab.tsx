@@ -2,11 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { DownloadIcon, Loader2, Search } from "lucide-react";
+import { DownloadIcon, Loader2, Search, Trash2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { LuFolderOpen } from "react-icons/lu";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { CourseMaterialFile } from "entities/Course/model/types/course";
+import { UseConfirmationDialog } from "shared/components";
+import { useAuth } from "shared/hooks";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { getExtension, getFileKindIcon } from "shared/lib/fileKind";
 import { Button } from "shared/shadcn/ui/button";
@@ -73,12 +75,98 @@ function MaterialsSkeleton() {
   );
 }
 
+function MaterialFileRow({
+  item,
+  canDelete,
+  isDeleting,
+  onOpenTheme,
+  onDelete,
+}: {
+  item: CourseMaterialFile;
+  canDelete: boolean;
+  isDeleting: boolean;
+  onOpenTheme: (themeId: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const FileKindIcon = getFileKindIcon(
+    getExtension(item.file_name || item.file)
+  );
+  const fileName = item.file_name || "Без названия";
+
+  return (
+    <li className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <div className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
+          <FileKindIcon className="size-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <a
+            href={item.file}
+            download={item.file_name}
+            target="_blank"
+            rel="noreferrer"
+            className="block truncate font-medium hover:underline"
+          >
+            {fileName}
+          </a>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+            <button
+              type="button"
+              className="hover:text-foreground hover:underline"
+              onClick={() => onOpenTheme(item.theme.id)}
+            >
+              {item.theme.title}
+            </button>
+            <span aria-hidden="true">·</span>
+            <time dateTime={item.uploaded_at}>
+              {formatUploadedAt(item.uploaded_at)}
+            </time>
+          </div>
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        {canDelete ? (
+          <UseConfirmationDialog
+            title="Удалить материал?"
+            description={`«${fileName}» будет удалён без возможности восстановления.`}
+            onConfirm={() => onDelete(item.id)}
+            trigger={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="size-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                disabled={isDeleting}
+                aria-label={`Удалить ${fileName}`}
+              >
+                <Trash2Icon />
+              </Button>
+            }
+          />
+        ) : null}
+        <Button variant="outline" size="sm" asChild className="shrink-0">
+          <a
+            href={item.file}
+            download={item.file_name}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <DownloadIcon />
+            Скачать
+          </a>
+        </Button>
+      </div>
+    </li>
+  );
+}
+
 export const CourseMaterialsTab = ({
   onOpenTheme,
 }: {
   onOpenTheme: (themeId: string) => void;
 }) => {
   const courseId = useCourseId();
+  const { isStudent, isAuthenticated } = useAuth();
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -92,11 +180,14 @@ export const CourseMaterialsTab = ({
   const { data, isPending, isFetching, error, refetch } = useQuery(
     courseQueries.courseMaterials(courseId || null, debouncedSearch)
   );
+  const { mutate: deleteMaterial, isPending: isDeleting, variables: deletingId } =
+    courseQueries.delete_material();
 
   const status = apiStatus(error);
   const materials = data ?? [];
   const groups = useMemo(() => groupByTheme(materials), [materials]);
   const hasSearch = Boolean(debouncedSearch);
+  const canDelete = Boolean(isAuthenticated && !isStudent);
 
   const searchField = (
     <div className="relative w-full sm:max-w-[360px]">
@@ -207,58 +298,16 @@ export const CourseMaterialsTab = ({
                 </span>
               </button>
               <ul className="divide-y rounded-md border">
-                {group.files.map((item) => {
-                  const FileKindIcon = getFileKindIcon(
-                    getExtension(item.file_name || item.file)
-                  );
-                  return (
-                    <li
-                      key={item.id}
-                      className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center"
-                    >
-                      <div className="flex min-w-0 flex-1 items-start gap-3">
-                        <div className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
-                          <FileKindIcon className="size-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <a
-                            href={item.file}
-                            download={item.file_name}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block truncate font-medium hover:underline"
-                          >
-                            {item.file_name || "Без названия"}
-                          </a>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-                            <button
-                              type="button"
-                              className="hover:text-foreground hover:underline"
-                              onClick={() => onOpenTheme(item.theme.id)}
-                            >
-                              {item.theme.title}
-                            </button>
-                            <span aria-hidden="true">·</span>
-                            <time dateTime={item.uploaded_at}>
-                              {formatUploadedAt(item.uploaded_at)}
-                            </time>
-                          </div>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" asChild className="shrink-0">
-                        <a
-                          href={item.file}
-                          download={item.file_name}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <DownloadIcon />
-                          Скачать
-                        </a>
-                      </Button>
-                    </li>
-                  );
-                })}
+                {group.files.map((item) => (
+                  <MaterialFileRow
+                    key={item.id}
+                    item={item}
+                    canDelete={canDelete}
+                    isDeleting={isDeleting && deletingId === item.id}
+                    onOpenTheme={onOpenTheme}
+                    onDelete={deleteMaterial}
+                  />
+                ))}
               </ul>
             </section>
           ))}

@@ -24,6 +24,8 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Checkbox } from "shared/shadcn/ui/checkbox";
 import { Input } from "shared/shadcn/ui/input";
+import { FieldLabel } from "shared/components/FieldLabel";
+import { onFormInvalid, requiredField, toastRequiredField } from "shared/lib/onFormInvalid";
 import { Label } from "shared/shadcn/ui/label";
 import { ScrollArea } from "shared/shadcn/ui/scroll-area";
 import { Separator } from "shared/shadcn/ui/separator";
@@ -35,7 +37,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
-import { toast } from "sonner";
 
 type QuestionForm = QuestionDraft;
 
@@ -200,7 +201,6 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   const totalQuestions = questionFields.length;
   const activeField = questionFields[activeIndex];
   const canRemoveQuestion = totalQuestions > 1;
-  const isBankDisabled = isQuestionDraftStarted(watchedQuestions?.[activeIndex]);
 
   useEffect(() => {
     setPanelTab("edit");
@@ -280,7 +280,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
     const filledQuestions = formData.questions.filter(isQuestionDraftStarted);
 
     if (filledQuestions.length === 0) {
-      toast.error("Добавьте хотя бы один вопрос");
+      toastRequiredField("Добавьте хотя бы один вопрос");
       setActiveIndex(0);
       return;
     }
@@ -291,7 +291,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
       const result = validateFilledQuestion(question);
       if (result !== true) {
         setActiveIndex(index);
-        toast.error(result);
+        toastRequiredField(result);
         return;
       }
     }
@@ -373,8 +373,8 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border">
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden lg:rounded-lg lg:border">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-3 py-3 lg:px-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="truncate text-lg font-semibold">
@@ -491,16 +491,18 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
       ) : (
         <form
           id="test-editor-form"
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(onSubmit, onFormInvalid)}
           className="flex min-h-0 flex-1 flex-col overflow-hidden"
         >
           <ScrollArea className="min-h-0 flex-1 overflow-hidden">
             <div className="space-y-5 p-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
-                  <Label className="pb-2">Название теста</Label>
+                  <FieldLabel className="pb-2" required>
+                    Название теста
+                  </FieldLabel>
                   <Input
-                    {...register("title", { required: true })}
+                    {...register("title", requiredField("Заполните название теста"))}
                     placeholder="Название теста"
                   />
                   {errors.title && (
@@ -508,47 +510,59 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                   )}
                 </div>
                 <div className="md:col-span-2">
-                  <Label className="pb-2">Описание</Label>
+                  <FieldLabel className="pb-2">Описание</FieldLabel>
                   <Input
                     {...register("description")}
                     placeholder="Краткое описание"
                   />
                 </div>
                 <div>
-                  <Label className="pb-2">Время (минуты)</Label>
+                  <FieldLabel className="pb-2" required>
+                    Время (минуты)
+                  </FieldLabel>
                   <Input
                     type="number"
                     {...register("timeLimit", {
-                      required: true,
-                      min: 1,
+                      ...requiredField("Укажите время теста"),
+                      min: { value: 1, message: "Минимум 1 минута" },
                       valueAsNumber: true,
                     })}
                   />
                 </div>
                 <div>
-                  <Label className="pb-2">Максимум баллов</Label>
+                  <FieldLabel className="pb-2" required>
+                    Максимум баллов
+                  </FieldLabel>
                   <Input
                     type="number"
                     step={1}
                     {...register("maxPoints", {
-                      required: true,
-                      min: 0,
+                      ...requiredField("Укажите максимальный балл"),
+                      min: { value: 0, message: "Минимум 0 баллов" },
                       valueAsNumber: true,
                     })}
                   />
                 </div>
                 <div>
-                  <Label className="pb-2">Минимальный балл</Label>
+                  <FieldLabel className="pb-2" required>
+                    Минимальный балл
+                  </FieldLabel>
                   <Input
                     type="number"
                     step={1}
                     {...register("minPoints", {
-                      required: true,
-                      min: 0,
+                      required: "Укажите минимальный балл",
+                      min: { value: 0, message: "От 0 до максимума" },
                       valueAsNumber: true,
-                      validate: (value) =>
-                        value <= (watch("maxPoints") || 0) ||
-                        "Не больше максимального балла",
+                      validate: (value) => {
+                        if (!Number.isFinite(value)) {
+                          return "Укажите минимальный балл";
+                        }
+                        return (
+                          value <= (watch("maxPoints") || 0) ||
+                          "Не больше максимального балла"
+                        );
+                      },
                     })}
                   />
                   {errors.minPoints && (
@@ -586,27 +600,23 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
               <div className="flex flex-col gap-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-lg font-medium">Вопросы</p>
+                    <p className="flex items-baseline gap-2 text-lg font-medium">
+                      Вопросы
+                      <span className="text-xs font-normal text-muted-foreground">
+                        обязательное поле
+                      </span>
+                    </p>
                   </div>
-                  <UseTooltip
-                    text={
-                      isBankDisabled
-                        ? "Недоступно, пока вы заполняете этот вопрос"
-                        : "Вставить готовые вопросы из коллекции"
-                    }
-                  >
-                    <span className={cn(isBankDisabled && "cursor-not-allowed")}>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={isBankDisabled}
-                        onClick={() => setBankPickerOpen(true)}
-                      >
-                        <LuLibrary />
-                        Из коллекции вопросов
-                      </Button>
-                    </span>
+                  <UseTooltip text="Вставить готовые вопросы из коллекции">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBankPickerOpen(true)}
+                    >
+                      <LuLibrary />
+                      Из коллекции вопросов
+                    </Button>
                   </UseTooltip>
                 </div>
 

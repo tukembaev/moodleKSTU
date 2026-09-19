@@ -1,7 +1,6 @@
 import { studentCanTakeTest } from "entities/Test/model/types/test";
-import { ArrowLeft } from "lucide-react";
-import { FC, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FC, useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { cn } from "shared/lib/utils";
 import { openTestPass, useCourseId } from "shared/lib/navigation/hidden-ids";
@@ -13,20 +12,61 @@ interface CourseTasksLayoutProps {
   openThemeRequest?: { id: string; nonce: number } | null;
 }
 
+type LayoutLocationState = {
+  selectedCourseItem?: SelectedCourseItem | null;
+};
+
+const isMobileViewport = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(max-width: 767px)").matches;
+
 export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
   openThemeRequest,
 }) => {
   const courseId = useCourseId();
   const navigate = useNavigate();
+  const location = useLocation();
   const auth = useAuth();
   const isStudent = Boolean(auth?.isStudent);
+  const pushedSelection = useRef(false);
   const [selectedItem, setSelectedItem] = useState<SelectedCourseItem | null>(
     openThemeRequest ? { kind: "theme", id: openThemeRequest.id } : null
   );
 
+  const selectItem = (item: SelectedCourseItem | null) => {
+    setSelectedItem(item);
+    if (!isMobileViewport()) return;
+    const state = (location.state as LayoutLocationState | null) ?? {};
+    if (item) {
+      pushedSelection.current = true;
+      navigate(".", {
+        state: { ...state, selectedCourseItem: item },
+        replace: Boolean(state.selectedCourseItem),
+      });
+      return;
+    }
+    if (state.selectedCourseItem) {
+      pushedSelection.current = false;
+      navigate(-1);
+    }
+  };
+
+  useEffect(() => {
+    if (!isMobileViewport() || !pushedSelection.current) return;
+    const fromHistory =
+      (location.state as LayoutLocationState | null)?.selectedCourseItem ??
+      null;
+    if (!fromHistory) {
+      pushedSelection.current = false;
+      setSelectedItem(null);
+    }
+  }, [location.key, location.state]);
+
   useEffect(() => {
     if (!openThemeRequest) return;
-    setSelectedItem({ kind: "theme", id: openThemeRequest.id });
+    selectItem({ kind: "theme", id: openThemeRequest.id });
+    // nonce is the trigger; selectItem closes over location
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openThemeRequest]);
 
   const handleItemClick = (
@@ -53,7 +93,7 @@ export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
     if (kind === "theme" && isStudent && meta?.locked) {
       return;
     }
-    setSelectedItem({ kind, id: itemId });
+    selectItem({ kind, id: itemId });
   };
 
   const selectedThemeId =
@@ -81,26 +121,15 @@ export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
           "min-h-0 overflow-hidden",
           !hasSelection
             ? "hidden lg:flex lg:h-full lg:flex-col"
-            : "flex h-[calc(100dvh-9rem)] flex-col lg:h-full"
+            : "flex h-[calc(100dvh-8rem)] flex-col lg:h-full"
         )}
       >
-        {hasSelection && (
-          <button
-            type="button"
-            onClick={() => setSelectedItem(null)}
-            className="mb-3 flex w-full min-h-[44px] shrink-0 items-center gap-2 rounded-lg border bg-background px-3.5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted active:bg-muted/80 lg:hidden"
-          >
-            <ArrowLeft className="h-4 w-4 shrink-0" />
-            <span>Назад к списку</span>
-          </button>
-        )}
-
         {isTestSelected && courseId && selectedItem ? (
           <div className="min-h-0 flex-1 overflow-hidden lg:h-full lg:pr-4">
             <TestEditorPanel
               testId={selectedItem.id}
               courseId={courseId}
-              onDeleted={() => setSelectedItem(null)}
+              onDeleted={() => selectItem(null)}
             />
           </div>
         ) : (

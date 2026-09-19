@@ -21,8 +21,9 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
     const [open, setOpen] = useState(false);
     
     // Подсчет баллов за все задания
-    const totalPoints = student.themes.reduce((sum, theme) => sum + (theme.stud_points || 0), 0);
-    const totalMaxPoints = student.themes.reduce((sum, theme) => sum + theme.max_points, 0);
+    const gradedThemes = student.themes.filter((theme) => theme.max_points > 0);
+    const totalPoints = gradedThemes.reduce((sum, theme) => sum + (theme.stud_points || 0), 0);
+    const totalMaxPoints = gradedThemes.reduce((sum, theme) => sum + theme.max_points, 0);
   
     const TaskListItem = ({
       title,
@@ -119,9 +120,9 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
 
           <div className="space-y-4 sm:space-y-6">
             {/* Все задания */}
-            {student.themes && student.themes.length > 0 ? (
+            {gradedThemes.length > 0 ? (
                   <div className="border rounded-lg overflow-hidden">
-                    {student.themes.map((theme) => (
+                    {gradedThemes.map((theme) => (
                       <TaskListItem
                         key={theme.id}
                         title={theme.title}

@@ -18,7 +18,7 @@ import {
   normalizeFeedItem,
   unwrapList,
 } from "entities/Course/lib/courseFeed";
-import { Course, CourseAllMaterials, CourseAnnouncement, CourseFeedItem, CourseFeedQuery, CourseInviteLink, CourseMaterialFile, CourseMaterials, CourseModulesResponse, CourseStream, CreateAnnouncementPayload, CreateCourseInvitePayload, FeedItem, FileAnswer, MySubmissionsResponse, RegisterToCoursePayload, StudentsAnswers, TablePerfomance, ThemeAttendance, ThemeAttendanceStudent, ThemeFaq, UpdateAnnouncementPayload, UpdateThemeAttendancePayload, WeekTheme } from "../types/course";
+import { Course, CourseAllMaterials, CourseAnnouncement, CourseFeedItem, CourseFeedQuery, CourseInviteLink, CourseMaterialFile, CourseMaterials, CourseModulesResponse, CourseStream, CreateAnnouncementPayload, CreateCourseInvitePayload, FeedItem, FileAnswer, MySubmissionsResponse, RegisterToCoursePayload, StudentsAnswers, TablePerfomance, ThemeFaq, UpdateAnnouncementPayload, WeekTheme } from "../types/course";
 import { Test } from "entities/Test/model/types/test";
 
 
@@ -120,33 +120,6 @@ export const getCourseFeed = async (
   return unwrapList(response.data)
     .map(normalizeFeedItem)
     .filter((item): item is CourseFeedItem => item != null);
-};
-
-export const themeAttendanceQueryKey = (
-  themeId: string | null,
-  group?: string | null
-) => ["course", "attendance", themeId, group || ""] as const;
-
-export const themeAttendanceThemeKey = (themeId: string | null) =>
-  ["course", "attendance", themeId] as const;
-
-export const getThemeAttendance = async (
-  themeId: string,
-  group?: string
-): Promise<ThemeAttendance> => {
-  const trimmed = group?.trim();
-  const response = await $api_edu.get(`attendance/${themeId}/`, {
-    params: trimmed ? { group: trimmed } : undefined,
-  });
-  return response.data;
-};
-
-export const updateThemeAttendance = async (
-  themeId: string,
-  data: UpdateThemeAttendancePayload
-): Promise<ThemeAttendanceStudent> => {
-  const response = await $api_edu.patch(`attendance/${themeId}/`, data);
-  return response.data;
 };
 
 export const createCourseAnnouncement = async (

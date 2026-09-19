@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { Label } from "shared/shadcn/ui/label";
 import {
   Select,
@@ -161,9 +162,9 @@ const QuestionEditorCard = ({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label id={`${uid}-type-label`} htmlFor={`${uid}-type`}>
+        <FieldLabel id={`${uid}-type-label`} htmlFor={`${uid}-type`} required>
           Тип вопроса
-        </Label>
+        </FieldLabel>
         <div className="md:hidden">
           <Select
             value={questionType}
@@ -299,7 +300,9 @@ const QuestionEditorCard = ({
 
       {questionType === "short_answer" && (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor={`${uid}-short-answer`}>Эталонный ответ</Label>
+          <FieldLabel htmlFor={`${uid}-short-answer`} required>
+            Эталонный ответ
+          </FieldLabel>
           <Input
             id={`${uid}-short-answer`}
             value={typeof value.correctAnswer === "string" ? value.correctAnswer : ""}

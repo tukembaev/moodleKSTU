@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { DragEvent, FC, useRef, useState } from "react";
-import { LuFileText, LuUpload } from "react-icons/lu";
+import { LuChevronDown, LuFileText, LuUpload } from "react-icons/lu";
 import { useAuth } from "shared/hooks";
-import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
 
 import {
@@ -20,16 +19,19 @@ import { MaterialAttachment } from "./MaterialAttachment";
 interface MaterialsSectionProps {
   themeId: string | null;
   className?: string;
+  collapsible?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const MaterialsSection: FC<MaterialsSectionProps> = ({
   themeId,
   className,
+  collapsible = false,
+  open = true,
+  onOpenChange,
 }) => {
   const auth_data = useAuth();
-
-  const courseId = useCourseId();
- 
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
@@ -37,14 +39,10 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
     courseQueries.allTaskMaterials(themeId)
   );
 
-  const { data: courseDetails } = useQuery(
-    courseQueries.allTasks(courseId || null)
-  );
-
   const { mutate: delete_material } = courseQueries.delete_material();
   const { mutate: add_material } = courseQueries.create_material();
 
-  const isOwner = courseDetails?.course_owner?.[0]?.user_id === auth_data?.id;
+  const canManageMaterials = Boolean(auth_data.isAuthenticated && !auth_data.isStudent);
 
   const allMaterials = [
     ...(materials?.filter((material) => material.files) || []),
@@ -80,7 +78,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
     setIsDragging(false);
     dragCounter.current = 0;
 
-    if (!themeId || auth_data.isStudent) {
+    if (!themeId || !canManageMaterials) {
       toast.error("У вас нет прав для загрузки материалов");
       return;
     }
@@ -109,9 +107,11 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
 
   return (
     <div
-      className={cn(
-        "relative flex h-full min-h-0 flex-col px-3 pb-3 sm:px-4 sm:pb-4",
-        isDragging && !auth_data.isStudent && "ring-2 ring-primary ring-inset",
+        className={cn(
+          "relative flex min-h-0 flex-col px-3 lg:px-4",
+        (!collapsible || open) && "h-full",
+          (!collapsible || open) ? "pb-3 sm:pb-4" : "pb-1",
+        isDragging && canManageMaterials && "ring-2 ring-primary ring-inset",
         className
       )}
       onDragEnter={handleDragEnter}
@@ -120,7 +120,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
       onDrop={handleDrop}
     >
       {/* Drag & Drop Overlay */}
-      {isDragging && !auth_data.isStudent && (
+      {isDragging && canManageMaterials && (
         <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm z-10 flex items-center justify-center pointer-events-none">
           <div className="bg-background border-2 border-dashed border-primary rounded-lg p-8 flex flex-col items-center gap-3">
             <LuUpload size={48} className="text-primary" />
@@ -130,49 +130,66 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
         </div>
       )}
 
-      <div className="mb-2 flex shrink-0 items-center justify-between gap-2 sm:mb-3">
+      <button
+        type="button"
+        disabled={!collapsible}
+        onClick={() => onOpenChange?.(!open)}
+        className={cn(
+          "mb-2 flex w-full shrink-0 items-center justify-between gap-2 text-left sm:mb-3",
+          collapsible && "min-h-10 rounded-lg px-1 -mx-1 active:bg-accent/50 lg:pointer-events-none lg:min-h-0 lg:px-0 lg:mx-0"
+        )}
+      >
         <p className="min-w-0 truncate text-base font-semibold sm:text-lg">
           Учебные материалы
         </p>
-       
-      </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {isPending ? null : !allMaterials.length ? (
-          !auth_data.isStudent && themeId ? (
-            <div className="flex flex-wrap gap-2">
-              <AddMaterialCard themeId={themeId} />
-            </div>
-          ) : (
-            <Empty className="h-full min-h-0 p-4 md:p-6">
-              <EmptyContent>
-                <EmptyMedia variant="icon">
-                  <LuFileText size={24} />
-                </EmptyMedia>
-                <EmptyTitle>Нет материалов</EmptyTitle>
-                <EmptyDescription>
-                  Учебные материалы для этой темы еще не добавлены
-                </EmptyDescription>
-              </EmptyContent>
-            </Empty>
-          )
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {allMaterials.map((material) => (
-              <MaterialAttachment
-                key={material.id}
-                material={material}
-                canDelete={isOwner}
-                onDelete={delete_material}
-                className="w-full sm:min-w-[240px] sm:flex-1 sm:max-w-md"
-              />
-            ))}
-            {!auth_data.isStudent && themeId && (
-              <AddMaterialCard themeId={themeId} />
+        {collapsible && (
+          <LuChevronDown
+            className={cn(
+              "size-4 shrink-0 text-muted-foreground transition-transform lg:hidden",
+              open && "rotate-180"
             )}
-          </div>
+          />
         )}
-      </div>
+      </button>
+
+      {(!collapsible || open) && (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {isPending ? null : !allMaterials.length ? (
+            canManageMaterials && themeId ? (
+              <div className="flex flex-wrap gap-2">
+                <AddMaterialCard themeId={themeId} />
+              </div>
+            ) : (
+              <Empty className="h-full min-h-0 p-4 md:p-6">
+                <EmptyContent>
+                  <EmptyMedia variant="icon">
+                    <LuFileText size={24} />
+                  </EmptyMedia>
+                  <EmptyTitle>Нет материалов</EmptyTitle>
+                  <EmptyDescription>
+                    Учебные материалы для этой темы еще не добавлены
+                  </EmptyDescription>
+                </EmptyContent>
+              </Empty>
+            )
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {allMaterials.map((material) => (
+                <MaterialAttachment
+                  key={material.id}
+                  material={material}
+                  canDelete={canManageMaterials}
+                  onDelete={delete_material}
+                  className="w-full sm:min-w-[240px] sm:flex-1 sm:max-w-md"
+                />
+              ))}
+              {canManageMaterials && themeId && (
+                <AddMaterialCard themeId={themeId} />
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

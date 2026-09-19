@@ -1,3 +1,4 @@
+import { teacherCommentText } from "entities/Course/lib/teacherComment";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LucideWandSparkles } from "lucide-react";
 import React, { useState } from "react";
@@ -9,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "shared/shadcn/ui/dropdown-menu";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { Textarea } from "shared/shadcn/ui/textarea";
 
 export function SetMark({
@@ -31,6 +32,7 @@ export function SetMark({
   const [open, setOpen] = useState(false);
   const [score, setScore] = useState(points ?? 0);
   const [teacherComment, setTeacherComment] = useState(comment ?? "");
+  const existingComment = teacherCommentText(comment);
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -45,7 +47,7 @@ export function SetMark({
       {
         answer: id as string,
         points: score,
-        comment: teacherComment.trim() || null,
+        comment: existingComment ?? (teacherComment.trim() || null),
       },
       {
         onSuccess: () => setOpen(false),
@@ -68,19 +70,28 @@ export function SetMark({
         />
 
         <div className="mt-4 space-y-1.5">
-          <Label htmlFor={`grade-comment-${id ?? "new"}`} className="text-xs text-muted-foreground">
+          <FieldLabel
+            htmlFor={`grade-comment-${id ?? "new"}`}
+            className="text-xs text-muted-foreground"
+          >
             Комментарий
-          </Label>
-          <Textarea
-            id={`grade-comment-${id ?? "new"}`}
-            value={teacherComment}
-            onChange={(event) => setTeacherComment(event.target.value)}
-            placeholder="Необязательный комментарий к оценке"
-            rows={3}
-            className="min-h-16 resize-none"
-            onPointerDown={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-          />
+          </FieldLabel>
+          {existingComment ? (
+            <p className="rounded-md border bg-muted/40 px-2.5 py-2 text-sm whitespace-pre-wrap break-words">
+              {existingComment}
+            </p>
+          ) : (
+            <Textarea
+              id={`grade-comment-${id ?? "new"}`}
+              value={teacherComment}
+              onChange={(event) => setTeacherComment(event.target.value)}
+              placeholder="Необязательный комментарий к оценке"
+              rows={3}
+              className="min-h-16 resize-none"
+              onPointerDown={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+            />
+          )}
         </div>
 
         <Button

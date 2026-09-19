@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import {
   Select,
   SelectContent,
@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "shared/shadcn/ui/select";
+import { ThemeTypeSelectItems } from "./add-theme/add-theme-type-select";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,8 @@ import {
 import { Textarea } from "shared/shadcn/ui/textarea";
 import { useEffect } from "react";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
-import { TYPE_LABELS } from "./add-theme/add-theme-constants";
+import { TYPE_LABELS, isGradableThemeType } from "./add-theme/add-theme-constants";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 
 interface EditTaskFormData {
   week: string;
@@ -45,11 +47,6 @@ interface EditTaskFormProps {
   };
 }
 
-const TASK_TYPES = Object.entries(TYPE_LABELS).map(([value, label]) => ({
-  value,
-  label,
-}));
-
 const toTypeLabel = (value: string) => TYPE_LABELS[value] || value;
 
 export const EditTaskForm = ({
@@ -65,10 +62,25 @@ export const EditTaskForm = ({
     setValue,
     watch,
     reset,
+    unregister,
   } = useForm<EditTaskFormData>();
 
   const selectedWeek = watch("week");
   const selectedType = watch("type_less");
+  const canReceivePoints = isGradableThemeType(selectedType);
+
+  useEffect(() => {
+    register("type_less", requiredField("Выберите тип занятия"));
+  }, [register]);
+
+  useEffect(() => {
+    if (!canReceivePoints) {
+      unregister("max_points");
+      unregister("week");
+      return;
+    }
+    register("week", requiredField("Выберите неделю"));
+  }, [canReceivePoints, register, unregister]);
 
   useEffect(() => {
     if (taskData) {
@@ -88,13 +100,17 @@ export const EditTaskForm = ({
         id: taskData.id,
         data: {
           title: data.title,
-          week: Number(data.week),
+          week: canReceivePoints ? Number(data.week) : Number(data.week) || 1,
           type_less: toTypeLabel(data.type_less),
-          max_points: data.max_points,
+          max_points: canReceivePoints ? data.max_points : 0,
           description: data.description,
           ...(taskData.deadline ? { deadline: taskData.deadline } : {}),
           ...(taskData.open_date ? { open_date: taskData.open_date } : {}),
-          ...(typeof taskData.locked === "boolean" ? { locked: taskData.locked } : {}),
+          ...(canReceivePoints
+            ? typeof taskData.locked === "boolean"
+              ? { locked: taskData.locked }
+              : {}
+            : { locked: false }),
         },
       },
       {
@@ -113,14 +129,16 @@ export const EditTaskForm = ({
           <DialogTitle>Редактировать задание</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(handleFormSubmit, onFormInvalid)} className="space-y-4">
           {/* Название темы */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="title">Название темы</Label>
+            <FieldLabel htmlFor="title" required>
+              Название темы
+            </FieldLabel>
             <Input
               type="text"
               placeholder="Введите название темы"
-              {...register("title", { required: true })}
+              {...register("title", requiredField("Заполните название темы"))}
             />
             {errors.title && (
               <span className="text-xs text-red-500">
@@ -131,7 +149,7 @@ export const EditTaskForm = ({
 
           {/* Описание */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="description">Описание</Label>
+            <FieldLabel htmlFor="description">Описание</FieldLabel>
             <Textarea
               placeholder="Введите описание задания"
               rows={4}
@@ -139,17 +157,19 @@ export const EditTaskForm = ({
             />
           </div>
 
-          {/* Максимальные баллы */}
+          {canReceivePoints && (
           <div className="flex flex-col gap-2">
-            <Label htmlFor="max_points">Максимальные баллы</Label>
+            <FieldLabel htmlFor="max_points" required={canReceivePoints}>
+              Максимальные баллы
+            </FieldLabel>
             <Input
               type="number"
               min="0"
               placeholder="Введите максимальные баллы"
               {...register("max_points", {
-                required: true,
+                ...requiredField("Укажите максимальные баллы"),
                 valueAsNumber: true,
-                min: 0,
+                min: { value: 0, message: "Максимальные баллы не могут быть меньше 0" },
               })}
             />
             {errors.max_points && (
@@ -158,15 +178,17 @@ export const EditTaskForm = ({
               </span>
             )}
           </div>
+          )}
 
-          {/* Неделя и Тип занятия в одной строке */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Неделя */}
+          <div className={canReceivePoints ? "grid grid-cols-2 gap-4" : ""}>
+            {canReceivePoints && (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="week">Неделя</Label>
+              <FieldLabel htmlFor="week" required>
+                Неделя
+              </FieldLabel>
               <Select
                 value={selectedWeek}
-                onValueChange={(value) => setValue("week", value)}
+                onValueChange={(value) => setValue("week", value, { shouldValidate: true })}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Выберите неделю" />
@@ -183,23 +205,27 @@ export const EditTaskForm = ({
                 <span className="text-xs text-red-500">Неделя обязательна</span>
               )}
             </div>
+            )}
 
-            {/* Тип занятия */}
             <div className="flex flex-col gap-2">
-              <Label htmlFor="type_less">Тип занятия</Label>
+              <FieldLabel htmlFor="type_less" required>
+                Тип занятия
+              </FieldLabel>
               <Select
                 value={selectedType}
-                onValueChange={(value) => setValue("type_less", value)}
+                onValueChange={(value) => {
+                  setValue("type_less", value, { shouldValidate: true });
+                  if (!isGradableThemeType(value)) {
+                    setValue("max_points", 0);
+                    setValue("week", "1");
+                  }
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Выберите тип занятия" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.label}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
+                  <ThemeTypeSelectItems />
                 </SelectContent>
               </Select>
               {errors.type_less && (

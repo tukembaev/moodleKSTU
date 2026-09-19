@@ -3,14 +3,14 @@ import {
   currentSubmissionIdFromStudent,
   groupsFromStudent,
 } from "entities/Course/lib/answerSubmissions";
-import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentsAnswers } from "entities/Course/model/types/course";
 import { Remark, RemarkStatus, remarksQueries } from "entities/Remarks";
+import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { SetComment } from "features/Course/hooks/SetComment";
 import { SetMark } from "features/Course/hooks/SetMark";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   LuCheckCheck,
   LuFile,
@@ -77,6 +77,12 @@ const studentInitials = (fullname: string) =>
     .map((part) => part[0])
     .join("")
     .slice(0, 2);
+
+const areAllStudentsLocked = (students: StudentsAnswers[]) =>
+  students.length > 0 && students.every((student) => Boolean(student.locked));
+
+const areAllStudentsUnlocked = (students: StudentsAnswers[]) =>
+  students.length > 0 && students.every((student) => !student.locked);
 
 const getRemarksUiStatus = (
   student: StudentsAnswers,
@@ -244,9 +250,22 @@ const ListOfStudentsWithAnswers = ({
     return [...map.values()];
   }, [data]);
 
+  const courseIdForTheme = String(
+    uniqueData[0]?.course_id || fallbackCourseId || ""
+  );
+  const { data: courseDetails } = useQuery({
+    ...courseQueries.allTasks(courseIdForTheme || null),
+    enabled: Boolean(courseIdForTheme && theme_id),
+  });
+  const currentTheme = courseDetails?.detail?.find(
+    (task) => task.id === theme_id
+  );
+  const storedThemeLocked = currentTheme?.locked;
+  const canReceivePoints = isGradableThemeType(currentTheme?.type_less);
+
   const { data: themeRemarks = [] } = useQuery({
     ...remarksQueries.byTheme(theme_id ?? null),
-    enabled: !!theme_id,
+    enabled: !!theme_id && canReceivePoints,
   });
 
   const filteredData = uniqueData.filter(
@@ -257,19 +276,73 @@ const ListOfStudentsWithAnswers = ({
         student.group === selectedGroup)
   );
   
-  const { mutate: change_permission } = courseQueries.edit_permission();
+  const { mutate: change_permission, isPending: isPermissionPending } =
+    courseQueries.edit_permission();
   const { mutate: setAccessForAll, isPending: isAccessPending } =
     courseQueries.set_theme_access_for_all();
+  const { mutate: editTheme, isPending: isThemeEditPending } =
+    courseQueries.edit_theme();
   const { mutate: removeStudent, isPending: isRemovePending } =
     courseQueries.remove_student();
 
+  const isThemeClosed = areAllStudentsLocked(uniqueData);
+  const isThemeOpen = areAllStudentsUnlocked(uniqueData);
+  const syncedThemeKey = useRef<string | null>(null);
+
+  useEffect(() => {
+    syncedThemeKey.current = null;
+  }, [theme_id]);
+
+  useEffect(() => {
+    if (
+      !theme_id ||
+      uniqueData.length === 0 ||
+      typeof storedThemeLocked !== "boolean" ||
+      isLoading ||
+      isPermissionPending ||
+      isAccessPending ||
+      isThemeEditPending
+    ) {
+      return;
+    }
+    if (isThemeClosed === storedThemeLocked) return;
+    const key = `${theme_id}:${isThemeClosed}`;
+    if (syncedThemeKey.current === key) return;
+    syncedThemeKey.current = key;
+    editTheme({
+      id: theme_id,
+      data: { locked: isThemeClosed },
+      silent: true,
+    });
+  }, [
+    theme_id,
+    uniqueData.length,
+    isThemeClosed,
+    storedThemeLocked,
+    isLoading,
+    isPermissionPending,
+    isAccessPending,
+    isThemeEditPending,
+    editTheme,
+  ]);
+
   const handlePermission = (student: StudentsAnswers) => {
+    const nextLocked = !student.locked;
+    const nextStudents = uniqueData.map((item) =>
+      item.user_id === student.user_id ? { ...item, locked: nextLocked } : item
+    );
+    const nextThemeClosed = areAllStudentsLocked(nextStudents);
+    const currentlyThemeClosed = areAllStudentsLocked(uniqueData);
+
     change_permission({
       id: student.task,
       data: {
-        locked: !student.locked,
+        locked: nextLocked,
         users: [student.user_id],
       },
+      ...(nextThemeClosed !== currentlyThemeClosed
+        ? { themeLocked: nextThemeClosed }
+        : {}),
     });
   };
 
@@ -352,7 +425,7 @@ const ListOfStudentsWithAnswers = ({
                 <Card className={`group overflow-hidden transition-all duration-300 ${
                   isExpanded
                     ? "ring-2 ring-primary/20 shadow-md"
-                    : remarksStatus === "responded"
+                    : canReceivePoints && remarksStatus === "responded"
                       ? "ring-2 ring-blue-300/80 shadow-sm dark:ring-blue-700/60"
                       : "hover:shadow-sm"
                 }`}>
@@ -409,38 +482,36 @@ const ListOfStudentsWithAnswers = ({
                     
                     {/* Status badges */}
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {/* Submission status */}
-                      <div className="flex flex-col items-start gap-1.5">
-                        <SetMark
-                          text="Выставить баллы"
-                          points={student.points}
-                          max_points={student.max_points}
-                          comment={student.comment}
-                          id={student.id}
+                      {canReceivePoints && (
+                      <SetMark
+                        text="Выставить баллы"
+                        points={student.points}
+                        max_points={student.max_points}
+                        comment={student.comment}
+                        id={student.id}
+                      >
+                        <Badge
+                          variant="outline"
+                          className={`gap-1 text-xs cursor-pointer ${
+                            student.status 
+                              ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800" 
+                              : ""
+                          }`}
                         >
-                          <Badge
-                            variant="outline"
-                            className={`gap-1 text-xs cursor-pointer ${
-                              student.status 
-                                ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800" 
-                                : ""
-                            }`}
-                          >
-                            {student.status ? (
-                              <>
-                                <LuThumbsUp className="h-3 w-3" />
-                                Сдано на {student.points}
-                              </>
-                            ) : (
-                              <>
-                                <LuX className="h-3 w-3" />
-                                Не сдано
-                              </>
-                            )}
-                          </Badge>
-                        </SetMark>
-                        <TeacherGradeComment comment={student.comment} />
-                      </div>
+                          {student.status ? (
+                            <>
+                              <LuThumbsUp className="h-3 w-3" />
+                              Сдано на {student.points}
+                            </>
+                          ) : (
+                            <>
+                              <LuX className="h-3 w-3" />
+                              Не сдано
+                            </>
+                          )}
+                        </Badge>
+                      </SetMark>
+                      )}
                       
                       {/* Access status */}
                       <UseTooltip text={student.locked ? "Открыть доступ" : "Закрыть доступ"}>
@@ -467,12 +538,14 @@ const ListOfStudentsWithAnswers = ({
                         </Badge>
                       </UseTooltip>
                       
+                      {canReceivePoints && (
                       <StudentRemarksBadge
                         status={remarksStatus}
                         student={student}
                         theme_id={theme_id}
                         compact
                       />
+                      )}
                     </div>
                   </CardHeader>
                   
@@ -510,8 +583,10 @@ const ListOfStudentsWithAnswers = ({
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-[300px]">Имя студента</TableHead>
-            <TableHead className="w-[100px]">Баллы</TableHead>
-            <TableHead>Статус сдачи</TableHead>
+            {canReceivePoints && (
+              <TableHead className="w-[100px]">Статус сдачи</TableHead>
+            )}
+            <TableHead>Доступ</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -521,15 +596,19 @@ const ListOfStudentsWithAnswers = ({
                 <Skeleton className="h-8 w-8 rounded-full" />
                 <Skeleton className="h-4 w-40" />
               </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-16" />
-              </TableCell>
+              {canReceivePoints && (
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+              )}
               <TableCell>
                 <Skeleton className="h-4 w-12" />
               </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-25" />
-              </TableCell>
+              {canReceivePoints && (
+                <TableCell>
+                  <Skeleton className="h-4 w-25" />
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
@@ -544,11 +623,13 @@ const ListOfStudentsWithAnswers = ({
         <TableHeader className="bg-muted">
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-[150px]">Студент</TableHead>
-            <TableHead className="w-[130px]">Статус сдачи</TableHead>
+            {canReceivePoints && (
+              <TableHead className="w-[130px]">Статус сдачи</TableHead>
+            )}
             <TableHead className="w-[130px]">Доступ</TableHead>
-            <TableHead className="w-[130px]">Замечания</TableHead>
-
-
+            {canReceivePoints && (
+              <TableHead className="w-[130px]">Замечания</TableHead>
+            )}
             <TableHead />
           </TableRow>
         </TableHeader>
@@ -560,7 +641,7 @@ const ListOfStudentsWithAnswers = ({
             <React.Fragment key={student.user_id}>
               <TableRow
                 className={`group ${expandedId === student.id ? "border-b-0" : ""} ${
-                  remarksStatus === "responded"
+                  canReceivePoints && remarksStatus === "responded"
                     ? "bg-blue-50/70 dark:bg-blue-950/20"
                     : ""
                 }`}
@@ -593,8 +674,8 @@ const ListOfStudentsWithAnswers = ({
                     </UseTooltip>
                   )}
                 </TableCell>
+                {canReceivePoints && (
                 <TableCell>
-                    <div className="flex flex-col items-start gap-1.5">
                     <SetMark
                       text="Выставить баллы"
                       points={student.points}
@@ -616,9 +697,8 @@ const ListOfStudentsWithAnswers = ({
                           : "Не сдано"}
                       </Badge>
                     </SetMark>
-                    <TeacherGradeComment comment={student.comment} compact />
-                    </div>
                 </TableCell>
+                )}
                 <TableCell>
                   <UseTooltip
                     text={
@@ -641,6 +721,7 @@ const ListOfStudentsWithAnswers = ({
                     
                   </UseTooltip>
                 </TableCell>
+                {canReceivePoints && (
                 <TableCell>
                   <StudentRemarksBadge
                     status={remarksStatus}
@@ -648,6 +729,7 @@ const ListOfStudentsWithAnswers = ({
                     theme_id={theme_id}
                   />
                 </TableCell>
+                )}
 
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
@@ -673,7 +755,7 @@ const ListOfStudentsWithAnswers = ({
                   key={`expanded-${student.id}`}
                   className="hover:bg-transparent"
                 >
-                  <TableCell colSpan={5} className="pt-0 pb-3">
+                  <TableCell colSpan={canReceivePoints ? 5 : 3} className="pt-0 pb-3">
                     <div className="py-1">
                       <AnswerVersionList
                         groups={groupsFromStudent(student)}
@@ -740,12 +822,12 @@ const ListOfStudentsWithAnswers = ({
             onChange={handleSearch}
             className="max-w-full sm:max-w-[350px]"
           />
-          <div className="hidden lg:flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={() => handleAccessForAll(true)}
               variant="outline"
               size="sm"
-              disabled={isAccessPending}
+              disabled={isAccessPending || isThemeClosed}
             >
               <LuLock className="text-red-400" />
               Закрыть доступ всем
@@ -754,7 +836,7 @@ const ListOfStudentsWithAnswers = ({
               onClick={() => handleAccessForAll(false)}
               variant="outline"
               size="sm"
-              disabled={isAccessPending}
+              disabled={isAccessPending || isThemeOpen}
             >
               <LuKeyRound className="text-green-400" />
               Открыть всем

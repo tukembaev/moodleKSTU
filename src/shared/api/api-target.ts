@@ -10,4 +10,4 @@ export const LOCAL_DJANGO_ORIGIN = "http://localhost:8005";
  *
  * После смены перезапустите `npm run dev`.
  */
-export const API_TARGET: ApiTarget = "local";
+export const API_TARGET: ApiTarget = "prod";

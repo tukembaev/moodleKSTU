@@ -7,7 +7,8 @@ import { useEffect } from "react";
 import { LuCloudUpload } from "react-icons/lu";
 import { useFormParam } from "shared/hooks";
 import { Card } from "shared/shadcn/ui/card";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 import { CreateFAQPayload } from "../model/types/course_payload";
 
 const Add_Theme_FAQ = () => {
@@ -32,13 +33,15 @@ const Add_Theme_FAQ = () => {
   return (
     <section className="py-4">
       <Card className="flex flex-col gap-4 p-6 ">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="course">Часто задаваемый вопрос</Label>
+            <FieldLabel htmlFor="course" required>
+              Часто задаваемый вопрос
+            </FieldLabel>
             <Input
               type="text"
               placeholder="Введите вопрос"
-              {...register("question", { required: true })}
+              {...register("question", requiredField("Заполните вопрос"))}
             />
             {errors.question && (
               <span className="text-xs text-red-500">Вопрос обязателен</span>
@@ -46,11 +49,13 @@ const Add_Theme_FAQ = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="title">Ответ</Label>
+            <FieldLabel htmlFor="title" required>
+              Ответ
+            </FieldLabel>
             <Input
               type="text"
               placeholder="Введите ответ"
-              {...register("answer", { required: true })}
+              {...register("answer", requiredField("Заполните ответ"))}
             />
             {errors.answer && (
               <span className="text-xs text-red-500">Ответ обязателен</span>

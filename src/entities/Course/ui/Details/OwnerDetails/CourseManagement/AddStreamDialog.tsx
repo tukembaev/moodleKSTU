@@ -10,8 +10,9 @@ import {
   DialogTitle,
 } from "shared/shadcn/ui/dialog";
 import { Input } from "shared/shadcn/ui/input";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
 import { CourseStreamItemPayload } from "features/Course";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 
 interface AddStreamDialogProps {
   open: boolean;
@@ -62,16 +63,24 @@ export const AddStreamDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(submit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(submit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="title">Название потока</Label>
+            <FieldLabel htmlFor="title" required>
+              Название потока
+            </FieldLabel>
             <Input
               id="title"
               placeholder="Например, ПИ-2-24"
               {...register("title", {
-                required: true,
-                minLength: 2,
-                maxLength: 50,
+                ...requiredField("Заполните название потока"),
+                minLength: {
+                  value: 2,
+                  message: "Укажите название потока от 2 до 50 символов",
+                },
+                maxLength: {
+                  value: 50,
+                  message: "Укажите название потока от 2 до 50 символов",
+                },
               })}
             />
             {errors.title && (
@@ -82,11 +91,13 @@ export const AddStreamDialog = ({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="stream">Идентификатор потока</Label>
+            <FieldLabel htmlFor="stream" required>
+              Идентификатор потока
+            </FieldLabel>
             <Input
               id="stream"
               placeholder="ID потока"
-              {...register("stream", { required: true, minLength: 1 })}
+              {...register("stream", requiredField("Укажите идентификатор потока"))}
             />
             {errors.stream && (
               <span className="text-xs text-destructive">

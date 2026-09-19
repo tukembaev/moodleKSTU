@@ -8,8 +8,8 @@ import {
   SpringPopupList,
   UseTooltip,
 } from "shared/components";
-import { FormQuery } from "shared/config";
-import { AppRoutes } from "shared/config/routeConfig/routeConfig";
+import { FormQuery } from "shared/config/formConfig/formQuery";
+import { AppRoutes } from "shared/config/routeConfig/routePath";
 import { useAuth, useForm } from "shared/hooks";
 import { openCourse } from "shared/lib/navigation/hidden-ids";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";

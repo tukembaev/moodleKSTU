@@ -15,17 +15,27 @@ const UserProfile = () => {
   const { id: user_id } = useAuth();
   const isOwnProfile = !visit_user;
 
-  const { data: lmsUser, isLoading: isLmsLoading } = useQuery(
-    userQueries.user(visit_user ? Number(visit_user) : user_id)
-  );
+  const { data: visitedProfile, isLoading: isVisitedLoading } = useQuery({
+    ...userQueries.userService(visit_user ?? ""),
+    enabled: Boolean(visit_user),
+  });
+  const { data: lmsUser } = useQuery({
+    ...userQueries.user(user_id),
+    enabled: isOwnProfile && Boolean(user_id),
+  });
   const { data: me, isLoading: isMeLoading } = useQuery({
     ...userQueries.me(),
     enabled: isOwnProfile,
   });
 
-  const data =
-    isOwnProfile && me ? mapUsersMeToProfile(me, lmsUser) : lmsUser;
-  const isLoading = isOwnProfile ? isMeLoading && !me : isLmsLoading;
+  const data = visit_user
+    ? visitedProfile
+    : me
+      ? mapUsersMeToProfile(me, lmsUser)
+      : lmsUser;
+  const isLoading = visit_user
+    ? isVisitedLoading
+    : isMeLoading && !me;
   const {
     data: user_files,
     isLoading: isLoadingFiles,

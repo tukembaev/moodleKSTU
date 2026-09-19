@@ -13,7 +13,8 @@ import { getPostLoginPath } from "shared/lib/navigation/hidden-ids";
 import { GoogleIcon } from "shared/assets";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
-import { Label } from "shared/shadcn/ui/label";
+import { FieldLabel } from "shared/components/FieldLabel";
+import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { useGoogleToken } from "../lib/useGoogleToken";
@@ -113,7 +114,7 @@ const LoginForm = ({
       toast.error(`Ошибка авторизации: ${message}`);
       setLoading(false);
     }
-  });
+  }, onFormInvalid);
 
   const onSelectContext = async (context: ProfileContext) => {
     setLoading(true);
@@ -197,7 +198,9 @@ const LoginForm = ({
               <form onSubmit={onSubmit}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="username">ПИН</Label>
+                    <FieldLabel htmlFor="username" required>
+                      ПИН
+                    </FieldLabel>
                     <Input
                       id="username"
                       placeholder="ПИН"
@@ -207,9 +210,7 @@ const LoginForm = ({
                       autoCorrect="off"
                       disabled={loading}
                       className="h-11 text-base sm:h-10 sm:text-sm"
-                      {...register("username", {
-                        required: "ПИН обязателен",
-                      })}
+                      {...register("username", requiredField("Заполните ПИН"))}
                     />
                     {errors.username && (
                       <p className="text-sm text-destructive">
@@ -219,7 +220,9 @@ const LoginForm = ({
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="password">Пароль</Label>
+                    <FieldLabel htmlFor="password" required>
+                      Пароль
+                    </FieldLabel>
                     <div className="relative">
                       <Input
                         id="password"
@@ -228,9 +231,7 @@ const LoginForm = ({
                         autoComplete="current-password"
                         disabled={loading}
                         className="h-11 pr-10 text-base sm:h-10 sm:text-sm"
-                        {...register("password", {
-                          required: "Пароль обязателен",
-                        })}
+                        {...register("password", requiredField("Заполните пароль"))}
                       />
                       <Button
                         type="button"

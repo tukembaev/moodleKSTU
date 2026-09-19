@@ -3,12 +3,21 @@ import { FavoritePayload } from "features/User";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
 import { $api_auth } from "shared/lib/auth";
-import { AchievementList, Favorites, Notification, UserFilesList, UserGroupList, UserProfileData, UsersMe } from "../types/user";
+import { mapUsersMeToProfile } from "../lib/mapUsersMe";
+import { AchievementList, Favorites, Notification, UserFilesList, UserGroupList, UserProfileData, UserServiceProfile, UsersMe } from "../types/user";
 
 
 export const getUserInfo = async (id: number | null): Promise<UserProfileData> => {
   const response = await $api_users.get(`user/${id}/`)
   return response.data
+};
+
+/** GET users/api/v1/users/{user_id} — профиль по id из URL */
+export const getUserByServiceId = async (
+  userId: string
+): Promise<UserProfileData> => {
+  const response = await $api_auth.get<UserServiceProfile>(`users/${userId}`);
+  return mapUsersMeToProfile(response.data);
 };
 
 export const getCurrentUser = async (): Promise<UsersMe> => {

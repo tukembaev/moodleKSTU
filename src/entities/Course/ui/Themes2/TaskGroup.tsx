@@ -1,4 +1,5 @@
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { EditTaskForm } from "features/Course/forms/edit-task-form";
 import { FC, useMemo, useState } from "react";
 import { Progress } from "shared/shadcn/ui/progress";
@@ -35,6 +36,8 @@ export const TaskGroup: FC<TaskGroupProps> = ({
   const [editingTask, setEditingTask] = useState<CourseListTask | null>(null);
   const { mutate: deleteTheme } = courseQueries.delete_theme();
 
+  const showPoints = isTestsGroup || isGradableThemeType(title);
+
   const { earnedPoints, maxPoints, percentage } = useMemo(() => {
     const maxPoints = tasks.reduce((sum, task) => sum + task.max_points, 0);
     const earnedPoints = tasks.reduce((sum, task) => {
@@ -68,7 +71,7 @@ export const TaskGroup: FC<TaskGroupProps> = ({
           <h3 className="text-base font-semibold text-foreground">{title}</h3>
 
           <div className="flex items-center gap-3">
-            {isStudent && (
+            {isStudent && showPoints && (
               <div className="flex w-full items-center gap-3 sm:min-w-[200px] sm:w-auto">
                 <Progress value={percentage} className="h-2 flex-1" />
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
@@ -110,6 +113,7 @@ export const TaskGroup: FC<TaskGroupProps> = ({
             passed={task.passed ?? null}
             comment={task.comment}
             needsReview={task.needsReview ?? null}
+            canReceivePoints={showPoints}
           />
         ))}
       </div>
