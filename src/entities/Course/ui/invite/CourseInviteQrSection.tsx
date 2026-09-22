@@ -44,7 +44,7 @@ const INVITE_DURATIONS: { label: string; duration: string | null }[] = [
   { label: "Неделя", duration: "P7D" },
   { label: "Месяц", duration: "P30D" },
   { label: "Год", duration: "P365D" },
-  { label: "Бессрочно", duration: null },
+  { label: "Открыт всегда", duration: null },
 ];
 
 function wrapCanvasText(

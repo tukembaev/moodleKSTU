@@ -33,6 +33,12 @@ const Header = () => {
         <div className="flex items-center gap-4">
           <nav className="flex items-center gap-1">
             <NavLink
+              to={RoutePath[AppRoutes.TODAY]}
+              className={({ isActive }) => navLinkClass(isActive)}
+            >
+              Сегодня
+            </NavLink>
+            <NavLink
               to={RoutePath[AppRoutes.COURSES]}
               className={({ isActive }) => navLinkClass(isActive)}
             >

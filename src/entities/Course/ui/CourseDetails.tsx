@@ -16,20 +16,32 @@ import { CourseMaterialsTab } from "./Details/CourseMaterialsTab";
 import { MySubmissionsTab } from "./Details/MySubmissionsTab";
 
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { Archive } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "shared/hooks";
+import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
 import {
   COURSE_FEED_TAB,
   isCourseFeedTab,
   useCourseId,
 } from "shared/lib/navigation/hidden-ids";
 import { courseQueries } from "../model/services/courseQueryFactory";
+import { isCourseArchived } from "../model/types/course";
 import { CourseManagementTab } from "./Details/OwnerDetails/CourseManagement";
 import CourseResultTable from "./Details/OwnerDetails/CourseResultTable";
 import { CourseTasksLayout } from "./Themes2";
 import { CourseInviteQrButton } from "./invite/CourseInviteQrSection";
 import { CourseSectionPicker } from "./Details/CourseSectionPicker";
 import { Badge } from "shared/shadcn/ui/badge";
+import { Button } from "shared/shadcn/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "shared/shadcn/ui/empty";
 import {
   Tabs,
   TabsContent,
@@ -40,6 +52,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 
 const CourseDetails = () => {
   const id = useCourseId();
+  const navigate = useNavigate();
   const {isStudent} = useAuth();
   const safeId = id || "";
   const isLocked = false;
@@ -163,6 +176,33 @@ const CourseDetails = () => {
     return <div className="py-8 text-center text-muted-foreground">Загрузка...</div>;
   }
 
+  const archived = isCourseArchived(courseDetails) || isCourseArchived(courseModulesData);
+  if (isStudent && archived) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Empty className="max-w-md border">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Archive />
+            </EmptyMedia>
+            <EmptyTitle>Курс в архиве</EmptyTitle>
+            <EmptyDescription>
+              Этот курс скрыт и больше недоступен.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button
+              onClick={() => navigate(RoutePath[AppRoutes.COURSES])}
+              className="cursor-pointer"
+            >
+              К моим курсам
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-col gap-3 sm:gap-4 lg:h-full lg:overflow-hidden">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-3 md:gap-0">
@@ -173,6 +213,11 @@ const CourseDetails = () => {
               <h1 className="min-w-0 text-lg font-bold leading-snug tracking-tight break-words md:text-2xl lg:text-4xl">
                 {courseModulesData?.discipline_name}
               </h1>
+              {archived && (
+                <Badge variant="secondary" className="font-normal">
+                  Архив
+                </Badge>
+              )}
               {!isStudent && safeId && (
               <CourseInviteQrButton
                 courseId={safeId}

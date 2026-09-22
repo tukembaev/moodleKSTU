@@ -1,6 +1,7 @@
 export enum AppRoutes {
   LOGIN = "login",
 
+  TODAY = "today",
   COURSES = "courses",
   COURSE_INVITE = "course_invite",
   WORKLOAD = "workload",
@@ -34,6 +35,7 @@ export enum AppSubRoutes {
 export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppRoutes.LOGIN]: "/",
 
+  [AppRoutes.TODAY]: "/today",
   [AppRoutes.COURSES]: "/courses",
   [AppRoutes.COURSE_INVITE]: "/courses/invite",
   [AppRoutes.WORKLOAD]: "/workload",

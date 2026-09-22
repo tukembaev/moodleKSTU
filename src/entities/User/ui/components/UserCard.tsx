@@ -7,9 +7,6 @@ import { Briefcase, Calendar, Mail, User } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { LuPencil, LuPhone, LuSend } from "react-icons/lu";
 import { PhoneInput } from "shared/components/PhoneInput";
-
-import { useAuth } from "shared/hooks";
-
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
 import { Card } from "shared/shadcn/ui/card";
@@ -50,11 +47,12 @@ const formatDate = (value?: string | null) => {
 const UserCard = ({
   data,
   isLoading,
+  isOwnProfile,
 }: {
   data: UserProfileData | undefined;
   isLoading: boolean;
+  isOwnProfile: boolean;
 }) => {
-  const auth_data = useAuth();
   const [hovered, setHovered] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -114,9 +112,9 @@ const UserCard = ({
   return (
     <Card className="relative w-full p-4 md:p-6 rounded-3xl md:rounded-4xl shadow-md flex flex-col md:flex-row justify-between">
       <div className="relative flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-16 px-4 md:pl-20 py-4 md:py-6">
-        <Dialog>
-          <DialogTrigger asChild>
-            {data?.id === auth_data?.id ? (
+        {isOwnProfile ? (
+          <Dialog>
+            <DialogTrigger asChild>
               <div
                 className="relative w-32 h-32 md:w-64 md:h-64 cursor-pointer"
                 onMouseEnter={() => setHovered(true)}
@@ -139,51 +137,53 @@ const UserCard = ({
                   </div>
                 )}
               </div>
-            ) : (
-              <Avatar className="w-32 h-32 md:w-64 md:h-64 border-2 md:border-4 border-white shadow-md">
-                <AvatarImage src={data?.avatar} alt="User avatar" />
-                <AvatarFallback className="text-2xl md:text-4xl">M</AvatarFallback>
-              </Avatar>
-            )}
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Поменять аватар</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="flex items-center justify-center">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage
-                    src={preview || data?.avatar || "/placeholder-user.jpg"}
-                    alt="Selected avatar"
-                    className="object-cover"
-                  />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Поменять аватар</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="flex items-center justify-center">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage
+                      src={preview || data?.avatar || "/placeholder-user.jpg"}
+                      alt="Selected avatar"
+                      className="object-cover"
+                    />
+                    <AvatarFallback>JD</AvatarFallback>
+                  </Avatar>
+                </div>
+                <div>
+                  <Input id="avatar" type="file" onChange={handleFileChange} />
+                </div>
+                {error && <p className="text-red-500 text-sm">{error}</p>}
               </div>
-              <div>
-                <Input id="avatar" type="file" onChange={handleFileChange} />
-              </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Отмена</Button>
-              </DialogClose>
-              <Button
-                onClick={() => {
-                  if (!selectedFile || !data?.id) return;
-                  const formData = new FormData();
-                  formData.append("avatar", selectedFile);
-                  editProfile({ id: data.id, data: formData });
-                }}
-                disabled={!selectedFile}
-              >
-                Сохранить
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Отмена</Button>
+                </DialogClose>
+                <Button
+                  onClick={() => {
+                    if (!selectedFile || !data?.id) return;
+                    const formData = new FormData();
+                    formData.append("avatar", selectedFile);
+                    editProfile({ id: data.id, data: formData });
+                  }}
+                  disabled={!selectedFile}
+                >
+                  Сохранить
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <Avatar className="w-32 h-32 md:w-64 md:h-64 border-2 md:border-4 border-white shadow-md">
+            <AvatarImage src={data?.avatar} alt="User avatar" />
+            <AvatarFallback className="text-2xl md:text-4xl">
+              {(data?.first_name?.[0] || "") + (data?.last_name?.[0] || "") || "U"}
+            </AvatarFallback>
+          </Avatar>
+        )}
 
         <div className="flex flex-col items-center md:items-start text-center md:text-left">
           <span className="text-xs md:text-sm font-bold text-gray-500">
@@ -284,7 +284,7 @@ const UserCard = ({
                 ))}
               </div>
             ) : null}
-            {auth_data?.id === data?.id && (
+            {isOwnProfile && (
               <Button
                 className="w-full mt-4"
                 variant={"outline"}
@@ -323,6 +323,7 @@ const UserCard = ({
           </div>
         ))}
       </div> */}
+      {isOwnProfile && (
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -371,6 +372,7 @@ const UserCard = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      )}
     </Card>
   );
 };

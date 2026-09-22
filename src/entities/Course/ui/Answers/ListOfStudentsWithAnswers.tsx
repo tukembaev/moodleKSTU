@@ -17,15 +17,19 @@ import {
   LuKeyRound,
   LuLaugh,
   LuLock,
+  LuLockOpen,
   LuMeh,
   LuMessageCircleWarning,
   LuMessageSquare,
+  LuSearch,
+  LuShieldCheck,
   LuThumbsUp,
   LuTrash2,
   LuUsers,
   LuX
 } from "react-icons/lu";
 import { SpringPopupList, UseConfirmationDialog, UseTooltip } from "shared/components";
+import { cn } from "shared/lib/utils";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
@@ -41,6 +45,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "shared/shadcn/ui/dropdown-menu";
 import {
@@ -50,7 +55,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
-import { Input } from "shared/shadcn/ui/input";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import {
   Table,
@@ -61,8 +65,19 @@ import {
   TableRow,
 } from "shared/shadcn/ui/table";
 import { AnswerVersionList } from "./AnswerVersionList";
+import {
+  StudentGroupDots,
+  StudentGroupFilterBar,
+} from "./StudentGroupFilterBar";
+import {
+  studentActiveGroupDots,
+  studentMatchesActiveGroups,
+  type StudentFilterGroupColorId,
+  useCourseStudentGroups,
+} from "./studentFilterGroups";
 
 type RemarksUiStatus = "none" | "pending" | "responded";
+type StudentsListMode = "answers" | "access";
 
 const mockAvatarUrl = (seed: string | number) =>
   `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(String(seed))}`;
@@ -78,6 +93,80 @@ const studentInitials = (fullname: string) =>
     .map((part) => part[0])
     .join("")
     .slice(0, 2);
+
+const StudentListAvatar = ({
+  student,
+  dots,
+  className,
+  fallbackClassName,
+}: {
+  student: StudentsAnswers;
+  dots: StudentFilterGroupColorId[];
+  className?: string;
+  fallbackClassName?: string;
+}) => (
+  <div
+    className={cn(
+      "flex shrink-0 items-center overflow-visible",
+      dots.length > 0 && "gap-2"
+    )}
+  >
+    <StudentGroupDots dots={dots} />
+    <Avatar className={className}>
+      <AvatarImage src={studentAvatarSrc(student)} alt={student.fullname} />
+      <AvatarFallback className={fallbackClassName}>
+        {studentInitials(student.fullname)}
+      </AvatarFallback>
+    </Avatar>
+  </div>
+);
+
+const ExpandableNameSearch = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const expanded = hovered || focused;
+
+  return (
+    <div
+      className={cn(
+        "flex h-9 shrink-0 items-center overflow-hidden rounded-full border border-dotted bg-background shadow-xs transition-[width] duration-300 ease-out",
+        expanded ? "w-[220px]" : "w-9"
+      )}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <button
+        type="button"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => inputRef.current?.focus()}
+        aria-label="Поиск по имени"
+        className="flex size-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+      >
+        <LuSearch className="size-4" />
+      </button>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={onChange}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false);
+          setHovered(false);
+        }}
+        placeholder="Поиск по имени..."
+        className="h-full min-w-0 flex-1 bg-transparent pr-3 text-sm outline-none placeholder:text-muted-foreground"
+      />
+    </div>
+  );
+};
 
 const areAllStudentsLocked = (students: StudentsAnswers[]) =>
   students.length > 0 && students.every((student) => Boolean(student.locked));
@@ -118,11 +207,13 @@ const StudentRemarksBadge = ({
   student,
   theme_id,
   compact = false,
+  interactive = true,
 }: {
   status: RemarksUiStatus;
   student: StudentsAnswers;
   theme_id?: string | null;
   compact?: boolean;
+  interactive?: boolean;
 }) => {
   const title =
     status === "responded"
@@ -130,6 +221,48 @@ const StudentRemarksBadge = ({
       : status === "pending"
         ? "Замечания по работе"
         : "Добавить замечание";
+
+  const badge = (
+    <Badge
+      variant="outline"
+      className={`gap-1 text-xs ${
+        interactive ? "cursor-pointer" : "pointer-events-none cursor-default opacity-80"
+      } ${
+        compact ? "" : "flex px-1.5 text-muted-foreground [&_svg]:size-3"
+      } ${
+        status === "responded"
+          ? "bg-blue-50 text-blue-700 border-blue-300 shadow-sm dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700"
+          : status === "pending"
+            ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
+            : compact
+              ? ""
+              : ""
+      }`}
+    >
+      {status === "responded" ? (
+        <>
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
+          </span>
+          <LuMessageSquare className="text-blue-600 dark:text-blue-400" />
+          {compact ? "Ответил" : "Студент ответил"}
+        </>
+      ) : status === "pending" ? (
+        <>
+          <LuMeh className="text-orange-500 dark:text-orange-400" />
+          {compact ? "Замечание" : "Есть замечания"}
+        </>
+      ) : (
+        <>
+          <LuLaugh className="text-green-500 dark:text-green-400" />
+          {compact ? "Ок" : "Замечаний нет"}
+        </>
+      )}
+    </Badge>
+  );
+
+  if (!interactive) return badge;
 
   return (
     <SetComment
@@ -139,42 +272,155 @@ const StudentRemarksBadge = ({
       student_id={student.user_id}
       submission_id={currentSubmissionIdFromStudent(student)}
     >
-      <Badge
-        variant="outline"
-        className={`gap-1 text-xs cursor-pointer ${
-          compact ? "" : "flex px-1.5 text-muted-foreground [&_svg]:size-3"
-        } ${
-          status === "responded"
-            ? "bg-blue-50 text-blue-700 border-blue-300 shadow-sm dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700"
-            : status === "pending"
-              ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800"
-              : compact
-                ? ""
-                : ""
-        }`}
-      >
-        {status === "responded" ? (
-          <>
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
-            </span>
-            <LuMessageSquare className="text-blue-600 dark:text-blue-400" />
-            {compact ? "Ответил" : "Студент ответил"}
-          </>
-        ) : status === "pending" ? (
-          <>
-            <LuMeh className="text-orange-500 dark:text-orange-400" />
-            {compact ? "Замечание" : "Есть замечания"}
-          </>
-        ) : (
-          <>
-            <LuLaugh className="text-green-500 dark:text-green-400" />
-            {compact ? "Ок" : "Замечаний нет"}
-          </>
-        )}
-      </Badge>
+      {badge}
     </SetComment>
+  );
+};
+
+const AccessInfoBadge = ({
+  locked,
+  compact = false,
+}: {
+  locked: boolean;
+  compact?: boolean;
+}) => (
+  <Badge
+    variant="outline"
+    className={`gap-1 text-xs pointer-events-none cursor-default opacity-80 ${
+      compact ? "" : "flex px-1.5 text-muted-foreground [&_svg]:size-3"
+    } ${
+      locked
+        ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
+        : "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800"
+    }`}
+  >
+    {locked ? (
+      <>
+        <LuLock className={compact ? "h-3 w-3" : undefined} />
+        {compact ? "Закрыт" : "Доступ запрещен"}
+      </>
+    ) : (
+      <>
+        <LuKeyRound
+          className={
+            compact
+              ? "h-3 w-3"
+              : "text-green-500 dark:text-green-400"
+          }
+        />
+        {compact ? "Открыт" : "Доступ открыт"}
+      </>
+    )}
+  </Badge>
+);
+
+const AccessToggle = ({
+  locked,
+  disabled,
+  onChange,
+  className,
+}: {
+  locked: boolean;
+  disabled?: boolean;
+  onChange: (locked: boolean) => void;
+  className?: string;
+}) => (
+  <div
+    className={cn(
+      "inline-flex shrink-0 items-center rounded-full border bg-muted/40 p-0.5",
+      disabled && "opacity-60",
+      className
+    )}
+    onClick={(event) => event.stopPropagation()}
+  >
+      <button
+      type="button"
+      disabled={disabled}
+      aria-pressed={locked}
+      onClick={() => onChange(true)}
+      className={cn(
+        "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed",
+        locked
+          ? "bg-red-500 text-white shadow-sm"
+          : "text-muted-foreground hover:text-foreground"
+      )}
+    >
+      <LuLock className="h-3 w-3" />
+      Закрыт
+    </button>
+    <button
+      type="button"
+      disabled={disabled}
+      aria-pressed={!locked}
+      onClick={() => onChange(false)}
+      className={cn(
+        "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed",
+        !locked
+          ? "bg-green-500 text-white shadow-sm"
+          : "text-muted-foreground hover:text-foreground"
+      )}
+    >
+      <LuLockOpen className="h-3 w-3" />
+      Открыт
+    </button>
+  
+  </div>
+);
+
+const SubmissionStatusBadge = ({
+  student,
+  interactive = true,
+  compact = false,
+}: {
+  student: StudentsAnswers;
+  interactive?: boolean;
+  compact?: boolean;
+}) => {
+  const badge = (
+    <Badge
+      variant="outline"
+      className={`gap-1 text-xs ${
+        interactive ? "cursor-pointer" : "pointer-events-none cursor-default opacity-80"
+      } ${
+        compact ? "" : "flex px-1.5 text-muted-foreground [&_svg]:size-3"
+      } ${
+        student.status
+          ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800"
+          : ""
+      }`}
+    >
+      {student.status ? (
+        <>
+          <LuThumbsUp
+            className={
+              compact
+                ? "h-3 w-3"
+                : "text-green-500 dark:text-green-400"
+            }
+          />
+          Сдано на {student.points}
+        </>
+      ) : (
+        <>
+          <LuX className={compact ? "h-3 w-3" : undefined} />
+          Не сдано
+        </>
+      )}
+    </Badge>
+  );
+
+  if (!interactive) return badge;
+
+  return (
+    <SetMark
+      text="Выставить баллы"
+      points={student.points}
+      max_points={student.max_points}
+      comment={student.comment}
+      id={student.id}
+    >
+      {badge}
+    </SetMark>
   );
 };
 
@@ -217,18 +463,18 @@ const ListOfStudentsWithAnswers = ({
   error,
   refetch,
   theme_id,
+  mode = "answers",
 }: {
   data: StudentsAnswers[];
   isLoading?: boolean;
   refetch: () => void;
   error?: Error | null;
   theme_id?: string | null;
+  mode?: StudentsListMode;
 }) => {
+  const isAccessMode = mode === "access";
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(
-    "Все группы"
-  );
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const fallbackCourseId = useCourseId();
 
@@ -240,10 +486,6 @@ const ListOfStudentsWithAnswers = ({
     setSearchQuery(event.target.value.toLowerCase());
   };
 
-  const uniqueGroups = [
-    "Все группы",
-    ...new Set(data.map((student) => student.group)),
-  ];
   const uniqueData: StudentsAnswers[] = useMemo(() => {
     const map = new Map();
     data.forEach((s) => {
@@ -270,13 +512,25 @@ const ListOfStudentsWithAnswers = ({
     enabled: !!theme_id && canReceivePoints,
   });
 
+  const {
+    groups,
+    activeGroupIds,
+    isLoading: isGroupsLoading,
+    isPending: isGroupsPending,
+    addGroup,
+    editGroup,
+    removeGroup,
+    toggleGroup,
+  } = useCourseStudentGroups(courseIdForTheme || null);
+
   const filteredData = uniqueData.filter(
     (student) =>
       student.fullname.toLowerCase().includes(searchQuery) &&
-      (selectedGroup === "" ||
-        selectedGroup === "Все группы" ||
-        student.group === selectedGroup)
+      studentMatchesActiveGroups(student.user_id, groups, activeGroupIds)
   );
+
+  const groupDotsFor = (userId: number) =>
+    studentActiveGroupDots(userId, groups, activeGroupIds);
   
   const { mutate: change_permission, isPending: isPermissionPending } =
     courseQueries.edit_permission();
@@ -329,8 +583,9 @@ const ListOfStudentsWithAnswers = ({
     editTheme,
   ]);
 
-  const handlePermission = (student: StudentsAnswers) => {
-    const nextLocked = !student.locked;
+  const handlePermission = (student: StudentsAnswers, locked?: boolean) => {
+    const nextLocked = locked ?? !student.locked;
+    if (student.locked === nextLocked) return;
     const nextStudents = uniqueData.map((item) =>
       item.user_id === student.user_id ? { ...item, locked: nextLocked } : item
     );
@@ -463,7 +718,7 @@ const ListOfStudentsWithAnswers = ({
             </EmptyMedia>
             <EmptyTitle>Студенты не найдены</EmptyTitle>
             <EmptyDescription>
-              Измените поиск или выбранную группу.
+              Измените поиск или выбранные группы.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -473,15 +728,9 @@ const ListOfStudentsWithAnswers = ({
             const hasUnreadFiles = student.files.some((file) => !file.is_read?.is_read);
             const isExpanded = expandedId === student.id;
             const remarksStatus = getRemarksUiStatus(student, themeRemarks);
-            
-            return (
-              <Collapsible
-                key={student.user_id}
-                open={isExpanded}
-                onOpenChange={() => toggleExpand(student.id)}
-              >
+            const card = (
                 <Card className={`group overflow-hidden transition-all duration-300 ${
-                  isExpanded
+                  isExpanded && !isAccessMode
                     ? "ring-2 ring-primary/20 shadow-md"
                     : canReceivePoints && remarksStatus === "responded"
                       ? "ring-2 ring-blue-300/80 shadow-sm dark:ring-blue-700/60"
@@ -491,6 +740,7 @@ const ListOfStudentsWithAnswers = ({
                     <div className="flex items-start justify-between gap-3">
                       {/* Student info */}
                       <div className="flex items-center gap-3 min-w-0 flex-1">
+                        {isAccessMode && (
                         <Checkbox
                           checked={selectedUserIds.includes(student.user_id)}
                           onCheckedChange={(checked) =>
@@ -500,22 +750,25 @@ const ListOfStudentsWithAnswers = ({
                           aria-label={`Выбрать ${student.fullname}`}
                           className="shrink-0"
                         />
-                        <Avatar className="h-10 w-10 shrink-0">
-                          <AvatarImage src={studentAvatarSrc(student)} alt={student.fullname} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                            {studentInitials(student.fullname)}
-                          </AvatarFallback>
-                        </Avatar>
+                        )}
+                        <StudentListAvatar
+                          student={student}
+                          dots={groupDotsFor(student.user_id)}
+                          className="h-10 w-10"
+                          fallbackClassName="bg-primary/10 text-primary text-sm"
+                        />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 min-w-0">
                             <p className="font-medium text-sm truncate">{student.fullname}</p>
+                            {!isAccessMode && (
                             <RemoveStudentFromCourseButton
                               student={student}
                               courseId={studentCourseId(student)}
                               isPending={isRemovePending}
                               onRemove={handleRemoveStudent}
                             />
-                            {hasUnreadFiles ? (
+                            )}
+                            {!isAccessMode && (hasUnreadFiles ? (
                               <UseTooltip text="Есть непрочитанные файлы">
                                 <Badge className="gap-1 bg-orange-50 text-orange-600 border-orange-200 text-xs px-1.5 py-0 shrink-0 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800">
                                   <LuMessageCircleWarning className="h-3 w-3" />
@@ -526,14 +779,14 @@ const ListOfStudentsWithAnswers = ({
                               <UseTooltip text="Все файлы просмотрены">
                                 <LuCheckCheck className="h-4 w-4 text-blue-500 shrink-0" />
                               </UseTooltip>
-                            )}
+                            ))}
                           </div>
                           <p className="text-xs text-muted-foreground">{student.group}</p>
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-1 shrink-0">
-                        {student.files.length > 0 && (
+                        {!isAccessMode && student.files.length > 0 && (
                           <CollapsibleTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                               {isExpanded ? (
@@ -550,60 +803,16 @@ const ListOfStudentsWithAnswers = ({
                     {/* Status badges */}
                     <div className="flex flex-wrap gap-2 mt-2">
                       {canReceivePoints && (
-                      <SetMark
-                        text="Выставить баллы"
-                        points={student.points}
-                        max_points={student.max_points}
-                        comment={student.comment}
-                        id={student.id}
-                      >
-                        <Badge
-                          variant="outline"
-                          className={`gap-1 text-xs cursor-pointer ${
-                            student.status 
-                              ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800" 
-                              : ""
-                          }`}
-                        >
-                          {student.status ? (
-                            <>
-                              <LuThumbsUp className="h-3 w-3" />
-                              Сдано на {student.points}
-                            </>
-                          ) : (
-                            <>
-                              <LuX className="h-3 w-3" />
-                              Не сдано
-                            </>
-                          )}
-                        </Badge>
-                      </SetMark>
+                      <SubmissionStatusBadge
+                        student={student}
+                        interactive={!isAccessMode}
+                        compact
+                      />
                       )}
                       
-                      {/* Access status */}
-                      <UseTooltip text={student.locked ? "Открыть доступ" : "Закрыть доступ"}>
-                        <Badge
-                          variant="outline"
-                          className={`gap-1 text-xs cursor-pointer ${
-                            student.locked
-                              ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
-                              : "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800"
-                          }`}
-                          onClick={() => handlePermission(student)}
-                        >
-                          {student.locked ? (
-                            <>
-                              <LuLock className="h-3 w-3" />
-                              Закрыт
-                            </>
-                          ) : (
-                            <>
-                              <LuKeyRound className="h-3 w-3" />
-                              Открыт
-                            </>
-                          )}
-                        </Badge>
-                      </UseTooltip>
+                      {!isAccessMode && (
+                      <AccessInfoBadge locked={Boolean(student.locked)} compact />
+                      )}
                       
                       {canReceivePoints && (
                       <StudentRemarksBadge
@@ -611,12 +820,23 @@ const ListOfStudentsWithAnswers = ({
                         student={student}
                         theme_id={theme_id}
                         compact
+                        interactive={!isAccessMode}
                       />
                       )}
                     </div>
+                    {isAccessMode && (
+                      <div className="mt-3 flex justify-end">
+                        <AccessToggle
+                          locked={Boolean(student.locked)}
+                          disabled={isPermissionPending}
+                          onChange={(locked) => handlePermission(student, locked)}
+                        />
+                      </div>
+                    )}
                   </CardHeader>
                   
                   {/* Files section */}
+                  {!isAccessMode && (
                   <CollapsibleContent>
                     <CardContent className="pt-0 pb-3">
                       <div className="pt-3 border-t border-border/50 space-y-2">
@@ -634,7 +854,21 @@ const ListOfStudentsWithAnswers = ({
                       </div>
                     </CardContent>
                   </CollapsibleContent>
+                  )}
                 </Card>
+            );
+
+            if (isAccessMode) {
+              return <div key={student.user_id}>{card}</div>;
+            }
+
+            return (
+              <Collapsible
+                key={student.user_id}
+                open={isExpanded}
+                onOpenChange={() => toggleExpand(student.id)}
+              >
+                {card}
               </Collapsible>
             );
           })}
@@ -649,20 +883,26 @@ const ListOfStudentsWithAnswers = ({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-10" />
+            {isAccessMode && <TableHead className="w-10" />}
             <TableHead className="w-[300px]">Имя студента</TableHead>
             {canReceivePoints && (
               <TableHead className="w-[100px]">Статус сдачи</TableHead>
             )}
-            <TableHead>Доступ</TableHead>
+            {!isAccessMode && <TableHead>Доступ</TableHead>}
+            {canReceivePoints && (
+              <TableHead className="w-[130px]">Замечания</TableHead>
+            )}
+            {isAccessMode && <TableHead className="w-[180px]" />}
           </TableRow>
         </TableHeader>
         <TableBody>
           {[...Array(5)].map((_, index) => (
             <TableRow key={index} className="py-2">
-              <TableCell>
-                <Skeleton className="h-4 w-4" />
-              </TableCell>
+              {isAccessMode && (
+                <TableCell>
+                  <Skeleton className="h-4 w-4" />
+                </TableCell>
+              )}
               <TableCell className="flex items-center gap-3">
                 <Skeleton className="h-8 w-8 rounded-full" />
                 <Skeleton className="h-4 w-40" />
@@ -672,12 +912,19 @@ const ListOfStudentsWithAnswers = ({
                   <Skeleton className="h-4 w-16" />
                 </TableCell>
               )}
-              <TableCell>
-                <Skeleton className="h-4 w-12" />
-              </TableCell>
+              {!isAccessMode && (
+                <TableCell>
+                  <Skeleton className="h-4 w-12" />
+                </TableCell>
+              )}
               {canReceivePoints && (
                 <TableCell>
                   <Skeleton className="h-4 w-25" />
+                </TableCell>
+              )}
+              {isAccessMode && (
+                <TableCell>
+                  <Skeleton className="h-8 w-28 ml-auto" />
                 </TableCell>
               )}
             </TableRow>
@@ -693,6 +940,7 @@ const ListOfStudentsWithAnswers = ({
       <Table>
         <TableHeader className="bg-muted">
           <TableRow className="hover:bg-transparent">
+            {isAccessMode && (
             <TableHead className="w-10">
               <Checkbox
                 checked={
@@ -709,11 +957,14 @@ const ListOfStudentsWithAnswers = ({
                 disabled={filteredData.length === 0}
               />
             </TableHead>
+            )}
             <TableHead className="w-[150px]">Студент</TableHead>
             {canReceivePoints && (
               <TableHead className="w-[130px]">Статус сдачи</TableHead>
             )}
-            <TableHead className="w-[130px]">Доступ</TableHead>
+            {!isAccessMode && (
+              <TableHead className="w-[130px]">Доступ</TableHead>
+            )}
             {canReceivePoints && (
               <TableHead className="w-[130px]">Замечания</TableHead>
             )}
@@ -722,17 +973,29 @@ const ListOfStudentsWithAnswers = ({
         </TableHeader>
 
         <TableBody>
-          {filteredData.map((student) => {
+          {filteredData.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={canReceivePoints ? 5 : 3}
+                className="h-24 text-center text-muted-foreground"
+              >
+                Студенты не найдены. Измените поиск или выбранные группы.
+              </TableCell>
+            </TableRow>
+          ) : (
+          filteredData.map((student) => {
             const remarksStatus = getRemarksUiStatus(student, themeRemarks);
+            const answersColSpan = canReceivePoints ? 5 : 3;
             return (
             <React.Fragment key={student.user_id}>
               <TableRow
-                className={`group ${expandedId === student.id ? "border-b-0" : ""} ${
+                className={`group ${expandedId === student.id && !isAccessMode ? "border-b-0" : ""} ${
                   canReceivePoints && remarksStatus === "responded"
                     ? "bg-blue-50/70 dark:bg-blue-950/20"
                     : ""
                 }`}
               >
+                {isAccessMode && (
                 <TableCell className="w-10">
                   <Checkbox
                     checked={selectedUserIds.includes(student.user_id)}
@@ -743,25 +1006,27 @@ const ListOfStudentsWithAnswers = ({
                     aria-label={`Выбрать ${student.fullname}`}
                   />
                 </TableCell>
-                <TableCell className="font-medium flex items-center gap-3">
+                )}
+                <TableCell className="font-medium flex items-center gap-3 overflow-visible">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <Avatar>
-                      <AvatarImage src={studentAvatarSrc(student)} alt={student.fullname} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        {studentInitials(student.fullname)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <StudentListAvatar
+                      student={student}
+                      dots={groupDotsFor(student.user_id)}
+                      fallbackClassName="bg-primary/10 text-primary text-xs"
+                    />
 
                     <p className="truncate">{student.fullname}</p>
+                    {!isAccessMode && (
                     <RemoveStudentFromCourseButton
                       student={student}
                       courseId={studentCourseId(student)}
                       isPending={isRemovePending}
                       onRemove={handleRemoveStudent}
                     />
+                    )}
                   </div>
 
-                  {student.files.some((file) => !file.is_read.is_read) ? (
+                  {!isAccessMode && (student.files.some((file) => !file.is_read.is_read) ? (
                     <UseTooltip text="Новый не просмотренный файл!">
                       <LuMessageCircleWarning className="text-orange-500" />
                     </UseTooltip>
@@ -769,66 +1034,42 @@ const ListOfStudentsWithAnswers = ({
                     <UseTooltip text="Все файлы просмотренны">
                       <LuCheckCheck className="text-blue-500" />
                     </UseTooltip>
-                  )}
+                  ))}
                 </TableCell>
                 {canReceivePoints && (
                 <TableCell>
-                    <SetMark
-                      text="Выставить баллы"
-                      points={student.points}
-                      max_points={student.max_points}
-                      comment={student.comment}
-                      id={student.id}
-                    >
-                      <Badge
-                        variant="outline"
-                        className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-pointer"
-                      >
-                        {student.status ? (
-                          <LuThumbsUp className="text-green-500 dark:text-green-400" />
-                        ) : (
-                          <LuX />
-                        )}
-                        {student.status
-                          ? `Сдано на ${student.points}`
-                          : "Не сдано"}
-                      </Badge>
-                    </SetMark>
+                    <SubmissionStatusBadge
+                      student={student}
+                      interactive={!isAccessMode}
+                    />
                 </TableCell>
                 )}
+                {!isAccessMode && (
                 <TableCell>
-                  <UseTooltip
-                    text={
-                      student.locked ? "Открыть доступ" : "Закрыть доступ"
-                    }
-                  >
-                    
-                      <Badge
-                        variant="outline"
-                        className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
-                        onClick={() => handlePermission(student)}
-                      >
-                        {student.locked ? (
-                          <LuLock />
-                        ) : (
-                          <LuKeyRound className="text-green-500 dark:text-green-400" />
-                        )}
-                        {student.locked ? "Доступ запрещен" : "Доступ открыт"}
-                      </Badge>
-                    
-                  </UseTooltip>
+                  <AccessInfoBadge locked={Boolean(student.locked)} />
                 </TableCell>
+                )}
                 {canReceivePoints && (
                 <TableCell>
                   <StudentRemarksBadge
                     status={remarksStatus}
                     student={student}
                     theme_id={theme_id}
+                    interactive={!isAccessMode}
                   />
                 </TableCell>
                 )}
 
                 <TableCell className="text-right">
+                  {isAccessMode ? (
+                    <div className="flex items-center justify-end">
+                      <AccessToggle
+                        locked={Boolean(student.locked)}
+                        disabled={isPermissionPending}
+                        onChange={(locked) => handlePermission(student, locked)}
+                      />
+                    </div>
+                  ) : (
                   <div className="flex items-center justify-end gap-1">
                     {student.files.length > 0 && (
                       <button
@@ -844,15 +1085,16 @@ const ListOfStudentsWithAnswers = ({
                       </button>
                     )}
                   </div>
+                  )}
                 </TableCell>
               </TableRow>
 
-              {expandedId === student.id && student.files.length > 0 && (
+              {!isAccessMode && expandedId === student.id && student.files.length > 0 && (
                 <TableRow
                   key={`expanded-${student.id}`}
                   className="hover:bg-transparent"
                 >
-                  <TableCell colSpan={canReceivePoints ? 6 : 4} className="pt-0 pb-3">
+                  <TableCell colSpan={answersColSpan} className="pt-0 pb-3">
                     <div className="py-1">
                       <AnswerVersionList
                         groups={groupsFromStudent(student)}
@@ -866,7 +1108,8 @@ const ListOfStudentsWithAnswers = ({
               )}
             </React.Fragment>
             );
-          })}
+          })
+          )}
         </TableBody>
       </Table>
     </div>
@@ -909,83 +1152,105 @@ const ListOfStudentsWithAnswers = ({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row justify-between gap-3">
-        <div className="flex flex-col sm:flex-row gap-3 flex-1">
-          <Input
-            type="text"
-            placeholder="Поиск по имени..."
-            value={searchQuery}
-            onChange={handleSearch}
-            className="max-w-full sm:max-w-[350px]"
-          />
-          <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={() => handleAccessForAll(true)}
-              variant="outline"
-              size="sm"
-              disabled={isAccessPending || isThemeClosed}
-            >
-              <LuLock className="text-red-400" />
-              Закрыть доступ всем
-            </Button>
-            <Button
-              onClick={() => handleAccessForAll(false)}
-              variant="outline"
-              size="sm"
-              disabled={isAccessPending || isThemeOpen}
-            >
-              <LuKeyRound className="text-green-400" />
-              Открыть всем
-            </Button>
-            <Button
-              onClick={() => handleAccessForSelected(true)}
-              variant="outline"
-              size="sm"
-              disabled={
-                isPermissionPending || selectedUserIds.length === 0
-              }
-            >
-              <LuLock className="text-red-400" />
-              Закрыть доступ выбранным
-              {selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ""}
-            </Button>
-            <Button
-              onClick={() => handleAccessForSelected(false)}
-              variant="outline"
-              size="sm"
-              disabled={
-                isPermissionPending || selectedUserIds.length === 0
-              }
-            >
-              <LuKeyRound className="text-green-400" />
-              Открыть выбранным
-              {selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ""}
-            </Button>
+      {/* Access summary */}
+      {isAccessMode && (
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="flex flex-col gap-0.5 rounded-lg border bg-muted/30 px-3 py-2">
+            <span className="text-xs text-muted-foreground">Всего студентов</span>
+            <span className="text-lg font-semibold leading-none">{uniqueData.length}</span>
+          </div>
+          <div className="flex flex-col gap-0.5 rounded-lg border border-green-200 bg-green-50 px-3 py-2 dark:border-green-800 dark:bg-green-950/30">
+            <span className="flex items-center gap-1 text-xs text-green-700 dark:text-green-400">
+              <LuLockOpen className="h-3 w-3" /> Доступ открыт
+            </span>
+            <span className="text-lg font-semibold leading-none text-green-700 dark:text-green-400">
+              {uniqueData.filter((student) => !student.locked).length}
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-800 dark:bg-red-950/30">
+            <span className="flex items-center gap-1 text-xs text-red-700 dark:text-red-400">
+              <LuLock className="h-3 w-3" /> Доступ закрыт
+            </span>
+            <span className="text-lg font-semibold leading-none text-red-700 dark:text-red-400">
+              {uniqueData.filter((student) => student.locked).length}
+            </span>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
-              {selectedGroup || "Все группы"} <ChevronDown className="h-4 w-4 ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {uniqueGroups.map((group) => (
-              <DropdownMenuItem
-                key={group}
-                onClick={() => setSelectedGroup(group)}
-              >
-                {group}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      )}
+
+      {/* Search and filters */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+          <ExpandableNameSearch value={searchQuery} onChange={handleSearch} />
+          <StudentGroupFilterBar
+            groups={groups}
+            activeGroupIds={activeGroupIds}
+            students={uniqueData}
+            isLoading={isGroupsLoading}
+            isPending={isGroupsPending || !courseIdForTheme}
+            onToggleGroup={toggleGroup}
+            onRemoveGroup={removeGroup}
+            onCreateGroup={addGroup}
+            onEditGroup={editGroup}
+          />
+        </div>
+
+        {isAccessMode && (
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedUserIds.length > 0 && (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                Выбрано: {selectedUserIds.length}
+              </Badge>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <LuShieldCheck className="text-primary" />
+                  Действия с доступом
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem
+                  disabled={isAccessPending || isThemeOpen}
+                  onClick={() => handleAccessForAll(false)}
+                >
+                  <LuLockOpen className="text-green-500" />
+                  Открыть доступ всем
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={isAccessPending || isThemeClosed}
+                  onClick={() => handleAccessForAll(true)}
+                >
+                  <LuLock className="text-red-500" />
+                  Закрыть доступ всем
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  disabled={isPermissionPending || selectedUserIds.length === 0}
+                  onClick={() => handleAccessForSelected(false)}
+                >
+                  <LuLockOpen className="text-green-500" />
+                  Открыть выбранным
+                  {selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ""}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={isPermissionPending || selectedUserIds.length === 0}
+                  onClick={() => handleAccessForSelected(true)}
+                >
+                  <LuLock className="text-red-500" />
+                  Закрыть выбранным
+                  {selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ""}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
 
       {/* Mobile and Tablet view (cards) */}
       <div className="block lg:hidden space-y-3">
-        {filteredData.length > 0 && (
+        {isAccessMode && filteredData.length > 0 && (
           <div className="flex items-center gap-2">
             <Checkbox
               checked={
@@ -1000,7 +1265,7 @@ const ListOfStudentsWithAnswers = ({
               }
               aria-label="Выбрать всех студентов"
             />
-            <span className="text-sm text-muted-foreground">Выбрать всех</span>
+            <span className="text-sm text-muted-foreground">Выбрать всех на странице</span>
           </div>
         )}
         {renderStudentCards()}

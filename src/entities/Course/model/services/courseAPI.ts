@@ -1,6 +1,6 @@
 import axios from "axios";
-import { BindCourseStreamsPayload, CreateCoursePayload, CreateFAQPayload, CreateThemePayload, EditThemePayload, editPermissionPayload } from "features/Course";
-import { ExtraPointPayload, FinishCoursePayload, RateAnswerPayload } from "features/Course/model/types/course_payload";
+import { BindCourseStreamsPayload, CreateCoursePayload, CreateFAQPayload, CreateThemePayload, EditThemePayload, editDetailPayload, editPermissionPayload, SetCourseAccessPayload, SetCourseAccessResponse } from "features/Course";
+import { CreateCourseStudentGroupPayload, EditCourseStudentGroupPayload, ExtraPointPayload, FinishCoursePayload, RateAnswerPayload } from "features/Course/model/types/course_payload";
 import $api_base_edu from "shared/api/api_base_edu";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
@@ -18,16 +18,24 @@ import {
   normalizeFeedItem,
   unwrapList,
 } from "entities/Course/lib/courseFeed";
-import { Course, CourseAllMaterials, CourseAnnouncement, CourseFeedItem, CourseFeedQuery, CourseInviteLink, CourseMaterialFile, CourseMaterials, CourseModulesResponse, CourseStream, CreateAnnouncementPayload, CreateCourseInvitePayload, FeedItem, FileAnswer, MySubmissionsResponse, RegisterToCoursePayload, StudentsAnswers, TablePerfomance, ThemeFaq, UpdateAnnouncementPayload, WeekTheme } from "../types/course";
-import { Test } from "entities/Test/model/types/test";
+import { normalizeThemeDiscussion } from "entities/Course/lib/themeDiscussion";
+import { isThemeSubmissionLockedBySchedule } from "entities/Course/lib/themeStudentAccess";
+import { Course, CourseAllMaterials, CourseAnnouncement, CourseFeedItem, CourseFeedQuery, CourseInviteLink, CourseMaterialFile, CourseMaterials, CourseModulesResponse, CourseStream, CourseStudentGroup, CreateAnnouncementPayload, CreateCourseInvitePayload, FeedItem, FileAnswer, isCourseArchived, MySubmissionsResponse, RegisterToCoursePayload, StudentsAnswers, TablePerfomance, ThemeFaq, UpdateAnnouncementPayload, WeekTheme } from "../types/course";
+import { normalizeListedTest, Test } from "entities/Test/model/types/test";
 
 
 
-//Все курсы/дисциплины преподавателя
+const asCourseList = (data: unknown): Course[] =>
+  Array.isArray(data) ? (data as Course[]) : [];
+
 export const getCoursesOfProfessor = async ():Promise<Course[]> => {
-    const response = await $api_users.get(`my-courses/`); 
-    return response.data;
+    const response = await $api_users.get(`my-courses/`);
+    return asCourseList(response.data).filter((course) => !isCourseArchived(course));
   };
+export const getArchivedCourses = async (): Promise<Course[]> => {
+  const response = await $api_users.get(`my-courses/archive/`);
+  return asCourseList(response.data);
+};
 //Все задания выбранной дисциплины
   export const getCourseAllTasks = async (id: string | null):Promise<CourseAllMaterials> => {
     const response = await $api_edu.get(`course-theme/${id}/`); 
@@ -53,8 +61,8 @@ export const getThemeFAQ = async (theme: string | null):Promise<ThemeFaq[]> => {
   return faqs.filter((faq) => faq.theme === theme);
 };
 export const getThemeDiscussion = async (theme: string | null):Promise<FeedItem[]> => {
-  const response = await $api_base_edu.get(`v1/chats/discussion/${theme}/`); 
-  return response.data;
+  const response = await $api_base_edu.get(`v1/chats/discussion/${theme}/`);
+  return normalizeThemeDiscussion(response.data);
 };
 export const getCourseTablePerfomance = async (id: string | null):Promise<TablePerfomance[]> => {
     const response = await $api_edu.get(`table-performance/${id}/`); 
@@ -179,12 +187,83 @@ export const duplicateCourse = async (id: string) => {
   await new Promise((resolve) => setTimeout(resolve, 900));
   return { id, duplicated: true };
 };
+const pad2 = (value: number) => String(Math.trunc(value)).padStart(2, "0");
+
+const parseThemeDate = (value: string | number | Date): Date | null => {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const numeric =
+    typeof value === "number"
+      ? value
+      : /^\d+$/.test(value.trim())
+        ? Number(value)
+        : NaN;
+
+  if (Number.isFinite(numeric) && numeric > 0) {
+    const date = new Date(numeric < 1e12 ? numeric * 1000 : numeric);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const toThemeDateTime = (
+  value: string | number | Date | null | undefined
+): string | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+
+  const date = parseThemeDate(value);
+  if (!date) return null;
+
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? "+" : "-";
+  const abs = Math.abs(offsetMinutes);
+
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}${sign}${pad2(Math.floor(abs / 60))}:${pad2(abs % 60)}`;
+};
+
+const withThemeSchedule = <T extends CreateThemePayload | EditThemePayload>(
+  data: T
+) => {
+  const payload: T = { ...data };
+
+  if ("opening_date" in data || "open_date" in data) {
+    payload.open_date =
+      toThemeDateTime(data.open_date ?? data.opening_date) ?? null;
+    delete payload.opening_date;
+  }
+  if ("deadline" in data) {
+    payload.deadline = toThemeDateTime(data.deadline) ?? null;
+  }
+
+  const touchesSchedule =
+    "opening_date" in data || "open_date" in data || "deadline" in data;
+  if (touchesSchedule) {
+    payload.locked =
+      data.locked === true ||
+      isThemeSubmissionLockedBySchedule(payload.open_date, payload.deadline);
+  }
+
+  return payload;
+};
+
 export const createTheme = async (data:CreateThemePayload) => {
-  const response = await $api_edu.post(`course-detail/`,data); 
+  const response = await $api_edu.post(`course-detail/`, withThemeSchedule({
+    ...data,
+    opening_date: data.opening_date ?? null,
+    deadline: data.deadline ?? null,
+  })); 
   return response.data;
 };
 export const editTheme = async (id: string, data: EditThemePayload) => {
-  const response = await $api_edu.patch(`course-detail/${id}/`, data);
+  const response = await $api_edu.patch(
+    `course-detail/${id}/`,
+    withThemeSchedule(data)
+  );
   return response.data;
 };
 export const deleteTheme = async (id: string) => {
@@ -244,12 +323,26 @@ export const editPermissionTheme = async (id:string,data:editPermissionPayload) 
   return response.data;
 };
 
-export const editCourseDetails = async (id: string | null , data: any) => {
-  const response = await $api_edu.patch(`course-theme/${id}/`, data); 
+export const setCourseAccess = async (
+  courseId: string,
+  data: SetCourseAccessPayload
+): Promise<SetCourseAccessResponse> => {
+  const response = await $api_edu.patch(`course-access/${courseId}/`, data);
   return response.data;
 };
-export const deleteCourse = async (id: number | null) => {
-  const response = await $api_edu.delete(`course/${id}`); 
+
+export const editCourseDetails = async (
+  id: string | null,
+  data: editDetailPayload
+) => {
+  const response = await $api_edu.patch(`course-theme/${id}/`, data);
+  return response.data;
+};
+export const setCourseArchive = async (id: string, archive: boolean) => {
+  return editCourseDetails(id, { archive });
+};
+export const deleteCourse = async (id: string) => {
+  const response = await $api_edu.delete(`course/${id}/`);
   return response.data;
 };
 export const deleteMaterial = async (id: string | null) => {
@@ -290,7 +383,7 @@ export const getCourseTests = async (courseId: string | null): Promise<Test[]> =
   const response = await $api_edu.get(`testing/`, {
     params: { course_id: courseId },
   });
-  return response.data;
+  return (response.data as Test[]).map(normalizeListedTest);
 };
 
 // Отправить заявку на вступление на курс (по приглашению/QR-коду)
@@ -388,5 +481,83 @@ export const createCourseInviteLink = async (
 
 export const deleteCourseInviteLink = async (courseId: string) => {
   const response = await $api_edu.delete(`course-link/${courseId}/`);
+  return response.data;
+};
+
+const parseCourseStudentGroup = (item: unknown): CourseStudentGroup | null => {
+  if (!item || typeof item !== "object") return null;
+  const record = item as Record<string, unknown>;
+  if (typeof record.id !== "string" || typeof record.name !== "string") {
+    return null;
+  }
+  const userIds = Array.isArray(record.user_ids)
+    ? record.user_ids
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id))
+    : [];
+  return {
+    id: record.id,
+    course_id: typeof record.course_id === "string" ? record.course_id : "",
+    name: record.name,
+    color: typeof record.color === "string" ? record.color : null,
+    user_ids: userIds,
+  };
+};
+
+export const getCourseStudentGroups = async (
+  courseId: string
+): Promise<CourseStudentGroup[]> => {
+  const response = await $api_edu.get(`course-student-groups/${courseId}/`);
+  return unwrapList(response.data)
+    .map(parseCourseStudentGroup)
+    .filter((group): group is CourseStudentGroup => group != null);
+};
+
+export const createCourseStudentGroup = async (
+  courseId: string,
+  data: CreateCourseStudentGroupPayload
+): Promise<CourseStudentGroup> => {
+  const response = await $api_edu.post(
+    `course-student-groups/${courseId}/`,
+    data
+  );
+  const parsed = parseCourseStudentGroup(response.data);
+  if (parsed) return parsed;
+  return {
+    id: "",
+    course_id: courseId,
+    name: data.name,
+    color: data.color ?? null,
+    user_ids: data.user_ids,
+  };
+};
+
+export const editCourseStudentGroup = async (
+  courseId: string,
+  groupId: string,
+  data: EditCourseStudentGroupPayload
+): Promise<CourseStudentGroup> => {
+  const response = await $api_edu.patch(
+    `course-student-groups/${courseId}/${groupId}/`,
+    data
+  );
+  const parsed = parseCourseStudentGroup(response.data);
+  if (parsed) return parsed;
+  return {
+    id: groupId,
+    course_id: courseId,
+    name: data.name ?? "",
+    color: data.color ?? null,
+    user_ids: data.user_ids ?? [],
+  };
+};
+
+export const deleteCourseStudentGroup = async (
+  courseId: string,
+  groupId: string
+) => {
+  const response = await $api_edu.delete(
+    `course-student-groups/${courseId}/${groupId}/`
+  );
   return response.data;
 };

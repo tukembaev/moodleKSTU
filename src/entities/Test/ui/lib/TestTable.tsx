@@ -1,5 +1,6 @@
 import {
   getTestStudentId,
+  resolveTestPassed,
   studentNeedsReview,
   TestAttemptAnswer,
   TestQuestion,
@@ -244,9 +245,12 @@ const TestTable = ({
                 const hasResult = student.result !== null && student.result !== undefined;
                 const resultValue = student.result || 0;
                 const pending = studentNeedsReview(student);
-                const passed = pending
-                  ? null
-                  : student.passed ?? (hasResult ? resultValue >= minPoints : null);
+                const passed = resolveTestPassed({
+                  result: student.result,
+                  minPoints,
+                  passed: student.passed,
+                  needsReview: pending,
+                });
                 const studentId = getTestStudentId(student);
                 const answers = student.answers || [];
                 const rowKey = `${student.result_id || studentId}-${index}`;

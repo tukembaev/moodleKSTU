@@ -1,4 +1,4 @@
-import { UseFormRegister, FieldErrors, Control, Controller } from "react-hook-form";
+import { UseFormRegister, FieldErrors, Control, Controller, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { FieldLabel } from "shared/components/FieldLabel";
 import { Input } from "shared/shadcn/ui/input";
 import { Textarea } from "shared/shadcn/ui/textarea";
@@ -11,6 +11,7 @@ import {
 } from "shared/shadcn/ui/select";
 import { CreateThemePayload } from "../../model/types/course_payload";
 import { requiredField } from "shared/lib/onFormInvalid";
+import { ThemeDateRangeField } from "../theme-date-range-field";
 
 interface AddThemeRegularFieldsProps {
   register: UseFormRegister<CreateThemePayload>;
@@ -18,6 +19,8 @@ interface AddThemeRegularFieldsProps {
   isTestType: boolean;
   control: Control<CreateThemePayload>;
   canReceivePoints: boolean;
+  setValue: UseFormSetValue<CreateThemePayload>;
+  watch: UseFormWatch<CreateThemePayload>;
 }
 
 export const AddThemeRegularFields = ({
@@ -26,6 +29,8 @@ export const AddThemeRegularFields = ({
   isTestType,
   control,
   canReceivePoints,
+  setValue,
+  watch,
 }: AddThemeRegularFieldsProps) => {
   return (
     <>
@@ -113,6 +118,15 @@ export const AddThemeRegularFields = ({
         )}
       </div>
       )}
+
+      <ThemeDateRangeField
+        openingDate={watch("opening_date")}
+        deadline={watch("deadline")}
+        onChange={({ opening_date, deadline }) => {
+          setValue("opening_date", opening_date, { shouldDirty: true });
+          setValue("deadline", deadline, { shouldDirty: true });
+        }}
+      />
     </>
   );
 };

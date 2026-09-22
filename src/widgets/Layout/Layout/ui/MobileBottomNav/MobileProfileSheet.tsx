@@ -4,6 +4,7 @@ import { userQueries } from "entities/User/model/userQueryFactory";
 import {
   BookOpen,
   BriefcaseBusiness,
+  CalendarDays,
   ChevronRight,
   LogOutIcon,
   UserCircleIcon,
@@ -94,6 +95,11 @@ export function MobileProfileSheet({
       </div>
 
       <nav className="mt-3 overflow-hidden rounded-xl border">
+        <MenuRow
+          icon={CalendarDays}
+          label="Сегодня"
+          onClick={() => go(RoutePath[AppRoutes.TODAY])}
+        />
         <MenuRow
           icon={UserCircleIcon}
           label="Мой профиль"

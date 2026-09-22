@@ -1,10 +1,11 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 
 import axios from 'axios';
-import { deleteCourse, getAnswerTask, getCourseAllTasks, getCoursesOfProfessor, getCourseAnnouncements, getCourseFeed, getCourseInviteLink, getCourseMaterials, getCourseStreams, getCourseTablePerfomance, getMySubmissions, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests } from './courseAPI';
+import { getAnswerTask, getArchivedCourses, getCourseAllTasks, getCoursesOfProfessor, getCourseAnnouncements, getCourseFeed, getCourseInviteLink, getCourseMaterials, getCourseStreams, getCourseStudentGroups, getCourseTablePerfomance, getMySubmissions, getStudentAnswers, getTaskMaterials, getThemeDiscussion, getThemeFAQ, getCourseModules, getWeekThemes, getCourseTests } from './courseAPI';
 import { getStudentCourseDetail, getStudentDashboard, getTeacherCourseDetail, getTeacherDashboard } from './statisticsAPI';
 
-import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnnouncement, useCreateAnswer, useCreateCourse, useCreateCourseInvite, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnnouncement, useDeleteAnswer, useDeleteCourseInvite, useDeleteCourseStream, useDeleteTheme, useDuplicateCourse, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetThemeAccessForAll, useUpdateAnnouncement } from 'features/Course/model/services/course_queries';
+import { DISCUSSION_POLL_MS } from 'entities/Course/lib/themeDiscussion';
+import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnnouncement, useCreateAnswer, useCreateCourse, useCreateCourseInvite, useCreateCourseStudentGroup, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnnouncement, useDeleteAnswer, useDeleteCourse, useDeleteCourseInvite, useDeleteCourseStream, useDeleteCourseStudentGroup, useDeleteTheme, useDuplicateCourse, useEditCourseStudentGroup, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetCourseAccess, useSetCourseArchive, useSetThemeAccessForAll, useUpdateAnnouncement } from 'features/Course/model/services/course_queries';
 
 
 
@@ -15,6 +16,11 @@ export const courseQueries = {
     queryOptions({
       queryKey: ['course'],
       queryFn: () => getCoursesOfProfessor(),
+    }),
+  archivedCourses: () =>
+    queryOptions({
+      queryKey: ['course', 'archive'],
+      queryFn: () => getArchivedCourses(),
     }),
     allTasks: (id: string | null) =>
       queryOptions({
@@ -125,6 +131,8 @@ export const courseQueries = {
                   queryKey: ['discussion',theme],
                   queryFn: () => getThemeDiscussion(theme as string),
                   enabled: !!theme,
+                  refetchInterval: DISCUSSION_POLL_MS,
+                  refetchIntervalInBackground: false,
                 }),
       courseModules: (course_id: string | null) =>
                 queryOptions({
@@ -152,11 +160,26 @@ export const courseQueries = {
                   enabled: !!courseId,
                 }),
       courseInviteLink: (courseId: string | null) =>
-                queryOptions({
-                  queryKey: ['course', 'invite-link', courseId],
-                  queryFn: () => getCourseInviteLink(courseId as string),
-                  enabled: !!courseId,
-                }),
+              queryOptions({
+                queryKey: ['course', 'invite-link', courseId],
+                queryFn: () => getCourseInviteLink(courseId as string),
+                enabled: !!courseId,
+              }),
+      studentGroups: (courseId: string | null) =>
+              queryOptions({
+                queryKey: ['course', 'student-groups', courseId],
+                queryFn: () => getCourseStudentGroups(courseId as string),
+                enabled: !!courseId,
+                retry: (failureCount, error) => {
+                  if (
+                    axios.isAxiosError(error) &&
+                    [401, 403, 404].includes(error.response?.status ?? 0)
+                  ) {
+                    return false;
+                  }
+                  return failureCount < 2;
+                },
+              }),
       studentDashboard: () =>
                 queryOptions({
                   queryKey: ['statistics', 'student', 'dashboard'],
@@ -194,6 +217,8 @@ export const courseQueries = {
   create_course_invite: () => useCreateCourseInvite(),
   create_announcement: () => useCreateAnnouncement(),
   edit_announcement: () => useUpdateAnnouncement(),
+  create_student_group: () => useCreateCourseStudentGroup(),
+  edit_student_group: () => useEditCourseStudentGroup(),
 
 
   add_comment: () => useAddComment(),
@@ -202,9 +227,12 @@ export const courseQueries = {
 
 
   edit_details: () => useChangeDetails(),
+  set_archive: () => useSetCourseArchive(),
+  delete_course: () => useDeleteCourse(),
   edit_permission: () => useChangePermission(),
   edit_theme: () => useEditTheme(),
   set_theme_access_for_all: () => useSetThemeAccessForAll(),
+  set_course_access: () => useSetCourseAccess(),
 
 
   
@@ -212,7 +240,6 @@ export const courseQueries = {
 
 
 
-  deleteCourse: (id: number) => deleteCourse(id),
   delete_material: () => delete_material(),
   delete_answer: () => useDeleteAnswer(),
   delete_course_stream: () => useDeleteCourseStream(),
@@ -220,6 +247,7 @@ export const courseQueries = {
   delete_theme: () => useDeleteTheme(),
   remove_student: () => useRemoveStudentFromCourse(),
   delete_announcement: () => useDeleteAnnouncement(),
+  delete_student_group: () => useDeleteCourseStudentGroup(),
 
 
 };

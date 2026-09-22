@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { PickQuestionsDialog } from "entities/QuestionBank";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
-import { isFilledTestQuestion, TestDetails } from "entities/Test/model/types/test";
+import { getTestMinPoints, isFilledTestQuestion, TestDetails } from "entities/Test/model/types/test";
 import TestResults from "entities/Test/ui/TestResults";
 import { AlertCircle, BarChart3, ChevronLeft, ChevronRight, Lock, LockOpen, Pencil, Plus, Trash2 } from "lucide-react";
 import { FC, useEffect, useState } from "react";
@@ -76,7 +76,7 @@ const mapDetailsToForm = (data: TestDetails): QuizFormData => ({
   required: data.required,
   timeLimit: data.timeLimit,
   maxPoints: data.maxPoints,
-  minPoints: data.minPoints ?? 0,
+  minPoints: getTestMinPoints(data),
   showCorrectAnswers: data.showCorrectAnswers,
   questions: (() => {
     const mapped = data.questions.filter(isFilledTestQuestion).map((question) => {

@@ -6,7 +6,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "shared/shadcn/ui/select";
+import { cn } from "shared/lib/utils";
 import { TYPE_LABELS, TYPE_SELECT_ORDER } from "./add-theme-constants";
+
+/** Полный список типов + видимый скроллбар (Radix по умолчанию скрывает его — остаётся только колесо). */
+const themeTypeSelectContentClassName = cn(
+  "[&_[data-radix-select-viewport]]:!h-auto",
+  "[&_[data-radix-select-viewport]]:max-h-[min(20rem,var(--radix-select-content-available-height))]",
+  "[&_[data-radix-select-viewport]]:[scrollbar-width:thin]",
+  "[&_[data-radix-select-viewport]]:[&::-webkit-scrollbar]:block",
+  "[&_[data-radix-select-viewport]]:[&::-webkit-scrollbar]:w-2",
+  "[&_[data-radix-select-viewport]]:[&::-webkit-scrollbar-thumb]:rounded-full",
+  "[&_[data-radix-select-viewport]]:[&::-webkit-scrollbar-thumb]:bg-border"
+);
 
 interface AddThemeTypeSelectProps {
   value: string;
@@ -38,7 +50,10 @@ export const AddThemeTypeSelect = ({
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Выберите тип занятия" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          position="item-aligned"
+          className={themeTypeSelectContentClassName}
+        >
           <ThemeTypeSelectItems />
         </SelectContent>
       </Select>

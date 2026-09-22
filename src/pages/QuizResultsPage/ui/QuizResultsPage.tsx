@@ -4,7 +4,12 @@ import { Button } from "shared/shadcn/ui/button";
 import { LuX, LuArrowLeft, LuCheck, LuClock } from "react-icons/lu";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { TestSubmissionResponse, TestDetails } from "entities/Test/model/types/test";
+import {
+  TestSubmissionResponse,
+  TestDetails,
+  getTestMinPoints,
+  resolveTestPassed,
+} from "entities/Test/model/types/test";
 import { openCourse, useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Badge } from "shared/shadcn/ui/badge";
 import { cn } from "shared/lib/utils";
@@ -26,6 +31,7 @@ const QuizResultsPage = () => {
   const storedCourseId = useCourseId();
   const state = location.state as QuizResultsState | null;
   const courseId = state?.courseId || storedCourseId || null;
+
   const goToCourse = () => {
     if (courseId) openCourse(navigate, courseId);
     else navigate("/courses");
@@ -39,10 +45,7 @@ const QuizResultsPage = () => {
             <p className="text-center text-muted-foreground text-sm sm:text-base">
               Результаты не найдены
             </p>
-            <Button
-              className="w-full mt-4"
-              onClick={goToCourse}
-            >
+            <Button className="w-full mt-4" onClick={goToCourse}>
               Вернуться к курсу
             </Button>
           </CardContent>
@@ -54,9 +57,18 @@ const QuizResultsPage = () => {
   const { results, quizData } = state;
   const score = results.score ?? results.correctAnswers;
   const maxPoints = results.maxPoints ?? quizData.maxPoints;
-  const minPoints = results.minPoints ?? quizData.minPoints ?? 0;
+  const minPoints = getTestMinPoints({
+    minPoints: results.minPoints ?? quizData.minPoints,
+    min_points: results.min_points ?? quizData.min_points,
+  });
   const needsReview = results.needsReview === true;
-  const isPassed = !needsReview && results.passed === true;
+  const isPassed =
+    resolveTestPassed({
+      result: score,
+      minPoints,
+      passed: results.passed,
+      needsReview,
+    }) === true;
 
   const minutesSpent = Math.floor((results.timeSpent || 0) / 60);
   const secondsSpent = (results.timeSpent || 0) % 60;
@@ -118,68 +130,25 @@ const QuizResultsPage = () => {
         </CardContent>
       </Card>
 
-      {results.totalQuestions != null && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <Card>
-            <CardHeader className="p-3 sm:p-6">
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Всего вопросов</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <p className="text-2xl sm:text-3xl font-bold">{results.totalQuestions}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="p-3 sm:p-6">
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Правильные</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <p className="text-2xl sm:text-3xl font-bold text-green-600">
-                {results.correctAnswers}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="p-3 sm:p-6">
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Неправильные</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <p className="text-2xl sm:text-3xl font-bold text-red-600">
-                {results.incorrectAnswers}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="p-3 sm:p-6">
-              <CardTitle className="text-sm sm:text-base lg:text-lg">
-                {results.pendingReview ? "На проверке" : "Пропущено"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <p className="text-2xl sm:text-3xl font-bold text-orange-600">
-                {results.pendingReview || results.skippedQuestions}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {(results.timeSpent != null || completionDate) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           {results.timeSpent != null && (
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-base sm:text-lg">Время прохождения</CardTitle>
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <LuClock className="h-4 w-4" />
+                  Время
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
-                <p className="text-base sm:text-lg">
-                  {minutesSpent} минут {secondsSpent} секунд
+                <p className="text-base sm:text-lg font-semibold">
+                  {minutesSpent} мин {secondsSpent} сек
                 </p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Из {quizData.timeLimit} минут
-                </p>
+                {quizData.timeLimit ? (
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Из {quizData.timeLimit} минут
+                  </p>
+                ) : null}
               </CardContent>
             </Card>
           )}
@@ -299,11 +268,11 @@ const QuizResultsPage = () => {
                                   : "Неправильно."}
                               </span>
                             </div>
-                            {!result.isCorrect && result.correctOptions.length > 0 && (
+                            {result.correctOptions.length > 0 && (
                               <div className="flex flex-col gap-2">
-                                {result.correctOptions.map((option, optionIndex) => (
+                                {result.correctOptions.map((option, i) => (
                                   <div
-                                    key={option.id || `${option.text}-${optionIndex}`}
+                                    key={option.id || i}
                                     className="flex items-start gap-2 p-2 rounded bg-green-50 border border-green-200"
                                   >
                                     <div className="w-2 h-2 rounded-full mt-1.5 bg-green-600 flex-shrink-0" />
@@ -326,12 +295,6 @@ const QuizResultsPage = () => {
           </CardContent>
         </Card>
       )}
-
-      <div className="flex justify-end gap-4 pb-4 sm:pb-6">
-        <Button onClick={goToCourse} size="lg" className="w-full sm:w-auto">
-          Вернуться к курсу
-        </Button>
-      </div>
     </div>
   );
 };

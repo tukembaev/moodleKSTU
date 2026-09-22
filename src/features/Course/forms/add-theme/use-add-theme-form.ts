@@ -28,6 +28,8 @@ export const useAddThemeForm = () => {
       course: courseId || "",
       week: 1,
       locked: false,
+      opening_date: null,
+      deadline: null,
     }
   });
 

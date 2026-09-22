@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { sortDiscussionNewestFirst } from "entities/Course/lib/themeDiscussion";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { FeedItem } from "entities/Course/model/types/course";
 import { format } from "date-fns";
@@ -74,6 +75,10 @@ export const ThemeFeed: React.FC<FeedProps> = ({
     courseQueries.reply_comment();
 
   const isPending = isAdding || isReplying;
+  const sortedItems = useMemo(
+    () => sortDiscussionNewestFirst(items),
+    [items]
+  );
   const placeholder = replyTarget
     ? `Ответ для ${replyTarget.name}...`
     : "Написать комментарий...";
@@ -125,7 +130,7 @@ export const ThemeFeed: React.FC<FeedProps> = ({
             <Skeleton className="ml-auto h-16 w-2/3 rounded-xl" />
             <Skeleton className="h-16 w-3/4 rounded-xl" />
           </div>
-        ) : items.length === 0 ? (
+        ) : sortedItems.length === 0 ? (
           <Empty className="h-full min-h-48 border-0">
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -139,7 +144,7 @@ export const ThemeFeed: React.FC<FeedProps> = ({
           </Empty>
         ) : (
           <MessageGroup className="gap-4">
-            {items.map((item) => (
+            {sortedItems.map((item) => (
               <FeedMessage
                 key={item.id}
                 item={item}

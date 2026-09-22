@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { isCourseArchived } from "entities/Course/model/types/course";
 import {
   isAlreadyMemberJoinError,
   joinCourseByInvite,
@@ -83,6 +84,7 @@ const CourseInvitePage = () => {
   const isMember =
     alreadyMember ||
     Boolean(myCourses?.some((item) => item.id === inviteCourseId));
+  const archived = isCourseArchived(course);
 
   const courseName =
     course?.discipline_name ||
@@ -111,6 +113,10 @@ const CourseInvitePage = () => {
     const nextLinkId = inviteLinkId || getHiddenId("inviteLinkId");
     if (!nextCourseId || !nextLinkId) {
       toast.error("Недействительная ссылка приглашения");
+      return;
+    }
+    if (archived) {
+      toast.error("Этот курс находится в архиве");
       return;
     }
     setJoining(true);
@@ -153,7 +159,9 @@ const CourseInvitePage = () => {
         <CardHeader>
           <CardTitle className="text-2xl">Приглашение на курс</CardTitle>
           <CardDescription>
-            {isMember
+            {archived
+              ? `Курс${courseName ? ` «${courseName}»` : ""} находится в архиве и больше недоступен.`
+              : isMember
               ? `Вы уже состоите${courseName ? ` в курсе «${courseName}»` : " в этом курсе"}.`
               : `Вас пригласили вступить на курс${courseName ? ` «${courseName}»` : ""}. Нажмите «Присоединиться», чтобы отправить заявку.`}
           </CardDescription>
@@ -164,7 +172,11 @@ const CourseInvitePage = () => {
           </CardContent>
         ) : null}
         <CardFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          {isMember ? (
+          {archived ? (
+            <Button variant="outline" onClick={goToCourses}>
+              К курсам
+            </Button>
+          ) : isMember ? (
             <Button variant="outline" onClick={goToCourse} disabled={joining}>
               Перейти к курсу
             </Button>
@@ -173,16 +185,18 @@ const CourseInvitePage = () => {
               К курсам
             </Button>
           )}
-          <Button
-            onClick={isMember ? undefined : onJoin}
-            disabled={isMember || joining || !inviteLinkId || coursesLoading}
-          >
-            {isMember
-              ? "Вы уже состоите"
-              : joining
-                ? "Отправка..."
-                : "Присоединиться"}
-          </Button>
+          {!archived && (
+            <Button
+              onClick={isMember ? undefined : onJoin}
+              disabled={isMember || joining || !inviteLinkId || coursesLoading}
+            >
+              {isMember
+                ? "Вы уже состоите"
+                : joining
+                  ? "Отправка..."
+                  : "Присоединиться"}
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

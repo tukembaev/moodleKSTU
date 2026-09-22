@@ -95,9 +95,10 @@ export const TaskGroup: FC<TaskGroupProps> = ({
             status={task.status}
             locked={task.locked}
             isStudent={isStudent}
-            deadline={task.deadline}
+            openDate={task.open_date ?? task.opening_date}
+            deadline={task.itemKind === "theme" ? task.deadline : undefined}
             activeRemarksCount={task.active_remarks_count}
-            onClick={() =>
+              onClick={() =>
               onItemClick?.(task.id, task.itemKind, {
                 passed: task.passed ?? null,
                 is_open: task.is_open ?? null,
@@ -135,6 +136,7 @@ export const TaskGroup: FC<TaskGroupProps> = ({
             deadline: editingTask.deadline,
             locked: editingTask.locked,
             open_date: editingTask.open_date,
+            opening_date: editingTask.opening_date,
           }}
         />
       )}

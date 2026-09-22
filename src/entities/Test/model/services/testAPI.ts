@@ -1,17 +1,29 @@
 import $api_edu from "shared/api/api_edu";
-import { Test, TestDetails, TestResult, TestSubmissionPayload, TestSubmissionResponse } from "../types/test";
+import {
+  getTestMinPoints,
+  normalizeListedTest,
+  Test,
+  TestDetails,
+  TestResult,
+  TestSubmissionPayload,
+  TestSubmissionResponse,
+} from "../types/test";
 import { TestPayload } from "features/Test/model/types/test_payload";
 
 export const getAllTest = async (courseId?: string): Promise<Test[]> => {
   const response = await $api_edu.get(`testing/`, {
     params: courseId ? { course_id: courseId } : undefined,
   });
-  return response.data;
+  return (response.data as Test[]).map(normalizeListedTest);
 };
 
 export const getTestQuestions = async (id: string | null): Promise<TestDetails> => {
   const response = await $api_edu.get(`testing/${id}/`);
-  return response.data;
+  const data = response.data as TestDetails;
+  return {
+    ...data,
+    minPoints: getTestMinPoints(data),
+  };
 };
 
 export const getTestResults = async (testId: string | null, courseId: string | null): Promise<TestResult[]> => {

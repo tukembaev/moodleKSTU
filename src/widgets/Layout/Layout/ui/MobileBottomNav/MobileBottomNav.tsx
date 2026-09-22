@@ -1,4 +1,4 @@
-import { Bell, BookOpen, Search, UserRound } from "lucide-react";
+import { Bell, BookOpen, CalendarDays, Search, UserRound } from "lucide-react";
 import { ComponentType, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
@@ -34,6 +34,9 @@ const MobileBottomNav = () => {
 
   if (!isMobile || !isAuthenticated || isFocusedRoute) return null;
 
+  const isTodayActive =
+    location.pathname === RoutePath[AppRoutes.TODAY] ||
+    location.pathname.startsWith(`${RoutePath[AppRoutes.TODAY]}/`);
   const isCoursesActive = location.pathname.startsWith(
     RoutePath[AppRoutes.COURSES]
   );
@@ -50,6 +53,15 @@ const MobileBottomNav = () => {
         className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
       >
         <ul className="flex items-stretch">
+          <NavItem
+            icon={CalendarDays}
+            label="Сегодня"
+            active={isTodayActive && !activeSheet}
+            onClick={() => {
+              setActiveSheet(null);
+              navigate(RoutePath[AppRoutes.TODAY]);
+            }}
+          />
           <NavItem
             icon={BookOpen}
             label="Курсы"

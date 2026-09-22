@@ -15,6 +15,7 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
 import { testQueries } from "../model/services/testQueryFactory";
+import { resolveTestPassed, getTestMinPoints } from "../model/types/test";
 
 // const data = [
 //   {∏∏
@@ -55,16 +56,26 @@ const TestList = () => {
           </SpringPopupList>
         ) : (
           test_list?.map((theme) => {
+            const passed = resolveTestPassed({
+              result: theme.result,
+              minPoints: getTestMinPoints(theme),
+              passed: theme.passed,
+              needsReview: theme.needsReview,
+            });
             return (
               <Card key={theme.id} className="transition-all duration-300">
                 <CardContent className="flex flex-col p-4 gap-2">
                   <span className="text-lg font-semibold flex gap-2 items-center flex-wrap">
                     {theme.title}
-                    {!isStudent ? null : theme.passed === true ? (
+                    {!isStudent ? null : theme.needsReview ? (
+                      <Badge className="bg-amber-300 text-primary  text-md px-1.5">
+                        На проверке{theme.result != null ? `: ${theme.result}` : ""}
+                      </Badge>
+                    ) : passed === true ? (
                       <Badge className="bg-green-300 text-primary  text-md px-1.5">
                         Пройден: {theme.result}
                       </Badge>
-                    ) : theme.passed === false ? (
+                    ) : passed === false ? (
                       <Badge variant="destructive" className=" text-md px-1.5">
                         Не пройден{theme.result != null ? `: ${theme.result}` : ""}
                       </Badge>
@@ -114,7 +125,7 @@ const TestList = () => {
                         }
                       />
                     </div>
-                  ) : theme.passed == null ? (
+                  ) : passed == null && theme.needsReview !== true ? (
                     <Button
                       className="shadow-none w-full mt-2 h-8 text-sm"
                       variant="outline"

@@ -13,7 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
-import { Test } from "entities/Test/model/types/test";
+import { Test, resolveTestPassed, getTestMinPoints } from "entities/Test/model/types/test";
 import {
   TYPE_LABELS,
   TYPE_LABEL_ORDER,
@@ -39,6 +39,7 @@ export interface CourseListTask {
   deadline: string;
   active_remarks_count: number;
   open_date?: string;
+  opening_date?: string | number | null;
   description?: string;
   discipline_name?: string;
   is_favorite?: boolean;
@@ -48,7 +49,14 @@ export interface CourseListTask {
   min_points?: number;
   comment?: string | null;
   needsReview?: boolean | null;
+  created_at?: string;
 }
+
+const createdAtTime = (value: unknown) => {
+  if (typeof value !== "string" || !value.trim()) return Number.POSITIVE_INFINITY;
+  const time = Date.parse(value);
+  return Number.isFinite(time) ? time : Number.POSITIVE_INFINITY;
+};
 
 interface TasksListProps {
   courseId: string | null;
@@ -92,7 +100,9 @@ export const TasksList: FC<TasksListProps> = ({
         map.set(task.id, task);
       }
     });
-    return Array.from(map.values());
+    return Array.from(map.values()).sort(
+      (a, b) => createdAtTime(a.created_at) - createdAtTime(b.created_at)
+    );
   }, [tasks]);
 
   const testTasks = useMemo<CourseListTask[]>(() => {
@@ -115,8 +125,13 @@ export const TasksList: FC<TasksListProps> = ({
       is_favorite: false,
       itemKind: "test" as const,
       is_open: test.is_open,
-      passed: test.passed ?? null,
-      min_points: test.min_points ?? 0,
+      passed: resolveTestPassed({
+        result: test.result,
+        minPoints: getTestMinPoints(test),
+        passed: test.passed,
+        needsReview: test.needsReview,
+      }),
+      min_points: getTestMinPoints(test),
       comment: test.comment,
       needsReview: test.needsReview ?? null,
     }));

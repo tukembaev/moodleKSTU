@@ -1,17 +1,81 @@
-import { FC } from "react";
-import { CheckCircle2, Circle, Clock, Lock, LockOpen, MoreVertical, Pencil, Trash2, XCircle } from "lucide-react";
+import { format, isValid } from "date-fns";
+import { ru } from "date-fns/locale";
 import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
+import {
+  studentCanContinueTest,
+  studentCanTakeTest,
+} from "entities/Test/model/types/test";
+import {
+  CheckCircle2,
+  Circle,
+  Clock,
+  Infinity as InfinityIcon,
+  Lock,
+  LockOpen,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  XCircle
+} from "lucide-react";
+import { FC } from "react";
+import { UseConfirmationDialog } from "shared/components";
 import { cn } from "shared/lib/utils";
+import { Badge } from "shared/shadcn/ui/badge";
+import { Button } from "shared/shadcn/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "shared/shadcn/ui/dropdown-menu";
-import { Button } from "shared/shadcn/ui/button";
-import { UseConfirmationDialog } from "shared/components";
-import { Badge } from "shared/shadcn/ui/badge";
-import { studentCanTakeTest } from "entities/Test/model/types/test";
+
+type ScheduleValue = string | number | null | undefined;
+
+const parseScheduleDate = (value: ScheduleValue): Date | null => {
+  if (value == null || value === "") return null;
+
+  if (typeof value === "number" || /^\d+$/.test(String(value).trim())) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric <= 0) return null;
+    const date = new Date(numeric < 1e12 ? numeric * 1000 : numeric);
+    return isValid(date) ? date : null;
+  }
+
+  const date = new Date(value);
+  return isValid(date) ? date : null;
+};
+
+const formatScheduleDay = (date: Date) =>
+  format(date, "d MMM yyyy", { locale: ru }).replace(".", "");
+
+const ThemeScheduleLine = ({
+  openDate,
+  deadline,
+}: {
+  openDate?: ScheduleValue;
+  deadline?: ScheduleValue;
+}) => {
+  const open = parseScheduleDate(openDate);
+  const due = parseScheduleDate(deadline);
+
+  if (!open && !due) {
+    return (
+      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+        <InfinityIcon className="size-3.5 shrink-0" />
+        Открыт всегда
+      </p>
+    );
+  }
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
+      {open && (
+        <span className="inline-flex min-w-0 items-center gap-1">
+          <span className="whitespace-normal">с {formatScheduleDay(open)} по {due ? formatScheduleDay(due) : 'сегодня'}</span>
+        </span>
+      )}
+    </p>
+  );
+};
 
 interface TaskItemProps {
   id: string;
@@ -22,7 +86,8 @@ interface TaskItemProps {
   status: boolean;
   locked: boolean;
   isStudent: boolean;
-  deadline?: string;
+  deadline?: string | number | null;
+  openDate?: string | number | null;
   activeRemarksCount?: number;
   onClick?: () => void;
   isActive?: boolean;
@@ -44,6 +109,8 @@ export const TaskItem: FC<TaskItemProps> = ({
   maxPoints,
   locked,
   isStudent,
+  deadline,
+  openDate,
   onClick,
   isActive = false,
   onEdit,
@@ -56,10 +123,23 @@ export const TaskItem: FC<TaskItemProps> = ({
   canReceivePoints = true,
 }) => {
   const showTeacherActions = !isStudent && !isTest && (onEdit || onDelete);
-  const isBlockedTest =
-    isTest && isStudent && !studentCanTakeTest({ passed, is_open: isOpen, needsReview });
-  const isBlockedTheme = !isTest && isStudent && locked;
-  const isBlocked = isBlockedTest || isBlockedTheme;
+  const canTake =
+    isTest &&
+    isStudent &&
+    studentCanTakeTest({
+      passed,
+      is_open: isOpen,
+      needsReview,
+    });
+  const canContinue =
+    isTest &&
+    isStudent &&
+    studentCanContinueTest({
+      id,
+      is_open: isOpen,
+    });
+  const isBlockedTest = isTest && isStudent && !canTake;
+  const isBlocked = isBlockedTest;
   const isItemOpen = isTest ? Boolean(isOpen) : !locked;
 
   return (
@@ -67,14 +147,13 @@ export const TaskItem: FC<TaskItemProps> = ({
       onClick={isBlocked ? undefined : onClick}
       aria-disabled={isBlocked}
       className={cn(
-        "flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4 border-b last:border-b-0 transition-colors",
+        "flex items-start gap-2 px-3 py-3 sm:gap-3 sm:px-4 border-b last:border-b-0 transition-colors",
         isBlocked ? "cursor-not-allowed" : "cursor-pointer hover:bg-muted/30",
-        locked && !isTest && "opacity-50",
         isActive && "bg-primary/10 border-l-4 border-l-primary"
       )}
     >
       {isStudent && canReceivePoints && (
-        <div className="shrink-0">
+        <div className="shrink-0 self-center">
           {isTest ? (
             needsReview ? (
               <Clock className="h-5 w-5 text-amber-500" />
@@ -82,6 +161,8 @@ export const TaskItem: FC<TaskItemProps> = ({
               <CheckCircle2 className="h-5 w-5 text-green-500" />
             ) : passed === false ? (
               <XCircle className="h-5 w-5 text-red-500" />
+            ) : canContinue ? (
+              <Clock className="h-5 w-5 text-blue-500" />
             ) : (
               <Circle className="h-5 w-5 text-muted-foreground" />
             )
@@ -102,34 +183,50 @@ export const TaskItem: FC<TaskItemProps> = ({
             </span>
           )}
         </h4>
-        {isStudent && canReceivePoints ? (
-          <TeacherGradeComment comment={comment} compact className="mt-0.5 line-clamp-2 max-w-none" />
+        <ThemeScheduleLine openDate={openDate} deadline={deadline} />
+        {isStudent && isTest && canContinue ? (
+          <p className="mt-0.5 text-xs text-blue-600 dark:text-blue-400">
+            Продолжить
+          </p>
+        ) : isStudent && canReceivePoints ? (
+          <TeacherGradeComment
+            comment={comment}
+            compact
+            className="mt-0.5 line-clamp-2 max-w-none"
+          />
         ) : null}
       </div>
 
-      <Badge variant={isItemOpen ? "default" : "outline"} className="shrink-0 gap-1 px-1.5 sm:px-2.5">
+      <Badge
+        variant={isItemOpen ? "default" : "outline"}
+        className="shrink-0 self-center gap-1 px-1.5 sm:px-2.5"
+      >
         {isItemOpen ? (
           <LockOpen className="h-3 w-3" />
         ) : (
           <Lock className="h-3 w-3" />
         )}
-        <span className="hidden sm:inline">{isItemOpen ? "Открыт" : "Закрыт"}</span>
+        <span className="hidden sm:inline">
+          {isItemOpen ? "Открыт" : "Закрыт"}
+        </span>
       </Badge>
 
       {canReceivePoints && (
-      <div className="shrink-0">
-        {isStudent ? (
-          <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
-            {result === null || result === "—" ? 0 : result}/{maxPoints}
-          </span>
-        ) : (
-          <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{maxPoints} б.</span>
-        )}
-      </div>
+        <div className="shrink-0 self-center">
+          {isStudent ? (
+            <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+              {result === null || result === "—" ? 0 : result}/{maxPoints}
+            </span>
+          ) : (
+            <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+              {maxPoints} б.
+            </span>
+          )}
+        </div>
       )}
 
       {showTeacherActions && (
-        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="shrink-0 self-center" onClick={(e) => e.stopPropagation()}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">

@@ -25,7 +25,13 @@ import { getFormattedDate } from "shared/lib";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
-import { studentCanTakeTest, Test } from "../model/types/test";
+import {
+  getTestMinPoints,
+  resolveTestPassed,
+  studentCanContinueTest,
+  studentCanTakeTest,
+  Test,
+} from "../model/types/test";
 
 // Компонент статуса теста
 const TestStatusBadge: React.FC<{
@@ -78,7 +84,17 @@ const TestCard = ({
 }) => {
   const { isStudent } = useAuth();
   const navigate = useNavigate();
-  const canTake = isStudent && studentCanTakeTest(item);
+  const passed = resolveTestPassed({
+    result: item.result,
+    minPoints: getTestMinPoints(item),
+    passed: item.passed,
+    needsReview: item.needsReview,
+  });
+  const canTake = isStudent && studentCanTakeTest({
+    ...item,
+    passed,
+  });
+  const canContinue = isStudent && studentCanContinueTest(item);
   const goToCourse = () => {
     if (courseId) openCourse(navigate, courseId);
     else navigate("/courses");
@@ -163,7 +179,7 @@ const TestCard = ({
               {/* Status for student */}
               {isStudent && (
                 <TestStatusBadge
-                  passed={item.passed}
+                  passed={passed}
                   result={item.result}
                   needsReview={item.needsReview}
                 />
@@ -187,7 +203,7 @@ const TestCard = ({
                   onClick={goToPass}
                 >
                   <PlayCircle className="h-4 w-4" />
-                  Пройти
+                  {canContinue ? "Продолжить" : "Пройти"}
                 </Button>
               ) : null}
             </div>
@@ -220,7 +236,7 @@ const TestCard = ({
             </Badge>
             {isStudent && (
               <TestStatusBadge
-                passed={item.passed}
+                passed={passed}
                 result={item.result}
                 needsReview={item.needsReview}
               />
@@ -280,7 +296,7 @@ const TestCard = ({
               onClick={goToPass}
             >
               <PlayCircle className="h-4 w-4" />
-              Пройти тест
+              {canContinue ? "Продолжить тест" : "Пройти тест"}
             </Button>
           ) : item.needsReview ? (
             <div className="flex flex-col gap-2">
@@ -292,7 +308,7 @@ const TestCard = ({
               </div>
               <TeacherGradeComment comment={item.comment} />
             </div>
-          ) : item.passed === true ? (
+          ) : passed === true ? (
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
                 <Trophy className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -302,7 +318,7 @@ const TestCard = ({
               </div>
               <TeacherGradeComment comment={item.comment} />
             </div>
-          ) : item.passed === false ? (
+          ) : passed === false ? (
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
                 <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />

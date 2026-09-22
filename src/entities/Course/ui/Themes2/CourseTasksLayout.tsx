@@ -1,9 +1,17 @@
 import { studentCanTakeTest } from "entities/Test/model/types/test";
+import { ChevronLeft } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "shared/hooks";
+import { useMobileBackHandler } from "shared/lib/navigation/mobile-back";
 import { cn } from "shared/lib/utils";
-import { openTestPass, useCourseId } from "shared/lib/navigation/hidden-ids";
+import {
+  clearFocusCourseItem,
+  peekFocusCourseItem,
+  openTestPass,
+  useCourseId,
+} from "shared/lib/navigation/hidden-ids";
+import { Button } from "shared/shadcn/ui/button";
 import { CourseItemKind, SelectedCourseItem, TasksList } from "./TasksList";
 import { TestEditorPanel } from "./TestEditorPanel";
 import { ThemeWorkspace } from "./ThemeWorkspace";
@@ -16,9 +24,26 @@ type LayoutLocationState = {
   selectedCourseItem?: SelectedCourseItem | null;
 };
 
-const isMobileViewport = () =>
+/** Список тем скрыт ниже lg — открытая тема занимает весь экран. */
+const STACKED_LAYOUT_QUERY = "(max-width: 1023px)";
+
+const isStackedViewport = () =>
   typeof window !== "undefined" &&
-  window.matchMedia("(max-width: 767px)").matches;
+  window.matchMedia(STACKED_LAYOUT_QUERY).matches;
+
+function useStackedViewport() {
+  const [stacked, setStacked] = useState(isStackedViewport);
+
+  useEffect(() => {
+    const media = window.matchMedia(STACKED_LAYOUT_QUERY);
+    const onChange = () => setStacked(media.matches);
+    media.addEventListener("change", onChange);
+    setStacked(media.matches);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
+  return stacked;
+}
 
 export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
   openThemeRequest,
@@ -26,23 +51,50 @@ export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
   const courseId = useCourseId();
   const navigate = useNavigate();
   const location = useLocation();
+  const isStacked = useStackedViewport();
   const auth = useAuth();
   const isStudent = Boolean(auth?.isStudent);
   const pushedSelection = useRef(false);
+  const seenCourseId = useRef(courseId);
   const [selectedItem, setSelectedItem] = useState<SelectedCourseItem | null>(
-    openThemeRequest ? { kind: "theme", id: openThemeRequest.id } : null
+    () =>
+      peekFocusCourseItem() ??
+      (openThemeRequest ? { kind: "theme", id: openThemeRequest.id } : null)
   );
+
+  useEffect(() => {
+    const item = peekFocusCourseItem();
+    const previousCourseId = seenCourseId.current;
+    const courseChanged = previousCourseId !== courseId && previousCourseId !== "";
+    seenCourseId.current = courseId;
+
+    if (item) {
+      setSelectedItem(item);
+      const timer = window.setTimeout(() => {
+        const current = peekFocusCourseItem();
+        if (current?.id === item.id && current.kind === item.kind) {
+          clearFocusCourseItem();
+        }
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (courseChanged) setSelectedItem(null);
+  }, [courseId, location.key]);
 
   const selectItem = (item: SelectedCourseItem | null) => {
     setSelectedItem(item);
-    if (!isMobileViewport()) return;
+    if (!isStackedViewport()) return;
     const state = (location.state as LayoutLocationState | null) ?? {};
     if (item) {
       pushedSelection.current = true;
-      navigate(".", {
-        state: { ...state, selectedCourseItem: item },
-        replace: Boolean(state.selectedCourseItem),
-      });
+      navigate(
+        { pathname: location.pathname, search: location.search },
+        {
+          state: { ...state, selectedCourseItem: item },
+          replace: Boolean(state.selectedCourseItem),
+        }
+      );
       return;
     }
     if (state.selectedCourseItem) {
@@ -52,7 +104,7 @@ export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
   };
 
   useEffect(() => {
-    if (!isMobileViewport() || !pushedSelection.current) return;
+    if (!isStackedViewport() || !pushedSelection.current) return;
     const fromHistory =
       (location.state as LayoutLocationState | null)?.selectedCourseItem ??
       null;
@@ -90,9 +142,6 @@ export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
       openTestPass(navigate, itemId, courseId);
       return;
     }
-    if (kind === "theme" && isStudent && meta?.locked) {
-      return;
-    }
     selectItem({ kind, id: itemId });
   };
 
@@ -100,6 +149,8 @@ export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
     selectedItem?.kind === "theme" ? selectedItem.id : null;
   const isTestSelected = selectedItem?.kind === "test";
   const hasSelection = selectedItem !== null;
+
+  useMobileBackHandler(isStacked && hasSelection, () => selectItem(null));
 
   return (
     <div className="grid min-h-0 gap-3 sm:gap-4 lg:h-[calc(100dvh-13rem)] lg:max-h-[calc(100dvh-13rem)] lg:grid-cols-[minmax(0,30%)_minmax(0,70%)] lg:gap-6 lg:overflow-hidden">
@@ -124,6 +175,18 @@ export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
             : "flex h-[calc(100dvh-8rem)] flex-col lg:h-full"
         )}
       >
+        {hasSelection && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="-ml-1 h-9 w-fit shrink-0 px-2 lg:hidden"
+            onClick={() => selectItem(null)}
+          >
+            <ChevronLeft className="size-4" />
+            К темам
+          </Button>
+        )}
         {isTestSelected && courseId && selectedItem ? (
           <div className="min-h-0 flex-1 overflow-hidden lg:h-full lg:pr-4">
             <TestEditorPanel

@@ -3,6 +3,7 @@ import type {
   QuestionType,
 } from "shared/components/QuestionEditor";
 import { resolveQuestionType } from "shared/components/QuestionEditor";
+import { hasActiveLocalAttempt } from "../lib/attemptDraftCache";
 
 export interface Test {
   id: string;
@@ -11,6 +12,7 @@ export interface Test {
   opening_date: string; // ISO string
   max_points: number;
   min_points?: number;
+  minPoints?: number;
   status: boolean;
   result: number | null;
   comment?: string | null;
@@ -37,6 +39,7 @@ export interface TestResult {
   id?: number | string;
   name: string;
   group: string;
+  group_by?: string[];
   user_id?: number;
   student_id?: number;
   result: number | null;
@@ -75,6 +78,7 @@ export interface TestDetails {
   showCorrectAnswers: boolean;
   maxPoints: number;
   minPoints?: number;
+  min_points?: number;
   timeLimit: number;
   required: boolean;
   opening_date: string;
@@ -121,6 +125,7 @@ export interface TestSubmissionResponse {
   score?: number;
   maxPoints?: number;
   minPoints?: number;
+  min_points?: number;
   passed?: boolean;
   needsReview?: boolean;
   pendingReview?: number;
@@ -132,6 +137,12 @@ export interface TestSubmissionResponse {
   timeSpent?: number;
   completionDate?: string;
   detailedResults?: DetailedResult[];
+}
+
+export interface SavedAttemptAnswer {
+  questionId: string;
+  selectedOptions?: string[];
+  textAnswer?: string;
 }
 
 export const isFilledTestQuestion = (question: TestQuestion) => {
@@ -150,12 +161,51 @@ export const isFilledTestQuestion = (question: TestQuestion) => {
   );
 };
 
+export const getTestMinPoints = (source?: {
+  minPoints?: number | null;
+  min_points?: number | null;
+} | null): number => {
+  const value = source?.minPoints ?? source?.min_points;
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+};
+
+export const resolveTestPassed = (input: {
+  result?: number | null;
+  minPoints?: number | null;
+  passed?: boolean | null;
+  needsReview?: boolean | null;
+}): boolean | null => {
+  if (input.needsReview) return null;
+  if (input.result === null || input.result === undefined) {
+    return input.passed ?? null;
+  }
+  return input.result >= (input.minPoints ?? 0);
+};
+
+export const normalizeListedTest = (test: Test): Test => {
+  const min_points = getTestMinPoints(test);
+  return {
+    ...test,
+    min_points,
+    passed: resolveTestPassed({
+      result: test.result,
+      minPoints: min_points,
+      passed: test.passed,
+      needsReview: test.needsReview,
+    }),
+  };
+};
+
 export const studentCanTakeTest = (test: {
   passed?: boolean | null;
   is_open?: boolean | null;
   needsReview?: boolean | null;
-}) =>
-  test.passed == null && test.needsReview !== true && test.is_open === true;
+}) => test.passed == null && test.needsReview !== true && test.is_open === true;
+
+export const studentCanContinueTest = (test: {
+  id: string;
+  is_open?: boolean | null;
+}) => test.is_open === true && hasActiveLocalAttempt(test.id);
 
 export const getTestStudentId = (student: TestResult): number => {
   if (typeof student.student_id === "number") return student.student_id;

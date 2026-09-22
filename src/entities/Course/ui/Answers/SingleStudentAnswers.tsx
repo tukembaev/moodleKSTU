@@ -4,6 +4,7 @@ import {
   canUploadAnswerFiles,
   groupAnswerFiles,
 } from "entities/Course/lib/answerSubmissions";
+import { resolveStudentThemeAccess } from "entities/Course/lib/themeStudentAccess";
 import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { FileAnswer } from "entities/Course/model/types/course";
@@ -50,8 +51,12 @@ const SingleStudentAnswers = ({
   });
 
   const groups = useMemo(() => groupAnswerFiles(data), [data]);
-  const canUpload = canReceivePoints && canUploadAnswerFiles(data);
-  const blockedCaption = blockedUploadCaption(themeRemarks);
+  const { canSubmit, notYetOpen } = resolveStudentThemeAccess(theme, true);
+  const canUpload =
+    canReceivePoints && canSubmit && canUploadAnswerFiles(data);
+  const blockedCaption = canSubmit
+    ? blockedUploadCaption(themeRemarks)
+    : "Новые файлы отправить нельзя";
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     if (!canUpload) return;
@@ -185,7 +190,10 @@ const SingleStudentAnswers = ({
                 deleteFallback
                 currentExtra={canUpload ? <AddAnswerCard themeId={id} /> : null}
               />
-              {!canUpload && data.length > 0 ? (
+              {canReceivePoints &&
+              !notYetOpen &&
+              !canUpload &&
+              (!canSubmit || data.length > 0) ? (
                 <p className="text-xs text-muted-foreground">{blockedCaption}</p>
               ) : null}
             </div>

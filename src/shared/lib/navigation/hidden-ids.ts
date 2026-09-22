@@ -141,7 +141,7 @@ export function useQuizId(): string {
 
 export function getPostLoginPath(): string {
   if (getHiddenId("inviteCourseId")) return COURSE_INVITE_PATH;
-  return "/courses";
+  return "/today";
 }
 
 export function getCourseInviteUrl(
@@ -236,14 +236,61 @@ export function parseCourseAnnouncementCourseId(
   }
 }
 
+export type FocusCourseItem = {
+  kind: "theme" | "test";
+  id: string;
+};
+
+const FOCUS_COURSE_ITEM_KEY = "hidden:focusCourseItem";
+
+export function setFocusCourseItem(item: FocusCourseItem | null) {
+  if (typeof window === "undefined") return;
+  if (!item?.id) {
+    sessionStorage.removeItem(FOCUS_COURSE_ITEM_KEY);
+    return;
+  }
+  sessionStorage.setItem(FOCUS_COURSE_ITEM_KEY, JSON.stringify(item));
+}
+
+export function peekFocusCourseItem(): FocusCourseItem | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(FOCUS_COURSE_ITEM_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as FocusCourseItem;
+    if (!parsed?.id || (parsed.kind !== "theme" && parsed.kind !== "test")) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function clearFocusCourseItem() {
+  setFocusCourseItem(null);
+}
+
 export function openCourse(
   navigate: NavigateFunction,
   courseId: string | null | undefined,
-  options?: { themeId?: string; replace?: boolean; tab?: string }
+  options?: {
+    themeId?: string;
+    replace?: boolean;
+    tab?: string;
+    selectedItem?: FocusCourseItem;
+  }
 ) {
   if (!courseId) return;
   setHiddenId("courseId", courseId);
-  if (options?.themeId) setHiddenId("themeId", options.themeId);
+  const selectedItem =
+    options?.selectedItem ??
+    (options?.themeId
+      ? { kind: "theme" as const, id: options.themeId }
+      : undefined);
+  if (selectedItem?.kind === "theme") setHiddenId("themeId", selectedItem.id);
+  else clearHiddenId("themeId");
+  setFocusCourseItem(selectedItem ?? null);
   const search = options?.tab
     ? `?tab=${encodeURIComponent(options.tab)}`
     : "";

@@ -1,4 +1,6 @@
+import { CourseAccessCard } from "./CourseAccessCard";
 import { CourseStreams } from "./CourseStreams";
+import { DeleteCourseCard } from "./DeleteCourseCard";
 import { DuplicateCourseCard } from "./DuplicateCourseCard";
 import { EditCourseCard } from "./EditCourseCard";
 import { ReassignOrganizationCard } from "./ReassignOrganizationCard";
@@ -24,7 +26,10 @@ export const CourseManagementTab = ({
         </p>
       </div>
 
-      <EditCourseCard courseId={courseId} />
+      <div className="grid gap-6 lg:grid-cols-2 items-start">
+        <EditCourseCard courseId={courseId} />
+        <CourseAccessCard courseId={courseId} />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-3 items-start">
         <div className="lg:col-span-2">
@@ -33,6 +38,7 @@ export const CourseManagementTab = ({
         <div className="flex flex-col gap-6">
           <ReassignOrganizationCard courseId={courseId} />
           <DuplicateCourseCard courseId={courseId} courseName={courseName} />
+          <DeleteCourseCard courseId={courseId} courseName={courseName} />
         </div>
       </div>
     </div>

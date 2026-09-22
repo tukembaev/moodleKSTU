@@ -1,14 +1,15 @@
 import { ChevronLeft } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
+import { runMobileBackHandler } from "shared/lib/navigation/mobile-back";
 import { Button } from "shared/shadcn/ui/button";
 
 const FOCUSED_ROUTES = ["/test/pass"];
 
 function isRootPath(pathname: string) {
   return (
-    pathname === RoutePath[AppRoutes.COURSES] ||
-    pathname === `${RoutePath[AppRoutes.COURSES]}/`
+    pathname === RoutePath[AppRoutes.TODAY] ||
+    pathname === `${RoutePath[AppRoutes.TODAY]}/`
   );
 }
 
@@ -28,11 +29,12 @@ export function MobileHeader() {
   const canGoBack = !isRootPath(location.pathname);
 
   const goBack = () => {
+    if (runMobileBackHandler()) return;
     if (location.key !== "default") {
       navigate(-1);
       return;
     }
-    navigate(RoutePath[AppRoutes.COURSES]);
+    navigate(RoutePath[AppRoutes.TODAY]);
   };
 
   return (

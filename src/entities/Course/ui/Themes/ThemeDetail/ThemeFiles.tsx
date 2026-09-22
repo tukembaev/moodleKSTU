@@ -6,6 +6,7 @@ import {
   LuClipboardList,
   LuFile,
   LuGlasses,
+  LuKeyRound,
   LuList,
   LuMessageSquareText,
   LuUpload,
@@ -17,6 +18,7 @@ import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import ThemeAnswers from "../../Answers/ThemeAnswers";
+import ThemeAccess from "../../Answers/ThemeAccess";
 import { AddMaterialCard } from "../../Themes2/AddMaterialCard";
 import { MaterialAttachment } from "../../Themes2/MaterialAttachment";
 import ThemeFAQ from "./ThemeFAQ";
@@ -50,6 +52,16 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
             value: "theme_answers",
             content: <ThemeAnswers id={id} />,
             icon: <LuList />,
+          },
+        ]
+      : []),
+    ...(!auth_data.isStudent
+      ? [
+          {
+            name: "Доступ",
+            value: "access",
+            content: <ThemeAccess themeId={id} />,
+            icon: <LuKeyRound />,
           },
         ]
       : []),

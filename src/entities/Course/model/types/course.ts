@@ -3,6 +3,7 @@ import { Test } from "entities/Test/model/types/test";
 export type CourseOwner = {
   id: string;
   user_id: number;
+  user_uuid: string;
   owner_name: string;
   main: boolean;
   avatar: string;
@@ -91,6 +92,7 @@ export type Course = {
   organization_id?: string;
   organization_name?: string;
   is_end: boolean;
+  archive?: boolean | null;
   additional_points: AdditionalCoursePoints[]
   course_owner: CourseOwner[];
 
@@ -98,8 +100,27 @@ export type Course = {
   progress: CourseProgress;
   course_points: number;
   max_points: number;
-  count_stud: number;
+  count_stud?: number;
   is_favorite: boolean;
+  can_delete?: boolean;
+};
+
+export const isCourseArchived = (
+  course?: { archive?: boolean | null } | null
+) => course?.archive === true;
+
+export const courseHasStudents = (countStud?: number | null) =>
+  typeof countStud === "number" && countStud > 0;
+
+/** Кнопка удаления: только архив. `can_delete: false` скрывает, иначе преподаватель может удалять. */
+export const canShowDeleteCourse = (
+  course?: { archive?: boolean | null; can_delete?: boolean } | null,
+  isTeacher = false,
+  forceArchived = false
+) => {
+  if (!isTeacher) return false;
+  if (!(forceArchived || isCourseArchived(course))) return false;
+  return course?.can_delete !== false;
 };
 
 
@@ -109,11 +130,13 @@ export interface CourseThemes {
   discipline_name: string;
   organization_id?: string;
   organization_name?: string;
+  archive?: boolean | null;
 
   courses_hours_left: number;
   max_points: number;
   theme_points: number;
-  count_stud: number;
+  count_stud?: number;
+  can_delete?: boolean;
   icon: string | null;
   course_owner: CourseOwner[];
   detail: CourseThemesTypes;
@@ -145,10 +168,12 @@ export interface CourseAllMaterials {
   audience: string;
   requirements: string;
   description: string;
+  archive?: boolean | null;
   count_lb_pr: CourseLessonsStatusCounter;
   progress: CourseProgress;
   course_points: number;
-  count_stud: number;
+  count_stud?: number;
+  can_delete?: boolean;
   is_end: boolean;
   course_owner: CourseOwner[];
   additional_points: AdditionalCoursePoints[];
@@ -162,12 +187,15 @@ export interface CourseAllMaterials {
     status: boolean;
     locked: boolean;
     open_date: string;
+    opening_date?: string | number | null;
     description: string;
     discipline_name: string;
     is_favorite: boolean;
     result: string;
     comment?: string | null;
     active_remarks_count: number;
+    created_at?: string;
+    updated_at?: string;
   }>;
 }
 export interface FileAnswer {
@@ -194,6 +222,14 @@ export interface TaskSubmission {
   files: FileAnswer[];
 }
 
+export interface CourseStudentGroup {
+  id: string;
+  course_id: string;
+  name: string;
+  color: string | null;
+  user_ids: number[];
+}
+
 export interface StudentsAnswers {
   id: string ;
   first_name: string;
@@ -207,6 +243,7 @@ export interface StudentsAnswers {
   number_phone: string;
   telegram_username: string;
   group: string;
+  group_by?: string[];
   fullname: string;
   locked: boolean;
   task: string;
@@ -278,6 +315,7 @@ export interface TablePerfomance {
   number_phone: string | null;
   telegram_username: string | null;
   group: string | null;
+  group_by?: string[];
   is_end: boolean;
   max_points_course: number;
   themes: StudentTheme[];
@@ -322,6 +360,9 @@ export interface CourseModulesResponse {
   audience: string;
   requirements: string;
   description: string;
+  archive?: boolean | null;
+  count_stud?: number;
+  can_delete?: boolean;
   course_owner: CourseOwner[];
   modules: Module[];
 }
@@ -362,7 +403,7 @@ export interface RegisterToCoursePayload {
 
 export interface CreateCourseInvitePayload {
   course_id: string;
-  /** ISO 8601 Duration (`P1D`, `P7D`, …) или `null` для бессрочного приглашения */
+  /** ISO 8601 Duration (`P1D`, `P7D`, …) или `null` для открытого всегда приглашения */
   duration: string | null;
 }
 

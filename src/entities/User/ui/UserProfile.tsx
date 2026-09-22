@@ -12,30 +12,34 @@ import FileTab from "./components/userTabs/FileTab";
 
 const UserProfile = () => {
   const { id: visit_user } = useParams();
-  const { id: user_id } = useAuth();
-  const isOwnProfile = !visit_user;
+  const { id: user_id, isAuthenticated } = useAuth();
+
+  const { data: me, isLoading: isMeLoading } = useQuery({
+    ...userQueries.me(),
+    enabled: isAuthenticated,
+  });
+
+  const isOwnProfile =
+    isAuthenticated &&
+    (!visit_user || Boolean(me?.id && String(me.id) === String(visit_user)));
 
   const { data: visitedProfile, isLoading: isVisitedLoading } = useQuery({
     ...userQueries.userService(visit_user ?? ""),
-    enabled: Boolean(visit_user),
+    enabled: Boolean(visit_user) && !isOwnProfile,
   });
   const { data: lmsUser } = useQuery({
     ...userQueries.user(user_id),
     enabled: isOwnProfile && Boolean(user_id),
   });
-  const { data: me, isLoading: isMeLoading } = useQuery({
-    ...userQueries.me(),
-    enabled: isOwnProfile,
-  });
 
-  const data = visit_user
-    ? visitedProfile
-    : me
+  const data = isOwnProfile
+    ? me
       ? mapUsersMeToProfile(me, lmsUser)
-      : lmsUser;
-  const isLoading = visit_user
-    ? isVisitedLoading
-    : isMeLoading && !me;
+      : lmsUser
+    : visitedProfile;
+  const isLoading = isOwnProfile
+    ? isMeLoading && !me
+    : isVisitedLoading;
   const {
     data: user_files,
     isLoading: isLoadingFiles,
@@ -60,8 +64,8 @@ const UserProfile = () => {
 
   return (
     <div className="flex flex-col gap-8 max-w-screen-xl mx-auto">
-      <UserCard data={data} isLoading={isLoading} />
-      {!visit_user && (
+      <UserCard data={data} isLoading={isLoading} isOwnProfile={isOwnProfile} />
+      {isOwnProfile && (
         <>
           <Separator />
           <UseTabs tabs={tabs} />

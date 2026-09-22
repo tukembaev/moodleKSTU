@@ -9,7 +9,7 @@ import { Separator } from "shared/shadcn/ui/separator";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { cn } from "shared/lib/utils";
 import { testQueries } from "../model/services/testQueryFactory";
-import { studentNeedsReview } from "../model/types/test";
+import { getTestMinPoints, resolveTestPassed, studentNeedsReview } from "../model/types/test";
 import TestTable from "./lib/TestTable";
 
 interface TestResultsProps {
@@ -33,23 +33,29 @@ const TestResults: FC<TestResultsProps> = ({
   );
 
   const maxScore = testDetails?.maxPoints || 0;
-  const minScore = testDetails?.minPoints ?? 0;
+  const minScore = getTestMinPoints(testDetails);
   const totalStudents = test_list?.length || 0;
   const pendingStudents = test_list?.filter(studentNeedsReview) || [];
   const passedStudents =
-    test_list?.filter((s) => {
-      if (studentNeedsReview(s)) return false;
-      if (s.passed === true) return true;
-      if (s.passed === false) return false;
-      return s.result !== null && s.result !== undefined && (s.result || 0) >= minScore;
-    }) || [];
+    test_list?.filter(
+      (s) =>
+        resolveTestPassed({
+          result: s.result,
+          minPoints: minScore,
+          passed: s.passed,
+          needsReview: studentNeedsReview(s),
+        }) === true
+    ) || [];
   const failedStudents =
-    test_list?.filter((s) => {
-      if (studentNeedsReview(s)) return false;
-      if (s.passed === true) return false;
-      if (s.passed === false) return true;
-      return s.result !== null && s.result !== undefined && (s.result || 0) < minScore;
-    }) || [];
+    test_list?.filter(
+      (s) =>
+        resolveTestPassed({
+          result: s.result,
+          minPoints: minScore,
+          passed: s.passed,
+          needsReview: studentNeedsReview(s),
+        }) === false
+    ) || [];
   const attemptedStudents = test_list?.filter((s) => s.result !== null && s.result !== undefined) || [];
   const passedCount = passedStudents.length;
   const failedCount = failedStudents.length;

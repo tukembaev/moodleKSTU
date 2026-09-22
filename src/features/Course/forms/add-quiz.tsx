@@ -52,14 +52,14 @@ const toFormQuestion = (question: QuestionDraft): QuestionForm => ({
 
 interface QuizFormData {
   title: string;
-  description: string;
+  description?: string;
   opening_date: Date;
   deadline: Date;
-  required: boolean;
+  required?: boolean;
   timeLimit: number;
   maxPoints: number;
   minPoints: number;
-  showCorrectAnswers: boolean;
+  showCorrectAnswers?: boolean;
   theme_id?: string;
   questions: QuestionForm[];
 }
@@ -213,17 +213,19 @@ const Add_Quiz = () => {
       }
     }
 
-    const testData = {
+    const testData: Record<string, unknown> = {
       title: formData.title,
-      description: formData.description || "",
       opening_date: formData.opening_date.toISOString(),
-      required: formData.required || false,
       timeLimit: formData.timeLimit,
       maxPoints: formData.maxPoints || 0,
       minPoints: formData.minPoints || 0,
-      showCorrectAnswers: formData.showCorrectAnswers || false,
       questions: filledQuestions.map((question) => toApiQuestionPayload(question)),
     };
+
+    const description = formData.description?.trim();
+    if (description) testData.description = description;
+    if (formData.required) testData.required = true;
+    if (formData.showCorrectAnswers) testData.showCorrectAnswers = true;
 
     const formDataToSend = new FormData();
     formDataToSend.append("data", JSON.stringify(testData));
@@ -278,20 +280,13 @@ const Add_Quiz = () => {
             </div>
 
             <div className="flex w-full flex-col gap-1.5">
-              <FieldLabel htmlFor="quiz-description" required>
-                Описание
-              </FieldLabel>
+              <FieldLabel htmlFor="quiz-description">Описание</FieldLabel>
               <Textarea
                 id="quiz-description"
                 rows={2}
                 placeholder="Кратко опишите, что проверяет тест"
-                {...register("description", requiredField("Заполните описание теста"))}
+                {...register("description")}
               />
-              {errors.description && (
-                <span className="text-xs text-destructive">
-                  Описание обязательно
-                </span>
-              )}
             </div>
 
             <div className="grid grid-cols-3 gap-3">

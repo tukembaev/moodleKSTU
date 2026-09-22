@@ -51,6 +51,7 @@ export interface CreateCoursePayload {
     description?: string;
     organization_id?: string;
     organization_name?: string;
+    archive?: boolean;
   }
 
 
@@ -58,6 +59,20 @@ export interface CreateCoursePayload {
     locked: boolean;
     users?: number[];
     groups?: string[];
+  }
+
+  export interface SetCourseAccessPayload {
+    locked: boolean;
+    users?: number[];
+  }
+
+  export interface SetCourseAccessResponse {
+    course_id: string;
+    locked: boolean;
+    applied_to_all_students: boolean;
+    users: number[];
+    themes_updated: number;
+    students_updated: number;
   }
 
 
@@ -75,10 +90,10 @@ export interface CreateCoursePayload {
     title?: string;
     type_less: string;
     max_points?: number;
-    deadline: string;
-
+    deadline?: string | number | null;
+    opening_date?: string | number | null;
     locked: boolean;
-    open_date: string;
+    open_date?: string | number | null;
     description?: string;
     test_id?: string;
   }
@@ -88,9 +103,10 @@ export interface CreateCoursePayload {
     week?: number;
     type_less?: string;
     max_points?: number;
-    deadline?: string;
+    deadline?: string | number | null;
+    opening_date?: string | number | null;
     locked?: boolean;
-    open_date?: string;
+    open_date?: string | number | null;
     description?: string;
   }
 
@@ -103,5 +119,17 @@ export interface CreateCoursePayload {
     course: string;
     title: string;
     streams: CourseStreamItemPayload[];
+  }
+
+  export interface CreateCourseStudentGroupPayload {
+    name: string;
+    user_ids: number[];
+    color?: string;
+  }
+
+  export interface EditCourseStudentGroupPayload {
+    name?: string;
+    user_ids?: number[];
+    color?: string;
   }
   

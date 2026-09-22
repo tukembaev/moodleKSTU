@@ -1,17 +1,26 @@
-import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { testQueries } from "entities/Test";
+import {
+  clearAttemptDraft,
+  ensureAttemptDraft,
+  remainingSecondsFromDraft,
+  saveDraftAnswers,
+} from "entities/Test/model/lib/attemptDraftCache";
 import { submitTestAnswers } from "entities/Test/model/services/testAPI";
-import { TestAnswer, TestDetails, TestQuestion, isFilledTestQuestion } from "entities/Test/model/types/test";
-import { AlertCircle, FileQuestion } from "lucide-react";
+import {
+  isFilledTestQuestion,
+  SavedAttemptAnswer,
+  TestAnswer,
+  TestDetails,
+  TestQuestion,
+  TestSubmissionResponse,
+} from "entities/Test/model/types/test";
+import { AlertCircle, FileQuestion, Clock } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LuTrash2 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { toastRequiredField } from "shared/lib/onFormInvalid";
 import { cn } from "shared/lib/utils";
 import {
   isTextQuestionType,
-  QUESTION_TYPE_LABELS,
   resolveQuestionType,
 } from "shared/components/QuestionEditor";
 import {
@@ -21,7 +30,7 @@ import {
   useQuizId,
 } from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "shared/shadcn/ui/card";
+import { Card, CardContent } from "shared/shadcn/ui/card";
 import {
   Empty,
   EmptyContent,
@@ -59,8 +68,10 @@ const collectAnswers = (
   return questions.map((question) => {
     const type = resolveQuestionType(question);
     if (isTextQuestionType(type)) {
-      const textAnswer = String(formData.get(question.id) ?? "").trim();
-      return { questionId: question.id, textAnswer };
+      return {
+        questionId: question.id,
+        textAnswer: String(formData.get(question.id) ?? "").trim(),
+      };
     }
     return {
       questionId: question.id,
@@ -78,10 +89,11 @@ const QuizTestPage = () => {
     if (courseId) openCourse(navigate, courseId);
     else navigate("/courses");
   };
-  const isStudent = true;
-  const { data: testQuestionsData, isLoading, isError } = useQuery(
-    testQueries.TestQuestions(id as string)
+
+  const { data: testQuestionsData, isLoading, isError, refetch } = useQuery(
+    testQueries.TestQuestions(id || null)
   );
+
   const quizData = useMemo(() => {
     if (!testQuestionsData) return null;
     return {
@@ -90,87 +102,139 @@ const QuizTestPage = () => {
     };
   }, [testQuestionsData]);
 
-  const formRef = useRef<HTMLFormElement>(null);
-  const timeRemainingRef = useRef<number>(0);
+  const [showTimeUp, setShowTimeUp] = useState(false);
+  const [pendingResults, setPendingResults] = useState<{
+    results: TestSubmissionResponse;
+    quizData: TestDetails;
+  } | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitFailed, setSubmitFailed] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [savedAnswers, setSavedAnswers] = useState<SavedAttemptAnswer[]>([]);
+  const formRef = useRef<HTMLFormElement>(null);
+  const timeRemainingRef = useRef(0);
+  const startedRef = useRef(false);
+
+  const persistDraft = useCallback(() => {
+    if (!id || !quizData || !formRef.current || isSubmitted) return;
+    saveDraftAnswers(id, collectAnswers(formRef.current, quizData.questions));
+  }, [id, isSubmitted, quizData]);
 
   useEffect(() => {
-    if (quizData?.timeLimit) {
-      timeRemainingRef.current = quizData.timeLimit * 60;
-    }
-  }, [quizData]);
+    if (!id || !quizData) return;
+    const draft = ensureAttemptDraft(id, (quizData.timeLimit || 0) * 60);
+    const remaining = quizData.timeLimit
+      ? remainingSecondsFromDraft(draft)
+      : 0;
+    setSavedAnswers(draft.answers);
+    setRemainingSeconds(remaining);
+    timeRemainingRef.current = remaining;
+    setReady(true);
+  }, [id, quizData]);
 
-  const submitAnswers = async (formattedAnswers: TestAnswer[], currentTimeRemaining: number) => {
-    if (!quizData || !id) return;
-
-    try {
-      setIsSubmitting(true);
-
-      const response = await submitTestAnswers(id, {
-        answers: formattedAnswers,
-        timeRemaining: currentTimeRemaining,
-        showCorrectAnswers: testQuestionsData?.showCorrectAnswers || false,
-      });
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["course", "tests"] }),
-        queryClient.invalidateQueries({ queryKey: ["test"] }),
-      ]);
-      openTestResult(navigate, id, {
+  const goToResults = useCallback(
+    (results: TestSubmissionResponse, meta: TestDetails) => {
+      if (id) clearAttemptDraft(id);
+      openTestResult(navigate, id as string, {
         courseId,
-        state: {
-          results: response,
-          quizData,
-          courseId,
-        },
+        state: { results, quizData: meta, courseId },
       });
-    } catch (error) {
-      const apiMessage = axios.isAxiosError(error)
-        ? error.response?.data?.error || error.response?.data?.message
-        : null;
-      if (axios.isAxiosError(error) && error.response?.status === 403) {
-        toast.error(apiMessage || "Тест закрыт или не прикреплён к вашему курсу.");
-      } else {
-        toast.error(apiMessage || "Произошла ошибка при отправке ответов. Пожалуйста, попробуйте снова.");
+      void queryClient.invalidateQueries({ queryKey: ["course", "tests"] });
+      void queryClient.invalidateQueries({ queryKey: ["test"] });
+    },
+    [courseId, id, navigate, queryClient]
+  );
+
+  const submitAnswers = useCallback(
+    async (formattedAnswers: TestAnswer[], fromTimer = false) => {
+      if (!quizData || !id || startedRef.current) return;
+      startedRef.current = true;
+      setSubmitFailed(false);
+
+      try {
+        setIsSubmitting(true);
+        const response = await submitTestAnswers(id, {
+          answers: formattedAnswers,
+          timeRemaining: Math.max(0, timeRemainingRef.current),
+          showCorrectAnswers: quizData.showCorrectAnswers || false,
+        });
+        if (fromTimer) {
+          setPendingResults({ results: response, quizData });
+          setShowTimeUp(true);
+          setIsSubmitted(true);
+          if (id) clearAttemptDraft(id);
+        } else {
+          goToResults(response, quizData);
+        }
+      } catch (err) {
+        startedRef.current = false;
+        setSubmitFailed(true);
+        const apiMessage = axios.isAxiosError(err)
+          ? err.response?.data?.error || err.response?.data?.message
+          : null;
+        toast.error(
+          apiMessage || "Произошла ошибка при отправке ответов. Пожалуйста, попробуйте снова."
+        );
+        setIsSubmitting(false);
+        setIsSubmitted(false);
       }
-      setIsSubmitting(false);
-      setIsSubmitted(false);
-    }
-  };
+    },
+    [goToResults, id, quizData]
+  );
+
+  useEffect(() => {
+    if (!ready || !quizData || !id || isSubmitted || isSubmitting || submitFailed) return;
+    if (!quizData.timeLimit || remainingSeconds > 0) return;
+    setIsSubmitted(true);
+    void submitAnswers(savedAnswers, true);
+  }, [
+    id,
+    isSubmitted,
+    isSubmitting,
+    submitFailed,
+    quizData,
+    ready,
+    remainingSeconds,
+    savedAnswers,
+    submitAnswers,
+  ]);
+
+  useEffect(() => {
+    if (!id || !quizData || isSubmitted) return;
+    const flush = () => persistDraft();
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [id, isSubmitted, persistDraft, quizData]);
 
   const handleTimeUp = useCallback(() => {
-    if (!quizData || isSubmitted) return;
-
-    const formattedAnswers = formRef.current
-      ? collectAnswers(formRef.current, quizData.questions)
-      : quizData.questions.map((question) => {
-          const type = resolveQuestionType(question);
-          return isTextQuestionType(type)
-            ? { questionId: question.id, textAnswer: "" }
-            : { questionId: question.id, selectedOptions: [] };
-        });
-
+    if (!quizData || isSubmitted || isSubmitting) return;
+    persistDraft();
     setIsSubmitted(true);
-    submitAnswers(formattedAnswers, 0);
-  }, [quizData, isSubmitted, id, navigate]);
+    const formatted = formRef.current
+      ? collectAnswers(formRef.current, quizData.questions)
+      : savedAnswers;
+    void submitAnswers(formatted, true);
+  }, [isSubmitted, isSubmitting, persistDraft, quizData, savedAnswers, submitAnswers]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitted || isSubmitting || !quizData) return;
-
     const formattedAnswers = collectAnswers(event.currentTarget, quizData.questions);
-
+    persistDraft();
     setIsSubmitted(true);
-    await submitAnswers(formattedAnswers, timeRemainingRef.current);
+    await submitAnswers(formattedAnswers, false);
   };
 
-  const handleDelete = () => {
-    if (window.confirm("Вы уверены, что хотите удалить этот тест?")) {
-      goToCourse();
-    }
-  };
-
-  if (isLoading) {
+  if (isLoading || (quizData && !ready)) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Empty>
@@ -207,6 +271,34 @@ const QuizTestPage = () => {
     );
   }
 
+  if (showTimeUp && pendingResults) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center gap-4 pt-8 pb-6">
+            <Clock className="h-12 w-12 text-amber-500" />
+            <h2 className="text-xl font-semibold text-center">Время вышло</h2>
+            <p className="text-sm text-muted-foreground text-center text-pretty">
+              Работа отправлена преподавателю. Неотвеченные вопросы засчитаны как
+              пустые.
+            </p>
+            <Button
+              className="w-full"
+              onClick={() =>
+                goToResults(pendingResults.results, pendingResults.quizData)
+              }
+            >
+              К результатам
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={goToCourse}>
+              Вернуться к курсу
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!quizData) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -220,6 +312,9 @@ const QuizTestPage = () => {
           </EmptyHeader>
           <EmptyContent>
             <Button onClick={goToCourse}>Вернуться к курсу</Button>
+            <Button variant="outline" onClick={() => void refetch()}>
+              Повторить
+            </Button>
           </EmptyContent>
         </Empty>
       </div>
@@ -247,103 +342,44 @@ const QuizTestPage = () => {
     );
   }
 
-  if (!isStudent) {
+  if (quizData.timeLimit && remainingSeconds <= 0) {
     return (
-      <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">{quizData.title}</h1>
-              <p className="text-gray-500 max-w-2xl text-lg">{quizData.description}</p>
-            </div>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              className="shrink-0 shadow-sm hover:shadow transition-all"
-            >
-              <LuTrash2 className="mr-2 h-4 w-4" />
-              Удалить тест
-            </Button>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            <Card className="md:col-span-1 h-fit sticky top-6 shadow-sm border-0 bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-xl">Детали теста</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600">Время</span>
-                  <span className="font-bold text-gray-900">{quizData.timeLimit} мин</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600">Обязательный</span>
-                  <span className={cn("px-2 py-1 rounded text-xs font-bold", quizData.required ? "bg-red-100 text-red-700" : "bg-gray-200 text-gray-700")}>
-                    {quizData.required ? "Да" : "Нет"}
-                  </span>
-                </div>
-                <div className="space-y-1 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600 block">Даты</span>
-                  <div className="text-sm text-gray-900">
-                    <div className="flex justify-between">
-                      <span>Начало:</span>
-                      <span>{format(new Date(quizData.opening_date), "dd MMM", { locale: ru })}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="md:col-span-2 shadow-sm border-0">
-              <CardHeader>
-                <CardTitle className="text-xl">Вопросы ({quizData.questions.length})</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                {quizData.questions.map((question: TestQuestion, index: number) => (
-                  <div key={question.id} className="group relative pl-4 border-l-4 border-gray-200 hover:border-primary transition-colors">
-                    <div className="absolute -left-[29px] top-0 flex items-center justify-center w-8 h-8 rounded-full bg-white border-2 border-gray-200 group-hover:border-primary text-sm font-bold text-gray-500 group-hover:text-primary transition-colors">
-                      {index + 1}
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">{question.question}</h3>
-                        <span className="inline-flex mt-2 items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                          {QUESTION_TYPE_LABELS[resolveQuestionType(question)]}
-                        </span>
-                      </div>
-
-                      {question.questionImage && (
-                        <div className="relative rounded-xl overflow-hidden border bg-gray-50 max-w-md">
-                          <img
-                            src={question.questionImage}
-                            alt="Question"
-                            className="w-full h-auto object-contain max-h-[300px]"
-                          />
-                        </div>
-                      )}
-
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        {question.options.map((option) => (
-                          <div key={option.id} className="flex items-center gap-3 p-3 rounded-lg border bg-gray-50/50">
-                            <div className="w-2.5 h-2.5 rounded-full bg-gray-300" />
-                            <span className="text-sm text-gray-700">{option.text}</span>
-                            {option.image && (
-                              <img
-                                src={option.image}
-                                alt="Option"
-                                className="ml-auto w-12 h-12 rounded object-cover border"
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              {submitFailed ? (
+                <AlertCircle />
+              ) : (
+                <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              )}
+            </EmptyMedia>
+            <EmptyTitle>
+              {submitFailed ? "Не удалось отправить тест" : "Отправка теста"}
+            </EmptyTitle>
+            <EmptyDescription>
+              {submitFailed
+                ? "Проверьте соединение и отправьте ответы ещё раз."
+                : "Время вышло, отправляем ответы."}
+            </EmptyDescription>
+          </EmptyHeader>
+          {submitFailed ? (
+            <EmptyContent>
+              <Button
+                onClick={() => {
+                  setSubmitFailed(false);
+                  setIsSubmitted(true);
+                  void submitAnswers(savedAnswers, true);
+                }}
+              >
+                Отправить ещё раз
+              </Button>
+              <Button variant="outline" onClick={goToCourse}>
+                Вернуться к курсу
+              </Button>
+            </EmptyContent>
+          ) : null}
+        </Empty>
       </div>
     );
   }
@@ -354,9 +390,12 @@ const QuizTestPage = () => {
       isSubmitted={isSubmitted}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
+      onChange={persistDraft}
       onTimeUp={handleTimeUp}
       quizData={quizData}
+      remainingSeconds={remainingSeconds}
       timeRemainingRef={timeRemainingRef}
+      savedAnswers={savedAnswers}
     />
   );
 };
@@ -366,18 +405,30 @@ function StudentQuiz({
   isSubmitted,
   isSubmitting,
   onSubmit,
+  onChange,
   onTimeUp,
   quizData,
+  remainingSeconds,
   timeRemainingRef,
+  savedAnswers,
 }: {
   formRef: React.RefObject<HTMLFormElement | null>;
   isSubmitted: boolean;
   isSubmitting: boolean;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onChange: () => void;
   onTimeUp: () => void;
-  quizData: TestDetails;
+  quizData: TestDetails & { questions: TestQuestion[] };
+  remainingSeconds: number;
   timeRemainingRef: React.MutableRefObject<number>;
+  savedAnswers: SavedAttemptAnswer[];
 }) {
+  const savedById = useMemo(() => {
+    const map = new Map<string, SavedAttemptAnswer>();
+    for (const answer of savedAnswers) map.set(answer.questionId, answer);
+    return map;
+  }, [savedAnswers]);
+
   const items = useMemo(
     () =>
       quizData.questions.map((question) => {
@@ -394,7 +445,6 @@ function StudentQuiz({
   );
 
   const invalidToastLock = useRef(false);
-
   const handleInvalid = () => {
     if (invalidToastLock.current) return;
     invalidToastLock.current = true;
@@ -424,7 +474,8 @@ function StudentQuiz({
         </div>
         {quizData.timeLimit ? (
           <Timer
-            initialTime={quizData.timeLimit * 60}
+            initialTime={remainingSeconds}
+            timeLimitSeconds={quizData.timeLimit * 60}
             onTimeUp={onTimeUp}
             isSubmitted={isSubmitted}
             timeRef={timeRemainingRef}
@@ -433,14 +484,18 @@ function StudentQuiz({
       </div>
 
       <Card>
-        <CardContent onInvalidCapture={handleInvalid}>
+        <CardContent onInvalidCapture={handleInvalid} onChange={onChange}>
           <Questionnaire
             ref={formRef}
             items={items}
             shortcuts={useNumberShortcuts ? "numbers" : undefined}
             defaultItem={quizData.questions[0]?.id}
             onSubmit={onSubmit}
-            className={cn(isSubmitted || isSubmitting ? "pointer-events-none opacity-70" : undefined)}
+            className={cn(
+              isSubmitted || isSubmitting
+                ? "pointer-events-none opacity-70"
+                : undefined
+            )}
           >
             <QuestionnaireProgress
               className="w-full min-w-0"
@@ -474,6 +529,7 @@ function StudentQuiz({
               const isText = isTextQuestionType(type);
               const isEssay = type === "essay";
               const hasOptionImages = question.options.some((option) => option.image);
+              const saved = savedById.get(question.id);
               const description =
                 type === "multiple_choice"
                   ? "Выберите один или несколько вариантов."
@@ -492,11 +548,11 @@ function StudentQuiz({
                 >
                   <QuestionnaireTitle>{question.question}</QuestionnaireTitle>
                   <QuestionnaireDescription>{description}</QuestionnaireDescription>
-
                   <QuestionMedia question={question} />
 
                   {isEssay ? (
                     <QuestionnaireInput
+                      defaultValue={saved?.textAnswer || undefined}
                       placeholder="Введите развёрнутый ответ"
                       render={(props) => {
                         const { type: _inputType, ...rest } = props as typeof props & {
@@ -515,13 +571,22 @@ function StudentQuiz({
                       }}
                     />
                   ) : type === "short_answer" ? (
-                    <QuestionnaireInput placeholder="Введите ответ" />
+                    <QuestionnaireInput
+                      defaultValue={saved?.textAnswer || undefined}
+                      placeholder="Введите ответ"
+                    />
                   ) : (
                     <QuestionnaireChoices
                       className={hasOptionImages ? "grid-cols-1 sm:grid-cols-2" : undefined}
                     >
                       {question.options.map((option) => (
-                        <QuestionnaireChoice key={option.id} value={option.id}>
+                        <QuestionnaireChoice
+                          key={option.id}
+                          value={option.id}
+                          defaultChecked={Boolean(
+                            saved?.selectedOptions?.includes(option.id)
+                          )}
+                        >
                           <span className="font-medium">{option.text}</span>
                           {option.image ? (
                             <img
@@ -552,7 +617,11 @@ function StudentQuiz({
               <QuestionnaireSkip>Пропустить</QuestionnaireSkip>
               <QuestionnaireNext>Далее</QuestionnaireNext>
               <QuestionnaireSubmit disabled={isSubmitted || isSubmitting}>
-                {isSubmitting ? "Отправка..." : isSubmitted ? "Отправлено" : "Завершить тест"}
+                {isSubmitting
+                  ? "Отправка..."
+                  : isSubmitted
+                    ? "Отправлено"
+                    : "Завершить тест"}
               </QuestionnaireSubmit>
             </QuestionnaireActions>
           </Questionnaire>

@@ -1,18 +1,22 @@
 import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import { registerToCourse } from 'entities/User';
 
 import { createCourse, createTheme } from 'entities/Course';
 import { apiErrorDetail } from 'entities/Course/lib/apiErrorDetail';
-import { bindCourseStreams, createAnswer, createComment, createCourseAnnouncement, createCourseInviteLink, createFAQ, createMaterial, deleteAnswer, deleteCourseAnnouncement, deleteCourseInviteLink, deleteCourseStream, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setExtraPoints, updateCourseAnnouncement } from 'entities/Course/model/services/courseAPI';
+import { bindCourseStreams, createAnswer, createComment, createCourseAnnouncement, createCourseInviteLink, createCourseStudentGroup, createFAQ, createMaterial, deleteAnswer, deleteCourse, deleteCourseAnnouncement, deleteCourseInviteLink, deleteCourseStream, deleteCourseStudentGroup, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editCourseStudentGroup, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setCourseAccess, setCourseArchive, setExtraPoints, updateCourseAnnouncement } from 'entities/Course/model/services/courseAPI';
 import { CreateAnnouncementPayload, CreateCourseInvitePayload, UpdateAnnouncementPayload } from 'entities/Course/model/types/course';
 import { toast } from 'sonner';
-import { BindCourseStreamsPayload, CreateCoursePayload, CreateFAQPayload, CreateThemePayload, EditThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload } from '../types/course_payload';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { AppRoutes, RoutePath } from 'shared/config/routeConfig/routePath';
+import { BindCourseStreamsPayload, CreateCoursePayload, CreateCourseStudentGroupPayload, CreateFAQPayload, CreateThemePayload, EditCourseStudentGroupPayload, EditThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload, SetCourseAccessPayload } from '../types/course_payload';
 
 const MY_SUBMISSIONS_QUERY_KEY = ['course', 'my-submissions'] as const;
 const COURSE_MATERIALS_QUERY_KEY = ['course', 'course-materials'] as const;
 const COURSE_ANNOUNCEMENTS_QUERY_KEY = ['course', 'announcements'] as const;
 const COURSE_FEED_QUERY_KEY = ['course', 'feed'] as const;
 const COURSE_ALL_THEMES_QUERY_KEY = ['course', 'course-all-themes'] as const;
+const COURSE_STUDENT_GROUPS_QUERY_KEY = ['course', 'student-groups'] as const;
 
 const patchThemeLockedInList = (
   queryClient: QueryClient,
@@ -324,6 +328,81 @@ export const useRegistrateCourse = () => {
         });
       };
 
+      const courseAccessErrorMessage = (error: unknown) => {
+        if (axios.isAxiosError(error)) {
+          const data = error.response?.data as
+            | { detail?: unknown; invalid_users?: unknown }
+            | undefined;
+          if (Array.isArray(data?.invalid_users) && data.invalid_users.length > 0) {
+            return `Студенты не записаны на курс: ${data.invalid_users.join(", ")}`;
+          }
+        }
+        return apiErrorDetail(error, "Не удалось изменить доступ к курсу");
+      };
+
+      export const useSetCourseAccess = () => {
+        const queryClient = useQueryClient();
+        return useMutation({
+          mutationFn: ({
+            courseId,
+            locked,
+            users,
+          }: SetCourseAccessPayload & { courseId: string }) => {
+            const payload: SetCourseAccessPayload = { locked };
+            if (users && users.length > 0) {
+              payload.users = users;
+            }
+            const mutationPromise = setCourseAccess(courseId, payload);
+            toast.promise(mutationPromise, {
+              loading: locked
+                ? "Закрываем доступ ко всем темам..."
+                : "Открываем доступ ко всем темам...",
+              success: (data) => {
+                if (data.themes_updated === 0) {
+                  return "На курсе нет тем — доступ не изменён";
+                }
+                if (data.applied_to_all_students) {
+                  return locked
+                    ? "Доступ ко всем темам закрыт для всех студентов"
+                    : "Доступ ко всем темам открыт для всех студентов";
+                }
+                return locked
+                  ? `Доступ ко всем темам закрыт (${data.students_updated})`
+                  : `Доступ ко всем темам открыт (${data.students_updated})`;
+              },
+            });
+            return mutationPromise;
+          },
+          onError: (error) => {
+            toast.error(`Ошибка: ${courseAccessErrorMessage(error)}`);
+          },
+          onSuccess: async (_data, { courseId }) => {
+            await Promise.all([
+              queryClient.invalidateQueries({
+                queryKey: COURSE_ALL_THEMES_QUERY_KEY,
+                exact: false,
+              }),
+              queryClient.invalidateQueries({
+                queryKey: ["course", "course-theme"],
+                exact: false,
+              }),
+              queryClient.invalidateQueries({ queryKey: ["answer-task"] }),
+              queryClient.invalidateQueries({
+                queryKey: ["week", "themes"],
+                exact: false,
+              }),
+              queryClient.invalidateQueries({
+                queryKey: ["course", "task-materials"],
+                exact: false,
+              }),
+              queryClient.invalidateQueries({
+                queryKey: ["table-perfomance", courseId],
+              }),
+            ]);
+          },
+        });
+      };
+
       export const useEditTheme = () => {
         const queryClient = useQueryClient();
         return useMutation({
@@ -412,6 +491,143 @@ export const useRegistrateCourse = () => {
             queryClient.invalidateQueries({ queryKey: ['course','course-all-themes'] });
             queryClient.invalidateQueries({ queryKey: ['course', 'modules'] });
             queryClient.invalidateQueries({ queryKey: ['course'], exact: true });
+          },
+        });
+      };
+
+      export const useSetCourseArchive = () => {
+        const queryClient = useQueryClient();
+        return useMutation({
+          mutationFn: ({ id, archive }: { id: string; archive: boolean }) => {
+            const mutationPromise = setCourseArchive(id, archive);
+            toast.promise(mutationPromise, {
+              loading: archive
+                ? "Отправляем курс в архив..."
+                : "Возвращаем курс из архива...",
+              success: archive
+                ? "Курс отправлен в архив и скрыт у всех"
+                : "Курс возвращён из архива",
+            });
+            return mutationPromise;
+          },
+          onError: (error) => {
+            toast.error(`Ошибка: ${error?.message || "Не удалось изменить архив курса"}`);
+          },
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['course'] });
+          },
+        });
+      };
+
+      type CourseListItem = { id: string };
+
+      const dropCourseFromList = (
+        courses: CourseListItem[] | undefined,
+        courseId: string
+      ) => courses?.filter((course) => course.id !== courseId);
+
+      const patchCourseInList = (
+        courses: CourseListItem[] | undefined,
+        courseId: string,
+        patch: Record<string, unknown>
+      ) =>
+        courses?.map((course) =>
+          course.id === courseId ? { ...course, ...patch } : course
+        );
+
+      const patchCourseQueries = (
+        queryClient: QueryClient,
+        courseId: string,
+        patch: Record<string, unknown>
+      ) => {
+        queryClient.setQueryData(['course'], (old: CourseListItem[] | undefined) =>
+          patchCourseInList(old, courseId, patch)
+        );
+        queryClient.setQueryData(
+          ['course', 'archive'],
+          (old: CourseListItem[] | undefined) => patchCourseInList(old, courseId, patch)
+        );
+        queryClient.setQueriesData(
+          { queryKey: COURSE_ALL_THEMES_QUERY_KEY },
+          (old: (CourseListItem & Record<string, unknown>) | undefined) =>
+            old?.id === courseId ? { ...old, ...patch } : old
+        );
+        queryClient.setQueriesData(
+          { queryKey: ['course', 'modules'] },
+          (old: (CourseListItem & Record<string, unknown>) | undefined) =>
+            old?.id === courseId ? { ...old, ...patch } : old
+        );
+      };
+
+      const deleteCourseErrorMessage = (error: unknown) => {
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+        if (status === 403) return "Недостаточно прав для удаления курса";
+        if (status === 404) return "Курс уже удалён или не найден";
+        return apiErrorDetail(error, "Не удалось удалить курс");
+      };
+
+      export const useDeleteCourse = () => {
+        const queryClient = useQueryClient();
+        const navigate = useNavigate();
+        const location = useLocation();
+
+        const goToCourseList = () => {
+          if (location.pathname !== RoutePath[AppRoutes.COURSES]) {
+            navigate(RoutePath[AppRoutes.COURSES]);
+          }
+        };
+
+        return useMutation({
+          mutationFn: (id: string) => {
+            const mutationPromise = deleteCourse(id);
+            toast.promise(mutationPromise, {
+              loading: "Удаляем курс...",
+              success: "Курс удалён",
+              error: (error) => deleteCourseErrorMessage(error),
+            });
+            return mutationPromise;
+          },
+          onError: (error, id) => {
+            if (!axios.isAxiosError(error)) return;
+            const status = error.response?.status;
+            const data = error.response?.data as
+              | { students_count?: number }
+              | undefined;
+
+            if (status === 409) {
+              const studentsCount =
+                typeof data?.students_count === "number" && data.students_count > 0
+                  ? data.students_count
+                  : 1;
+              patchCourseQueries(queryClient, id, { count_stud: studentsCount });
+              return;
+            }
+
+            if (status === 403) {
+              patchCourseQueries(queryClient, id, { can_delete: false });
+              return;
+            }
+
+            if (status === 404) {
+              queryClient.invalidateQueries({ queryKey: ['course'] });
+              goToCourseList();
+            }
+          },
+          onSuccess: (_data, id) => {
+            queryClient.setQueryData(['course'], (old: CourseListItem[] | undefined) =>
+              dropCourseFromList(old, id)
+            );
+            queryClient.setQueryData(
+              ['course', 'archive'],
+              (old: CourseListItem[] | undefined) => dropCourseFromList(old, id)
+            );
+            queryClient.removeQueries({
+              queryKey: ['course', 'course-all-themes', id],
+            });
+            queryClient.removeQueries({ queryKey: ['course', 'modules', id] });
+            queryClient.invalidateQueries({ queryKey: ['course'] });
+            queryClient.invalidateQueries({ queryKey: ['statistics'], exact: false });
+            goToCourseList();
           },
         });
       };
@@ -615,6 +831,10 @@ export const useRemoveStudentFromCourse = () => {
         queryKey: ["table-perfomance"],
         exact: false,
       });
+      queryClient.invalidateQueries({
+        queryKey: COURSE_STUDENT_GROUPS_QUERY_KEY,
+        exact: false,
+      });
     },
   });
 };
@@ -773,6 +993,95 @@ export const useDeleteAnnouncement = () => {
       queryClient.invalidateQueries({
         queryKey: [...COURSE_FEED_QUERY_KEY, courseId],
       });
+    },
+  });
+};
+
+const invalidateCourseStudentGroups = (
+  queryClient: QueryClient,
+  courseId: string
+) => {
+  queryClient.invalidateQueries({
+    queryKey: [...COURSE_STUDENT_GROUPS_QUERY_KEY, courseId],
+  });
+  queryClient.invalidateQueries({ queryKey: ["answer-task"], exact: false });
+  queryClient.invalidateQueries({
+    queryKey: ["table-perfomance"],
+    exact: false,
+  });
+  queryClient.invalidateQueries({ queryKey: ["test", "result"], exact: false });
+};
+
+export const useCreateCourseStudentGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      data,
+    }: {
+      courseId: string;
+      data: CreateCourseStudentGroupPayload;
+    }) => {
+      const mutationPromise = createCourseStudentGroup(courseId, data);
+      toast.promise(mutationPromise, {
+        loading: "Создаем группу...",
+        success: "Группа создана",
+        error: (error) => apiErrorDetail(error, "Не удалось создать группу"),
+      });
+      return mutationPromise;
+    },
+    onSuccess: (_data, { courseId }) => {
+      invalidateCourseStudentGroups(queryClient, courseId);
+    },
+  });
+};
+
+export const useEditCourseStudentGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      groupId,
+      data,
+    }: {
+      courseId: string;
+      groupId: string;
+      data: EditCourseStudentGroupPayload;
+    }) => {
+      const mutationPromise = editCourseStudentGroup(courseId, groupId, data);
+      toast.promise(mutationPromise, {
+        loading: "Обновляем группу...",
+        success: "Группа обновлена",
+        error: (error) => apiErrorDetail(error, "Не удалось обновить группу"),
+      });
+      return mutationPromise;
+    },
+    onSuccess: (_data, { courseId }) => {
+      invalidateCourseStudentGroups(queryClient, courseId);
+    },
+  });
+};
+
+export const useDeleteCourseStudentGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      groupId,
+    }: {
+      courseId: string;
+      groupId: string;
+    }) => {
+      const mutationPromise = deleteCourseStudentGroup(courseId, groupId);
+      toast.promise(mutationPromise, {
+        loading: "Удаляем группу...",
+        success: "Группа удалена",
+        error: (error) => apiErrorDetail(error, "Не удалось удалить группу"),
+      });
+      return mutationPromise;
+    },
+    onSuccess: (_data, { courseId }) => {
+      invalidateCourseStudentGroups(queryClient, courseId);
     },
   });
 };

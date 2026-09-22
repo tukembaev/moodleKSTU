@@ -21,6 +21,7 @@ import { RemarksPage } from "pages/RemarksPage";
 import CourseDetails from "entities/Course/ui/CourseDetails";
 import CourseInvitePage from "pages/CourseInvitePage/ui/CourseInvitePage";
 import { WorkloadPage } from "pages/WorkloadPage";
+import { TodayPage } from "pages/TodayPage";
 import {
   AppRoutes,
   AppSubRoutes,
@@ -42,6 +43,11 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
     path: RoutePath.login,
     element: <LoginPage />,
     breadcrumbName: "Главная",
+  },
+  [AppRoutes.TODAY]: {
+    path: RoutePath[AppRoutes.TODAY],
+    element: <TodayPage />,
+    breadcrumbName: "Сегодня",
   },
   [AppRoutes.COURSES]: {
     path: RoutePath[AppRoutes.COURSES],

@@ -1,15 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
+import { resolveStudentThemeAccess } from "entities/Course/lib/themeStudentAccess";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { remarksQueries } from "entities/Remarks";
 import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { StudentComments } from "features/Course/hooks/StudentComments";
 import { AnimatePresence, motion } from "motion/react";
-import { FC, useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import type { IconType } from "react-icons";
 import {
   LuClipboardList,
   LuGlasses,
   LuInfo,
+  LuKeyRound,
   LuList,
   LuMessageSquareText,
 } from "react-icons/lu";
@@ -33,11 +35,35 @@ import {
   TabsTrigger,
 } from "shared/shadcn/ui/tabs";
 import ThemeAnswers from "../Answers/ThemeAnswers";
+import ThemeAccess from "../Answers/ThemeAccess";
 import ThemeFAQ from "../Themes/ThemeDetail/ThemeFAQ";
 import { ThemeFeed } from "../Themes/ThemeDetail/ThemeFeed";
 import { MaterialsSection } from "./MaterialsSection";
 
 const FILES_TAB = "theme_answers";
+
+const ThemeUnavailableCover = ({
+  active,
+  children,
+}: {
+  active: boolean;
+  children: ReactNode;
+}) => {
+  if (!active) return <>{children}</>;
+
+  return (
+    <div className="relative h-full min-h-0 overflow-hidden">
+      <div className="pointer-events-none h-full min-h-0 select-none blur-sm">
+        {children}
+      </div>
+      <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
+        <p className="rounded-lg border bg-background px-4 py-2 text-center text-sm font-medium shadow-sm">
+          Ещё недоступно
+        </p>
+      </div>
+    </div>
+  );
+};
 
 type WorkspaceTab = {
   name: string;
@@ -161,6 +187,11 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
     enabled: Boolean(courseId && themeId),
   });
   const currentTheme = courseDetails?.detail?.find((task) => task.id === themeId);
+  const { notYetOpen, canSubmit } = resolveStudentThemeAccess(
+    currentTheme,
+    auth_data.isStudent
+  );
+  const answersUnavailable = notYetOpen && !canSubmit;
   const canReceivePoints = isGradableThemeType(currentTheme?.type_less);
   const showStudentSubmissions = canReceivePoints;
   const showAnswersPane = !auth_data.isStudent || showStudentSubmissions;
@@ -209,6 +240,17 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
       icon: LuList,
       count: 0,
     },
+    ...(!auth_data.isStudent
+      ? [
+          {
+            name: "Доступ",
+            shortName: "Доступ",
+            value: "access",
+            icon: LuKeyRound,
+            count: 0,
+          },
+        ]
+      : []),
     {
       name: "Обсуждение",
       shortName: "Чат",
@@ -308,12 +350,14 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
                     isMobile && !materialsOpen && "self-start"
                   )}
                 >
-                  <MaterialsSection
-                    themeId={themeId}
-                    collapsible={isMobile}
-                    open={materialsOpen}
-                    onOpenChange={setMaterialsOpen}
-                  />
+                  <ThemeUnavailableCover active={notYetOpen}>
+                    <MaterialsSection
+                      themeId={themeId}
+                      collapsible={isMobile && !notYetOpen}
+                      open={notYetOpen || materialsOpen}
+                      onOpenChange={setMaterialsOpen}
+                    />
+                  </ThemeUnavailableCover>
                 </div>
                 {showAnswersPane && (
                   <>
@@ -324,36 +368,51 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
                         isMobile && !answersOpen && "self-start"
                       )}
                     >
-                      <ThemeAnswers
-                        id={themeId}
-                        collapsible={isMobile}
-                        open={answersOpen}
-                        onOpenChange={setAnswersOpen}
-                      />
+                      <ThemeUnavailableCover active={answersUnavailable}>
+                        <ThemeAnswers
+                          id={themeId}
+                          collapsible={isMobile && !answersUnavailable}
+                          open={answersUnavailable || answersOpen}
+                          onOpenChange={setAnswersOpen}
+                        />
+                      </ThemeUnavailableCover>
                     </div>
                   </>
                 )}
               </div>
             </TabsContent>
 
+            {!auth_data.isStudent && (
+            <TabsContent
+              value="access"
+              className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
+            >
+              <ThemeAccess themeId={themeId} />
+            </TabsContent>
+            )}
+
             <TabsContent
               value="feed"
               className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
             >
-              <div className="flex h-full min-h-0 flex-col px-3 pb-3 lg:px-4 sm:pb-4">
-                <ThemeFeed
-                  items={comments || []}
-                  isLoading={isLoadingComments}
-                  theme_id={themeId}
-                />
-              </div>
+              <ThemeUnavailableCover active={notYetOpen}>
+                <div className="flex h-full min-h-0 flex-col px-3 pb-3 lg:px-4 sm:pb-4">
+                  <ThemeFeed
+                    items={comments || []}
+                    isLoading={isLoadingComments}
+                    theme_id={themeId}
+                  />
+                </div>
+              </ThemeUnavailableCover>
             </TabsContent>
 
             <TabsContent
               value="faq"
               className="m-0 h-full min-h-0 overflow-auto data-[state=inactive]:hidden"
             >
-              <ThemeFAQ theme_id={themeId} />
+              <ThemeUnavailableCover active={notYetOpen}>
+                <ThemeFAQ theme_id={themeId} />
+              </ThemeUnavailableCover>
             </TabsContent>
 
             <TabsContent
@@ -361,7 +420,9 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
               className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
             >
               {auth_data.isStudent && showStudentSubmissions && (
-                <StudentComments theme_id={themeId} />
+                <ThemeUnavailableCover active={notYetOpen}>
+                  <StudentComments theme_id={themeId} />
+                </ThemeUnavailableCover>
               )}
             </TabsContent>
           </div>

@@ -40,16 +40,27 @@ const Add_Theme = () => {
     } else {
       add_theme(
         canReceivePoints
-          ? data
-          : { ...data, max_points: 0, locked: false, week: data.week || 1 }
+          ? {
+              ...data,
+              opening_date: data.opening_date ?? null,
+              deadline: data.deadline ?? null,
+            }
+          : {
+              ...data,
+              max_points: 0,
+              locked: false,
+              week: data.week || 1,
+              opening_date: data.opening_date ?? null,
+              deadline: data.deadline ?? null,
+            }
       );
     }
   };
 
   return (
     <section className="py-4">
-      <Card className="flex flex-col gap-4 p-6">
-        <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
+      <Card className="flex min-w-0 flex-col gap-4 p-4 sm:p-6">
+        <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid min-w-0 gap-4">
           <AddThemeTypeSelect
             value={selectedType}
             onChange={handleTypeChange}
@@ -69,6 +80,8 @@ const Add_Theme = () => {
               isTestType={isTestType}
               control={control}
               canReceivePoints={canReceivePoints}
+              setValue={setValue}
+              watch={watch}
             />
           )}
 
