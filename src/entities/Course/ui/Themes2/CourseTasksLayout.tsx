@@ -1,6 +1,7 @@
 import { studentCanTakeTest } from "entities/Test/model/types/test";
 import { ChevronLeft } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { useMobileBackHandler } from "shared/lib/navigation/mobile-back";
@@ -48,6 +49,7 @@ function useStackedViewport() {
 export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
   openThemeRequest,
 }) => {
+  const { t } = useTranslation();
   const courseId = useCourseId();
   const navigate = useNavigate();
   const location = useLocation();
@@ -184,7 +186,7 @@ export const CourseTasksLayout: FC<CourseTasksLayoutProps> = ({
             onClick={() => selectItem(null)}
           >
             <ChevronLeft className="size-4" />
-            К темам
+            {t("К темам")}
           </Button>
         )}
         {isTestSelected && courseId && selectedItem ? (

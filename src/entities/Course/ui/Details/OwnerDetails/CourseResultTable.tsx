@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -26,6 +27,7 @@ import StudentDetailDialog from "./StudentCourseDetail";
 import { studentAvatarSrc, studentInitials } from "./studentAvatar";
 
 const CourseResultTable = () => {
+  const { t } = useTranslation();
   const id = useCourseId();
   const { isStudent, isAuthenticated } = useAuth();
   const [exportForbidden, setExportForbidden] = useState(false);
@@ -50,7 +52,7 @@ const CourseResultTable = () => {
         setExportForbidden(true);
       }
       toast.error(
-        await apiErrorDetailAsync(error, "Не удалось экспортировать ведомость")
+        await apiErrorDetailAsync(error, t("Не удалось экспортировать ведомость"))
       );
     },
   });
@@ -70,8 +72,8 @@ const CourseResultTable = () => {
         <LuDownload />
       )}
       {exportMutation.isPending
-        ? "Экспортируем..."
-        : "Экспортировать в Excel"}
+        ? t("Экспортируем...")
+        : t("Экспортировать в Excel")}
     </Button>
   ) : null;
 
@@ -85,10 +87,10 @@ const CourseResultTable = () => {
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="min-w-[200px] sm:w-[300px]">Имя студента</TableHead>
-                <TableHead className="min-w-[80px] sm:w-[100px]">Группа</TableHead>
-                <TableHead className="min-w-[120px] sm:w-[150px]">Баллы за задания</TableHead>
-                <TableHead className="min-w-[80px] sm:w-[100px]">Итого</TableHead>
+                <TableHead className="min-w-[200px] sm:w-[300px]">{t("Имя студента")}</TableHead>
+                <TableHead className="min-w-[80px] sm:w-[100px]">{t("Группа")}</TableHead>
+                <TableHead className="min-w-[120px] sm:w-[150px]">{t("Баллы за задания")}</TableHead>
+                <TableHead className="min-w-[80px] sm:w-[100px]">{t("Итого")}</TableHead>
                 <TableHead className="min-w-[60px]" />
               </TableRow>
             </TableHeader>
@@ -132,10 +134,10 @@ const CourseResultTable = () => {
         <Table>
           <TableHeader className="bg-muted">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="min-w-[200px] sm:w-[300px]">Имя студента</TableHead>
-              <TableHead className="min-w-[80px] sm:w-[100px]">Группа</TableHead>
-              <TableHead className="min-w-[120px] sm:w-[150px]">Баллы за задания</TableHead>
-              <TableHead className="min-w-[80px] sm:w-[100px]">Итого</TableHead>
+              <TableHead className="min-w-[200px] sm:w-[300px]">{t("Имя студента")}</TableHead>
+              <TableHead className="min-w-[80px] sm:w-[100px]">{t("Группа")}</TableHead>
+              <TableHead className="min-w-[120px] sm:w-[150px]">{t("Баллы за задания")}</TableHead>
+              <TableHead className="min-w-[80px] sm:w-[100px]">{t("Итого")}</TableHead>
               <TableHead className="min-w-[60px]" />
             </TableRow>
           </TableHeader>
@@ -166,7 +168,7 @@ const CourseResultTable = () => {
                             className="flex gap-1 px-1 sm:px-1.5 text-muted-foreground [&_svg]:size-3 w-fit mt-1 text-xs"
                           >
                             <LuCheckCheck className="text-green-500 dark:text-green-400" />
-                            Сдано
+                            {t("Сдано")}
                           </Badge>
                         )}
                       </div>

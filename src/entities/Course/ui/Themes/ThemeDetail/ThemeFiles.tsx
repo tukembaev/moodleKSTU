@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { StudentComments } from "features/Course/hooks/StudentComments";
 import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
@@ -26,6 +27,7 @@ import { ThemeFeed } from "./ThemeFeed";
 
 
 const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
+  const { t } = useTranslation();
   const { data, isLoading, error } = useQuery(
     courseQueries.allTaskMaterials(id)
   );
@@ -48,7 +50,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
     ...(showStudentSubmissions
       ? [
           {
-            name: auth_data.isStudent ? "Мои файлы" : "Список студентов",
+            name: auth_data.isStudent ? t("Мои файлы") : t("Список студентов"),
             value: "theme_answers",
             content: <ThemeAnswers id={id} />,
             icon: <LuList />,
@@ -58,7 +60,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
     ...(!auth_data.isStudent
       ? [
           {
-            name: "Доступ",
+            name: t("Доступ"),
             value: "access",
             content: <ThemeAccess themeId={id} />,
             icon: <LuKeyRound />,
@@ -66,7 +68,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
         ]
       : []),
     {
-      name: "Обсуждение",
+      name: t("Обсуждение"),
       value: "feed",
       content: (
         <ThemeFeed
@@ -86,7 +88,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
     ...(auth_data.isStudent && canReceivePoints
       ? [
         {
-          name: "Замечания",
+          name: t("Замечания"),
           value: "comments",
           content: <StudentComments theme_id={id} />,
           icon: <LuClipboardList />,
@@ -125,7 +127,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
           ) : (
             <div className="w-full py-8 text-center text-muted-foreground">
               <LuFile className="h-10 w-10 mx-auto mb-2 opacity-50" />
-              <p>Учебный материал пуст</p>
+              <p>{t("Учебный материал пуст")}</p>
             </div>
           )}
         </div>
@@ -149,14 +151,14 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
   };
 
   if (error) {
-    return <p>Ошибка: {error.message}</p>;
+    return <p>{t("Ошибка: {{message}}", { message: error.message })}</p>;
   }
 
   return (
     <div className="flex flex-col gap-4 pt-6">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-lg font-semibold">Учебные материалы</p>
+          <p className="text-lg font-semibold">{t("Учебные материалы")}</p>
           {!auth_data.isStudent && (
             <Button
               variant="outline"
@@ -164,7 +166,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
               onClick={() => openForm(FormQuery.ADD_MATERIAL, { id })}
             >
               <LuUpload className="h-4 w-4" />
-              Добавить файл
+              {t("Добавить файл")}
             </Button>
           )}
         </div>

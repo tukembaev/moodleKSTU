@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import {
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const NotificationWebSocket = () => {
+    const { t } = useTranslation();
     const auth = useAuth();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -42,11 +44,11 @@ export const NotificationWebSocket = () => {
                         ) ||
                         Boolean(announcementCourseId);
 
-                    toast.info(data.type || "Новое уведомление", {
-                        description: data.text || "У вас новое уведомление",
+                    toast.info(data.type || t("Новое уведомление"), {
+                        description: data.text || t("У вас новое уведомление"),
                         action: announcementCourseId
                             ? {
-                                  label: "Открыть",
+                                  label: t("Открыть"),
                                   onClick: () =>
                                       openCourse(navigate, announcementCourseId, {
                                           tab: COURSE_FEED_TAB,
@@ -96,7 +98,7 @@ export const NotificationWebSocket = () => {
                 wsRef.current.close(1000, "Component unmounting");
             }
         };
-    }, [auth?.id, navigate, queryClient]);
+    }, [auth?.id, navigate, queryClient, t]);
 
     return null;
 };

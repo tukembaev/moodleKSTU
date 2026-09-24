@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LuUsers,
   LuCircleAlert,
@@ -42,6 +43,7 @@ const StudentList = ({
   selectedStudentId,
   className,
 }: StudentListProps) => {
+  const { t } = useTranslation();
   // Calculate stats for each student
   const studentsWithStats = useMemo(() => {
     return students.map((student) => {
@@ -81,9 +83,11 @@ const StudentList = ({
         <div className="p-4 rounded-2xl bg-muted/50 mb-4">
           <LuUsers className="h-10 w-10 text-muted-foreground opacity-50" />
         </div>
-        <h3 className="font-semibold text-lg mb-1">Нет студентов с замечаниями</h3>
+        <h3 className="font-semibold text-lg mb-1">
+          {t("Нет студентов с замечаниями")}
+        </h3>
         <p className="text-muted-foreground text-sm">
-          Замечания появятся здесь после проверки работ
+          {t("Замечания появятся здесь после проверки работ")}
         </p>
       </div>
     );
@@ -135,19 +139,23 @@ const StudentList = ({
                   {student.respondedCount > 0 && (
                     <Badge className="gap-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800">
                       <LuMessageSquare className="h-3 w-3" />
-                      {student.respondedCount} на проверке
+                      {t("{{count}} на проверке", {
+                        count: student.respondedCount,
+                      })}
                     </Badge>
                   )}
                   {student.pendingCount > 0 && (
                     <Badge className="gap-1 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
                       <LuClock className="h-3 w-3" />
-                      {student.pendingCount} ожидает
+                      {t("{{count}} ожидает", { count: student.pendingCount })}
                     </Badge>
                   )}
                   {student.rejectedCount > 0 && (
                     <Badge className="gap-1 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800">
                       <LuCircleAlert className="h-3 w-3" />
-                      {student.rejectedCount} на исправлении
+                      {t("{{count}} на исправлении", {
+                        count: student.rejectedCount,
+                      })}
                     </Badge>
                   )}
                 </div>

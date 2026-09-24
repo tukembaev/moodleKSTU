@@ -1,4 +1,5 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import i18n from "shared/config/i18n/i18n";
 import { toast } from "sonner";
 import {
   AddRemarkMessagePayload,
@@ -31,13 +32,17 @@ export const useCreateRemark = () => {
     mutationFn: (data: CreateRemarkPayload) => {
       const mutationPromise = createRemark(data);
       toast.promise(mutationPromise, {
-        loading: "Создаем замечание...",
-        success: "Замечание успешно создано!",
+        loading: i18n.t("Создаем замечание..."),
+        success: i18n.t("Замечание успешно создано!"),
       });
       return mutationPromise;
     },
     onError: (error: Error) => {
-      toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+      toast.error(
+        i18n.t("Ошибка: {{message}}", {
+          message: error?.message || i18n.t("Что-то пошло не так"),
+        })
+      );
     },
     onSuccess: () => {
       invalidateRemarkRelatedQueries(queryClient);
@@ -57,13 +62,17 @@ export const useAddRemarkMessage = () => {
     }) => {
       const mutationPromise = addRemarkMessage(id, data);
       toast.promise(mutationPromise, {
-        loading: "Отправляем сообщение...",
-        success: "Сообщение отправлено!",
+        loading: i18n.t("Отправляем сообщение..."),
+        success: i18n.t("Сообщение отправлено!"),
       });
       return mutationPromise;
     },
     onError: (error: Error) => {
-      toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+      toast.error(
+        i18n.t("Ошибка: {{message}}", {
+          message: error?.message || i18n.t("Что-то пошло не так"),
+        })
+      );
     },
     onSuccess: () => {
       invalidateRemarkRelatedQueries(queryClient);
@@ -87,22 +96,26 @@ export const useUpdateRemarkStatus = () => {
       if (!silent) {
         const loading =
           data.status === RemarkStatus.APPROVED
-            ? "Одобряем замечание..."
+            ? i18n.t("Одобряем замечание...")
             : data.status === RemarkStatus.REJECTED
-            ? "Отклоняем работу..."
-            : "Обновляем статус...";
+            ? i18n.t("Отклоняем работу...")
+            : i18n.t("Обновляем статус...");
         const success =
           data.status === RemarkStatus.APPROVED
-            ? "Замечание одобрено!"
+            ? i18n.t("Замечание одобрено!")
             : data.status === RemarkStatus.REJECTED
-            ? "Работа отклонена!"
-            : "Статус обновлен!";
+            ? i18n.t("Работа отклонена!")
+            : i18n.t("Статус обновлен!");
         toast.promise(mutationPromise, { loading, success });
       }
       return mutationPromise;
     },
     onError: (error: Error) => {
-      toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+      toast.error(
+        i18n.t("Ошибка: {{message}}", {
+          message: error?.message || i18n.t("Что-то пошло не так"),
+        })
+      );
     },
     onSuccess: () => {
       invalidateRemarkRelatedQueries(queryClient);

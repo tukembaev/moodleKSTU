@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
+import i18n from "shared/config/i18n/i18n";
 import axios from "axios";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
@@ -39,29 +41,29 @@ import {
 } from "shared/shadcn/ui/empty";
 import { LuClipboardList } from "react-icons/lu";
 
-const STATUS_UI: Record<
+const getStatusUi = (t: (key: string) => string): Record<
   SubmissionStatus,
   { label: string; className: string }
-> = {
+> => ({
   submitted: {
-    label: "Сдано",
+    label: t("Сдано"),
     className: "border-transparent bg-green-600 text-white dark:bg-green-500",
   },
   not_submitted: {
-    label: "Не сдано",
+    label: t("Не сдано"),
     className: "border-transparent bg-muted text-muted-foreground",
   },
   overdue: {
-    label: "Просрочено",
+    label: t("Просрочено"),
     className: "border-transparent bg-destructive text-white",
   },
-};
+});
 
 function formatDateTimeOrDash(value: string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return format(date, "dd.MM.yyyy HH:mm", { locale: ru });
+  return format(date, "dd.MM.yyyy HH:mm", { locale: getDateLocale(i18n.language) });
 }
 
 function isLateSubmission(item: MySubmissionItem) {
@@ -75,16 +77,16 @@ function isLateSubmission(item: MySubmissionItem) {
 
 function pointsLabel(item: MySubmissionItem) {
   if (item.points == null) {
-    return item.status === "submitted" ? "На проверке" : "—";
+    return item.status === "submitted" ? i18n.t("На проверке") : "—";
   }
   return `${item.points}/${item.max_points}`;
 }
 
 function themeMeta(item: MySubmissionItem) {
   return [
-    item.week != null ? `Неделя ${item.week}` : null,
+    item.week != null ? i18n.t("Неделя {{week}}", { week: item.week }) : null,
     item.current_version != null && item.current_version > 1
-      ? `версия ${item.current_version}`
+      ? i18n.t("версия {{version}}", { version: item.current_version })
       : null,
   ]
     .filter(Boolean)
@@ -100,6 +102,8 @@ export const MySubmissionsTab = ({
 }: {
   onOpenTheme: (themeId: string) => void;
 }) => {
+  const { t } = useTranslation();
+  const STATUS_UI = getStatusUi(t);
   const courseId = useCourseId();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -155,12 +159,12 @@ export const MySubmissionsTab = ({
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-transparent">
-                <TableHead>Тема</TableHead>
-                <TableHead>Тип</TableHead>
-                <TableHead>Срок сдачи</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Балл</TableHead>
-                <TableHead>Комментарий</TableHead>
+                <TableHead>{t("Тема")}</TableHead>
+                <TableHead>{t("Тип")}</TableHead>
+                <TableHead>{t("Срок сдачи")}</TableHead>
+                <TableHead>{t("Статус")}</TableHead>
+                <TableHead>{t("Балл")}</TableHead>
+                <TableHead>{t("Комментарий")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -183,7 +187,7 @@ export const MySubmissionsTab = ({
   if (status === 403) {
     return (
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        Переходим к списку курсов...
+        {t("Переходим к списку курсов...")}
       </p>
     );
   }
@@ -192,9 +196,9 @@ export const MySubmissionsTab = ({
     return (
       <Empty className="mt-6 border-0">
         <EmptyHeader>
-          <EmptyTitle>Курс не найден</EmptyTitle>
+          <EmptyTitle>{t("Курс не найден")}</EmptyTitle>
           <EmptyDescription>
-            Этого курса нет или он был удалён.
+            {t("Этого курса нет или он был удалён.")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -204,7 +208,7 @@ export const MySubmissionsTab = ({
   if (error) {
     return (
       <p className="mt-6 text-center text-sm text-destructive">
-        Не удалось загрузить сдачи
+        {t("Не удалось загрузить сдачи")}
       </p>
     );
   }
@@ -214,12 +218,12 @@ export const MySubmissionsTab = ({
       {extraPoints.length > 0 && (
         <div className="rounded-md border px-4 py-3">
           <p className="text-sm font-medium">
-            Дополнительные баллы: {extraPointsTotal}
+            {t("Дополнительные баллы: {{points}}", { points: extraPointsTotal })}
           </p>
           <ul className="mt-1 space-y-0.5 text-sm text-muted-foreground">
             {extraPoints.map((item) => (
               <li key={item.id}>
-                {item.reason || "Без указания причины"}: {item.points}
+                {item.reason || t("Без указания причины")}: {item.points}
               </li>
             ))}
           </ul>
@@ -230,7 +234,7 @@ export const MySubmissionsTab = ({
         <Input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Поиск по теме..."
+          placeholder={t("Поиск по теме...")}
           className="sm:max-w-[280px]"
         />
         <Select
@@ -240,21 +244,21 @@ export const MySubmissionsTab = ({
           }
         >
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Статус" />
+            <SelectValue placeholder={t("Статус")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все статусы</SelectItem>
-            <SelectItem value="submitted">Сдано</SelectItem>
-            <SelectItem value="not_submitted">Не сдано</SelectItem>
-            <SelectItem value="overdue">Просрочено</SelectItem>
+            <SelectItem value="all">{t("Все статусы")}</SelectItem>
+            <SelectItem value="submitted">{t("Сдано")}</SelectItem>
+            <SelectItem value="not_submitted">{t("Не сдано")}</SelectItem>
+            <SelectItem value="overdue">{t("Просрочено")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="w-full sm:w-[160px]">
-            <SelectValue placeholder="Тип" />
+            <SelectValue placeholder={t("Тип")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все типы</SelectItem>
+            <SelectItem value="all">{t("Все типы")}</SelectItem>
             {typeOptions.map((type) => (
               <SelectItem key={type} value={type}>
                 {type}
@@ -270,27 +274,27 @@ export const MySubmissionsTab = ({
             <EmptyMedia variant="icon">
               <LuClipboardList />
             </EmptyMedia>
-            <EmptyTitle>Нет заданий для сдачи</EmptyTitle>
+            <EmptyTitle>{t("Нет заданий для сдачи")}</EmptyTitle>
             <EmptyDescription>
-              Когда преподаватель добавит темы с баллами, они появятся в этой таблице.
+              {t("Когда преподаватель добавит темы с баллами, они появятся в этой таблице.")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : filtered.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          Нет тем по выбранным фильтрам
+          {t("Нет тем по выбранным фильтрам")}
         </p>
       ) : (
         <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="min-w-[180px]">Тема</TableHead>
-                <TableHead className="min-w-[72px]">Тип</TableHead>
-                <TableHead className="min-w-[140px]">Срок сдачи</TableHead>
-                <TableHead className="min-w-[120px]">Статус</TableHead>
-                <TableHead className="min-w-[110px]">Балл</TableHead>
-                <TableHead className="min-w-[180px]">Комментарий</TableHead>
+                <TableHead className="min-w-[180px]">{t("Тема")}</TableHead>
+                <TableHead className="min-w-[72px]">{t("Тип")}</TableHead>
+                <TableHead className="min-w-[140px]">{t("Срок сдачи")}</TableHead>
+                <TableHead className="min-w-[120px]">{t("Статус")}</TableHead>
+                <TableHead className="min-w-[110px]">{t("Балл")}</TableHead>
+                <TableHead className="min-w-[180px]">{t("Комментарий")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -331,7 +335,7 @@ export const MySubmissionsTab = ({
                         </Badge>
                         {late ? (
                           <span className="text-[11px] text-muted-foreground">
-                            с опозданием
+                            {t("с опозданием")}
                           </span>
                         ) : null}
                       </div>

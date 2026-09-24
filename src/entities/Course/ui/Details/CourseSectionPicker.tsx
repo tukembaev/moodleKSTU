@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { IconType } from "react-icons";
 import { MobileBottomSheet } from "shared/components";
 import { cn } from "shared/lib/utils";
@@ -29,6 +30,7 @@ export function CourseSectionPicker({
   onChange,
   className,
 }: CourseSectionPickerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const active = sections.find((s) => s.value === activeValue) ?? sections[0];
 
@@ -49,7 +51,11 @@ export function CourseSectionPicker({
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-label={`${active.name}, раздел ${activeIndex + 1} из ${sections.length}`}
+        aria-label={t("{{name}}, раздел {{current}} из {{total}}", {
+          name: active.name,
+          current: activeIndex + 1,
+          total: sections.length,
+        })}
         title={active.name}
         className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-card text-primary shadow-sm transition-colors active:bg-accent/60"
       >
@@ -59,8 +65,8 @@ export function CourseSectionPicker({
       <MobileBottomSheet
         open={open}
         onOpenChange={setOpen}
-        title="Разделы курса"
-        description="Выберите, что открыть"
+        title={t("Разделы курса")}
+        description={t("Выберите, что открыть")}
       >
         <ul>
           {sections.map(({ name, value, icon: Icon, count = 0 }) => {

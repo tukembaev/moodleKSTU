@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { authByGoogle } from "shared/lib/auth";
 import { getPostLoginPath } from "shared/lib/navigation/hidden-ids";
+import i18n from "shared/config/i18n/i18n";
 
 const GOOGLE_NONCE_KEY = "google_oauth_nonce";
 
@@ -59,7 +60,7 @@ export const useGoogleToken = () => {
         window.location.href = getPostLoginPath();
       } catch (err) {
         console.error("Google auth error:", err);
-        setError("Ошибка входа через Google");
+        setError(i18n.t("Ошибка входа через Google"));
       } finally {
         setLoading(false);
       }

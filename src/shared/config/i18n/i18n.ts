@@ -1,25 +1,42 @@
-// import i18n from 'i18next';
-// import { initReactI18next } from 'react-i18next';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import { en } from "./locales/en";
+import { ky } from "./locales/ky";
+import { isAppLanguage, LANGUAGE_STORAGE_KEY } from "./languages";
 
-// import Backend from 'i18next-http-backend';
-// import LanguageDetector from 'i18next-browser-languagedetector';
+const stored =
+  typeof localStorage !== "undefined"
+    ? localStorage.getItem(LANGUAGE_STORAGE_KEY)
+    : null;
 
-// i18n
-//     .use(Backend)
-//     .use(LanguageDetector)
-//     .use(initReactI18next)
-//     .init({
-//         fallbackLng: 'en',
-//         // debug: __IS_DEV__,
-//         debug: false,
+const initialLanguage = isAppLanguage(stored) ? stored : "ru";
 
-//         interpolation: {
-//             escapeValue: false, // not needed for react as it escapes by default
-//         },
+void i18n.use(initReactI18next).init({
+  resources: {
+    ru: { translation: {} },
+    en: { translation: en },
+    ky: { translation: ky },
+  },
+  lng: initialLanguage,
+  fallbackLng: "ru",
+  interpolation: { escapeValue: false },
+  keySeparator: false,
+  nsSeparator: false,
+  returnNull: false,
+  returnEmptyString: false,
+  react: { useSuspense: false },
+});
 
-//         backend: {
-//             loadPath: '/locales/{{lng}}/{{ns}}.json',
-//         },
-//     });
+function persistLanguage(language: string) {
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  }
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = language === "ky" ? "ky" : language;
+  }
+}
 
-// export default i18n;
+persistLanguage(i18n.language);
+i18n.on("languageChanged", persistLanguage);
+
+export default i18n;

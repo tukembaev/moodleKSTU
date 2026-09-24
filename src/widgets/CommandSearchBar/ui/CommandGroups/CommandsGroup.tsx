@@ -1,4 +1,5 @@
 import { Calendar } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { CommandGroup, CommandItem } from "shared/shadcn/ui/command";
 
 type Command = {
@@ -7,32 +8,33 @@ type Command = {
   link: string;
 };
 
-const availableCommands: Command[] = [
-  {
-    icon: <Calendar />,
-    label: "Создать курс",
-    link: "/",
-  },
-  {
-    icon: <Calendar />,
-    label: "Создать дисциплину",
-    link: "",
-  },
-  {
-    icon: <Calendar />,
-    label: "Создать опрос",
-    link: "",
-  },
-  {
-    icon: <Calendar />,
-    label: "Создать тестирование",
-    link: "",
-  },
-];
-
 const CommandsGroup = () => {
+  const { t } = useTranslation();
+  const availableCommands: Command[] = [
+    {
+      icon: <Calendar />,
+      label: t("Создать курс"),
+      link: "/",
+    },
+    {
+      icon: <Calendar />,
+      label: t("Создать дисциплину"),
+      link: "",
+    },
+    {
+      icon: <Calendar />,
+      label: t("Создать опрос"),
+      link: "",
+    },
+    {
+      icon: <Calendar />,
+      label: t("Создать тестирование"),
+      link: "",
+    },
+  ];
+
   return (
-    <CommandGroup heading="Команды">
+    <CommandGroup heading={t("Команды")}>
       {availableCommands.map((command) => (
         <CommandItem key={command.label} value={command.label}>
           {command.icon}

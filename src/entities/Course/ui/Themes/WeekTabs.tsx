@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { Week } from "entities/Course/model/types/course";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
@@ -31,6 +32,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
   viewMode,
   course_owner,
 }) => {
+  const { t } = useTranslation();
   const { id, isStudent } = useAuth();
   const theme_id = useHiddenId("themeId");
   const themeRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -132,10 +134,10 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground">
-                Ошибка загрузки
+                {t("Ошибка загрузки")}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {error instanceof Error ? error.message : "Не удалось загрузить темы"}
+                {error instanceof Error ? error.message : t("Не удалось загрузить темы")}
               </p>
             </div>
             <button
@@ -155,7 +157,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-              Попробовать снова
+              {t("Попробовать снова")}
             </button>
           </div>
         </div>
@@ -175,7 +177,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
                   className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22"
                 />
                 <p className="text-sm sm:text-base">
-                  Преподаватель еще не добавил темы
+                  {t("Преподаватель еще не добавил темы")}
                 </p>
               </div>
             
@@ -185,7 +187,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
       return (
         <div className="min-h-[200px] flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
           
-            <UseTooltip text="Добавить задание">
+            <UseTooltip text={t("Добавить задание")}>
               <button
                 className="flex flex-col justify-center items-center gap-2 sm:gap-3 touch-manipulation min-h-[44px] w-full"
                 onClick={() =>
@@ -199,7 +201,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
                   size={isMobile ? 28 : 35}
                   className="text-muted-foreground"
                 />
-                <p className="text-sm sm:text-base">Добавьте новое задание</p>
+                <p className="text-sm sm:text-base">{t("Добавьте новое задание")}</p>
               </button>
             </UseTooltip>
           
@@ -256,10 +258,10 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground">
-              Нет недель
+              {t("Нет недель")}
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              В этом модуле пока нет недель
+              {t("В этом модуле пока нет недель")}
             </p>
           </div>
         </div>
@@ -276,11 +278,11 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
         <div className="flex items-center justify-between gap-3">
           <div>
             <h3 className="text-lg font-semibold">
-              {module.title} модуль
+              {t("{{title}} модуль", { title: module.title })}
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">
               {/* {module.weeks.length} {module.weeks.length === 1 ? "неделя" : "недель"} */}
-              Текущая неделя
+              {t("Текущая неделя")}
             </p>
           </div>
         </div>
@@ -303,7 +305,7 @@ const WeekTabs: React.FC<WeekTabsProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium whitespace-nowrap">
-                    {week.title} неделя
+                    {t("{{title}} неделя", { title: week.title })}
                   </span>
                   <span
                     className={`text-xs px-1.5 py-0.5 rounded ${isActive

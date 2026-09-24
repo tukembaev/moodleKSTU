@@ -1,4 +1,5 @@
 import { CourseThemes, CourseThemesTypes } from "entities/Course/model/types/course";
+import { useTranslation } from "react-i18next";
 import { BookDown, ChevronDown, ChevronRight } from "lucide-react";
 import React from "react";
 import empty from "/src/assets/empty.svg";
@@ -47,6 +48,9 @@ export const categories: {
   { key: "other", title: "Прочее", icon: <LuPuzzle /> },
 ];
 
+export const getCategories = (t: (key: string) => string) =>
+  categories.map((c) => ({ ...c, title: t(c.title) }));
+
 interface ThemeViewProps {
   categoryKey: keyof CourseThemesTypes;
   data: CourseThemes;
@@ -74,7 +78,8 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
   isMobile,
   id_theme,
 }) => {
-  const category = categories.find((c) => c.key === categoryKey);
+  const { t } = useTranslation();
+  const category = getCategories(t).find((c) => c.key === categoryKey);
   
   if (categoryKey === "test") {
     return (
@@ -87,9 +92,9 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
               <EmptyMedia variant="icon">
                 <BookDown size={24} />
               </EmptyMedia>
-              <EmptyTitle>Добавить новый тест</EmptyTitle>
+              <EmptyTitle>{t("Добавить новый тест")}</EmptyTitle>
               <EmptyDescription>
-                Нажмите кнопку ниже, чтобы добавить новый тест к учебному плану
+                {t("Нажмите кнопку ниже, чтобы добавить новый тест к учебному плану")}
               </EmptyDescription>
 
               <button
@@ -101,7 +106,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
                 }
                 className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
               >
-                Создать тест
+                {t("Создать тест")}
               </button>
             </EmptyContent>
           </Empty>
@@ -122,7 +127,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
               className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22"
             />
             <p className="text-sm sm:text-base">
-              Преподаватель еще не добавил темы
+              {t("Преподаватель еще не добавил темы")}
             </p>
           </div>
         
@@ -156,7 +161,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
                 </Badge>
                 {theme.locked && (
                   <Badge className="bg-gray-300 text-primary text-xs sm:text-sm h-5 sm:h-6">
-                    Доступ ограничен
+                    {t("Доступ ограничен")}
                   </Badge>
                 )}
               </div>
@@ -171,11 +176,11 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
                 <div className="flex items-center">
                   {theme.status ? (
                     <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
-                      {theme.result} балла
+                      {t("{{count}} балла", { count: theme.result })}
                     </Badge>
                   ) : (
                     <Badge variant="secondary" className="text-muted-foreground">
-                      Не сдано
+                      {t("Не сдано")}
                     </Badge>
                   )}
                 </div>
@@ -190,7 +195,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
               <div className="flex justify-between items-center flex-wrap gap-2 sm:gap-0">
                 <div className="flex gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-foreground/80">
                   {theme.max_points && (
-                    <UseTooltip text="Максимальное количество балла">
+                    <UseTooltip text={t("Максимальное количество балла")}>
                       <div className="flex items-center gap-1.5 sm:gap-2">
                         <LuHandCoins className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         <span>{theme.max_points}</span>
@@ -223,7 +228,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
       {isOwner && (
         <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
           
-            <UseTooltip text="Добавить тему">
+            <UseTooltip text={t("Добавить тему")}>
               <button
                 className="flex flex-col justify-center items-center gap-2 sm:gap-3 touch-manipulation min-h-[44px] w-full"
                 onClick={() =>
@@ -237,7 +242,7 @@ export const GridThemes: React.FC<ThemeViewProps> = ({
                   size={isMobile ? 28 : 35}
                   className="text-muted-foreground"
                 />
-                <p className="text-sm sm:text-base">Добавьте новую тему</p>
+                <p className="text-sm sm:text-base">{t("Добавьте новую тему")}</p>
               </button>
             </UseTooltip>
           
@@ -260,7 +265,8 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
   isMobile,
   id_theme,
 }) => {
-  const category = categories.find((c) => c.key === categoryKey);
+  const { t } = useTranslation();
+  const category = getCategories(t).find((c) => c.key === categoryKey);
 
   if (categoryKey === "test") {
     return (
@@ -284,7 +290,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
               className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22"
             />
             <p className="text-sm sm:text-base">
-              Преподаватель еще не добавил темы
+              {t("Преподаватель еще не добавил темы")}
             </p>
           </div>
         
@@ -357,7 +363,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
               <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
                 <div className="flex gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-foreground/80">
                   {theme.max_points && (
-                    <UseTooltip text="Максимальное количество балла">
+                    <UseTooltip text={t("Максимальное количество балла")}>
                       <div className="flex items-center gap-1.5 sm:gap-2">
                         <LuHandCoins className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         <span className="whitespace-nowrap">
@@ -371,18 +377,18 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
                   <div className="flex items-center">
                     {theme.locked ? (
                       <Badge className="bg-gray-300 text-primary text-xs sm:text-sm h-5 sm:h-6 shrink-0">
-                        Доступ ограничен
+                        {t("Доступ ограничен")}
                       </Badge>
                     ) : theme.status ? (
                       <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 shrink-0">
-                        {theme.result} балла
+                        {t("{{count}} балла", { count: theme.result })}
                       </Badge>
                     ) : (
                       <Badge
                         variant="secondary"
                         className="text-muted-foreground shrink-0"
                       >
-                        Не сдано
+                        {t("Не сдано")}
                       </Badge>
                     )}
                   </div>
@@ -409,7 +415,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
       {isOwner && (
         <FadeIn className="flex border rounded-xl py-4 sm:py-6 px-4 sm:px-5 w-full justify-center items-center min-h-32 sm:min-h-48">
           
-            <UseTooltip text="Добавить тему">
+            <UseTooltip text={t("Добавить тему")}>
               <button
                 className="flex flex-col justify-center items-center gap-2 sm:gap-3 touch-manipulation min-h-[44px] w-full"
                 onClick={() =>
@@ -423,7 +429,7 @@ export const ListThemes: React.FC<ThemeViewProps> = ({
                   size={isMobile ? 28 : 35}
                   className="text-muted-foreground"
                 />
-                <p className="text-sm sm:text-base">Добавьте новую тему</p>
+                <p className="text-sm sm:text-base">{t("Добавьте новую тему")}</p>
               </button>
             </UseTooltip>
           

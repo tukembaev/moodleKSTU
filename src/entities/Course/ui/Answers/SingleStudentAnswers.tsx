@@ -11,6 +11,7 @@ import { FileAnswer } from "entities/Course/model/types/course";
 import { remarksQueries } from "entities/Remarks";
 import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { DragEvent, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LuChevronDown, LuUpload } from "react-icons/lu";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
@@ -38,6 +39,7 @@ const SingleStudentAnswers = ({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) => {
+  const { t } = useTranslation();
   const { mutate: add_answer } = courseQueries.create_answer();
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -56,7 +58,7 @@ const SingleStudentAnswers = ({
     canReceivePoints && canSubmit && canUploadAnswerFiles(data);
   const blockedCaption = canSubmit
     ? blockedUploadCaption(themeRemarks)
-    : "Новые файлы отправить нельзя";
+    : t("Новые файлы отправить нельзя");
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     if (!canUpload) return;
@@ -94,7 +96,7 @@ const SingleStudentAnswers = ({
     const files = Array.from(e.dataTransfer.files);
 
     if (files.length === 0) {
-      toast.error("Файлы не найдены");
+      toast.error(t("Файлы не найдены"));
       return;
     }
 
@@ -129,9 +131,9 @@ const SingleStudentAnswers = ({
         <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm z-10 flex items-center justify-center pointer-events-none">
           <div className="bg-background border-2 border-dashed border-primary rounded-lg p-8 flex flex-col items-center gap-3">
             <LuUpload size={48} className="text-primary" />
-            <p className="text-lg font-semibold">Перетащите файлы сюда</p>
+            <p className="text-lg font-semibold">{t("Перетащите файлы сюда")}</p>
             <p className="text-sm text-muted-foreground">
-              Файлы будут загружены как ответы по теме
+              {t("Файлы будут загружены как ответы по теме")}
             </p>
           </div>
         </div>
@@ -149,12 +151,12 @@ const SingleStudentAnswers = ({
           )}
         >
           <p className="min-w-0 truncate text-base font-semibold sm:text-lg">
-            Мои файлы
+            {t("Мои файлы")}
           </p>
           <span className="flex shrink-0 items-center gap-2">
             {canReceivePoints && theme?.result != null && theme.result !== "—" ? (
               <p className="text-sm text-muted-foreground">
-                Оценка: {theme.result}
+                {t("Оценка: {{result}}", { result: theme.result })}
                 {theme.max_points != null ? ` / ${theme.max_points}` : ""}
               </p>
             ) : null}

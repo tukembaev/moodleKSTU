@@ -1,3 +1,5 @@
+import i18n from "shared/config/i18n/i18n";
+
 export function ruPlural(
   count: number,
   forms: [string, string, string]
@@ -10,16 +12,27 @@ export function ruPlural(
   return forms[2];
 }
 
+function localizedCount(count: number, key: string, ruForms: [string, string, string]) {
+  if (i18n.language.startsWith("ru")) {
+    return `${count} ${ruPlural(count, ruForms)}`;
+  }
+  return i18n.t(key, { count });
+}
+
 export function filesCountLabel(count: number): string {
-  return `${count} ${ruPlural(count, ["файл", "файла", "файлов"])}`;
+  return localizedCount(count, "{{count}} файлов", ["файл", "файла", "файлов"]);
 }
 
 export function coursesCountLabel(count: number): string {
-  return `${count} ${ruPlural(count, ["курс", "курса", "курсов"])}`;
+  return localizedCount(count, "{{count}} курсов", ["курс", "курса", "курсов"]);
 }
 
 export function teachersCountLabel(count: number): string {
-  return `${count} ${ruPlural(count, ["преподаватель", "преподавателя", "преподавателей"])}`;
+  return localizedCount(count, "{{count}} преподавателей", [
+    "преподаватель",
+    "преподавателя",
+    "преподавателей",
+  ]);
 }
 
 export function personInitials(name: string): string {

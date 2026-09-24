@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { useAuth } from "shared/hooks";
 import { COURSE_FEED_TAB, openCourse, openTestPass } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
@@ -19,6 +20,7 @@ import { TodayFeed } from "./TodayFeed";
 import { TodayQueue } from "./TodayQueue";
 
 const TodayPage = () => {
+  const { t, i18n } = useTranslation();
   const auth = useAuth();
   const navigate = useNavigate();
   const [courseId, setCourseId] = useState<string | null>(null);
@@ -63,25 +65,25 @@ const TodayPage = () => {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Сегодня</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("Сегодня")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {format(new Date(), "d MMMM, EEEE", { locale: ru })}
+          {format(new Date(), "d MMMM, EEEE", { locale: getDateLocale(i18n.language) })}
           {" · "}
           {role === "teacher"
-            ? "Сначала те, кто сдал раньше"
-            : "Что сдавать и что скоро откроется"}
+            ? t("Сначала те, кто сдал раньше")
+            : t("Что сдавать и что скоро откроется")}
         </p>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Загрузка…</p>
+        <p className="text-sm text-muted-foreground">{t("Загрузка…")}</p>
       ) : isError || !data ? (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed px-4 py-8">
           <p className="text-sm text-muted-foreground">
-            Не удалось загрузить сводку
+            {t("Не удалось загрузить сводку")}
           </p>
           <Button type="button" variant="outline" onClick={() => refetch()}>
-            Повторить
+            {t("Повторить")}
           </Button>
         </div>
       ) : (

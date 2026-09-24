@@ -1,4 +1,5 @@
 import { lazy, ReactNode, Suspense } from "react";
+import { useTranslation } from "react-i18next";
 import { FormQuery } from "./formQuery";
 
 export { FormQuery };
@@ -26,9 +27,16 @@ export interface FormConfig {
   is_student_allow: boolean;
 }
 
+function FormLoadingFallback() {
+  const { t } = useTranslation();
+  return (
+    <p className="py-6 text-sm text-muted-foreground">{t("Загрузка формы...")}</p>
+  );
+}
+
 function formNode(node: ReactNode) {
   return (
-    <Suspense fallback={<p className="py-6 text-sm text-muted-foreground">Загрузка формы...</p>}>
+    <Suspense fallback={<FormLoadingFallback />}>
       {node}
     </Suspense>
   );

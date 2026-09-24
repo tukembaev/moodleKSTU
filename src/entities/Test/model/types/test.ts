@@ -80,6 +80,10 @@ export interface TestDetails {
   minPoints?: number;
   min_points?: number;
   timeLimit: number;
+  /** How many questions from the bank a student receives. Omit or 0 = all. */
+  questionsPerAttempt?: number;
+  /** Server-drawn question ids for the current student attempt, in display order. */
+  attemptQuestionIds?: string[];
   required: boolean;
   opening_date: string;
   courseIds: string[];
@@ -96,6 +100,8 @@ export interface TestSubmissionPayload {
   answers: TestAnswer[];
   timeRemaining?: number;
   showCorrectAnswers?: boolean;
+  /** Question ids actually shown in this attempt. Backend scores only these. */
+  servedQuestionIds?: string[];
 }
 
 export interface SelectedOption {

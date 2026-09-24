@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Command,
   CommandEmpty,
@@ -31,16 +32,18 @@ interface CommandSearchBarProps {
 }
 
 function SearchHint() {
+  const { t } = useTranslation();
   return (
     <Empty className="border-0 py-10">
       <EmptyContent>
         <EmptyMedia variant="icon">
           <Search />
         </EmptyMedia>
-        <EmptyTitle>Что можно найти</EmptyTitle>
+        <EmptyTitle>{t("Что можно найти")}</EmptyTitle>
         <EmptyDescription>
-          Введите название курса, фамилию преподавателя или имя файла.
-          Результаты появятся сразу — так быстрее, чем листать длинные списки.
+          {t(
+            "Введите название курса, фамилию преподавателя или имя файла. Результаты появятся сразу — так быстрее, чем листать длинные списки."
+          )}
         </EmptyDescription>
       </EmptyContent>
     </Empty>
@@ -53,6 +56,7 @@ const CommandSearchBar = ({
   alwaysOpen = false,
   variant = "card",
 }: CommandSearchBarProps) => {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const [isActive, setIsActive] = useState(alwaysOpen);
   const query = text.trim();
@@ -89,7 +93,7 @@ const CommandSearchBar = ({
             (e.target as HTMLInputElement).blur();
           }
         }}
-        placeholder="Курс, преподаватель или файл"
+        placeholder={t("Курс, преподаватель или файл")}
       />
       {showList &&
         (!query ? (
@@ -103,8 +107,9 @@ const CommandSearchBar = ({
             ) : (
               <>
                 <CommandEmpty>
-                  Ничего не найдено. Попробуйте другое название курса, фамилию
-                  или файл.
+                  {t(
+                    "Ничего не найдено. Попробуйте другое название курса, фамилию или файл."
+                  )}
                 </CommandEmpty>
                 <CoursesGroup data={data?.courses || []} />
                 <EmployeesGroup data={data?.employees || []} />

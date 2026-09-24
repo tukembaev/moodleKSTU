@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Slider } from "shared/shadcn/ui/slider";
 
 type GaugeProps = {
@@ -11,6 +12,7 @@ export function GaugeWithSliderSmall({
   maxScore,
   onChange,
 }: GaugeProps) {
+  const { t } = useTranslation();
   const percentage = (score / maxScore) * 100;
   const dash = (percentage / 100) * 50;
 
@@ -53,7 +55,7 @@ export function GaugeWithSliderSmall({
             {score}
           </span>
           <span className="text-sm text-blue-600 dark:text-blue-500 block">
-            Баллов
+            {t("Баллов")}
           </span>
         </div>
       </div>

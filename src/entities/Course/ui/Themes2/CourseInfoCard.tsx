@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "shared/shadcn/ui/card";
 import { LuInfo, LuUsers } from "react-icons/lu";
 
@@ -13,6 +14,7 @@ export const CourseInfoCard: FC<CourseInfoCardProps> = ({
   content,
   icon = "info",
 }) => {
+  const { t } = useTranslation();
   const IconComponent = icon === "users" ? LuUsers : LuInfo;
 
   return (
@@ -25,7 +27,7 @@ export const CourseInfoCard: FC<CourseInfoCardProps> = ({
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-          {content || "Информация не указана"}
+          {content || t("Информация не указана")}
         </p>
       </CardContent>
     </Card>

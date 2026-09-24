@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "shared/shadcn/ui/card";
 import { Button } from "shared/shadcn/ui/button";
 import { LuX, LuArrowLeft, LuCheck, LuClock } from "react-icons/lu";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import {
   TestSubmissionResponse,
   TestDetails,
@@ -26,6 +27,7 @@ interface QuizResultsState {
 }
 
 const QuizResultsPage = () => {
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const storedCourseId = useCourseId();
@@ -43,11 +45,9 @@ const QuizResultsPage = () => {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 p-4 sm:p-6">
             <p className="text-center text-muted-foreground text-sm sm:text-base">
-              Результаты не найдены
+              {t("Результаты не найдены")}
             </p>
-            <Button className="w-full mt-4" onClick={goToCourse}>
-              Вернуться к курсу
-            </Button>
+            <Button className="w-full mt-4" onClick={goToCourse}>{t("Вернуться к курсу")}</Button>
           </CardContent>
         </Card>
       </div>
@@ -84,11 +84,11 @@ const QuizResultsPage = () => {
         className="self-start w-full sm:w-auto"
       >
         <LuArrowLeft className="mr-2" />
-        Вернуться к курсу
+        {t("Вернуться к курсу")}
       </Button>
 
       <div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Результаты теста</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{t("Результаты теста")}</h1>
         <p className="text-muted-foreground text-sm sm:text-base lg:text-lg">{quizData.title}</p>
       </div>
 
@@ -114,18 +114,18 @@ const QuizResultsPage = () => {
             )}
           >
             {needsReview
-              ? "Ожидает проверки преподавателя"
+              ? t("Ожидает проверки преподавателя")
               : isPassed
-                ? "Тест пройден"
-                : "Тест не пройден"}
+                ? t("Тест пройден")
+                : t("Тест не пройден")}
           </Badge>
           <p className="text-4xl font-bold">
             {score ?? "—"} / {maxPoints}
           </p>
           <p className="text-sm text-muted-foreground">
             {needsReview
-              ? "Промежуточный балл, пока развёрнутые ответы не проверены"
-              : `Проходной балл: ${minPoints}`}
+              ? t("Промежуточный балл, пока развёрнутые ответы не проверены")
+              : t("Проходной балл: {{minPoints}}", { minPoints })}
           </p>
         </CardContent>
       </Card>
@@ -137,16 +137,16 @@ const QuizResultsPage = () => {
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="text-base sm:text-lg flex items-center gap-2">
                   <LuClock className="h-4 w-4" />
-                  Время
+                  {t("Время")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
                 <p className="text-base sm:text-lg font-semibold">
-                  {minutesSpent} мин {secondsSpent} сек
+                  {t("{{minutes}} мин {{seconds}} сек", { minutes: minutesSpent, seconds: secondsSpent })}
                 </p>
                 {quizData.timeLimit ? (
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Из {quizData.timeLimit} минут
+                    {t("Из {{count}} минут", { count: quizData.timeLimit })}
                   </p>
                 ) : null}
               </CardContent>
@@ -156,14 +156,14 @@ const QuizResultsPage = () => {
           {completionDate && (
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-base sm:text-lg">Дата прохождения</CardTitle>
+                <CardTitle className="text-base sm:text-lg">{t("Дата прохождения")}</CardTitle>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
                 <p className="text-base sm:text-lg">
-                  {format(completionDate, "PPP", { locale: ru })}
+                  {format(completionDate, "PPP", { locale: getDateLocale(i18n.language) })}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  {format(completionDate, "HH:mm", { locale: ru })}
+                  {format(completionDate, "HH:mm", { locale: getDateLocale(i18n.language) })}
                 </p>
               </CardContent>
             </Card>
@@ -174,10 +174,8 @@ const QuizResultsPage = () => {
       {results.detailedResults && results.detailedResults.length > 0 && (
         <Card>
           <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-lg sm:text-xl">Ваши ответы</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">
-              Просмотрите все вопросы и ваши ответы
-            </CardDescription>
+            <CardTitle className="text-lg sm:text-xl">{t("Ваши ответы")}</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">{t("Просмотрите все вопросы и ваши ответы")}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 pt-0">
             {results.detailedResults.map((result, index) => {
@@ -217,13 +215,13 @@ const QuizResultsPage = () => {
                     {!hasAnswer ? (
                       <div className="flex items-center gap-2 text-muted-foreground mb-2">
                         <LuX className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span className="text-xs sm:text-sm font-medium">Вопрос пропущен</span>
+                        <span className="text-xs sm:text-sm font-medium">{t("Вопрос пропущен")}</span>
                       </div>
                     ) : (
                       <>
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xs sm:text-sm font-medium">Ваш ответ:</span>
+                            <span className="text-xs sm:text-sm font-medium">{t("Ваш ответ:")}</span>
                           </div>
                           {isText ? (
                             <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm whitespace-pre-wrap break-words">
@@ -250,13 +248,13 @@ const QuizResultsPage = () => {
                           <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                             <LuClock className="h-4 w-4" />
                             <span className="text-xs sm:text-sm font-medium">
-                              Ожидает проверки преподавателя
+                              {t("Ожидает проверки преподавателя")}
                             </span>
                           </div>
                         ) : result.isCorrect ? (
                           <div className="flex items-center gap-2 text-green-600">
                             <LuCheck className="h-4 w-4" />
-                            <span className="text-xs sm:text-sm font-medium">Правильно!</span>
+                            <span className="text-xs sm:text-sm font-medium">{t("Правильно!")}</span>
                           </div>
                         ) : (
                           <div>
@@ -264,8 +262,8 @@ const QuizResultsPage = () => {
                               <LuX className="h-4 w-4" />
                               <span className="text-xs sm:text-sm font-medium">
                                 {result.correctOptions.length > 0
-                                  ? "Неправильно. Правильный ответ:"
-                                  : "Неправильно."}
+                                  ? t("Неправильно. Правильный ответ:")
+                                  : t("Неправильно.")}
                               </span>
                             </div>
                             {result.correctOptions.length > 0 && (

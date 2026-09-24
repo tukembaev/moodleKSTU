@@ -5,6 +5,7 @@ import {
   Package,
   Settings,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
@@ -31,20 +32,21 @@ const invoices = [
 ];
 
 export default function UserBilling() {
+  const { t } = useTranslation();
   return (
     <div className="container mx-auto px-4 py-6 md:px-6 2xl:max-w-[1400px]">
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row">
           <div>
-            <h1 className="text-2xl font-semibold">Оплата и подписка</h1>
+            <h1 className="text-2xl font-semibold">{t("Оплата и подписка")}</h1>
             <p className="text-muted-foreground text-sm">
-              Управляйте подпиской и платёжными данными
+              {t("Управляйте подпиской и платёжными данными")}
             </p>
           </div>
           <Button variant="outline">
             <Settings className="mr-2 size-4" />
-            Настройки оплаты
+            {t("Настройки оплаты")}
           </Button>
         </div>
 
@@ -55,16 +57,16 @@ export default function UserBilling() {
               <div>
                 <div className="flex items-center gap-2">
                   <Package className="text-primary size-5" />
-                  <h2 className="text-lg font-semibold">План Про</h2>
-                  <Badge>Текущий тариф</Badge>
+                  <h2 className="text-lg font-semibold">{t("План Про")}</h2>
+                  <Badge>{t("Текущий тариф")}</Badge>
                 </div>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  $29/мес • Продление 1 апреля 2024
+                  {t("$29/мес • Продление 1 апреля 2024")}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline">Изменить тариф</Button>
-                <Button variant="destructive">Отменить подписку</Button>
+                <Button variant="outline">{t("Изменить тариф")}</Button>
+                <Button variant="destructive">{t("Отменить подписку")}</Button>
               </div>
             </div>
           </CardContent>
@@ -75,15 +77,15 @@ export default function UserBilling() {
           <CardContent className="p-6">
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
               <div className="space-y-1">
-                <h2 className="text-lg font-semibold">Способ оплаты</h2>
+                <h2 className="text-lg font-semibold">{t("Способ оплаты")}</h2>
                 <div className="flex items-center gap-2">
                   <CreditCard className="text-muted-foreground size-4" />
                   <span className="text-muted-foreground text-sm">
-                    Visa заканчивается на 4242
+                    {t("Visa заканчивается на 4242")}
                   </span>
                 </div>
               </div>
-              <Button variant="outline">Обновить способ оплаты</Button>
+              <Button variant="outline">{t("Обновить способ оплаты")}</Button>
             </div>
           </CardContent>
         </Card>
@@ -92,10 +94,10 @@ export default function UserBilling() {
         <Card className="p-0">
           <CardContent className="p-6">
             <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row">
-              <h2 className="text-lg font-semibold">История оплат</h2>
+              <h2 className="text-lg font-semibold">{t("История оплат")}</h2>
               <Button variant="outline" size="sm">
                 <Download className="mr-2 size-4" />
-                Скачать всё
+                {t("Скачать всё")}
               </Button>
             </div>
 

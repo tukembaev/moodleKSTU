@@ -1,10 +1,12 @@
 import { GlobalCourseCarousel } from "entities/Course";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { BrowseCourse, HighRatedCourseCarousel } from "widgets/Course";
 // import UserBasket from "widgets/User/ui/UserBasket";
 
 const MainPage = () => {
+  const { t } = useTranslation();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   return (
@@ -16,20 +18,20 @@ const MainPage = () => {
       />
       <div className="flex flex-col gap-2">
         <GlobalCourseCarousel
-          title="Лучшие курсы по технике"
-          description="Создай порядок из того чего не бывает"
+          title={t("Лучшие курсы по технике")}
+          description={t("Создай порядок из того чего не бывает")}
         />
         <GlobalCourseCarousel
-          title="Лучшие курсы по политике"
-          description="Создай порядок из того чего не бывает"
+          title={t("Лучшие курсы по политике")}
+          description={t("Создай порядок из того чего не бывает")}
         />
         <GlobalCourseCarousel
-          title="Лучшие курсы по бизнесу"
-          description="Создай порядок из того чего не бывает"
+          title={t("Лучшие курсы по бизнесу")}
+          description={t("Создай порядок из того чего не бывает")}
         />
         <GlobalCourseCarousel
-          title="Лучшие курсы по психологии"
-          description="Создай порядок из того чего не бывает"
+          title={t("Лучшие курсы по психологии")}
+          description={t("Создай порядок из того чего не бывает")}
         />
       </div>
     </div>

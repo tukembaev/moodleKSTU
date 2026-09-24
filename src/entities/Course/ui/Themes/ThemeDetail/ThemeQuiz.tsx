@@ -1,4 +1,5 @@
 import Quiz from "features/Quiz/ui/Quiz";
+import { useTranslation } from "react-i18next";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { LuHandCoins, LuPlus } from "react-icons/lu";
@@ -38,6 +39,7 @@ const test_list = [
 ];
 
 const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; course_name: string; theme_id: string }) => {
+  const { t } = useTranslation();
   const { isStudent } = useAuth();
   const openForm = useForm();
 
@@ -67,7 +69,7 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
 
       <div className="flex flex-col gap-3">
         <p className="text-lg font-semibold">
-          Тесты для закрепления материала
+          {t("Тесты для закрепления материала")}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {test_list?.map((theme) => {
@@ -75,15 +77,17 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
               return (
                 <Card key={theme.id_quiz}>
                   <CardHeader>
-                    <CardTitle>Результаты теста: {theme.title}</CardTitle>
+                    <CardTitle>{t("Результаты теста: {{title}}", { title: theme.title })}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-lg">
-                      Ваш результат: {theme.correct_answers} из{" "}
-                      {theme.question_length}
+                      {t("Ваш результат: {{correct}} из {{total}}", {
+                        correct: theme.correct_answers,
+                        total: theme.question_length,
+                      })}
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Процент правильных ответов:{" "}
+                      {t("Процент правильных ответов")}:{" "}
                       {(
                         (theme.correct_answers / theme.question_length) *
                         100
@@ -93,7 +97,7 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
                     {theme.is_restart && (
                       <div className="mt-4 flex gap-4">
                         <Button onClick={() => handleStartQuiz(theme.id_quiz)}>
-                          Пройти заново
+                          {t("Пройти заново")}
                         </Button>
                       </div>
                     )}
@@ -111,7 +115,7 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
                       {theme.title}
                       {!isStudent ? null : (
                         <Badge variant={"outline"} className="max-h-6">
-                          Не сдано
+                          {t("Не сдано")}
                         </Badge>
                       )}
                     </span>
@@ -120,7 +124,7 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
                     </span>
                     <div className="flex gap-6 text-sm text-foreground/80 items-center py-2">
                       {theme.max_points && (
-                        <UseTooltip text="Максимальное количество баллов">
+                        <UseTooltip text={t("Максимальное количество баллов")}>
                           <div className="flex items-center gap-2">
                             <LuHandCoins className="h-4 w-4" />
                             <span>{theme.max_points}</span>
@@ -129,17 +133,17 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
                       )}
                     </div>
                     <UseConfirmation
-                      title="Подтверждение действия"
-                      description="Вы уверены, что хотите выполнить это действие? Оно не может быть отменено. Если вы перезагрузите насильно , результаты отправятся как есть."
+                      title={t("Подтверждение действия")}
+                      description={t("Вы уверены, что хотите выполнить это действие? Оно не может быть отменено. Если вы перезагрузите насильно , результаты отправятся как есть.")}
                       action={() => handleStartQuiz(theme.id_quiz)}
-                      cancelText="Отказаться"
-                      actionText="Продолжить"
+                      cancelText={t("Отказаться")}
+                      actionText={t("Продолжить")}
                     >
                       <Button
                         className="shadow-none w-full mt-4"
                         variant="outline"
                       >
-                        Пройти тест <ChevronRight />
+                        {t("Пройти тест")} <ChevronRight />
                       </Button>
                     </UseConfirmation>
                   </CardContent>
@@ -156,17 +160,17 @@ const ThemeQuiz = ({ course_id, course_name , theme_id }: { course_id: string; c
                 theme_id: theme_id
               })}
             >
-                <UseTooltip text="Добавить тест">
+                <UseTooltip text={t("Добавить тест")}>
                   <div className="flex flex-col justify-center items-center gap-3">
                     <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                       <LuPlus size={32} className="text-primary" />
                     </div>
                     <div className="text-center">
                       <p className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                        Добавить тест
+                        {t("Добавить тест")}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Нажмите, чтобы создать новый тест
+                        {t("Нажмите, чтобы создать новый тест")}
                       </p>
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { useQuery } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { FadeInList, SpringPopupList } from "shared/components";
 import { cn } from "shared/lib/utils";
 import {
@@ -13,6 +14,7 @@ import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { universityQueries } from "../model/services/universityQueryFactory";
 
 const UniversityList = () => {
+  const { t } = useTranslation();
   // const [idDepartment, setIdDepartment] = useState<number | null>(null);
   const { data, isLoading, error } = useQuery(universityQueries.allCourses());
 
@@ -27,10 +29,10 @@ const UniversityList = () => {
   return (
     <div className="w-full ">
       <h2 className="text-4xl md:text-5xl !leading-[1.15] font-bold tracking-tight">
-        Все университеты
+        {t("Все университеты")}
       </h2>
       <p className="mt-1.5 text-lg text-muted-foreground">
-        Список всех университетов, их кафедр и преподавателей.
+        {t("Список всех университетов, их кафедр и преподавателей.")}
       </p>
       <Accordion
         type="single"

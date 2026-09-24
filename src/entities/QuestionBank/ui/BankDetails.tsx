@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Check, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   emptyQuestionDraft,
@@ -35,11 +36,12 @@ const correctSet = (question: BankQuestion) => {
   return new Set(answers);
 };
 
-const trueFalseLabel = (value: BankQuestion["correctAnswer"]) =>
-  value === true || value === "Верно" ? "Верно" : "Неверно";
-
 const BankDetails = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const trueFalseLabel = (value: BankQuestion["correctAnswer"]) =>
+    value === true || value === "Верно" ? t("Верно") : t("Неверно");
   const bankId = useBankId();
   const { data: bank, isLoading, error } = useQuery(
     questionBankQueries.bank(bankId || null)
@@ -97,16 +99,19 @@ const BankDetails = () => {
     addQuestion({ bankId, question: draft }, { onSuccess: cancelEditor });
   };
 
-  const title = useMemo(() => bank?.name || "Коллекция вопросов", [bank?.name]);
+  const title = useMemo(
+    () => bank?.name || t("Коллекция вопросов"),
+    [bank?.name, t]
+  );
 
   if (!bankId) {
     return (
-      <p className="text-muted-foreground">Коллекция вопросов не выбран.</p>
+      <p className="text-muted-foreground">{t("Коллекция вопросов не выбран.")}</p>
     );
   }
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Загрузка коллекции...</p>;
+    return <p className="text-sm text-muted-foreground">{t("Загрузка коллекции...")}</p>;
   }
 
   if (error || !bank) {
@@ -118,9 +123,9 @@ const BankDetails = () => {
           onClick={() => navigate(RoutePath[AppRoutes.QUESTION_BANK])}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          К списку Коллекцияов
+          {t("К списку Коллекцияов")}
         </Button>
-        <p className="text-muted-foreground">Коллекция вопросов не найден.</p>
+        <p className="text-muted-foreground">{t("Коллекция вопросов не найден.")}</p>
       </div>
     );
   }
@@ -135,12 +140,15 @@ const BankDetails = () => {
             <p className="mt-1 text-muted-foreground">{bank.description}</p>
           )}
           <p className="mt-1 text-sm text-muted-foreground">
-            {bank.questions.length} {bank.questions.length === 1 ? "вопрос" : "вопросов"} в коллекции
+            {t("{{count}} {{unit}} в коллекции", {
+              count: bank.questions.length,
+              unit: bank.questions.length === 1 ? t("вопрос") : t("вопросов"),
+            })}
           </p>
         </div>
         <Button type="button" onClick={startCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          Добавить вопрос
+          {t("Добавить вопрос")}
         </Button>
       </div>
 
@@ -157,10 +165,10 @@ const BankDetails = () => {
           />
           <div className="flex gap-2">
             <Button type="button" onClick={saveQuestion} disabled={isSaving}>
-              {isSaving ? "Сохранение..." : "Сохранить вопрос"}
+              {isSaving ? t("Сохранение...") : t("Сохранить вопрос")}
             </Button>
             <Button type="button" variant="outline" onClick={cancelEditor}>
-              Отмена
+              {t("Отмена")}
             </Button>
           </div>
         </div>
@@ -169,7 +177,7 @@ const BankDetails = () => {
       <div>
         {bank.questions.length === 0 && !editorOpen ? (
           <p className="text-muted-foreground">
-            В этом Коллекции пока нет вопросов. Добавьте первый.
+            {t("В этом Коллекции пока нет вопросов. Добавьте первый.")}
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -195,7 +203,7 @@ const BankDetails = () => {
                         </Badge>
                         {(type === "single_choice" || type === "multiple_choice") && (
                           <span className="text-xs text-muted-foreground tabular-nums">
-                            {question.options.length} вариантов
+                            {t("{{count}} вариантов", { count: question.options.length })}
                           </span>
                         )}
                       </div>
@@ -205,14 +213,16 @@ const BankDetails = () => {
                         type="button"
                         size="icon-sm"
                         variant="ghost"
-                        aria-label="Редактировать вопрос"
+                        aria-label={t("Редактировать вопрос")}
                         onClick={() => startEdit(question)}
                       >
                         <Pencil />
                       </Button>
                       <UseConfirmationDialog
-                        title="Удалить вопрос?"
-                        description="Вопрос будет удалён из коллекции без возможности восстановления."
+                        title={t("Удалить вопрос?")}
+                        description={t(
+                          "Вопрос будет удалён из коллекции без возможности восстановления."
+                        )}
                         onConfirm={() =>
                           removeQuestion({
                             bankId: bank.id,
@@ -224,7 +234,7 @@ const BankDetails = () => {
                             type="button"
                             size="icon-sm"
                             variant="ghost"
-                            aria-label="Удалить вопрос"
+                            aria-label={t("Удалить вопрос")}
                             disabled={isDeleting}
                           >
                             <Trash2 className="text-destructive" />
@@ -244,14 +254,14 @@ const BankDetails = () => {
 
                   {type === "true_false" && (
                     <p className="text-sm">
-                      Правильный ответ:{" "}
+                      {t("Правильный ответ:")}{" "}
                       <span className="font-medium">{trueFalseLabel(question.correctAnswer)}</span>
                     </p>
                   )}
 
                   {type === "short_answer" && (
                     <p className="text-sm">
-                      Эталон:{" "}
+                      {t("Эталон:")}{" "}
                       <span className="font-medium">
                         {typeof question.correctAnswer === "string"
                           ? question.correctAnswer
@@ -262,7 +272,7 @@ const BankDetails = () => {
 
                   {type === "essay" && (
                     <p className="text-sm text-muted-foreground">
-                      Требует ручной проверки преподавателем
+                      {t("Требует ручной проверки преподавателем")}
                     </p>
                   )}
 

@@ -4,14 +4,16 @@ const CourseCardSkeleton = () => {
   return (
     <div className="flex min-w-1/3 flex-col gap-3 rounded-2xl border bg-card p-3 shadow-sm">
       <div className="rounded-xl bg-muted/70 p-4 dark:bg-muted/40">
-        <Skeleton className="h-7 w-3/4 rounded-md" />
-        <div className="mt-4 flex items-center gap-3 rounded-lg border bg-background/80 px-3 py-2.5">
+        <div className="flex items-start justify-between gap-2">
+          <Skeleton className="h-7 w-1/2 rounded-md" />
           <Skeleton className="size-9 rounded-lg" />
-          <div className="flex-1">
-            <Skeleton className="h-3 w-14 rounded-md" />
-            <Skeleton className="mt-1.5 h-4 w-2/3 rounded-md" />
-          </div>
         </div>
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-11 rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="mt-2.5 h-1.5 w-full rounded-full" />
       </div>
       <div className="flex items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-2.5">

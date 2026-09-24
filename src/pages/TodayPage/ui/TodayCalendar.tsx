@@ -1,5 +1,4 @@
 import { format, isSameDay, isSameMonth, startOfMonth } from "date-fns";
-import { ru } from "date-fns/locale";
 import {
   createContext,
   useContext,
@@ -8,6 +7,7 @@ import {
   useState,
   type RefObject,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Button as DayButton,
   useDayRender,
@@ -15,6 +15,7 @@ import {
   type DayContentProps,
   type DayProps,
 } from "react-day-picker";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { cn } from "shared/lib/utils";
 import { Calendar } from "shared/shadcn/ui/calendar";
 import { buttonVariants } from "shared/shadcn/ui/button";
@@ -86,6 +87,7 @@ function EventDayContent({ date, displayMonth }: DayContentProps) {
 }
 
 function EventDay(props: DayProps) {
+  const { t, i18n } = useTranslation();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dayRender = useDayRender(
     props.date,
@@ -132,7 +134,11 @@ function EventDay(props: DayProps) {
         className="w-80 overflow-visible p-2"
       >
         <p className="px-2 pb-1 text-xs text-muted-foreground">
-          Открывается {format(props.date, "d MMMM", { locale: ru })}
+          {t("Открывается {{date}}", {
+            date: format(props.date, "d MMMM", {
+              locale: getDateLocale(i18n.language),
+            }),
+          })}
         </p>
         <div className="flex flex-col gap-2">
           {grouped.map((group) => (
@@ -182,6 +188,7 @@ export function TodayCalendar({
   themes,
   onOpenTheme,
 }: TodayCalendarProps) {
+  const { t } = useTranslation();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const highlighted = themes.find((theme) => theme.id === highlightedId) ?? null;
@@ -240,8 +247,9 @@ export function TodayCalendar({
           }}
         />
         <p className="px-3 pb-3 text-[11px] leading-snug text-muted-foreground">
-          Точка — день открытия. Наведите на задание, чтобы увидеть срок до
-          дедлайна.
+          {t(
+            "Точка — день открытия. Наведите на задание, чтобы увидеть срок до дедлайна."
+          )}
         </p>
       </section>
     </CalendarEventsContext.Provider>

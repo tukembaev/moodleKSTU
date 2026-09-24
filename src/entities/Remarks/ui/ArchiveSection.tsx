@@ -1,6 +1,6 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LuArchive,
   LuSearch,
@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "shared/shadcn/ui/select";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { cn } from "shared/lib/utils";
 import {
   Remark,
@@ -61,6 +62,8 @@ const ArchiveSection = ({
   currentUserRole,
   className,
 }: ArchiveSectionProps) => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<StudentRemarkSummary | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<string>("all");
@@ -130,7 +133,7 @@ const ArchiveSection = ({
           onClick={() => setSelectedRemark(null)}
           className="gap-2"
         >
-          ← Назад к архиву
+          {t("← Назад к архиву")}
         </Button>
         <RemarkChat
           remark={selectedRemark}
@@ -153,7 +156,7 @@ const ArchiveSection = ({
               onClick={() => setSelectedStudent(null)}
               className="gap-2"
             >
-              ← Назад к студентам
+              {t("← Назад к студентам")}
             </Button>
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
@@ -185,7 +188,9 @@ const ArchiveSection = ({
                       <div className="text-left">
                         <p className="font-medium">{course.courseName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {course.remarks.length} замечаний в архиве
+                          {t("{{count}} замечаний в архиве", {
+                            count: course.remarks.length,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -204,10 +209,10 @@ const ArchiveSection = ({
                                 {remark.theme_title}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                Одобрено{" "}
+                                {t("Одобрено")}{" "}
                                 {remark.archived_at &&
                                   format(remark.archived_at, "d MMMM yyyy", {
-                                    locale: ru,
+                                    locale: dateLocale,
                                   })}
                               </p>
                             </div>
@@ -231,7 +236,7 @@ const ArchiveSection = ({
         <div className="relative">
           <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Поиск по студентам..."
+            placeholder={t("Поиск по студентам...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -244,9 +249,9 @@ const ArchiveSection = ({
             <div className="p-4 rounded-2xl bg-muted/50 mb-4">
               <LuArchive className="h-12 w-12 text-muted-foreground opacity-50" />
             </div>
-            <h3 className="font-semibold text-lg mb-1">Архив пуст</h3>
+            <h3 className="font-semibold text-lg mb-1">{t("Архив пуст")}</h3>
             <p className="text-muted-foreground text-sm">
-              Здесь будут отображаться одобренные замечания по студентам
+              {t("Здесь будут отображаться одобренные замечания по студентам")}
             </p>
           </div>
         ) : (
@@ -283,11 +288,15 @@ const ArchiveSection = ({
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <LuFolderCheck className="h-3 w-3" />
-                            {studentArchivedCount} в архиве
+                            {t("{{count}} в архиве", {
+                              count: studentArchivedCount,
+                            })}
                           </span>
                           <span className="flex items-center gap-1">
                             <LuBook className="h-3 w-3" />
-                            {student.courses.length} предметов
+                            {t("{{count}} предметов", {
+                              count: student.courses.length,
+                            })}
                           </span>
                         </div>
                       </div>
@@ -312,7 +321,7 @@ const ArchiveSection = ({
         <div className="relative flex-1">
           <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Поиск замечаний..."
+            placeholder={t("Поиск замечаний...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -322,10 +331,10 @@ const ArchiveSection = ({
         <Select value={selectedCourse} onValueChange={setSelectedCourse}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <LuFilter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Все предметы" />
+            <SelectValue placeholder={t("Все предметы")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все предметы</SelectItem>
+            <SelectItem value="all">{t("Все предметы")}</SelectItem>
             {uniqueCourses.map((course) => (
               <SelectItem key={course.id} value={course.id}>
                 {course.name}
@@ -341,9 +350,9 @@ const ArchiveSection = ({
           <div className="p-4 rounded-2xl bg-muted/50 mb-4">
             <LuHistory className="h-12 w-12 text-muted-foreground opacity-50" />
           </div>
-          <h3 className="font-semibold text-lg mb-1">Архив пуст</h3>
+          <h3 className="font-semibold text-lg mb-1">{t("Архив пуст")}</h3>
           <p className="text-muted-foreground text-sm">
-            Здесь будут отображаться ваши исправленные замечания
+            {t("Здесь будут отображаться ваши исправленные замечания")}
           </p>
         </div>
       ) : (
@@ -361,7 +370,7 @@ const ArchiveSection = ({
                       <div className="flex items-center gap-2 mb-1">
                         <Badge className="gap-1 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800">
                           <LuFolderCheck className="h-3 w-3" />
-                          Одобрено
+                          {t("Одобрено")}
                         </Badge>
                       </div>
                       <p className="font-semibold text-sm truncate">
@@ -378,7 +387,7 @@ const ArchiveSection = ({
                         <span>
                           {remark.archived_at &&
                             format(remark.archived_at, "d MMMM yyyy", {
-                              locale: ru,
+                              locale: dateLocale,
                             })}
                         </span>
                       </div>

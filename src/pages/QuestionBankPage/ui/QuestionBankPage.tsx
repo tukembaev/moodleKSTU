@@ -1,9 +1,11 @@
 import { BankList } from "entities/QuestionBank";
+import { useTranslation } from "react-i18next";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "shared/hooks";
 import { QUESTION_BANK_DETAIL_PATH } from "shared/lib/navigation/hidden-ids";
 
 const QuestionBankPage = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const auth = useAuth();
   const isStudent = Boolean(auth?.isStudent);
@@ -18,10 +20,10 @@ const QuestionBankPage = () => {
       {!isBankDetail ? (
         <div className="flex flex-col">
           <h2 className="text-4xl font-semibold tracking-tight text-left sm:text-5xl">
-            Коллекции вопросов
+            {t("Коллекции вопросов")}
           </h2>
           <p className="mt-1.5 text-lg text-muted-foreground">
-            Наборы вопросов, которые можно вставлять в тесты
+            {t("Наборы вопросов, которые можно вставлять в тесты")}
           </p>
           <BankList />
         </div>

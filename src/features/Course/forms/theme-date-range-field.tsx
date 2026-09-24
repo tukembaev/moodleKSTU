@@ -1,7 +1,8 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { CalendarClock, Infinity as InfinityIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import type { DateRange } from "react-day-picker";
 import { FieldLabel } from "shared/components/FieldLabel";
 import { cn } from "shared/lib/utils";
@@ -97,6 +98,8 @@ export const ThemeDateRangeField = ({
   className,
   compact = false,
 }: ThemeDateRangeFieldProps) => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const selected = timestampsToDateRange(openingDate, deadline);
   const hasDates = Boolean(selected?.from);
   const [mode, setMode] = useState<"open-ended" | "range">(
@@ -111,14 +114,14 @@ export const ThemeDateRangeField = ({
 
   const label =
     selected?.from && selected?.to
-      ? `${format(selected.from, "d MMM yyyy", { locale: ru })} — ${format(selected.to, "d MMM yyyy", { locale: ru })}`
+      ? `${format(selected.from, "d MMM yyyy", { locale: dateLocale })} — ${format(selected.to, "d MMM yyyy", { locale: dateLocale })}`
       : selected?.from
-        ? `${format(selected.from, "d MMM yyyy", { locale: ru })} — …`
-        : "Выберите начало и конец периода";
+        ? `${format(selected.from, "d MMM yyyy", { locale: dateLocale })} — …`
+        : t("Выберите начало и конец периода");
 
   return (
     <div className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <FieldLabel htmlFor="theme-schedule">Срок доступа</FieldLabel>
+      <FieldLabel htmlFor="theme-schedule">{t("Срок доступа")}</FieldLabel>
       <div className="grid w-full min-w-0 grid-cols-2 gap-1 rounded-lg border bg-muted/40 p-1">
         <button
           type="button"
@@ -135,7 +138,7 @@ export const ThemeDateRangeField = ({
           }}
         >
           <InfinityIcon className="size-3.5 shrink-0" />
-          Открыт всегда
+          {t("Открыт всегда")}
         </button>
         <button
           type="button"
@@ -148,13 +151,13 @@ export const ThemeDateRangeField = ({
           onClick={() => setMode("range")}
         >
           <CalendarClock className="size-3.5 shrink-0" />
-          С датами
+          {t("С датами")}
         </button>
       </div>
 
       {isOpenEnded ? (
         <p className="text-xs text-muted-foreground">
-          Тема всегда открыта: дата открытия и дедлайн не задаются.
+          {t("Тема всегда открыта: дата открытия и дедлайн не задаются.")}
         </p>
       ) : compact ? (
         <>
@@ -183,7 +186,7 @@ export const ThemeDateRangeField = ({
             </PopoverContent>
           </Popover>
           <p className="text-xs text-muted-foreground">
-            Начало — дата открытия, конец — дедлайн.
+            {t("Начало — дата открытия, конец — дедлайн.")}
           </p>
         </>
       ) : (
@@ -213,7 +216,7 @@ export const ThemeDateRangeField = ({
             }}
           />
           <p className="border-t px-3 py-2 text-xs text-muted-foreground">
-            {label}. Начало — дата открытия, конец — дедлайн.
+            {label}. {t("Начало — дата открытия, конец — дедлайн.")}
           </p>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { addDays, endOfDay, isAfter, startOfDay } from "date-fns";
 import { TYPE_LESS } from "features/Course/forms/add-theme/add-theme-constants";
+import i18n from "shared/config/i18n/i18n";
 import {
   ReviewItem,
   StudentBucket,
@@ -85,8 +86,15 @@ export function typeLabel(typeLess: string) {
   return TYPE_LESS[typeLess] ?? TYPE_LESS.other;
 }
 
+function intlLocale() {
+  const language = i18n.language || "ru";
+  if (language.startsWith("en")) return "en-US";
+  if (language.startsWith("ky")) return "ky";
+  return "ru-RU";
+}
+
 export function formatDayLabel(date: Date) {
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat(intlLocale(), {
     day: "numeric",
     month: "short",
   }).format(date);
@@ -139,7 +147,7 @@ export function mapTodayResponse(raw: RawToday): TodayData {
     .filter((course): course is { id: string; title?: string } => Boolean(course.id))
     .map((course, index) => ({
       id: course.id,
-      title: course.title?.trim() || "Курс",
+      title: course.title?.trim() || i18n.t("Курс"),
       color: COURSE_COLORS[index % COURSE_COLORS.length],
     }));
 
@@ -149,7 +157,7 @@ export function mapTodayResponse(raw: RawToday): TodayData {
       {
         id: item.id,
         courseId: item.courseId,
-        title: item.title?.trim() || "Без названия",
+        title: item.title?.trim() || i18n.t("Без названия"),
         kind: asKind(item.kind, item.typeLess),
         typeLess: item.typeLess || "other",
         opening: parseDate(item.opening),
@@ -170,10 +178,10 @@ export function mapTodayResponse(raw: RawToday): TodayData {
         themeId: review.themeId,
         kind: asKind(review.kind, review.typeLess),
         typeLess: review.typeLess || "other",
-        themeTitle: review.themeTitle?.trim() || "Без названия",
-        courseTitle: review.courseTitle?.trim() || "Курс",
+        themeTitle: review.themeTitle?.trim() || i18n.t("Без названия"),
+        courseTitle: review.courseTitle?.trim() || i18n.t("Курс"),
         deadline: parseDate(review.deadline),
-        studentName: review.studentName?.trim() || "Студент",
+        studentName: review.studentName?.trim() || i18n.t("Студент"),
         submittedAt,
       },
     ];

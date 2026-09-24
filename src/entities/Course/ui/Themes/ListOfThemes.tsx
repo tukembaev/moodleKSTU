@@ -3,6 +3,7 @@ import {
   CourseThemesTypes,
 } from "entities/Course/model/types/course";
 import { Grid, List } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import React, { useEffect, useRef, useState } from "react";
 
 import { Button } from "shared/shadcn/ui/button";
@@ -11,7 +12,7 @@ import { useCourseId, useHiddenId } from "shared/lib/navigation/hidden-ids";
 import UseTabs from "shared/components/UseTabs";
 import { useAuth, useForm } from "shared/hooks";
 import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
-import { categories, GridThemes, ListThemes } from "./ThemeViews";
+import { getCategories, GridThemes, ListThemes } from "./ThemeViews";
 import { mockWeek } from "shared/mocks/weekMock";
 
 const WeekContent = ({
@@ -41,6 +42,7 @@ const WeekContent = ({
   id_theme?: string;
   viewMode: "grid" | "list";
 }) => {
+  const { t } = useTranslation();
   const [weekData, setWeekData] = useState<CourseThemes | null>(null);
  
   useEffect(() => {
@@ -54,7 +56,7 @@ const WeekContent = ({
   }, [weekNumber, baseData]);
 
   if (!weekData) {
-    return <div className="py-8 text-center text-muted-foreground">Загрузка...</div>;
+    return <div className="py-8 text-center text-muted-foreground">{t("Загрузка...")}</div>;
   }
 
   // Define the order of categories
@@ -70,7 +72,7 @@ const WeekContent = ({
   return (
     <div className="flex flex-col gap-4 pb-10">
       {orderedCategories.map((catKey) => {
-        const category = categories.find((c) => c.key === catKey);
+        const category = getCategories(t).find((c) => c.key === catKey);
         
         // Determine if we should show this category
         let hasItems = false;
@@ -133,6 +135,7 @@ const ListOfThemes = ({
   data: CourseThemes;
   tests: Test[];
 }) => {
+  const { t } = useTranslation();
   const { id, isStudent } = useAuth();
   const id_theme = useCourseId();
   const theme_id = useHiddenId("themeId");
@@ -187,7 +190,7 @@ const ListOfThemes = ({
   const tabs = Array.from({ length: 16 }, (_, i) => {
     const weekNum = i + 1;
     return {
-      name: `${weekNum} неделя`,
+      name: t("{{week}} неделя", { week: weekNum }),
       value: `week-${weekNum}`,
       icon: null, // Or some calendar icon if desired
       count: 8, // We could calculate this if we had the data upfront, but we fetch it lazily

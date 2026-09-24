@@ -1,6 +1,6 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LuMessageSquare,
   LuPaperclip,
@@ -19,6 +19,7 @@ import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent, CardHeader } from "shared/shadcn/ui/card";
 import { Textarea } from "shared/shadcn/ui/textarea";
 import { Input } from "shared/shadcn/ui/input";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { cn } from "shared/lib/utils";
 import {
   Collapsible,
@@ -62,6 +63,8 @@ const RemarkChat = ({
   isExpanded = false,
   className,
 }: RemarkChatProps) => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const [isOpen, setIsOpen] = useState(isExpanded);
   const [newMessage, setNewMessage] = useState("");
   const [rejectReason, setRejectReason] = useState("");
@@ -96,28 +99,28 @@ const RemarkChat = ({
         return (
           <Badge className="gap-1.5 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
             <LuClock className="h-3 w-3" />
-            Ожидает ответа
+            {t("Ожидает ответа")}
           </Badge>
         );
       case RemarkStatus.RESPONDED:
         return (
           <Badge className="gap-1.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800">
             <LuMessageSquare className="h-3 w-3" />
-            Ожидает проверки
+            {t("Ожидает проверки")}
           </Badge>
         );
       case RemarkStatus.APPROVED:
         return (
           <Badge className="gap-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800">
             <LuCheck className="h-3 w-3" />
-            Одобрено
+            {t("Одобрено")}
           </Badge>
         );
       case RemarkStatus.REJECTED:
         return (
           <Badge className="gap-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800">
             <LuCircleAlert className="h-3 w-3" />
-            Требует исправления
+            {t("Требует исправления")}
           </Badge>
         );
     }
@@ -161,7 +164,7 @@ const RemarkChat = ({
               {message.sender_name}
             </span>
             <span className="text-xs text-muted-foreground/60">
-              {format(message.created_at, "d MMM, HH:mm", { locale: ru })}
+              {format(message.created_at, "d MMM, HH:mm", { locale: dateLocale })}
             </span>
           </div>
 
@@ -235,7 +238,9 @@ const RemarkChat = ({
                       variant="outline"
                       className="gap-1 text-xs shrink-0"
                     >
-                      к версии {remark.submission_version}
+                      {t("к версии {{version}}", {
+                        version: remark.submission_version,
+                      })}
                     </Badge>
                   )}
                   {remark.type === RemarkType.FILE && (
@@ -244,7 +249,7 @@ const RemarkChat = ({
                       className="gap-1 text-xs shrink-0"
                     >
                       <LuPaperclip className="h-3 w-3" />
-                      К файлу
+                      {t("К файлу")}
                     </Badge>
                   )}
                 </div>
@@ -253,13 +258,18 @@ const RemarkChat = ({
                 </p>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span>
-                    {format(remark.created_at, "d MMMM yyyy", { locale: ru })}
+                    {format(remark.created_at, "d MMMM yyyy", { locale: dateLocale })}
                   </span>
                   <span className="text-muted-foreground/40">•</span>
                   <span className="flex items-center gap-1">
                     <LuMessageSquare className="h-3 w-3" />
-                    {remark.messages.length}{" "}
-                    {remark.messages.length === 1 ? "сообщение" : "сообщений"}
+                    {remark.messages.length === 1
+                      ? t("{{count}} сообщение", {
+                          count: remark.messages.length,
+                        })
+                      : t("{{count}} сообщений", {
+                          count: remark.messages.length,
+                        })}
                   </span>
                 </div>
               </div>
@@ -283,7 +293,7 @@ const RemarkChat = ({
             {remark.type === RemarkType.FILE && remark.original_file && (
               <div className="p-3 rounded-xl bg-muted/40 border border-dashed border-border">
                 <p className="text-xs font-medium text-muted-foreground mb-2">
-                  Файл с замечанием:
+                  {t("Файл с замечанием:")}
                 </p>
                 <a
                   href={remark.original_file.file_url}
@@ -315,7 +325,7 @@ const RemarkChat = ({
                       className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600"
                     >
                       <LuCheck className="h-4 w-4" />
-                      Одобрить
+                      {t("Одобрить")}
                     </Button>
                     <Button
                       variant="destructive"
@@ -323,13 +333,13 @@ const RemarkChat = ({
                       className="flex-1 gap-2"
                     >
                       <LuX className="h-4 w-4" />
-                      Отклонить
+                      {t("Отклонить")}
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-2 animate-in fade-in-50 slide-in-from-top-2 duration-200">
                     <Textarea
-                      placeholder="Укажите причину отклонения..."
+                      placeholder={t("Укажите причину отклонения...")}
                       value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
                       className="resize-none"
@@ -341,7 +351,7 @@ const RemarkChat = ({
                         onClick={() => setShowRejectInput(false)}
                         className="flex-1"
                       >
-                        Отмена
+                        {t("Отмена")}
                       </Button>
                       <Button
                         variant="destructive"
@@ -350,7 +360,7 @@ const RemarkChat = ({
                         className="flex-1 gap-2"
                       >
                         <LuSend className="h-4 w-4" />
-                        Отправить
+                        {t("Отправить")}
                       </Button>
                     </div>
                   </div>
@@ -362,7 +372,7 @@ const RemarkChat = ({
             {canRespond && (
               <div className="pt-4 border-t border-border/50 space-y-3">
                 <Textarea
-                  placeholder="Введите сообщение..."
+                  placeholder={t("Введите сообщение...")}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   className="resize-none min-h-[80px]"
@@ -388,11 +398,13 @@ const RemarkChat = ({
                       className="gap-2"
                     >
                       <LuUpload className="h-4 w-4" />
-                      Прикрепить
+                      {t("Прикрепить")}
                     </Button>
                     {selectedFiles.length > 0 && (
                       <span className="text-xs text-muted-foreground">
-                        {selectedFiles.length} файл(ов) выбрано
+                        {t("{{count}} файл(ов) выбрано", {
+                          count: selectedFiles.length,
+                        })}
                       </span>
                     )}
                   </div>
@@ -403,7 +415,7 @@ const RemarkChat = ({
                     className="gap-2 bg-gradient-to-r from-primary to-primary/80"
                   >
                     <LuSend className="h-4 w-4" />
-                    Отправить
+                    {t("Отправить")}
                   </Button>
                 </div>
               </div>

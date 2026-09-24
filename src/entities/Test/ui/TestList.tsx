@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { LuHandCoins, LuPlus } from "react-icons/lu";
 
 import { CourseCardSkeleton } from "entities/Course";
@@ -41,6 +42,7 @@ import { resolveTestPassed, getTestMinPoints } from "../model/types/test";
 //   },
 // ];
 const TestList = () => {
+  const { t } = useTranslation();
   const { isStudent } = useAuth();
   const { data: test_list, isLoading } = useQuery(testQueries.allTest());
   const { mutate: deleteTest, isPending: isDeleting } = testQueries.delete_test();
@@ -69,25 +71,29 @@ const TestList = () => {
                     {theme.title}
                     {!isStudent ? null : theme.needsReview ? (
                       <Badge className="bg-amber-300 text-primary  text-md px-1.5">
-                        На проверке{theme.result != null ? `: ${theme.result}` : ""}
+                        {theme.result != null
+                          ? t("На проверке: {{result}}", { result: theme.result })
+                          : t("На проверке")}
                       </Badge>
                     ) : passed === true ? (
                       <Badge className="bg-green-300 text-primary  text-md px-1.5">
-                        Пройден: {theme.result}
+                        {t("Пройден: {{result}}", { result: theme.result })}
                       </Badge>
                     ) : passed === false ? (
                       <Badge variant="destructive" className=" text-md px-1.5">
-                        Не пройден{theme.result != null ? `: ${theme.result}` : ""}
+                        {theme.result != null
+                          ? t("Не пройден: {{result}}", { result: theme.result })
+                          : t("Не пройден")}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className=" text-md px-1.5">
-                        Не сдано
+                        {t("Не сдано")}
                       </Badge>
                     )}
                   </span>
                   <div className="flex gap-4 text-md text-foreground/80 items-center">
                     {theme.max_points && (
-                      <UseTooltip text="Максимальное количество баллов">
+                      <UseTooltip text={t("Максимальное количество баллов")}>
                         <div className="flex items-center gap-1.5">
                           <LuHandCoins className="h-3.5 w-3.5" />
                           <span>{theme.max_points}</span>
@@ -107,11 +113,14 @@ const TestList = () => {
                         onClick={() => openTestEdit(navigate, theme.id)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                        Редактировать
+                        {t("Редактировать")}
                       </Button>
                       <UseConfirmationDialog
-                        title="Удалить тест?"
-                        description={`«${theme.title}» будет удалён вместе с вопросами и результатами без возможности восстановления.`}
+                        title={t("Удалить тест?")}
+                        description={t(
+                          "«{{title}}» будет удалён вместе с вопросами и результатами без возможности восстановления.",
+                          { title: theme.title }
+                        )}
                         onConfirm={() => deleteTest(theme.id)}
                         trigger={
                           <Button
@@ -120,7 +129,7 @@ const TestList = () => {
                             disabled={isDeleting}
                           >
                             <Trash2 className="h-4 w-4" />
-                            Удалить
+                            {t("Удалить")}
                           </Button>
                         }
                       />
@@ -131,7 +140,7 @@ const TestList = () => {
                       variant="outline"
                         onClick={() => openTestPass(navigate, theme.id)}
                     >
-                      Пройти тест <ChevronRight className="h-3 w-3" />
+                      {t("Пройти тест")} <ChevronRight className="h-3 w-3" />
                     </Button>
                   ) : null}
                 </CardContent>
@@ -145,17 +154,17 @@ const TestList = () => {
           className="group flex flex-col border-2 border-dashed rounded-xl py-4 px-5 justify-center items-center w-full min-h-48 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer"
           onClick={() => navigate("/test/add-quiz")}
         >
-            <UseTooltip text="Добавить тест">
+            <UseTooltip text={t("Добавить тест")}>
               <div className="flex flex-col justify-center items-center gap-3">
                 <div className="p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                   <LuPlus size={32} className="text-primary" />
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                    Добавить тест
+                    {t("Добавить тест")}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Нажмите, чтобы создать новый тест
+                    {t("Нажмите, чтобы создать новый тест")}
                   </p>
                 </div>
               </div>

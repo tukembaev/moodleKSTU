@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import {
   Dialog,
@@ -27,6 +28,7 @@ export const AddStreamDialog = ({
   onSubmit,
   isPending = false,
 }: AddStreamDialogProps) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -56,52 +58,53 @@ export const AddStreamDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Добавить поток</DialogTitle>
+          <DialogTitle>{t("Добавить поток")}</DialogTitle>
           <DialogDescription>
-            Поток получит доступ к этому курсу. Студенты потока смогут видеть
-            темы и материалы.
+            {t(
+              "Поток получит доступ к этому курсу. Студенты потока смогут видеть темы и материалы."
+            )}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(submit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="title" required>
-              Название потока
+              {t("Название потока")}
             </FieldLabel>
             <Input
               id="title"
-              placeholder="Например, ПИ-2-24"
+              placeholder={t("Например, ПИ-2-24")}
               {...register("title", {
-                ...requiredField("Заполните название потока"),
+                ...requiredField(t("Заполните название потока")),
                 minLength: {
                   value: 2,
-                  message: "Укажите название потока от 2 до 50 символов",
+                  message: t("Укажите название потока от 2 до 50 символов"),
                 },
                 maxLength: {
                   value: 50,
-                  message: "Укажите название потока от 2 до 50 символов",
+                  message: t("Укажите название потока от 2 до 50 символов"),
                 },
               })}
             />
             {errors.title && (
               <span className="text-xs text-destructive">
-                Укажите название потока от 2 до 50 символов
+                {t("Укажите название потока от 2 до 50 символов")}
               </span>
             )}
           </div>
 
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="stream" required>
-              Идентификатор потока
+              {t("Идентификатор потока")}
             </FieldLabel>
             <Input
               id="stream"
-              placeholder="ID потока"
-              {...register("stream", requiredField("Укажите идентификатор потока"))}
+              placeholder={t("ID потока")}
+              {...register("stream", requiredField(t("Укажите идентификатор потока")))}
             />
             {errors.stream && (
               <span className="text-xs text-destructive">
-                Укажите идентификатор потока
+                {t("Укажите идентификатор потока")}
               </span>
             )}
           </div>
@@ -113,10 +116,10 @@ export const AddStreamDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              Отмена
+              {t("Отмена")}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Добавляем..." : "Добавить поток"}
+              {isPending ? t("Добавляем...") : t("Добавить поток")}
             </Button>
           </DialogFooter>
         </form>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LuClock } from "react-icons/lu";
 import { cn } from "shared/lib/utils";
 
@@ -17,6 +18,7 @@ export const Timer = ({
   isSubmitted,
   timeRef,
 }: TimerProps) => {
+  const { t } = useTranslation();
   const [timeRemaining, setTimeRemaining] = useState(initialTime);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const firedRef = useRef(initialTime <= 0);
@@ -73,7 +75,7 @@ export const Timer = ({
       <LuClock className="w-5 h-5 animate-pulse" />
       <div className="flex flex-col items-center leading-none">
         <span className="text-[10px] uppercase tracking-wider font-bold opacity-70">
-          Осталось
+          {t("Осталось")}
         </span>
         <span className="font-mono text-lg font-bold tabular-nums">
           {formatTime(timeRemaining)}

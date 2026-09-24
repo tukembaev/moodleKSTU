@@ -1,6 +1,7 @@
 import { CreditCard, ShoppingBasket, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "shared/lib/utils";
 import { Button } from "shared/shadcn/ui/button";
 import {
@@ -17,6 +18,7 @@ interface CartItem {
 }
 
 const UserBasket = () => {
+  const { t } = useTranslation();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const isManualChange = useRef(false);
@@ -81,7 +83,7 @@ const UserBasket = () => {
             <div className="flex items-center gap-2 mb-3">
               <ShoppingBasket className="w-4 h-4 text-zinc-500" />
               <h2 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Корзина ({totalItems})
+                {t("Корзина ({{count}})", { count: totalItems })}
               </h2>
             </div>
 
@@ -137,7 +139,7 @@ const UserBasket = () => {
 
             {cart.length === 0 && (
               <div className="text-center text-sm text-zinc-500 dark:text-zinc-400 mt-4">
-                Ваша корзина пуста
+                {t("Ваша корзина пуста")}
               </div>
             )}
             {cart.length !== 0 && (

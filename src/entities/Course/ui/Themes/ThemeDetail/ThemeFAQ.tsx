@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LuCircleHelp, LuPlus } from "react-icons/lu";
 import { FormQuery } from "shared/config/formConfig/formQuery";
@@ -20,6 +21,7 @@ import {
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 
 const ThemeFAQ = ({ theme_id }: { theme_id: string }) => {
+  const { t } = useTranslation();
   const { isStudent } = useAuth();
   const openForm = useForm();
 
@@ -45,9 +47,9 @@ const ThemeFAQ = ({ theme_id }: { theme_id: string }) => {
     <div className="flex h-full flex-col gap-4 px-4 pb-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-base font-semibold leading-none">Частые вопросы</p>
+          <p className="text-base font-semibold leading-none">{t("Частые вопросы")}</p>
           <p className="text-sm text-muted-foreground">
-            Ответы преподавателя по этой теме
+            {t("Ответы преподавателя по этой теме")}
           </p>
         </div>
         {!isStudent && (
@@ -61,7 +63,7 @@ const ThemeFAQ = ({ theme_id }: { theme_id: string }) => {
             }
           >
             <LuPlus />
-            Добавить FAQ
+            {t("Добавить FAQ")}
           </Button>
         )}
       </div>
@@ -72,11 +74,13 @@ const ThemeFAQ = ({ theme_id }: { theme_id: string }) => {
             <EmptyMedia variant="icon">
               <LuCircleHelp />
             </EmptyMedia>
-            <EmptyTitle>Пока нет вопросов</EmptyTitle>
+            <EmptyTitle>{t("Пока нет вопросов")}</EmptyTitle>
             <EmptyDescription>
               {isStudent
-                ? "Преподаватель ещё не добавил FAQ к этой теме"
-                : "Добавьте первый вопрос, чтобы студентам было проще разобраться"}
+                ? t("Преподаватель ещё не добавил FAQ к этой теме")
+                : t(
+                    "Добавьте первый вопрос, чтобы студентам было проще разобраться"
+                  )}
             </EmptyDescription>
           </EmptyContent>
         </Empty>

@@ -1,6 +1,8 @@
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Control, useController } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { cn } from "shared/lib/utils";
 import { Button } from "shared/shadcn/ui/button";
 import { Calendar } from "shared/shadcn/ui/calendar";
@@ -9,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "shared/shadcn/ui/popover";
-import { ru } from "date-fns/locale";
+
 interface DatePickerProps {
   control: Control<any>;
   name: string;
@@ -17,6 +19,7 @@ interface DatePickerProps {
 }
 
 export function UseDatePicker({ control, name, className }: DatePickerProps) {
+  const { t, i18n } = useTranslation();
   const {
     field: { value, onChange },
   } = useController({ name, control });
@@ -35,9 +38,9 @@ export function UseDatePicker({ control, name, className }: DatePickerProps) {
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {value ? (
-            format(value, "PPP", { locale: ru })
+            format(value, "PPP", { locale: getDateLocale(i18n.language) })
           ) : (
-            <span>Выберите дату</span>
+            <span>{t("Выберите дату")}</span>
           )}
         </Button>
       </PopoverTrigger>

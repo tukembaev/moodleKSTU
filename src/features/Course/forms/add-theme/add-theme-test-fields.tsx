@@ -1,4 +1,5 @@
 import { UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { FieldLabel } from "shared/components/FieldLabel";
 import { Input } from "shared/shadcn/ui/input";
 import {
@@ -22,23 +23,25 @@ export const AddThemeTestFields = ({
   watch,
   userTests,
 }: AddThemeTestFieldsProps) => {
+  const { t } = useTranslation();
   const testId = watch("test_id");
 
   return (
     <div className="flex flex-col gap-2">
       <FieldLabel htmlFor="test_id" required>
-        Выберите тест
+        {t("Выберите тест")}
       </FieldLabel>
       {userTests.length === 0 ? (
         <div className="flex flex-col gap-2">
           <Input
             type="text"
-            value="Нет доступных тестов"
+            value={t("Нет доступных тестов")}
             disabled
             className="w-full"
+            readOnly
           />
           <span className="text-xs text-muted-foreground">
-            Создайте тест, чтобы добавить его в тему
+            {t("Создайте тест, чтобы добавить его в тему")}
           </span>
         </div>
       ) : (
@@ -49,7 +52,7 @@ export const AddThemeTestFields = ({
           required
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Выберите тест" />
+            <SelectValue placeholder={t("Выберите тест")} />
           </SelectTrigger>
           <SelectContent>
             {userTests.map((test) => (
@@ -61,9 +64,8 @@ export const AddThemeTestFields = ({
         </Select>
       )}
       {!testId && userTests.length > 0 && (
-        <span className="text-xs text-red-500">Выберите тест</span>
+        <span className="text-xs text-red-500">{t("Выберите тест")}</span>
       )}
     </div>
   );
 };
-

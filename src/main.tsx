@@ -9,6 +9,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ErrorBoundary } from "app/providers/ErrorBoundary/ErrorBoundary/index.ts";
 import "app/styles/global.css";
 import { queryClient } from "shared/api/queryClient.ts";
+import "shared/config/i18n/i18n";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

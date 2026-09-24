@@ -1,5 +1,6 @@
 import { ChevronLeft, Search } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Empty,
   EmptyDescription,
@@ -43,13 +44,14 @@ export function WorkloadBackBar({
   subtitle?: string;
   onBack: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-start gap-2">
       <button
         type="button"
         onClick={onBack}
         className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg border bg-card transition-colors hover:bg-accent"
-        aria-label="Назад"
+        aria-label={t("Назад")}
       >
         <ChevronLeft className="size-5" />
       </button>
@@ -86,9 +88,10 @@ export function WorkloadCardSkeleton({ cards = 6 }: { cards?: number }) {
 }
 
 export function WorkloadError({ message }: { message: string }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-6 text-center">
-      <p className="font-medium text-destructive">Не удалось загрузить данные</p>
+      <p className="font-medium text-destructive">{t("Не удалось загрузить данные")}</p>
       <p className="mt-1 text-sm text-muted-foreground">{message}</p>
     </div>
   );

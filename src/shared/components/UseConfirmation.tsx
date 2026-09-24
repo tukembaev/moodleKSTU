@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "shared/lib/utils";
 import {
   AlertDialogAction,
@@ -28,10 +29,12 @@ const UseConfirmation = ({
   description,
   action,
   children,
-  cancelText = "Отмена",
-  actionText = "Подтвердить",
+  cancelText,
+  actionText,
   className,
 }: AlertDialogProps) => {
+  const { t } = useTranslation();
+
   return (
     <AlertDialogShadcn>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
@@ -41,12 +44,12 @@ const UseConfirmation = ({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel>{cancelText ?? t("Отмена")}</AlertDialogCancel>
           <AlertDialogAction
             className={cn(buttonVariants({ variant: "default" }))}
             onClick={action}
           >
-            {actionText}
+            {actionText ?? t("Подтвердить")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

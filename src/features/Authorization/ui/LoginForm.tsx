@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "shared/components/LanguageSwitcher";
 import {
   AuthContextType,
   getActiveContext,
@@ -28,16 +30,20 @@ interface SignupProps {
   googleText?: string;
 }
 
-const CONTEXT_LABELS: Record<AuthContextType, string> = {
-  employee: "Сотрудник",
-  student: "Студент",
-};
-
 const LoginForm = ({
-  heading = "Добро пожаловать",
-  subheading = "Войдите в свой аккаунт, чтобы продолжить",
-  googleText = "Корпоративная почта",
+  heading,
+  subheading,
+  googleText,
 }: SignupProps) => {
+  const { t } = useTranslation();
+  const contextLabels: Record<AuthContextType, string> = {
+    employee: t("Сотрудник"),
+    student: t("Студент"),
+  };
+  const resolvedHeading = heading ?? t("Добро пожаловать");
+  const resolvedSubheading =
+    subheading ?? t("Войдите в свой аккаунт, чтобы продолжить");
+  const resolvedGoogleText = googleText ?? t("Корпоративная почта");
   const {
     register,
     handleSubmit,
@@ -86,7 +92,7 @@ const LoginForm = ({
   }, []);
 
   const finishLogin = () => {
-    toast.success("Успешно авторизован");
+    toast.success(t("Успешно авторизован"));
     setTimeout(() => {
       window.location.href = getPostLoginPath();
     }, 100);
@@ -110,8 +116,8 @@ const LoginForm = ({
       finishLogin();
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : "Неизвестная ошибка";
-      toast.error(`Ошибка авторизации: ${message}`);
+        error instanceof Error ? error.message : t("Неизвестная ошибка");
+      toast.error(t("Ошибка авторизации: {{message}}", { message }));
       setLoading(false);
     }
   }, onFormInvalid);
@@ -123,8 +129,8 @@ const LoginForm = ({
       finishLogin();
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : "Неизвестная ошибка";
-      toast.error(`Не удалось выбрать профиль: ${message}`);
+        error instanceof Error ? error.message : t("Неизвестная ошибка");
+      toast.error(t("Не удалось выбрать профиль: {{message}}", { message }));
       setLoading(false);
     }
   };
@@ -139,38 +145,48 @@ const LoginForm = ({
 
   return (
     <div className="w-full min-h-dvh grid lg:grid-cols-2">
-      <div className="hidden lg:flex flex-col justify-between bg-zinc-900 text-white p-10 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col  bg-zinc-900 text-white p-10 relative overflow-hidden">
         <div className="absolute inset-0 bg-zinc-900" />
         <div className="relative z-10 flex items-center gap-2">
           <span className="text-xl font-bold">Unet LMS</span>
-        </div>
-
+        </div> 
         <div className="relative z-10 max-w-md">
+          
+        <img
+          src="/kstu_logo_text.png"
+          alt="КГТУ им. И. Раззакова"
+          className="relative z-10 w-full max-w-lg object-contain"
+        />
+       
           <h2 className="text-3xl font-bold mb-4">
-            Образовательная платформа нового поколения
+            {t("Образовательная платформа нового поколения")}
           </h2>
           <p className="text-zinc-400 text-lg">
-            Получайте знания, развивайте навыки и достигайте новых высот с нашей
-            платформой.
+            {t(
+              "Получайте знания, развивайте навыки и достигайте новых высот с нашей платформой."
+            )}
           </p>
         </div>
 
-        <div className="relative z-10 text-sm text-zinc-500">
-          © {new Date().getFullYear()} Unet LMS. Все права защищены.
+        <div className="relative z-10 text-sm text-zinc-500 pt-10">
+          © {new Date().getFullYear()} Unet LMS. {t("Все права защищены.")}
         </div>
       </div>
 
-      <div className="flex min-h-dvh items-center justify-center overflow-y-auto bg-background px-4 py-6 sm:px-6 sm:py-8 md:p-10">
+      <div className="relative flex min-h-dvh items-center justify-center overflow-y-auto bg-background px-4 py-6 sm:px-6 sm:py-8 md:p-10">
+        <div className="absolute right-3 top-3 z-10 sm:right-4 sm:top-4">
+          <LanguageSwitcher />
+        </div>
         <div className="w-full max-w-[400px] space-y-6 sm:space-y-8">
           <div className="flex flex-col space-y-1.5 text-center sm:space-y-2">
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{heading}</h1>
-            <p className="text-sm text-muted-foreground">{subheading}</p>
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{resolvedHeading}</h1>
+            <p className="text-sm text-muted-foreground">{resolvedSubheading}</p>
           </div>
 
           {pendingContexts ? (
             <div className="grid gap-3 sm:gap-4">
               <p className="text-sm text-center text-muted-foreground">
-                Выберите профиль для входа
+                {t("Выберите профиль для входа")}
               </p>
               {pendingContexts.map((context) => (
                 <Button
@@ -182,7 +198,7 @@ const LoginForm = ({
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   <span className="font-medium">
-                    {CONTEXT_LABELS[context.type]}
+                    {contextLabels[context.type]}
                     {context.position ? ` · ${context.position}` : ""}
                   </span>
                   {context.full_name && (
@@ -199,18 +215,18 @@ const LoginForm = ({
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <FieldLabel htmlFor="username" required>
-                      ПИН
+                      {t("ПИН")}
                     </FieldLabel>
                     <Input
                       id="username"
-                      placeholder="ПИН"
+                      placeholder={t("ПИН")}
                       type="text"
                       autoCapitalize="none"
                       autoComplete="username"
                       autoCorrect="off"
                       disabled={loading}
                       className="h-11 text-base sm:h-10 sm:text-sm"
-                      {...register("username", requiredField("Заполните ПИН"))}
+                      {...register("username", requiredField(t("Заполните ПИН")))}
                     />
                     {errors.username && (
                       <p className="text-sm text-destructive">
@@ -221,17 +237,17 @@ const LoginForm = ({
 
                   <div className="grid gap-2">
                     <FieldLabel htmlFor="password" required>
-                      Пароль
+                      {t("Пароль")}
                     </FieldLabel>
                     <div className="relative">
                       <Input
                         id="password"
-                        placeholder="Введите пароль"
+                        placeholder={t("Введите пароль")}
                         type={showPassword ? "text" : "password"}
                         autoComplete="current-password"
                         disabled={loading}
                         className="h-11 pr-10 text-base sm:h-10 sm:text-sm"
-                        {...register("password", requiredField("Заполните пароль"))}
+                        {...register("password", requiredField(t("Заполните пароль")))}
                       />
                       <Button
                         type="button"
@@ -246,7 +262,7 @@ const LoginForm = ({
                           <Eye className="h-4 w-4 text-muted-foreground" />
                         )}
                         <span className="sr-only">
-                          {showPassword ? "Скрыть пароль" : "Показать пароль"}
+                          {showPassword ? t("Скрыть пароль") : t("Показать пароль")}
                         </span>
                       </Button>
                     </div>
@@ -261,7 +277,7 @@ const LoginForm = ({
                     {loading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    Войти
+                    {t("Войти")}
                   </Button>
                 </div>
               </form>
@@ -272,7 +288,7 @@ const LoginForm = ({
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">
-                    Или продолжить с
+                    {t("Или продолжить с")}
                   </span>
                 </div>
               </div>
@@ -290,23 +306,9 @@ const LoginForm = ({
                   ) : (
                     <GoogleIcon />
                   )}
-                  <span className="truncate">{googleText}</span>
+                  <span className="truncate">{resolvedGoogleText}</span>
                 </Button>
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="h-11 w-full flex-1 sm:h-10"
-                  asChild
-                >
-                  <a
-                    href={teacherGuidePdf}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <BookOpen className="h-4 w-4" />
-                    Руководство
-                  </a>
-                </Button>
+              
               </div>
             </div>
           )}

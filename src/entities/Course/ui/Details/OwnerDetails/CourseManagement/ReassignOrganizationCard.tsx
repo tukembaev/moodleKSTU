@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { userQueries } from "entities/User";
 import { LuBuilding2, LuSave } from "react-icons/lu";
@@ -27,6 +28,7 @@ interface ReassignOrganizationCardProps {
 export const ReassignOrganizationCard = ({
   courseId,
 }: ReassignOrganizationCardProps) => {
+  const { t } = useTranslation();
   const { data: course } = useQuery(courseQueries.allTasks(courseId));
   const { data: me, isLoading: isMeLoading } = useQuery(userQueries.me());
   const { mutate: edit_detail, isPending } = courseQueries.edit_details();
@@ -85,16 +87,16 @@ export const ReassignOrganizationCard = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <LuBuilding2 className="h-5 w-5 text-primary" />
-          Кафедра курса
+          {t("Кафедра курса")}
         </CardTitle>
         <CardDescription>
-          Переназначьте организацию, к которой относится этот курс.
+          {t("Переназначьте организацию, к которой относится этот курс.")}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <FieldLabel htmlFor="course-organization" required>
-            Кафедра
+            {t("Кафедра")}
           </FieldLabel>
           <Select
             value={selectedOrganizationId || undefined}
@@ -105,10 +107,10 @@ export const ReassignOrganizationCard = ({
               <SelectValue
                 placeholder={
                   isMeLoading
-                    ? "Загрузка кафедр..."
+                    ? t("Загрузка кафедр...")
                     : departments.length === 0
-                      ? "Нет доступных кафедр"
-                      : "Выберите кафедру"
+                      ? t("Нет доступных кафедр")
+                      : t("Выберите кафедру")
                 }
               />
             </SelectTrigger>
@@ -122,13 +124,13 @@ export const ReassignOrganizationCard = ({
           </Select>
           {!isMeLoading && departments.length === 0 && (
             <span className="text-xs text-muted-foreground">
-              В профиле нет кафедр для привязки курса
+              {t("В профиле нет кафедр для привязки курса")}
             </span>
           )}
         </div>
         <Button onClick={handleSave} disabled={!canSave}>
           <LuSave />
-          {isPending ? "Сохраняем..." : "Сохранить кафедру"}
+          {isPending ? t("Сохраняем...") : t("Сохранить кафедру")}
         </Button>
       </CardContent>
     </Card>

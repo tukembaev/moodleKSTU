@@ -1,10 +1,12 @@
 import { FC } from 'react'
+import { useTranslation } from "react-i18next";
 
 interface ErrorWidgetProps {
     className?: string
 }
 
 export const ErrorWidget: FC<ErrorWidgetProps> = () => {
+    const { t } = useTranslation();
     const reloadPage = () => {
 
         location.reload()
@@ -12,9 +14,9 @@ export const ErrorWidget: FC<ErrorWidgetProps> = () => {
 
     return (
         <div>
-            <p>Произошла непредвиденная ошибка</p>
+            <p>{t("Произошла непредвиденная ошибка")}</p>
             <button onClick={reloadPage}>
-                Обновить страницу
+                {t("Обновить страницу")}
             </button>
         </div>
     )

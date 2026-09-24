@@ -5,6 +5,7 @@ import {
   remainingSecondsFromDraft,
   saveDraftAnswers,
 } from "entities/Test/model/lib/attemptDraftCache";
+import { resolveAttemptQuestions } from "entities/Test/model/lib/attemptQuestions";
 import { submitTestAnswers } from "entities/Test/model/services/testAPI";
 import {
   isFilledTestQuestion,
@@ -16,6 +17,7 @@ import {
 } from "entities/Test/model/types/test";
 import { AlertCircle, FileQuestion, Clock } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toastRequiredField } from "shared/lib/onFormInvalid";
 import { cn } from "shared/lib/utils";
@@ -81,6 +83,7 @@ const collectAnswers = (
 };
 
 const QuizTestPage = () => {
+  const { t } = useTranslation();
   const id = useQuizId();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -102,6 +105,15 @@ const QuizTestPage = () => {
     };
   }, [testQuestionsData]);
 
+  const [servedQuestions, setServedQuestions] = useState<TestQuestion[] | null>(null);
+  const activeQuiz = useMemo(() => {
+    if (!quizData) return null;
+    return {
+      ...quizData,
+      questions: servedQuestions ?? quizData.questions,
+    };
+  }, [quizData, servedQuestions]);
+
   const [showTimeUp, setShowTimeUp] = useState(false);
   const [pendingResults, setPendingResults] = useState<{
     results: TestSubmissionResponse;
@@ -118,13 +130,21 @@ const QuizTestPage = () => {
   const startedRef = useRef(false);
 
   const persistDraft = useCallback(() => {
-    if (!id || !quizData || !formRef.current || isSubmitted) return;
-    saveDraftAnswers(id, collectAnswers(formRef.current, quizData.questions));
-  }, [id, isSubmitted, quizData]);
+    if (!id || !activeQuiz || !formRef.current || isSubmitted) return;
+    saveDraftAnswers(id, collectAnswers(formRef.current, activeQuiz.questions));
+  }, [id, isSubmitted, activeQuiz]);
 
   useEffect(() => {
     if (!id || !quizData) return;
     const draft = ensureAttemptDraft(id, (quizData.timeLimit || 0) * 60);
+    setServedQuestions(
+      resolveAttemptQuestions(
+        id,
+        quizData.questions,
+        quizData.questionsPerAttempt,
+        quizData.attemptQuestionIds
+      )
+    );
     const remaining = quizData.timeLimit
       ? remainingSecondsFromDraft(draft)
       : 0;
@@ -149,7 +169,7 @@ const QuizTestPage = () => {
 
   const submitAnswers = useCallback(
     async (formattedAnswers: TestAnswer[], fromTimer = false) => {
-      if (!quizData || !id || startedRef.current) return;
+      if (!activeQuiz || !id || startedRef.current) return;
       startedRef.current = true;
       setSubmitFailed(false);
 
@@ -158,15 +178,16 @@ const QuizTestPage = () => {
         const response = await submitTestAnswers(id, {
           answers: formattedAnswers,
           timeRemaining: Math.max(0, timeRemainingRef.current),
-          showCorrectAnswers: quizData.showCorrectAnswers || false,
+          showCorrectAnswers: activeQuiz.showCorrectAnswers || false,
+          servedQuestionIds: activeQuiz.questions.map((question) => question.id),
         });
         if (fromTimer) {
-          setPendingResults({ results: response, quizData });
+          setPendingResults({ results: response, quizData: activeQuiz });
           setShowTimeUp(true);
           setIsSubmitted(true);
           if (id) clearAttemptDraft(id);
         } else {
-          goToResults(response, quizData);
+          goToResults(response, activeQuiz);
         }
       } catch (err) {
         startedRef.current = false;
@@ -175,13 +196,13 @@ const QuizTestPage = () => {
           ? err.response?.data?.error || err.response?.data?.message
           : null;
         toast.error(
-          apiMessage || "Произошла ошибка при отправке ответов. Пожалуйста, попробуйте снова."
+          apiMessage || t("Произошла ошибка при отправке ответов. Пожалуйста, попробуйте снова.")
         );
         setIsSubmitting(false);
         setIsSubmitted(false);
       }
     },
-    [goToResults, id, quizData]
+    [activeQuiz, goToResults, id, t]
   );
 
   useEffect(() => {
@@ -216,19 +237,19 @@ const QuizTestPage = () => {
   }, [id, isSubmitted, persistDraft, quizData]);
 
   const handleTimeUp = useCallback(() => {
-    if (!quizData || isSubmitted || isSubmitting) return;
+    if (!activeQuiz || isSubmitted || isSubmitting) return;
     persistDraft();
     setIsSubmitted(true);
     const formatted = formRef.current
-      ? collectAnswers(formRef.current, quizData.questions)
+      ? collectAnswers(formRef.current, activeQuiz.questions)
       : savedAnswers;
     void submitAnswers(formatted, true);
-  }, [isSubmitted, isSubmitting, persistDraft, quizData, savedAnswers, submitAnswers]);
+  }, [activeQuiz, isSubmitted, isSubmitting, persistDraft, savedAnswers, submitAnswers]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isSubmitted || isSubmitting || !quizData) return;
-    const formattedAnswers = collectAnswers(event.currentTarget, quizData.questions);
+    if (isSubmitted || isSubmitting || !activeQuiz) return;
+    const formattedAnswers = collectAnswers(event.currentTarget, activeQuiz.questions);
     persistDraft();
     setIsSubmitted(true);
     await submitAnswers(formattedAnswers, false);
@@ -242,8 +263,8 @@ const QuizTestPage = () => {
             <EmptyMedia variant="icon">
               <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </EmptyMedia>
-            <EmptyTitle>Загрузка теста</EmptyTitle>
-            <EmptyDescription>Подождите, вопросы уже почти готовы.</EmptyDescription>
+            <EmptyTitle>{t("Загрузка теста")}</EmptyTitle>
+            <EmptyDescription>{t("Подождите, вопросы уже почти готовы.")}</EmptyDescription>
           </EmptyHeader>
         </Empty>
       </div>
@@ -258,13 +279,13 @@ const QuizTestPage = () => {
             <EmptyMedia variant="icon">
               <AlertCircle />
             </EmptyMedia>
-            <EmptyTitle>Тест недоступен</EmptyTitle>
+            <EmptyTitle>{t("Тест недоступен")}</EmptyTitle>
             <EmptyDescription>
-              Тест закрыт или не прикреплён к вашему курсу.
+              {t("Тест закрыт или не прикреплён к вашему курсу.")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={goToCourse}>Вернуться к курсу</Button>
+            <Button onClick={goToCourse}>{t("Вернуться к курсу")}</Button>
           </EmptyContent>
         </Empty>
       </div>
@@ -277,10 +298,9 @@ const QuizTestPage = () => {
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center gap-4 pt-8 pb-6">
             <Clock className="h-12 w-12 text-amber-500" />
-            <h2 className="text-xl font-semibold text-center">Время вышло</h2>
+            <h2 className="text-xl font-semibold text-center">{t("Время вышло")}</h2>
             <p className="text-sm text-muted-foreground text-center text-pretty">
-              Работа отправлена преподавателю. Неотвеченные вопросы засчитаны как
-              пустые.
+              {t("Работа отправлена преподавателю. Неотвеченные вопросы засчитаны как пустые.")}
             </p>
             <Button
               className="w-full"
@@ -288,10 +308,10 @@ const QuizTestPage = () => {
                 goToResults(pendingResults.results, pendingResults.quizData)
               }
             >
-              К результатам
+              {t("К результатам")}
             </Button>
             <Button variant="ghost" className="w-full" onClick={goToCourse}>
-              Вернуться к курсу
+              {t("Вернуться к курсу")}
             </Button>
           </CardContent>
         </Card>
@@ -307,13 +327,13 @@ const QuizTestPage = () => {
             <EmptyMedia variant="icon">
               <FileQuestion />
             </EmptyMedia>
-            <EmptyTitle>Тест не найден</EmptyTitle>
-            <EmptyDescription>Данные теста отсутствуют.</EmptyDescription>
+            <EmptyTitle>{t("Тест не найден")}</EmptyTitle>
+            <EmptyDescription>{t("Данные теста отсутствуют.")}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={goToCourse}>Вернуться к курсу</Button>
+            <Button onClick={goToCourse}>{t("Вернуться к курсу")}</Button>
             <Button variant="outline" onClick={() => void refetch()}>
-              Повторить
+              {t("Повторить")}
             </Button>
           </EmptyContent>
         </Empty>
@@ -321,7 +341,7 @@ const QuizTestPage = () => {
     );
   }
 
-  if (quizData.questions.length === 0) {
+  if (!activeQuiz || activeQuiz.questions.length === 0) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Empty>
@@ -329,13 +349,13 @@ const QuizTestPage = () => {
             <EmptyMedia variant="icon">
               <FileQuestion />
             </EmptyMedia>
-            <EmptyTitle>В тесте нет вопросов</EmptyTitle>
+            <EmptyTitle>{t("В тесте нет вопросов")}</EmptyTitle>
             <EmptyDescription>
-              Этот тест ещё не содержит заполненных вопросов.
+              {t("Этот тест ещё не содержит заполненных вопросов.")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={goToCourse}>Вернуться к курсу</Button>
+            <Button onClick={goToCourse}>{t("Вернуться к курсу")}</Button>
           </EmptyContent>
         </Empty>
       </div>
@@ -355,12 +375,12 @@ const QuizTestPage = () => {
               )}
             </EmptyMedia>
             <EmptyTitle>
-              {submitFailed ? "Не удалось отправить тест" : "Отправка теста"}
+              {submitFailed ? t("Не удалось отправить тест") : t("Отправка теста")}
             </EmptyTitle>
             <EmptyDescription>
               {submitFailed
-                ? "Проверьте соединение и отправьте ответы ещё раз."
-                : "Время вышло, отправляем ответы."}
+                ? t("Проверьте соединение и отправьте ответы ещё раз.")
+                : t("Время вышло, отправляем ответы.")}
             </EmptyDescription>
           </EmptyHeader>
           {submitFailed ? (
@@ -372,10 +392,10 @@ const QuizTestPage = () => {
                   void submitAnswers(savedAnswers, true);
                 }}
               >
-                Отправить ещё раз
+                {t("Отправить ещё раз")}
               </Button>
               <Button variant="outline" onClick={goToCourse}>
-                Вернуться к курсу
+                {t("Вернуться к курсу")}
               </Button>
             </EmptyContent>
           ) : null}
@@ -392,7 +412,7 @@ const QuizTestPage = () => {
       onSubmit={handleSubmit}
       onChange={persistDraft}
       onTimeUp={handleTimeUp}
-      quizData={quizData}
+      quizData={activeQuiz}
       remainingSeconds={remainingSeconds}
       timeRemainingRef={timeRemainingRef}
       savedAnswers={savedAnswers}
@@ -423,6 +443,7 @@ function StudentQuiz({
   timeRemainingRef: React.MutableRefObject<number>;
   savedAnswers: SavedAttemptAnswer[];
 }) {
+  const { t } = useTranslation();
   const savedById = useMemo(() => {
     const map = new Map<string, SavedAttemptAnswer>();
     for (const answer of savedAnswers) map.set(answer.questionId, answer);
@@ -448,7 +469,7 @@ function StudentQuiz({
   const handleInvalid = () => {
     if (invalidToastLock.current) return;
     invalidToastLock.current = true;
-    toastRequiredField("Ответьте на все обязательные вопросы");
+    toastRequiredField(t("Ответьте на все обязательные вопросы"));
     window.setTimeout(() => {
       invalidToastLock.current = false;
     }, 400);
@@ -508,7 +529,10 @@ function StudentQuiz({
                   )}
                 >
                   <span>
-                    Вопрос {state.current} из {state.total}
+                    {t("Вопрос {{current}} из {{total}}", {
+                      current: state.current,
+                      total: state.total,
+                    })}
                   </span>
                   <div className="bg-primary/20 h-1 w-full overflow-hidden rounded-full">
                     <div
@@ -532,12 +556,12 @@ function StudentQuiz({
               const saved = savedById.get(question.id);
               const description =
                 type === "multiple_choice"
-                  ? "Выберите один или несколько вариантов."
+                  ? t("Выберите один или несколько вариантов.")
                   : type === "short_answer"
-                    ? "Введите короткий ответ."
+                    ? t("Введите короткий ответ.")
                     : type === "essay"
-                      ? "Напишите развёрнутый ответ. Можно пропустить вопрос."
-                      : "Выберите один вариант.";
+                      ? t("Напишите развёрнутый ответ. Можно пропустить вопрос.")
+                      : t("Выберите один вариант.");
 
               return (
                 <QuestionnaireItem
@@ -553,7 +577,7 @@ function StudentQuiz({
                   {isEssay ? (
                     <QuestionnaireInput
                       defaultValue={saved?.textAnswer || undefined}
-                      placeholder="Введите развёрнутый ответ"
+                      placeholder={t("Введите развёрнутый ответ")}
                       render={(props) => {
                         const { type: _inputType, ...rest } = props as typeof props & {
                           type?: string;
@@ -573,7 +597,7 @@ function StudentQuiz({
                   ) : type === "short_answer" ? (
                     <QuestionnaireInput
                       defaultValue={saved?.textAnswer || undefined}
-                      placeholder="Введите ответ"
+                      placeholder={t("Введите ответ")}
                     />
                   ) : (
                     <QuestionnaireChoices
@@ -601,12 +625,12 @@ function StudentQuiz({
                   )}
                   <QuestionnaireError>
                     {isEssay
-                      ? "Напишите ответ или пропустите вопрос."
+                      ? t("Напишите ответ или пропустите вопрос.")
                       : isText
-                        ? "Введите ответ, чтобы продолжить."
+                        ? t("Введите ответ, чтобы продолжить.")
                         : type === "multiple_choice"
-                          ? "Выберите хотя бы один вариант, чтобы продолжить."
-                          : "Выберите ответ, чтобы продолжить."}
+                          ? t("Выберите хотя бы один вариант, чтобы продолжить.")
+                          : t("Выберите ответ, чтобы продолжить.")}
                   </QuestionnaireError>
                 </QuestionnaireItem>
               );
@@ -614,14 +638,14 @@ function StudentQuiz({
 
             <QuestionnaireActions>
               <QuestionnairePrevious />
-              <QuestionnaireSkip>Пропустить</QuestionnaireSkip>
-              <QuestionnaireNext>Далее</QuestionnaireNext>
+              <QuestionnaireSkip>{t("Пропустить")}</QuestionnaireSkip>
+              <QuestionnaireNext>{t("Далее")}</QuestionnaireNext>
               <QuestionnaireSubmit disabled={isSubmitted || isSubmitting}>
                 {isSubmitting
-                  ? "Отправка..."
+                  ? t("Отправка...")
                   : isSubmitted
-                    ? "Отправлено"
-                    : "Завершить тест"}
+                    ? t("Отправлено")
+                    : t("Завершить тест")}
               </QuestionnaireSubmit>
             </QuestionnaireActions>
           </Questionnaire>

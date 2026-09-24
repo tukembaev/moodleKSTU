@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import {
   LuBookA,
@@ -51,6 +52,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 
 const CourseDetails = () => {
+  const { t } = useTranslation();
   const id = useCourseId();
   const navigate = useNavigate();
   const {isStudent} = useAuth();
@@ -123,19 +125,19 @@ const CourseDetails = () => {
 
   const tabs = [
     {
-      name: "Учебный процесс",
+      name: t("Учебный процесс"),
       value: "study_proccess",
       icon: LuInfo,
       count: studyCount,
     },
     {
-      name: "Лента курса",
+      name: t("Лента курса"),
       value: COURSE_FEED_TAB,
       icon: LuHistory,
       count: feedCount,
     },
     {
-      name: "Материалы",
+      name: t("Материалы"),
       value: "course_materials",
       icon: LuFolderOpen,
       count: materialsCount,
@@ -143,7 +145,7 @@ const CourseDetails = () => {
     ...(isStudent
       ? [
           {
-            name: "Мои сдачи",
+            name: t("Мои сдачи"),
             value: "my_submissions",
             icon: LuClipboardList,
             count: submissionsCount,
@@ -151,20 +153,20 @@ const CourseDetails = () => {
         ]
       : []),
     {
-      name: "О курсе",
+      name: t("О курсе"),
       value: "about_course",
       icon: LuInfo,
       count: 0,
     },
     ...(!isStudent ? [
       {
-        name: "Успеваемость студентов",
+        name: t("Успеваемость студентов"),
         value: "students_progress",
         icon: LuBookA,
         count: studentsCount,
       },
       {
-        name: "Управление курсом",
+        name: t("Управление курсом"),
         value: "course_management",
         icon: LuSettings,
         count: 0,
@@ -173,7 +175,7 @@ const CourseDetails = () => {
   ];
   
   if (isLoading || isLoadingDetails) {
-    return <div className="py-8 text-center text-muted-foreground">Загрузка...</div>;
+    return <div className="py-8 text-center text-muted-foreground">{t("Загрузка...")}</div>;
   }
 
   const archived = isCourseArchived(courseDetails) || isCourseArchived(courseModulesData);
@@ -185,9 +187,9 @@ const CourseDetails = () => {
             <EmptyMedia variant="icon">
               <Archive />
             </EmptyMedia>
-            <EmptyTitle>Курс в архиве</EmptyTitle>
+            <EmptyTitle>{t("Курс в архиве")}</EmptyTitle>
             <EmptyDescription>
-              Этот курс скрыт и больше недоступен.
+              {t("Этот курс скрыт и больше недоступен.")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
@@ -195,7 +197,7 @@ const CourseDetails = () => {
               onClick={() => navigate(RoutePath[AppRoutes.COURSES])}
               className="cursor-pointer"
             >
-              К моим курсам
+              {t("К моим курсам")}
             </Button>
           </EmptyContent>
         </Empty>
@@ -215,7 +217,7 @@ const CourseDetails = () => {
               </h1>
               {archived && (
                 <Badge variant="secondary" className="font-normal">
-                  Архив
+                  {t("Архив")}
                 </Badge>
               )}
               {!isStudent && safeId && (
@@ -300,7 +302,7 @@ const CourseDetails = () => {
                   <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80">
                     <LuLock className="w-12 h-12 text-gray-700" />
                     <p className="text-lg font-semibold text-gray-800 mt-2">
-                      Доступ запрещен, купите курс
+                      {t("Доступ запрещен, купите курс")}
                     </p>
                   </div>
                 )}

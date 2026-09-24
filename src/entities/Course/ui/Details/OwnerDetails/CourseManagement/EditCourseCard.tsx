@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LuPencil, LuSave } from "react-icons/lu";
 import { FieldLabel } from "shared/components/FieldLabel";
@@ -19,6 +20,7 @@ interface EditCourseCardProps {
 }
 
 export const EditCourseCard = ({ courseId }: EditCourseCardProps) => {
+  const { t } = useTranslation();
   const { data: course, isLoading } = useQuery(courseQueries.allTasks(courseId));
   const { mutate: edit_detail, isPending } = courseQueries.edit_details();
 
@@ -43,9 +45,9 @@ export const EditCourseCard = ({ courseId }: EditCourseCardProps) => {
     requirements === (course?.requirements ?? "");
   const nameError =
     trimmedName.length === 0
-      ? "Заполните название курса"
+      ? t("Заполните название курса")
       : trimmedName.length > 100
-        ? "Название курса не должно превышать 100 символов"
+        ? t("Название курса не должно превышать 100 символов")
         : "";
   const canSave =
     !isPending && !isLoading && !isUnchanged && !nameError;
@@ -68,22 +70,22 @@ export const EditCourseCard = ({ courseId }: EditCourseCardProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <LuPencil className="h-5 w-5 text-primary" />
-          Редактировать курс
+          {t("Редактировать курс")}
         </CardTitle>
         <CardDescription>
-          Измените название курса, описание, аудиторию и требования.
+          {t("Измените название курса, описание, аудиторию и требования.")}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <FieldLabel htmlFor="course-discipline-name" required>
-            Название курса
+            {t("Название курса")}
           </FieldLabel>
           <Input
             id="course-discipline-name"
             type="text"
             maxLength={100}
-            placeholder="Введите название курса"
+            placeholder={t("Введите название курса")}
             value={disciplineName}
             onChange={(event) => setDisciplineName(event.target.value)}
             disabled={isLoading || isPending}
@@ -93,10 +95,10 @@ export const EditCourseCard = ({ courseId }: EditCourseCardProps) => {
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <FieldLabel htmlFor="course-description">Описание</FieldLabel>
+          <FieldLabel htmlFor="course-description">{t("Описание")}</FieldLabel>
           <Textarea
             id="course-description"
-            placeholder="Кратко опишите курс"
+            placeholder={t("Кратко опишите курс")}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             disabled={isLoading || isPending}
@@ -105,10 +107,10 @@ export const EditCourseCard = ({ courseId }: EditCourseCardProps) => {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
-            <FieldLabel htmlFor="course-audience">Аудитория</FieldLabel>
+            <FieldLabel htmlFor="course-audience">{t("Аудитория")}</FieldLabel>
             <Textarea
               id="course-audience"
-              placeholder="Для кого этот курс"
+              placeholder={t("Для кого этот курс")}
               value={audience}
               onChange={(event) => setAudience(event.target.value)}
               disabled={isLoading || isPending}
@@ -116,10 +118,10 @@ export const EditCourseCard = ({ courseId }: EditCourseCardProps) => {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <FieldLabel htmlFor="course-requirements">Требования</FieldLabel>
+            <FieldLabel htmlFor="course-requirements">{t("Требования")}</FieldLabel>
             <Textarea
               id="course-requirements"
-              placeholder="Что нужно знать перед началом"
+              placeholder={t("Что нужно знать перед началом")}
               value={requirements}
               onChange={(event) => setRequirements(event.target.value)}
               disabled={isLoading || isPending}
@@ -129,7 +131,7 @@ export const EditCourseCard = ({ courseId }: EditCourseCardProps) => {
         </div>
         <Button onClick={handleSave} disabled={!canSave} className="self-start">
           <LuSave />
-          {isPending ? "Сохраняем..." : "Сохранить курс"}
+          {isPending ? t("Сохраняем...") : t("Сохранить курс")}
         </Button>
       </CardContent>
     </Card>

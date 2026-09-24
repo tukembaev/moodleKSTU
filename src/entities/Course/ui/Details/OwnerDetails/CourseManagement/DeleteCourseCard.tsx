@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { LuTriangleAlert } from "react-icons/lu";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import {
@@ -26,6 +27,7 @@ export const DeleteCourseCard = ({
   courseId,
   courseName,
 }: DeleteCourseCardProps) => {
+  const { t } = useTranslation();
   const { data: course } = useQuery(courseQueries.allTasks(courseId));
   const { mutate: deleteCourse, isPending } = courseQueries.delete_course();
 
@@ -33,53 +35,60 @@ export const DeleteCourseCard = ({
 
   const hasStudents = courseHasStudents(course.count_stud);
   const blockMessage = course.count_stud
-    ? `Нельзя удалить курс, пока на нём есть студенты (${course.count_stud})`
-    : "Нельзя удалить курс, пока на нём есть студенты";
+    ? t("Нельзя удалить курс, пока на нём есть студенты ({{count}})", {
+        count: course.count_stud,
+      })
+    : t("Нельзя удалить курс, пока на нём есть студенты");
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trash2 className="h-5 w-5 text-destructive" />
-          Удаление курса
+          {t("Удаление курса")}
         </CardTitle>
         <CardDescription>
-          Курс можно удалить только если на нём нет студентов. Действие
-          необратимо.
+          {t(
+            "Курс можно удалить только если на нём нет студентов. Действие необратимо."
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {hasStudents ? (
           <Alert variant="destructive">
             <LuTriangleAlert />
-            <AlertTitle>Удаление недоступно</AlertTitle>
+            <AlertTitle>{t("Удаление недоступно")}</AlertTitle>
             <AlertDescription>{blockMessage}</AlertDescription>
           </Alert>
         ) : (
           <Alert>
             <LuTriangleAlert />
-            <AlertTitle>Необратимо</AlertTitle>
+            <AlertTitle>{t("Необратимо")}</AlertTitle>
             <AlertDescription>
-              Вместе с курсом исчезнут темы и материалы.
+              {t("Вместе с курсом исчезнут темы и материалы.")}
             </AlertDescription>
           </Alert>
         )}
         {hasStudents ? (
           <Button variant="destructive" disabled>
             <Trash2 />
-            Удалить курс
+            {t("Удалить курс")}
           </Button>
         ) : (
           <UseConfirmationDialog
             title={
-              courseName ? `Удалить курс «${courseName}»?` : "Удалить курс?"
+              courseName
+                ? t("Удалить курс «{{name}}»?", { name: courseName })
+                : t("Удалить курс?")
             }
-            description="Удаление необратимо. Вместе с курсом будут удалены все темы и материалы."
+            description={t(
+              "Удаление необратимо. Вместе с курсом будут удалены все темы и материалы."
+            )}
             onConfirm={() => deleteCourse(courseId)}
             trigger={
               <Button variant="destructive" disabled={isPending}>
                 <Trash2 />
-                {isPending ? "Удаляем..." : "Удалить курс"}
+                {isPending ? t("Удаляем...") : t("Удалить курс")}
               </Button>
             }
           />

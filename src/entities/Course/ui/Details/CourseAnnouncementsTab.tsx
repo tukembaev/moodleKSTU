@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
+import i18n from "shared/config/i18n/i18n";
 import axios from "axios";
 import { format, parseISO } from "date-fns";
-import { ru } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
@@ -81,7 +83,7 @@ function authorInitials(name: string) {
 function formatFeedDate(value: string) {
   const date = parseISO(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return format(date, "d MMMM yyyy, HH:mm", { locale: ru });
+  return format(date, "d MMMM yyyy, HH:mm", { locale: getDateLocale(i18n.language) });
 }
 
 const KIND_UI: Record<
@@ -89,23 +91,23 @@ const KIND_UI: Record<
   { label: string; className: string }
 > = {
   announcement: {
-    label: "Объявление",
+    label: i18n.t("Объявление"),
     className: "border-transparent bg-primary/10 text-primary",
   },
   material_created: {
-    label: "Добавлен файл",
+    label: i18n.t("Добавлен файл"),
     className: "border-transparent bg-emerald-600/10 text-emerald-700 dark:text-emerald-400",
   },
   material_updated: {
-    label: "Изменён файл",
+    label: i18n.t("Изменён файл"),
     className: "border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400",
   },
   material_replaced: {
-    label: "Заменён файл",
+    label: i18n.t("Заменён файл"),
     className: "border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400",
   },
   material_deleted: {
-    label: "Удалён файл",
+    label: i18n.t("Удалён файл"),
     className: "border-transparent bg-destructive/10 text-destructive",
   },
 };
@@ -153,6 +155,7 @@ function AnnouncementFormDialog({
   isPending: boolean;
   onSubmit: (payload: CreateAnnouncementPayload) => void | Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [text, setText] = useState(initial?.text ?? "");
   const [isPinned, setIsPinned] = useState(initial?.is_pinned ?? false);
   const [textError, setTextError] = useState("");
@@ -168,15 +171,15 @@ function AnnouncementFormDialog({
     event.preventDefault();
     const nextText = text.trim();
     if (!nextText) {
-      setTextError("Введите текст объявления");
-      toastRequiredField("Заполните обязательное поле: Текст");
+      setTextError(t("Введите текст объявления"));
+      toastRequiredField(t("Заполните обязательное поле: Текст"));
       return;
     }
     try {
       await onSubmit({ text: nextText, is_pinned: isPinned });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 400) {
-        setTextError(apiErrorDetail(error, "Введите текст объявления"));
+        setTextError(apiErrorDetail(error, t("Введите текст объявления")));
       }
     }
   };
@@ -191,7 +194,7 @@ function AnnouncementFormDialog({
         <form onSubmit={submit} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="announcement-text" required>
-              Текст
+              {t("Текст")}
             </FieldLabel>
             <Textarea
               id="announcement-text"
@@ -200,7 +203,7 @@ function AnnouncementFormDialog({
                 setText(event.target.value);
                 if (textError) setTextError("");
               }}
-              placeholder="Напишите объявление для участников курса"
+              placeholder={t("Напишите объявление для участников курса")}
               rows={5}
               aria-invalid={Boolean(textError)}
             />
@@ -215,7 +218,7 @@ function AnnouncementFormDialog({
               onCheckedChange={(checked) => setIsPinned(checked === true)}
             />
             <Label htmlFor="announcement-pin" className="cursor-pointer font-normal">
-              Закрепить
+              {t("Закрепить")}
             </Label>
           </div>
           <DialogFooter>
@@ -225,11 +228,11 @@ function AnnouncementFormDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              Отмена
+              {t("Отмена")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending ? <Loader2 className="animate-spin" /> : null}
-              {isPending ? "Сохраняем..." : "Сохранить"}
+              {isPending ? t("Сохраняем...") : t("Сохранить")}
             </Button>
           </DialogFooter>
         </form>
@@ -250,7 +253,7 @@ function toAnnouncement(item: CourseFeedItem): CourseAnnouncement | null {
       last_name: null,
       middle_name: null,
       avatar: null,
-      full_name: "Преподаватель",
+      full_name: i18n.t("Преподаватель"),
     },
     text: item.text ?? "",
     is_pinned: Boolean(item.is_pinned),
@@ -275,9 +278,10 @@ function AnnouncementCard({
   onTogglePin: (item: CourseAnnouncement) => void;
   onDelete: (item: CourseAnnouncement) => void;
 }) {
+  const { t } = useTranslation();
   const announcement = toAnnouncement(item);
   const busy = busyId === item.id;
-  const authorName = item.author?.full_name?.trim() || "Преподаватель";
+  const authorName = item.author?.full_name?.trim() || t("Преподаватель");
   const edited = announcementWasEdited(item);
 
   return (
@@ -306,46 +310,46 @@ function AnnouncementCard({
                 {item.is_pinned ? (
                   <Badge variant="secondary" className="gap-1 text-xs">
                     <LuPin className="size-3" />
-                    Закреплено
+                    {t("Закреплено")}
                   </Badge>
                 ) : null}
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {formatFeedDate(item.created_at)}
                 {edited && item.updated_at
-                  ? ` · изменено ${formatFeedDate(item.updated_at)}`
+                  ? t(" · изменено {{date}}", { date: formatFeedDate(item.updated_at) })
                   : ""}
               </p>
             </div>
             {canManage && announcement ? (
               <div className="flex shrink-0 items-center">
-                <UseTooltip text={item.is_pinned ? "Открепить" : "Закрепить"}>
+                <UseTooltip text={item.is_pinned ? t("Открепить") : t("Закрепить")}>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-sm"
                     disabled={busy}
                     onClick={() => onTogglePin(announcement)}
-                    aria-label={item.is_pinned ? "Открепить" : "Закрепить"}
+                    aria-label={item.is_pinned ? t("Открепить") : t("Закрепить")}
                   >
                     <LuPin className={item.is_pinned ? "fill-current" : ""} />
                   </Button>
                 </UseTooltip>
-                <UseTooltip text="Редактировать">
+                <UseTooltip text={t("Редактировать")}>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-sm"
                     disabled={busy}
                     onClick={() => onEdit(announcement)}
-                    aria-label="Редактировать"
+                    aria-label={t("Редактировать")}
                   >
                     <LuPencil />
                   </Button>
                 </UseTooltip>
                 <UseConfirmationDialog
-                  title="Удалить объявление?"
-                  description="Объявление будет удалено без возможности восстановления."
+                  title={t("Удалить объявление?")}
+                  description={t("Объявление будет удалено без возможности восстановления.")}
                   onConfirm={() => onDelete(announcement)}
                   trigger={
                     <Button
@@ -353,7 +357,7 @@ function AnnouncementCard({
                       variant="ghost"
                       size="icon-sm"
                       disabled={busy}
-                      aria-label="Удалить"
+                      aria-label={t("Удалить")}
                       className="text-destructive hover:text-destructive"
                     >
                       <LuTrash2 />
@@ -379,10 +383,11 @@ function MaterialEventCard({
   item: CourseFeedItem;
   onOpenTheme?: (themeId: string) => void;
 }) {
+  const { t } = useTranslation();
   const kind = item.kind;
   const ui = KIND_UI[kind];
   const authorName = item.author?.full_name?.trim();
-  const fileName = item.material?.file_name || "Без названия";
+  const fileName = item.material?.file_name || t("Без названия");
   const previousName = item.material?.previous_file_name;
   const themeTitle = item.material?.theme?.title;
   const themeId = item.material?.theme?.id;
@@ -396,12 +401,12 @@ function MaterialEventCard({
 
   const actionText =
     kind === "material_deleted"
-      ? "удалил(а) учебный материал"
+      ? t("удалил(а) учебный материал")
       : kind === "material_replaced"
-        ? "заменил(а) учебный материал"
+        ? t("заменил(а) учебный материал")
         : kind === "material_updated"
-          ? "изменил(а) учебный материал"
-          : "добавил(а) учебный материал";
+          ? t("изменил(а) учебный материал")
+          : t("добавил(а) учебный материал");
 
   return (
     <article
@@ -422,7 +427,7 @@ function MaterialEventCard({
               {ui.label}
             </Badge>
             <span className="text-xs text-muted-foreground">
-              Системная запись · нельзя скрыть
+              {t("Системная запись · нельзя скрыть")}
             </span>
           </div>
           <p className="mt-1.5 text-sm">
@@ -434,13 +439,13 @@ function MaterialEventCard({
             {kind === "material_replaced" && previousName ? (
               <>
                 {" "}
-                (было «{previousName}»)
+                {t("(было «{{name}}»)", { name: previousName })}
               </>
             ) : null}
             {themeTitle ? (
               <>
                 {" "}
-                в теме{" "}
+                {t("в теме")}{" "}
                 {themeId && onOpenTheme ? (
                   <button
                     type="button"
@@ -467,7 +472,7 @@ function MaterialEventCard({
               rel="noreferrer"
               className="mt-2 inline-flex text-sm text-primary underline-offset-2 hover:underline"
             >
-              Открыть файл
+              {t("Открыть файл")}
             </a>
           ) : null}
         </div>
@@ -481,6 +486,7 @@ export const CourseAnnouncementsTab = ({
 }: {
   onOpenTheme?: (themeId: string) => void;
 }) => {
+  const { t } = useTranslation();
   const courseId = useCourseId();
   const { id: userId, isStudent } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
@@ -532,9 +538,9 @@ export const CourseAnnouncementsTab = ({
     return (
       <Empty className="mt-6 border-0">
         <EmptyHeader>
-          <EmptyTitle>Нет доступа к ленте курса</EmptyTitle>
+          <EmptyTitle>{t("Нет доступа к ленте курса")}</EmptyTitle>
           <EmptyDescription>
-            Ленту видят только участники курса.
+            {t("Ленту видят только участники курса.")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -545,9 +551,9 @@ export const CourseAnnouncementsTab = ({
     return (
       <Empty className="mt-6 border-0">
         <EmptyHeader>
-          <EmptyTitle>Курс не найден</EmptyTitle>
+          <EmptyTitle>{t("Курс не найден")}</EmptyTitle>
           <EmptyDescription>
-            Этого курса нет или он был удалён.
+            {t("Этого курса нет или он был удалён.")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -558,14 +564,14 @@ export const CourseAnnouncementsTab = ({
     return (
       <Empty className="mt-6 border-0">
         <EmptyHeader>
-          <EmptyTitle>Не удалось загрузить ленту</EmptyTitle>
+          <EmptyTitle>{t("Не удалось загрузить ленту")}</EmptyTitle>
           <EmptyDescription>
-            {apiErrorDetail(error, "Проверьте соединение и попробуйте ещё раз.")}
+            {apiErrorDetail(error, t("Проверьте соединение и попробуйте ещё раз."))}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={() => refetch()}>
-            Повторить
+            {t("Повторить")}
           </Button>
         </EmptyContent>
       </Empty>
@@ -573,17 +579,15 @@ export const CourseAnnouncementsTab = ({
   }
 
   const filters: { value: FeedFilter; label: string }[] = [
-    { value: "all", label: "Все" },
-    { value: "announcement", label: "Объявления" },
-    { value: "materials", label: "Материалы" },
+    { value: "all", label: t("Все") },
+    { value: "announcement", label: t("Объявления") },
+    { value: "materials", label: t("Материалы") },
   ];
 
   return (
     <div className="mt-4 flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
-        Объявления преподавателя и журнал изменений учебных материалов.
-        Загрузки, замены и удаления файлов сохраняются, чтобы история курса
-        оставалась прозрачной.
+        {t("Объявления преподавателя и журнал изменений учебных материалов. Загрузки, замены и удаления файлов сохраняются, чтобы история курса оставалась прозрачной.")}
       </p>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -609,11 +613,11 @@ export const CourseAnnouncementsTab = ({
             onValueChange={(value) => setSortOrder(value as FeedSortOrder)}
           >
             <SelectTrigger className="w-full sm:w-52">
-              <SelectValue placeholder="Сортировка" />
+              <SelectValue placeholder={t("Сортировка")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="desc">Сначала новые</SelectItem>
-              <SelectItem value="asc">Сначала старые</SelectItem>
+              <SelectItem value="desc">{t("Сначала новые")}</SelectItem>
+              <SelectItem value="asc">{t("Сначала старые")}</SelectItem>
             </SelectContent>
           </Select>
           {canManage ? (
@@ -624,7 +628,7 @@ export const CourseAnnouncementsTab = ({
               onClick={() => setCreateOpen(true)}
             >
               <LuPlus />
-              Новое объявление
+              {t("Новое объявление")}
             </Button>
           ) : null}
         </div>
@@ -637,21 +641,21 @@ export const CourseAnnouncementsTab = ({
               <LuHistory />
             </EmptyMedia>
             <EmptyTitle>
-              {filter === "all" ? "Лента пока пустая" : "Нет записей по фильтру"}
+              {filter === "all" ? t("Лента пока пустая") : t("Нет записей по фильтру")}
             </EmptyTitle>
             <EmptyDescription>
               {filter === "all"
                 ? canManage
-                  ? "Опубликуйте объявление или добавьте материал в теме — запись появится здесь."
-                  : "Когда преподаватель опубликует объявление или изменит материалы, это появится здесь."
-                : "Сбросьте фильтр, чтобы увидеть все события."}
+                  ? t("Опубликуйте объявление или добавьте материал в теме — запись появится здесь.")
+                  : t("Когда преподаватель опубликует объявление или изменит материалы, это появится здесь.")
+                : t("Сбросьте фильтр, чтобы увидеть все события.")}
             </EmptyDescription>
           </EmptyHeader>
           {canManage && filter !== "materials" ? (
             <EmptyContent>
               <Button type="button" onClick={() => setCreateOpen(true)}>
                 <LuPlus />
-                Создать объявление
+                {t("Создать объявление")}
               </Button>
             </EmptyContent>
           ) : null}
@@ -693,8 +697,8 @@ export const CourseAnnouncementsTab = ({
       <AnnouncementFormDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        title="Новое объявление"
-        description="Текст увидят все студенты и преподаватели курса."
+        title={t("Новое объявление")}
+        description={t("Текст увидят все студенты и преподаватели курса.")}
         isPending={isCreating}
         onSubmit={async (payload) => {
           await createAnnouncement({ courseId, ...payload });
@@ -707,8 +711,8 @@ export const CourseAnnouncementsTab = ({
         onOpenChange={(open) => {
           if (!open) setEditing(null);
         }}
-        title="Редактировать объявление"
-        description="Можно изменить текст и закрепление. Автор и дата создания не меняются."
+        title={t("Редактировать объявление")}
+        description={t("Можно изменить текст и закрепление. Автор и дата создания не меняются.")}
         initial={
           editing
             ? { text: editing.text, is_pinned: editing.is_pinned }

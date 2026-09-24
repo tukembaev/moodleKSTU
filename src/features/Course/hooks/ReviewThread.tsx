@@ -1,5 +1,9 @@
+import { format } from "date-fns";
 import { AlertCircle, Check, MessageCircle, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
+import i18n from "shared/config/i18n/i18n";
 import { LuSend } from "react-icons/lu";
 import { cn } from "shared/lib/utils";
 import { Button } from "shared/shadcn/ui/button";
@@ -98,13 +102,23 @@ export type ThreadItem =
   | { kind: "marker"; marker: ThreadMarker }
   | { kind: "message"; message: ThreadMessage };
 
-const THREAD_MARKER_LABELS: Record<Exclude<ThreadMarkerType, "date">, string> = {
-  remark_opened: "Замечание преподавателя",
-  rejected: "Преподаватель отклонил ответ",
-  approved: "Преподаватель одобрил работу",
-  teacher_replied: "Преподаватель ответил",
-  awaiting_student: "Ожидает ответа студента",
-  awaiting_teacher: "Студент ответил — ожидает проверки",
+const threadMarkerLabel = (
+  type: Exclude<ThreadMarkerType, "date">
+): string => {
+  switch (type) {
+    case "remark_opened":
+      return i18n.t("Замечание преподавателя");
+    case "rejected":
+      return i18n.t("Преподаватель отклонил ответ");
+    case "approved":
+      return i18n.t("Преподаватель одобрил работу");
+    case "teacher_replied":
+      return i18n.t("Преподаватель ответил");
+    case "awaiting_student":
+      return i18n.t("Ожидает ответа студента");
+    case "awaiting_teacher":
+      return i18n.t("Студент ответил — ожидает проверки");
+  }
 };
 
 const calendarDayKey = (timestamp: string) => {
@@ -177,7 +191,9 @@ export const reviewsToThreadItems = (reviews: Review[]): ThreadItem[] => {
       if (messageIndex === 0) {
         const versionSuffix =
           review.submission_version != null
-            ? ` · к версии ${review.submission_version}`
+            ? i18n.t(" · к версии {{version}}", {
+                version: review.submission_version,
+              })
             : "";
         items.push({
           kind: "marker",
@@ -186,8 +202,8 @@ export const reviewsToThreadItems = (reviews: Review[]): ThreadItem[] => {
             type: "remark_opened",
             label:
               (reviewIndex === 0
-                ? THREAD_MARKER_LABELS.remark_opened
-                : "Новое замечание") + versionSuffix,
+                ? threadMarkerLabel("remark_opened")
+                : i18n.t("Новое замечание")) + versionSuffix,
           },
         });
       } else {
@@ -203,7 +219,7 @@ export const reviewsToThreadItems = (reviews: Review[]): ThreadItem[] => {
             marker: {
               id: `transition-${message.id}`,
               type,
-              label: THREAD_MARKER_LABELS[type],
+              label: threadMarkerLabel(type),
             },
           });
         }
@@ -225,7 +241,7 @@ export const reviewsToThreadItems = (reviews: Review[]): ThreadItem[] => {
           marker: {
             id: `approved-${review.id}`,
             type: "approved",
-            label: THREAD_MARKER_LABELS.approved,
+            label: threadMarkerLabel("approved"),
           },
         });
       }
@@ -239,7 +255,7 @@ export const reviewsToThreadItems = (reviews: Review[]): ThreadItem[] => {
           marker: {
             id: `awaiting-teacher-${review.id}`,
             type: "awaiting_teacher",
-            label: THREAD_MARKER_LABELS.awaiting_teacher,
+            label: threadMarkerLabel("awaiting_teacher"),
           },
         });
       } else if (lastMessage?.author_role === "teacher") {
@@ -248,7 +264,7 @@ export const reviewsToThreadItems = (reviews: Review[]): ThreadItem[] => {
           marker: {
             id: `awaiting-student-${review.id}`,
             type: "awaiting_student",
-            label: THREAD_MARKER_LABELS.awaiting_student,
+            label: threadMarkerLabel("awaiting_student"),
           },
         });
       }
@@ -336,7 +352,7 @@ export const getMessageIcon = (type: ReviewMessageType) => {
 
 export const formatTimestamp = (timestamp: string) => {
   const date = new Date(timestamp);
-  return date.toLocaleString("ru-RU", {
+  return date.toLocaleString(i18n.language, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -346,17 +362,16 @@ export const formatTimestamp = (timestamp: string) => {
 };
 
 export const formatMessageTime = (timestamp: string) =>
-  new Date(timestamp).toLocaleTimeString("ru-RU", {
+  new Date(timestamp).toLocaleTimeString(i18n.language, {
     hour: "2-digit",
     minute: "2-digit",
   });
 
 export const formatMessageDate = (timestamp: string) => {
   const date = new Date(timestamp);
-  const day = date.getDate();
-  const month = date.toLocaleDateString("ru-RU", { month: "long" });
-  const year = date.getFullYear();
-  return `${day} ${month} ${year} года`;
+  return format(date, "d MMMM yyyy", {
+    locale: getDateLocale(i18n.language),
+  });
 };
 
 export const isSameCalendarDay = (a?: string, b?: string) => {
@@ -388,6 +403,7 @@ export function ReviewThread({
   showTeacherActions = false,
   showStudentActions = false,
 }: ReviewThreadProps) {
+  const { t } = useTranslation();
   const [activeReviewId, setActiveReviewId] = useState<string | null>(null);
   const [rejectMessage, setRejectMessage] = useState("");
   const [replyMessage, setReplyMessage] = useState("");
@@ -482,7 +498,7 @@ export function ReviewThread({
                             <Input
                               value={rejectMessage}
                               onChange={(e) => setRejectMessage(e.target.value)}
-                              placeholder="Причина отклонения..."
+                              placeholder={t("Причина отклонения...")}
                               className="text-sm h-8"
                             />
                             <Button
@@ -514,7 +530,7 @@ export function ReviewThread({
                               className="h-8 text-xs"
                               onClick={() => setActiveReviewId(review.id)}
                             >
-                              Отклонить
+                              {t("Отклонить")}
                               <X className="w-3.5 h-3.5" />
                             </Button>
                             <Button
@@ -523,7 +539,7 @@ export function ReviewThread({
                               className="h-8 text-xs bg-green-500/10 border border-green-500/20 text-black hover:bg-green-500/20"
                               onClick={() => onApprove?.(review.id)}
                             >
-                              Одобрить
+                              {t("Одобрить")}
                               <Check className="w-3.5 h-3.5" />
                             </Button>
                           </div>
@@ -539,7 +555,7 @@ export function ReviewThread({
                             <Input
                               value={replyMessage}
                               onChange={(e) => setReplyMessage(e.target.value)}
-                              placeholder="Ваш ответ на замечание..."
+                              placeholder={t("Ваш ответ на замечание...")}
                               className="text-sm h-8"
                             />
                             <Button
@@ -570,7 +586,7 @@ export function ReviewThread({
                             className="h-8 text-xs"
                             onClick={() => setActiveReviewId(review.id)}
                           >
-                            Ответить
+                            {t("Ответить")}
                             <MessageCircle className="w-3.5 h-3.5" />
                           </Button>
                         )}

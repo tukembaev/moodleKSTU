@@ -1,4 +1,5 @@
 import { CourseCardSkeleton, CourseDetail } from "entities/Course";
+import { useTranslation } from "react-i18next";
 
 import { userQueries } from "entities/User";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -22,6 +23,7 @@ const FavoriteThemes = ({
   data: CourseDetail[];
   isLoading: boolean;
 }) => {
+  const { t } = useTranslation();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const { mutate: delete_favorite } = userQueries.delete_favorite();
 
@@ -50,7 +52,7 @@ const FavoriteThemes = ({
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant={"secondary"}>Методы оптимизации</Badge>
                       <HoverScale>
-                        <UseTooltip text="Убрать из избранного">
+                        <UseTooltip text={t("Убрать из избранного")}>
                           <LuBookmark
                             size={24}
                             className="fill-primary hover:fill-none"
@@ -73,7 +75,7 @@ const FavoriteThemes = ({
                       }`}
                     >
                       {theme.title}
-                      <Badge className={"bg-green-300 text-black"}>Сдано</Badge>
+                      <Badge className={"bg-green-300 text-black"}>{t("Сдано")}</Badge>
                     </span>
                     <span
                       className={`text-md text-foreground/80 ${
@@ -89,7 +91,7 @@ const FavoriteThemes = ({
                       <div className="flex gap-4">
                         
                         {theme.max_points && (
-                          <UseTooltip text="Максимальное количество баллов">
+                          <UseTooltip text={t("Максимальное количество баллов")}>
                             <div className="flex items-center gap-2 cursor-pointer">
                               <LuHandCoins className="h-4 w-4" />
                               <span
@@ -102,7 +104,7 @@ const FavoriteThemes = ({
                             </div>
                           </UseTooltip>
                         )}
-                        <UseTooltip text="Дата сдачи темы">
+                        <UseTooltip text={t("Дата сдачи темы")}>
                           <div className="flex items-center gap-2 cursor-pointer">
                             <LuTarget className="h-4 w-4" />
                             <span

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LuKeyRound, LuLock, LuShieldCheck } from "react-icons/lu";
 import { FieldLabel, UseConfirmationDialog, UseMultiSelect } from "shared/components";
@@ -30,6 +31,7 @@ const toUserIds = (ids: string[]) =>
   ids.map((id) => Number(id)).filter((id) => Number.isFinite(id));
 
 export const CourseAccessCard = ({ courseId }: CourseAccessCardProps) => {
+  const { t } = useTranslation();
   const { data: students = [], isLoading } = useQuery(
     courseQueries.allStudentPerfomance(courseId)
   );
@@ -72,7 +74,7 @@ export const CourseAccessCard = ({ courseId }: CourseAccessCardProps) => {
       onClick={hasSelection ? () => applyAccess(false) : undefined}
     >
       <LuKeyRound />
-      {isPending ? "Сохраняем..." : "Открыть доступ ко всем темам"}
+      {isPending ? t("Сохраняем...") : t("Открыть доступ ко всем темам")}
     </Button>
   );
 
@@ -85,7 +87,7 @@ export const CourseAccessCard = ({ courseId }: CourseAccessCardProps) => {
       onClick={hasSelection ? () => applyAccess(true) : undefined}
     >
       <LuLock />
-      {isPending ? "Сохраняем..." : "Закрыть доступ ко всем темам"}
+      {isPending ? t("Сохраняем...") : t("Закрыть доступ ко всем темам")}
     </Button>
   );
 
@@ -94,22 +96,23 @@ export const CourseAccessCard = ({ courseId }: CourseAccessCardProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <LuKeyRound className="h-5 w-5 text-primary" />
-          Доступ к курсу
+          {t("Доступ к курсу")}
         </CardTitle>
         <CardDescription>
-          Открывайте или закрывайте доступ ко всем темам курса сразу для
-          выбранных студентов или для всех.
+          {t(
+            "Открывайте или закрывайте доступ ко всем темам курса сразу для выбранных студентов или для всех."
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <FieldLabel htmlFor="course-access-students">Студенты</FieldLabel>
+          <FieldLabel htmlFor="course-access-students">{t("Студенты")}</FieldLabel>
           <UseMultiSelect
             options={studentOptions}
             onValueChange={setSelectedStudentIds}
             defaultValue={selectedStudentIds}
             placeholder={
-              isLoading ? "Загрузка студентов..." : "Все студенты курса"
+              isLoading ? t("Загрузка студентов...") : t("Все студенты курса")
             }
             variant="default"
             maxCount={2}
@@ -117,16 +120,17 @@ export const CourseAccessCard = ({ courseId }: CourseAccessCardProps) => {
           />
           {hasSelection ? (
             <p className="text-xs text-muted-foreground">
-              Действие будет применено к{" "}
+              {t("Действие будет применено к")}{" "}
               <Badge variant="secondary" className="mx-0.5">
                 {selectedUserIds.length}
-              </Badge>
-              выбранным студентам.
+              </Badge>{" "}
+              {t("выбранным студентам.")}
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Никто не выбран — действие будет применено ко всем студентам
-              курса.
+              {t(
+                "Никто не выбран — действие будет применено ко всем студентам курса."
+              )}
             </p>
           )}
         </div>
@@ -136,8 +140,10 @@ export const CourseAccessCard = ({ courseId }: CourseAccessCardProps) => {
             openButton
           ) : (
             <UseConfirmationDialog
-              title="Открыть доступ всем студентам?"
-              description="Доступ ко всем темам курса будет открыт для всех студентов. Тесты и даты тем не изменятся."
+              title={t("Открыть доступ всем студентам?")}
+              description={t(
+                "Доступ ко всем темам курса будет открыт для всех студентов. Тесты и даты тем не изменятся."
+              )}
               onConfirm={() => applyAccess(false)}
               trigger={openButton}
             />
@@ -146,8 +152,10 @@ export const CourseAccessCard = ({ courseId }: CourseAccessCardProps) => {
             closeButton
           ) : (
             <UseConfirmationDialog
-              title="Закрыть доступ всем студентам?"
-              description="Доступ ко всем темам курса будет закрыт для всех студентов. Точечный доступ внутри отдельных тем можно будет открыть снова."
+              title={t("Закрыть доступ всем студентам?")}
+              description={t(
+                "Доступ ко всем темам курса будет закрыт для всех студентов. Точечный доступ внутри отдельных тем можно будет открыть снова."
+              )}
               onConfirm={() => applyAccess(true)}
               trigger={closeButton}
             />
@@ -156,8 +164,9 @@ export const CourseAccessCard = ({ courseId }: CourseAccessCardProps) => {
 
         <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
           <LuShieldCheck className="h-4 w-4 shrink-0 text-primary" />
-          Точечный доступ по отдельным темам настраивается во вкладке «Доступ»
-          внутри каждой темы курса.
+          {t(
+            "Точечный доступ по отдельным темам настраивается во вкладке «Доступ» внутри каждой темы курса."
+          )}
         </div>
       </CardContent>
     </Card>

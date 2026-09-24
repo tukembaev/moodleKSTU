@@ -17,6 +17,7 @@ export enum AppRoutes {
   REMARKS = "remarks",
 
   UNIVERSITIES = "universities",
+  GUIDE = "guide",
   NOT_FOUND = "not_found",
 }
 
@@ -58,5 +59,6 @@ export const RoutePath: Record<AppRoutes | AppSubRoutes, string> = {
   [AppRoutes.BILLING]: "/billing",
   [AppRoutes.REMARKS]: "/remarks",
   [AppRoutes.UNIVERSITIES]: "/universities",
+  [AppRoutes.GUIDE]: "/guide",
   [AppRoutes.NOT_FOUND]: "*",
 };

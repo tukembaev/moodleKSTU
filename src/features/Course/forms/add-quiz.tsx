@@ -1,7 +1,8 @@
 import { PickQuestionsDialog } from "entities/QuestionBank";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { LuBookDashed, LuEye, LuLibrary } from "react-icons/lu";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -59,12 +60,14 @@ interface QuizFormData {
   timeLimit: number;
   maxPoints: number;
   minPoints: number;
+  questionsPerAttempt: number;
   showCorrectAnswers?: boolean;
   theme_id?: string;
   questions: QuestionForm[];
 }
 
 const Add_Quiz = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     register,
@@ -89,20 +92,27 @@ const Add_Quiz = () => {
   const [bankPickerOpen, setBankPickerOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const options = [
-    {
-      label: "Обязательный",
-      description: "Для выставления балла студенту требуется пройти этот тест",
-      value: "required",
-      icon: LuBookDashed,
-    },
-    {
-      label: "Показывать ответы",
-      description: "После сдачи теста студент увидит правильные ответы",
-      value: "showCorrectAnswers",
-      icon: LuEye,
-    },
-  ];
+  const options = useMemo(
+    () => [
+      {
+        label: t("Обязательный"),
+        description: t(
+          "Для выставления балла студенту требуется пройти этот тест"
+        ),
+        value: "required",
+        icon: LuBookDashed,
+      },
+      {
+        label: t("Показывать ответы"),
+        description: t(
+          "После сдачи теста студент увидит правильные ответы"
+        ),
+        value: "showCorrectAnswers",
+        icon: LuEye,
+      },
+    ],
+    [t]
+  );
 
   const selectedValues = [
     ...(watch("required") ? ["required"] : []),
@@ -197,8 +207,20 @@ const Add_Quiz = () => {
     const filledQuestions = formData.questions.filter(isQuestionDraftStarted);
 
     if (filledQuestions.length === 0) {
-      toastRequiredField("Добавьте хотя бы один вопрос");
+      toastRequiredField(t("Добавьте хотя бы один вопрос"));
       setActiveIndex(0);
+      return;
+    }
+
+    if (
+      !formData.questionsPerAttempt ||
+      formData.questionsPerAttempt > filledQuestions.length
+    ) {
+      toastRequiredField(
+        t("Не больше числа вопросов в тесте ({{count}})", {
+          count: filledQuestions.length,
+        })
+      );
       return;
     }
 
@@ -219,6 +241,7 @@ const Add_Quiz = () => {
       timeLimit: formData.timeLimit,
       maxPoints: formData.maxPoints || 0,
       minPoints: formData.minPoints || 0,
+      questionsPerAttempt: formData.questionsPerAttempt,
       questions: filledQuestions.map((question) => toApiQuestionPayload(question)),
     };
 
@@ -256,10 +279,11 @@ const Add_Quiz = () => {
     <Card className="w-full">
       <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="flex flex-col gap-6">
         <CardHeader>
-          <CardTitle>Новый тест</CardTitle>
+          <CardTitle>{t("Новый тест")}</CardTitle>
           <CardDescription>
-            Заполните параметры и добавьте вопросы. Тип вопроса выбирается
-            в карточке: варианты, верно/неверно, короткий или развёрнутый ответ.
+            {t(
+              "Соберите пул вопросов и укажите, сколько из них случайно получит студент. Тип вопроса выбирается в карточке: варианты, верно/неверно, короткий или развёрнутый ответ."
+            )}
           </CardDescription>
         </CardHeader>
 
@@ -267,85 +291,85 @@ const Add_Quiz = () => {
           <div className="flex w-full flex-col gap-4">
             <div className="flex w-full flex-col gap-1.5">
               <FieldLabel htmlFor="quiz-title" required>
-                Название теста
+                {t("Название теста")}
               </FieldLabel>
               <Input
                 id="quiz-title"
-                {...register("title", requiredField("Заполните название теста"))}
-                placeholder="Например, Проверка знаний по теме 1"
+                {...register("title", requiredField(t("Заполните название теста")))}
+                placeholder={t("Например, Проверка знаний по теме 1")}
               />
               {errors.title && (
-                <p className="text-xs text-destructive">Обязательно</p>
+                <p className="text-xs text-destructive">{t("Обязательно")}</p>
               )}
             </div>
 
             <div className="flex w-full flex-col gap-1.5">
-              <FieldLabel htmlFor="quiz-description">Описание</FieldLabel>
+              <FieldLabel htmlFor="quiz-description">{t("Описание")}</FieldLabel>
               <Textarea
                 id="quiz-description"
                 rows={2}
-                placeholder="Кратко опишите, что проверяет тест"
+                placeholder={t("Кратко опишите, что проверяет тест")}
                 {...register("description")}
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <div className="flex w-full flex-col gap-1.5">
                 <FieldLabel htmlFor="quiz-timelimit" required>
-                  Время, мин
+                  {t("Время, мин")}
                 </FieldLabel>
                 <Input
                   id="quiz-timelimit"
                   type="number"
                   {...register("timeLimit", {
-                    ...requiredField("Укажите время теста"),
-                    min: { value: 1, message: "Минимум 1 минута" },
+                    ...requiredField(t("Укажите время теста")),
+                    min: { value: 1, message: t("Минимум 1 минута") },
                     valueAsNumber: true,
                   })}
                   placeholder="60"
                 />
                 {errors.timeLimit && (
-                  <p className="text-xs text-destructive">Минимум 1 минута</p>
+                  <p className="text-xs text-destructive">{t("Минимум 1 минута")}</p>
                 )}
               </div>
               <div className="flex w-full flex-col gap-1.5">
                 <FieldLabel htmlFor="quiz-maxpoints" required>
-                  Макс. балл
+                  {t("Макс. балл")}
                 </FieldLabel>
                 <Input
                   id="quiz-maxpoints"
                   type="number"
                   step={1}
                   {...register("maxPoints", {
-                    ...requiredField("Укажите максимальный балл"),
-                    min: { value: 0, message: "Минимум 0 баллов" },
+                    ...requiredField(t("Укажите максимальный балл")),
+                    min: { value: 0, message: t("Минимум 0 баллов") },
                     valueAsNumber: true,
                   })}
                   placeholder="100"
                 />
                 {errors.maxPoints && (
-                  <p className="text-xs text-destructive">Минимум 0 баллов</p>
+                  <p className="text-xs text-destructive">{t("Минимум 0 баллов")}</p>
                 )}
               </div>
               <div className="flex w-full flex-col gap-1.5">
                 <FieldLabel htmlFor="quiz-minpoints" required>
-                  Мин. балл для сдачи
+                  {t("Мин. балл для сдачи")}
                 </FieldLabel>
                 <Input
                   id="quiz-minpoints"
                   type="number"
                   step={1}
                   {...register("minPoints", {
-                    required: "Укажите минимальный балл для сдачи",
-                    min: { value: 0, message: "От 0 до максимума" },
+                    required: t("Укажите минимальный балл для сдачи"),
+                    min: { value: 0, message: t("От 0 до максимума") },
                     valueAsNumber: true,
                     validate: (value) => {
                       if (!Number.isFinite(value)) {
-                        return "Укажите минимальный балл для сдачи";
+                        return t("Укажите минимальный балл для сдачи");
                       }
                       return (
                         value <= (watch("maxPoints") || 0) ||
-                        "Не больше максимального балла"
+                        t("Не больше максимального балла")
                       );
                     },
                   })}
@@ -353,7 +377,33 @@ const Add_Quiz = () => {
                 />
                 {errors.minPoints && (
                   <p className="text-xs text-destructive">
-                    {errors.minPoints.message || "От 0 до максимума"}
+                    {errors.minPoints.message || t("От 0 до максимума")}
+                  </p>
+                )}
+              </div>
+              <div className="flex w-full flex-col gap-1.5">
+                <FieldLabel htmlFor="quiz-per-attempt" required>
+                  {t("Вопросов студенту")}
+                </FieldLabel>
+                <Input
+                  id="quiz-per-attempt"
+                  type="number"
+                  min={1}
+                  {...register("questionsPerAttempt", {
+                    ...requiredField(t("Укажите, сколько вопросов получит студент")),
+                    min: { value: 1, message: t("Минимум 1 вопрос") },
+                    valueAsNumber: true,
+                  })}
+                  placeholder="20"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("Случайно из пула. Сейчас вопросов: {{count}}", {
+                    count: (watchedQuestions ?? []).filter(isQuestionDraftStarted).length,
+                  })}
+                </p>
+                {errors.questionsPerAttempt && (
+                  <p className="text-xs text-destructive">
+                    {errors.questionsPerAttempt.message || t("Минимум 1 вопрос")}
                   </p>
                 )}
               </div>
@@ -361,7 +411,7 @@ const Add_Quiz = () => {
 
             {!formParam?.includes("choose-test") && (
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>Дополнительно</FieldLabel>
+                <FieldLabel>{t("Дополнительно")}</FieldLabel>
                 <CheckboxCard
                   options={options}
                   selectedValues={selectedValues}
@@ -377,14 +427,14 @@ const Add_Quiz = () => {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="flex items-baseline gap-2 text-lg font-medium">
-                  Вопросы
+                  {t("Вопросы")}
                   <span className="text-destructive" aria-hidden="true">
                     *
                   </span>
                 </p>
                
               </div>
-              <UseTooltip text="Вставить готовые вопросы из коллекции">
+              <UseTooltip text={t("Вставить готовые вопросы из коллекции")}>
                 <Button
                   type="button"
                   variant="outline"
@@ -392,7 +442,7 @@ const Add_Quiz = () => {
                   onClick={() => setBankPickerOpen(true)}
                 >
                   <LuLibrary />
-                  Из коллекции вопросов
+                  {t("Из коллекции вопросов")}
                 </Button>
               </UseTooltip>
             </div>
@@ -404,7 +454,9 @@ const Add_Quiz = () => {
                   type="button"
                   onClick={() => setActiveIndex(stepIndex)}
                   aria-current={stepIndex === activeIndex ? "step" : undefined}
-                  aria-label={`Перейти к вопросу ${stepIndex + 1}`}
+                  aria-label={t("Перейти к вопросу {{number}}", {
+                    number: stepIndex + 1,
+                  })}
                   className={cn(
                     "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors",
                     stepIndex === activeIndex
@@ -420,7 +472,7 @@ const Add_Quiz = () => {
                 variant="outline"
                 size="icon-sm"
                 onClick={handleAppendQuestion}
-                aria-label="Добавить вопрос"
+                aria-label={t("Добавить вопрос")}
                 className="rounded-full"
               >
                 <Plus />
@@ -466,16 +518,16 @@ const Add_Quiz = () => {
                 disabled={activeIndex <= 0}
               >
                 <ChevronLeft />
-                Назад
+                {t("Назад")}
               </Button>
               {activeIndex >= totalQuestions - 1 ? (
                 <Button type="button" variant="outline" onClick={handleAppendQuestion}>
                   <Plus />
-                  Добавить вопрос
+                  {t("Добавить вопрос")}
                 </Button>
               ) : (
                 <Button type="button" onClick={goNext}>
-                  Далее
+                  {t("Далее")}
                   <ChevronRight />
                 </Button>
               )}
@@ -485,7 +537,7 @@ const Add_Quiz = () => {
 
         <CardFooter className="flex-col gap-3 pt-2">
           <Button type="submit" disabled={isPending} className="w-full">
-            {isPending ? "Создание..." : "Создать тест"}
+            {isPending ? t("Создание...") : t("Создать тест")}
           </Button>
           <Button
             type="button"
@@ -494,7 +546,7 @@ const Add_Quiz = () => {
             disabled={isPending}
             className="w-full"
           >
-            Отмена
+            {t("Отмена")}
           </Button>
         </CardFooter>
       </form>

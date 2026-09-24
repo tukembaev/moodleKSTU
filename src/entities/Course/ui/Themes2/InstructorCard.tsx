@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardFooter, CardHeader } from "shared/shadcn/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
@@ -11,6 +12,7 @@ interface InstructorCardProps {
 }
 
 export const InstructorCard: FC<InstructorCardProps> = ({ instructor }) => {
+  const { t } = useTranslation();
   const initials = instructor.owner_name
     .split(" ")
     .map((n) => n[0])
@@ -66,7 +68,7 @@ export const InstructorCard: FC<InstructorCardProps> = ({ instructor }) => {
                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                 <span className="font-semibold">{instructor.review.rate}</span>
               </div>
-              <span className="text-xs text-muted-foreground">Рейтинг</span>
+              <span className="text-xs text-muted-foreground">{t("Рейтинг")}</span>
             </div>
           )}
           
@@ -76,7 +78,7 @@ export const InstructorCard: FC<InstructorCardProps> = ({ instructor }) => {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
                 <span className="font-semibold">{instructor.review.count_courses}</span>
               </div>
-              <span className="text-xs text-muted-foreground">Курсов</span>
+              <span className="text-xs text-muted-foreground">{t("Курсов")}</span>
             </div>
           )}
         </div>
@@ -97,7 +99,7 @@ export const InstructorCard: FC<InstructorCardProps> = ({ instructor }) => {
       <CardFooter className="flex gap-2">
         <Button className="flex-1">
           <MessageCircle className="h-4 w-4 mr-2" />
-          Написать
+          {t("Написать")}
         </Button>
         <Button variant="outline" className="flex-1">
           <Mail className="h-4 w-4 mr-2" />

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   currentSubmissionIdFromStudent,
   groupsFromStudent,
@@ -128,6 +129,7 @@ const ExpandableNameSearch = ({
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -146,7 +148,7 @@ const ExpandableNameSearch = ({
         type="button"
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => inputRef.current?.focus()}
-        aria-label="Поиск по имени"
+        aria-label={t("Поиск по имени")}
         className="flex size-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
       >
         <LuSearch className="size-4" />
@@ -161,7 +163,7 @@ const ExpandableNameSearch = ({
           setFocused(false);
           setHovered(false);
         }}
-        placeholder="Поиск по имени..."
+        placeholder={t("Поиск по имени...")}
         className="h-full min-w-0 flex-1 bg-transparent pr-3 text-sm outline-none placeholder:text-muted-foreground"
       />
     </div>
@@ -215,12 +217,13 @@ const StudentRemarksBadge = ({
   compact?: boolean;
   interactive?: boolean;
 }) => {
+  const { t } = useTranslation();
   const title =
     status === "responded"
-      ? "Проверить ответ студента"
+      ? t("Проверить ответ студента")
       : status === "pending"
-        ? "Замечания по работе"
-        : "Добавить замечание";
+        ? t("Замечания по работе")
+        : t("Добавить замечание");
 
   const badge = (
     <Badge
@@ -246,17 +249,17 @@ const StudentRemarksBadge = ({
             <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
           </span>
           <LuMessageSquare className="text-blue-600 dark:text-blue-400" />
-          {compact ? "Ответил" : "Студент ответил"}
+          {compact ? t("Ответил") : t("Студент ответил")}
         </>
       ) : status === "pending" ? (
         <>
           <LuMeh className="text-orange-500 dark:text-orange-400" />
-          {compact ? "Замечание" : "Есть замечания"}
+          {compact ? t("Замечание") : t("Есть замечания")}
         </>
       ) : (
         <>
           <LuLaugh className="text-green-500 dark:text-green-400" />
-          {compact ? "Ок" : "Замечаний нет"}
+          {compact ? t("Ок") : t("Замечаний нет")}
         </>
       )}
     </Badge>
@@ -283,7 +286,9 @@ const AccessInfoBadge = ({
 }: {
   locked: boolean;
   compact?: boolean;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
   <Badge
     variant="outline"
     className={`gap-1 text-xs pointer-events-none cursor-default opacity-80 ${
@@ -297,7 +302,7 @@ const AccessInfoBadge = ({
     {locked ? (
       <>
         <LuLock className={compact ? "h-3 w-3" : undefined} />
-        {compact ? "Закрыт" : "Доступ запрещен"}
+        {compact ? t("Закрыт") : t("Доступ запрещен")}
       </>
     ) : (
       <>
@@ -308,11 +313,12 @@ const AccessInfoBadge = ({
               : "text-green-500 dark:text-green-400"
           }
         />
-        {compact ? "Открыт" : "Доступ открыт"}
+        {compact ? t("Открыт") : t("Доступ открыт")}
       </>
     )}
   </Badge>
-);
+  );
+};
 
 const AccessToggle = ({
   locked,
@@ -324,7 +330,9 @@ const AccessToggle = ({
   disabled?: boolean;
   onChange: (locked: boolean) => void;
   className?: string;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
   <div
     className={cn(
       "inline-flex shrink-0 items-center rounded-full border bg-muted/40 p-0.5",
@@ -346,7 +354,7 @@ const AccessToggle = ({
       )}
     >
       <LuLock className="h-3 w-3" />
-      Закрыт
+      {t("Закрыт")}
     </button>
     <button
       type="button"
@@ -361,11 +369,12 @@ const AccessToggle = ({
       )}
     >
       <LuLockOpen className="h-3 w-3" />
-      Открыт
+      {t("Открыт")}
     </button>
   
   </div>
-);
+  );
+};
 
 const SubmissionStatusBadge = ({
   student,
@@ -376,6 +385,7 @@ const SubmissionStatusBadge = ({
   interactive?: boolean;
   compact?: boolean;
 }) => {
+  const { t } = useTranslation();
   const badge = (
     <Badge
       variant="outline"
@@ -398,12 +408,12 @@ const SubmissionStatusBadge = ({
                 : "text-green-500 dark:text-green-400"
             }
           />
-          Сдано на {student.points}
+          {t("Сдано на {{points}}", { points: student.points })}
         </>
       ) : (
         <>
           <LuX className={compact ? "h-3 w-3" : undefined} />
-          Не сдано
+          {t("Не сдано")}
         </>
       )}
     </Badge>
@@ -413,7 +423,7 @@ const SubmissionStatusBadge = ({
 
   return (
     <SetMark
-      text="Выставить баллы"
+      text={t("Выставить баллы")}
       points={student.points}
       max_points={student.max_points}
       comment={student.comment}
@@ -435,10 +445,11 @@ const RemoveStudentFromCourseButton = ({
   isPending: boolean;
   onRemove: (student: StudentsAnswers) => void;
 }) => {
+  const { t } = useTranslation();
   return (
     <UseConfirmationDialog
-      title="Удалить студента с курса?"
-      description={`${student.fullname} будет исключён из курса. Это действие нельзя отменить.`}
+      title={t("Удалить студента с курса?")}
+      description={t("{{name}} будет исключён из курса. Это действие нельзя отменить.", { name: student.fullname })}
       onConfirm={() => onRemove(student)}
       trigger={
         <Button
@@ -448,7 +459,7 @@ const RemoveStudentFromCourseButton = ({
           className="size-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-100 pointer-events-auto [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:pointer-events-none [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:focus-visible:pointer-events-auto"
           disabled={isPending || !courseId}
           onClick={(event) => event.stopPropagation()}
-          aria-label="Удалить из курса"
+          aria-label={t("Удалить из курса")}
         >
           <LuTrash2 />
         </Button>
@@ -472,6 +483,7 @@ const ListOfStudentsWithAnswers = ({
   theme_id?: string | null;
   mode?: StudentsListMode;
 }) => {
+  const { t } = useTranslation();
   const isAccessMode = mode === "access";
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -716,9 +728,9 @@ const ListOfStudentsWithAnswers = ({
             <EmptyMedia variant="icon">
               <LuUsers />
             </EmptyMedia>
-            <EmptyTitle>Студенты не найдены</EmptyTitle>
+            <EmptyTitle>{t("Студенты не найдены")}</EmptyTitle>
             <EmptyDescription>
-              Измените поиск или выбранные группы.
+              {t("Измените поиск или выбранные группы.")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -747,7 +759,7 @@ const ListOfStudentsWithAnswers = ({
                             toggleStudentSelected(student.user_id, !!checked)
                           }
                           onClick={(event) => event.stopPropagation()}
-                          aria-label={`Выбрать ${student.fullname}`}
+                          aria-label={t("Выбрать {{name}}", { name: student.fullname })}
                           className="shrink-0"
                         />
                         )}
@@ -769,14 +781,14 @@ const ListOfStudentsWithAnswers = ({
                             />
                             )}
                             {!isAccessMode && (hasUnreadFiles ? (
-                              <UseTooltip text="Есть непрочитанные файлы">
+                              <UseTooltip text={t("Есть непрочитанные файлы")}>
                                 <Badge className="gap-1 bg-orange-50 text-orange-600 border-orange-200 text-xs px-1.5 py-0 shrink-0 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800">
                                   <LuMessageCircleWarning className="h-3 w-3" />
-                                  Новое
+                                  {t("Новое")}
                                 </Badge>
                               </UseTooltip>
                             ) : (
-                              <UseTooltip text="Все файлы просмотрены">
+                              <UseTooltip text={t("Все файлы просмотрены")}>
                                 <LuCheckCheck className="h-4 w-4 text-blue-500 shrink-0" />
                               </UseTooltip>
                             ))}
@@ -842,7 +854,7 @@ const ListOfStudentsWithAnswers = ({
                       <div className="pt-3 border-t border-border/50 space-y-2">
                         <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                           <LuFile className="h-3.5 w-3.5" />
-                          Файлы ({student.files.length})
+                          {t("Файлы ({{count}})", { count: student.files.length })}
                         </p>
                         <AnswerVersionList
                           groups={groupsFromStudent(student)}
@@ -884,13 +896,13 @@ const ListOfStudentsWithAnswers = ({
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             {isAccessMode && <TableHead className="w-10" />}
-            <TableHead className="w-[300px]">Имя студента</TableHead>
+            <TableHead className="w-[300px]">{t("Имя студента")}</TableHead>
             {canReceivePoints && (
-              <TableHead className="w-[100px]">Статус сдачи</TableHead>
+              <TableHead className="w-[100px]">{t("Статус сдачи")}</TableHead>
             )}
-            {!isAccessMode && <TableHead>Доступ</TableHead>}
+            {!isAccessMode && <TableHead>{t("Доступ")}</TableHead>}
             {canReceivePoints && (
-              <TableHead className="w-[130px]">Замечания</TableHead>
+              <TableHead className="w-[130px]">{t("Замечания")}</TableHead>
             )}
             {isAccessMode && <TableHead className="w-[180px]" />}
           </TableRow>
@@ -953,20 +965,20 @@ const ListOfStudentsWithAnswers = ({
                 onCheckedChange={(checked) =>
                   toggleSelectAllFiltered(checked === true)
                 }
-                aria-label="Выбрать всех студентов"
+                aria-label={t("Выбрать всех студентов")}
                 disabled={filteredData.length === 0}
               />
             </TableHead>
             )}
-            <TableHead className="w-[150px]">Студент</TableHead>
+            <TableHead className="w-[150px]">{t("Студент")}</TableHead>
             {canReceivePoints && (
-              <TableHead className="w-[130px]">Статус сдачи</TableHead>
+              <TableHead className="w-[130px]">{t("Статус сдачи")}</TableHead>
             )}
             {!isAccessMode && (
-              <TableHead className="w-[130px]">Доступ</TableHead>
+              <TableHead className="w-[130px]">{t("Доступ")}</TableHead>
             )}
             {canReceivePoints && (
-              <TableHead className="w-[130px]">Замечания</TableHead>
+              <TableHead className="w-[130px]">{t("Замечания")}</TableHead>
             )}
             <TableHead />
           </TableRow>
@@ -979,7 +991,7 @@ const ListOfStudentsWithAnswers = ({
                 colSpan={canReceivePoints ? 5 : 3}
                 className="h-24 text-center text-muted-foreground"
               >
-                Студенты не найдены. Измените поиск или выбранные группы.
+                {t("Студенты не найдены. Измените поиск или выбранные группы.")}
               </TableCell>
             </TableRow>
           ) : (
@@ -1003,7 +1015,7 @@ const ListOfStudentsWithAnswers = ({
                       toggleStudentSelected(student.user_id, !!checked)
                     }
                     onClick={(event) => event.stopPropagation()}
-                    aria-label={`Выбрать ${student.fullname}`}
+                    aria-label={t("Выбрать {{name}}", { name: student.fullname })}
                   />
                 </TableCell>
                 )}
@@ -1027,11 +1039,11 @@ const ListOfStudentsWithAnswers = ({
                   </div>
 
                   {!isAccessMode && (student.files.some((file) => !file.is_read.is_read) ? (
-                    <UseTooltip text="Новый не просмотренный файл!">
+                    <UseTooltip text={t("Новый не просмотренный файл!")}>
                       <LuMessageCircleWarning className="text-orange-500" />
                     </UseTooltip>
                   ) : (
-                    <UseTooltip text="Все файлы просмотренны">
+                    <UseTooltip text={t("Все файлы просмотренны")}>
                       <LuCheckCheck className="text-blue-500" />
                     </UseTooltip>
                   ))}
@@ -1141,9 +1153,9 @@ const ListOfStudentsWithAnswers = ({
           <EmptyMedia variant="icon">
             <LuUsers />
           </EmptyMedia>
-          <EmptyTitle>Пока нет студентов</EmptyTitle>
+          <EmptyTitle>{t("Пока нет студентов")}</EmptyTitle>
           <EmptyDescription>
-            Студенты появятся здесь после записи на курс.
+            {t("Студенты появятся здесь после записи на курс.")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -1156,12 +1168,12 @@ const ListOfStudentsWithAnswers = ({
       {isAccessMode && (
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <div className="flex flex-col gap-0.5 rounded-lg border bg-muted/30 px-3 py-2">
-            <span className="text-xs text-muted-foreground">Всего студентов</span>
+            <span className="text-xs text-muted-foreground">{t("Всего студентов")}</span>
             <span className="text-lg font-semibold leading-none">{uniqueData.length}</span>
           </div>
           <div className="flex flex-col gap-0.5 rounded-lg border border-green-200 bg-green-50 px-3 py-2 dark:border-green-800 dark:bg-green-950/30">
             <span className="flex items-center gap-1 text-xs text-green-700 dark:text-green-400">
-              <LuLockOpen className="h-3 w-3" /> Доступ открыт
+              <LuLockOpen className="h-3 w-3" /> {t("Доступ открыт")}
             </span>
             <span className="text-lg font-semibold leading-none text-green-700 dark:text-green-400">
               {uniqueData.filter((student) => !student.locked).length}
@@ -1169,7 +1181,7 @@ const ListOfStudentsWithAnswers = ({
           </div>
           <div className="flex flex-col gap-0.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-800 dark:bg-red-950/30">
             <span className="flex items-center gap-1 text-xs text-red-700 dark:text-red-400">
-              <LuLock className="h-3 w-3" /> Доступ закрыт
+              <LuLock className="h-3 w-3" /> {t("Доступ закрыт")}
             </span>
             <span className="text-lg font-semibold leading-none text-red-700 dark:text-red-400">
               {uniqueData.filter((student) => student.locked).length}
@@ -1199,14 +1211,14 @@ const ListOfStudentsWithAnswers = ({
           <div className="flex flex-wrap items-center gap-2">
             {selectedUserIds.length > 0 && (
               <Badge variant="secondary" className="gap-1 text-xs">
-                Выбрано: {selectedUserIds.length}
+                {t("Выбрано: {{count}}", { count: selectedUserIds.length })}
               </Badge>
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
                   <LuShieldCheck className="text-primary" />
-                  Действия с доступом
+                  {t("Действия с доступом")}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -1216,14 +1228,14 @@ const ListOfStudentsWithAnswers = ({
                   onClick={() => handleAccessForAll(false)}
                 >
                   <LuLockOpen className="text-green-500" />
-                  Открыть доступ всем
+                  {t("Открыть доступ всем")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   disabled={isAccessPending || isThemeClosed}
                   onClick={() => handleAccessForAll(true)}
                 >
                   <LuLock className="text-red-500" />
-                  Закрыть доступ всем
+                  {t("Закрыть доступ всем")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -1231,7 +1243,7 @@ const ListOfStudentsWithAnswers = ({
                   onClick={() => handleAccessForSelected(false)}
                 >
                   <LuLockOpen className="text-green-500" />
-                  Открыть выбранным
+                  {t("Открыть выбранным")}
                   {selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ""}
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -1239,7 +1251,7 @@ const ListOfStudentsWithAnswers = ({
                   onClick={() => handleAccessForSelected(true)}
                 >
                   <LuLock className="text-red-500" />
-                  Закрыть выбранным
+                  {t("Закрыть выбранным")}
                   {selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ""}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -1263,9 +1275,8 @@ const ListOfStudentsWithAnswers = ({
               onCheckedChange={(checked) =>
                 toggleSelectAllFiltered(checked === true)
               }
-              aria-label="Выбрать всех студентов"
-            />
-            <span className="text-sm text-muted-foreground">Выбрать всех на странице</span>
+              aria-label={t("Выбрать всех студентов")} />
+            <span className="text-sm text-muted-foreground">{t("Выбрать всех на странице")}</span>
           </div>
         )}
         {renderStudentCards()}

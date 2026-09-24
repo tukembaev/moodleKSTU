@@ -1,5 +1,6 @@
 import type { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
+import i18n from "shared/config/i18n/i18n";
 
 function collectMessages(errors: FieldErrors): string[] {
   const messages: string[] = [];
@@ -13,7 +14,7 @@ function collectMessages(errors: FieldErrors): string[] {
     if (typeof item.message === "string" && item.message.trim()) {
       messages.push(item.message.trim());
     } else if (item.type === "required") {
-      messages.push("Заполните обязательные поля");
+      messages.push(i18n.t("Заполните обязательные поля"));
     }
     for (const [key, value] of Object.entries(item)) {
       if (key === "ref" || key === "types" || key === "message" || key === "type") {
@@ -52,14 +53,14 @@ export function toastRequiredField(message: string) {
 export function onFormInvalid(errors: FieldErrors) {
   const messages = collectMessages(errors);
   if (messages.length === 0) {
-    toast.warning("Заполните обязательные поля");
+    toast.warning(i18n.t("Заполните обязательные поля"));
     return;
   }
   if (messages.length === 1) {
     toast.warning(messages[0]);
     return;
   }
-  toast.warning("Заполните обязательные поля", {
+  toast.warning(i18n.t("Заполните обязательные поля"), {
     description: messages.join(". "),
   });
 }

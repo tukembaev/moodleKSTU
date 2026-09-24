@@ -9,6 +9,7 @@ import {
   Scale,
 } from "lucide-react";
 import { LuSearch } from "react-icons/lu";
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 import { Label } from "shared/shadcn/ui/label";
@@ -81,6 +82,7 @@ export default function BrowseCourse({
   selectedCategories,
   setSelectedCategories,
 }: BrowseCourseProps) {
+  const { t } = useTranslation();
   const toggleCategory = (categoryName: string): void => {
     setSelectedCategories((prev: string[]) =>
       prev.includes(categoryName)
@@ -95,13 +97,16 @@ export default function BrowseCourse({
         <div className="container mx-auto px-4 py-4">
           <div className="text-center">
             <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-              <span className="text-cyan-500">Откройте </span>для себя
+              <span className="text-cyan-500">{t("Откройте ")}</span>
+              {t("для себя")}
               <br />
-              новые
-              <span className="text-orange-500"> знания</span>
+              {t("новые")}
+              <span className="text-orange-500">{t(" знания")}</span>
             </h1>
             <p className="text-muted-foreground mt-3 text-xl">
-              Открывай для себя актуальные знания от преподавателей и экспертов
+              {t(
+                "Открывай для себя актуальные знания от преподавателей и экспертов"
+              )}
             </p>
 
             <div className="relative mx-auto mt-7 max-w-xl sm:mt-12">
@@ -157,13 +162,13 @@ export default function BrowseCourse({
                 <div className="relative z-10 flex space-x-3">
                   <div className="flex-[1_0_0%]">
                     <Label htmlFor="article" className="sr-only">
-                      Поиск по курсам
+                      {t("Поиск по курсам")}
                     </Label>
                     <Input
                       name="article"
                       className="h-full"
                       id="article"
-                      placeholder=" Поиск по курсам"
+                      placeholder={t(" Поиск по курсам")}
                     />
                   </div>
                   <div className="flex-[0_0_auto]">

@@ -1,4 +1,5 @@
 import { WeekTheme } from "entities/Course/model/types/course";
+import { useTranslation } from "react-i18next";
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -101,6 +102,9 @@ export const categories: {
   },
 ];
 
+export const getCategories = (t: (key: string) => string) =>
+  categories.map((c) => ({ ...c, title: t(c.title) }));
+
 // Map type_less values to category keys
 const mapTypeLessToCategory = (type_less: string): string => {
   const mapping: Record<string, string> = {
@@ -119,11 +123,12 @@ const ThemeStatusBadge: React.FC<{
   result: string | number;
   locked: boolean;
 }> = ({ status, result, locked }) => {
+  const { t } = useTranslation();
   if (locked) {
     return (
       <Badge className="gap-1.5 bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
         <Lock className="h-3 w-3" />
-        Ограничен
+        {t("Ограничен")}
       </Badge>
     );
   }
@@ -132,7 +137,7 @@ const ThemeStatusBadge: React.FC<{
     return (
       <Badge className="gap-1.5 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800">
         <CheckCircle2 className="h-3 w-3" />
-        {result} балла
+        {t("{{count}} балла", { count: result })}
       </Badge>
     );
   }
@@ -140,7 +145,7 @@ const ThemeStatusBadge: React.FC<{
   return (
     <Badge variant="secondary" className="gap-1.5 text-muted-foreground">
       <AlertCircle className="h-3 w-3" />
-      Не сдано
+      {t("Не сдано")}
     </Badge>
   );
 };
@@ -153,6 +158,7 @@ const EmptyState: React.FC<{
   id_week?: string;
   isMobile?: boolean;
 }> = ({ isStudent, isOwner, openForm, id_week, isMobile }) => {
+  const { t } = useTranslation();
   if (isStudent) {
     return (
       <FadeIn className="flex border-2 border-dashed rounded-2xl py-8 sm:py-12 px-4 sm:px-6 w-full justify-center items-center bg-gradient-to-br from-muted/30 to-transparent">
@@ -170,10 +176,10 @@ const EmptyState: React.FC<{
             </div>
             <div className="space-y-1">
               <p className="text-base sm:text-lg font-medium text-foreground">
-                Темы скоро появятся
+                {t("Темы скоро появятся")}
               </p>
               <p className="text-sm text-muted-foreground max-w-xs">
-                Преподаватель еще не добавил материалы для этой недели
+                {t("Преподаватель еще не добавил материалы для этой недели")}
               </p>
             </div>
           </div>
@@ -192,7 +198,7 @@ const EmptyState: React.FC<{
     <div className="py-12 text-center">
       <div className="inline-flex items-center gap-2 text-muted-foreground">
         <AlertCircle className="h-5 w-5" />
-        <span>Нет тем для этой недели</span>
+        <span>{t("Нет тем для этой недели")}</span>
       </div>
     </div>
   );
@@ -203,10 +209,12 @@ const AddThemeCard: React.FC<{
   openForm: any;
   id_week?: string;
   isMobile?: boolean;
-}> = ({ openForm, id_week, isMobile }) => (
+}> = ({ openForm, id_week, isMobile }) => {
+  const { t } = useTranslation();
+  return (
   <FadeIn className="group flex border-2 border-dashed rounded-2xl py-6 sm:py-8 px-4 sm:px-6 w-full justify-center items-center min-h-40 sm:min-h-52 bg-gradient-to-br from-primary/5 via-transparent to-transparent hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer">
     
-      <UseTooltip text="Добавить новое задание">
+      <UseTooltip text={t("Добавить новое задание")}>
         <button
           className="flex flex-col justify-center items-center gap-3 sm:gap-4 touch-manipulation min-h-[44px] w-full"
           onClick={() =>
@@ -223,17 +231,18 @@ const AddThemeCard: React.FC<{
           </div>
           <div className="text-center">
             <p className="text-base sm:text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-              Добавить задание
+              {t("Добавить задание")}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Нажмите, чтобы создать новую тему
+              {t("Нажмите, чтобы создать новую тему")}
             </p>
           </div>
         </button>
       </UseTooltip>
     
   </FadeIn>
-);
+  );
+};
 
 interface WeekThemeViewProps {
   themes: WeekTheme[];
@@ -266,6 +275,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
   id_week,
   course_id,
 }) => {
+  const { t } = useTranslation();
   if (themes.length === 0 && tests.length === 0) {
     return (
       <div className="pt-4 pb-10">
@@ -291,7 +301,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
       {themes.map((theme) => {
         const isThemeExpanded = expandedId === theme.id;
         const categoryKey = mapTypeLessToCategory(theme.type_less);
-        const category = categories.find((c) => c.key === categoryKey);
+        const category = getCategories(t).find((c) => c.key === categoryKey);
         
         return (
           <Card
@@ -329,7 +339,7 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                 {!isStudent && theme.locked && (
                   <Badge className="gap-1.5 bg-gray-100 text-gray-600 border-gray-200">
                     <Lock className="h-3 w-3" />
-                    Ограничен
+                    {t("Ограничен")}
                   </Badge>
                 )}
               </div>
@@ -354,12 +364,12 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
               <div className="flex justify-between items-center mt-auto pt-3 border-t border-border/50">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   {theme.max_points && (
-                    <UseTooltip text="Максимальный балл">
+                    <UseTooltip text={t("Максимальный балл")}>
                       <div className="flex items-center gap-1.5 font-medium">
                         <div className="p-1 rounded bg-primary/10">
                           <LuHandCoins className="h-3.5 w-3.5 text-primary" />
                         </div>
-                        <span>{theme.max_points} баллов</span>
+                        <span>{t("{{count}} баллов", { count: theme.max_points })}</span>
                       </div>
                     </UseTooltip>
                   )}
@@ -374,12 +384,12 @@ export const GridWeekThemes: React.FC<WeekThemeViewProps> = ({
                   >
                     {isThemeExpanded ? (
                       <>
-                        <span className="hidden sm:inline">Свернуть</span>
+                        <span className="hidden sm:inline">{t("Свернуть")}</span>
                         <ChevronDown className="h-4 w-4" />
                       </>
                     ) : (
                       <>
-                        <span className="hidden sm:inline">Открыть</span>
+                        <span className="hidden sm:inline">{t("Открыть")}</span>
                         <ChevronRight className="h-4 w-4" />
                       </>
                     )}
@@ -422,6 +432,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
   id_week,
   course_id,
 }) => {
+  const { t } = useTranslation();
   if (themes.length === 0 && tests.length === 0) {
     return (
       <div className="pt-4 pb-10">
@@ -466,7 +477,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
       >
         {themes.map((theme) => {
           const categoryKey = mapTypeLessToCategory(theme.type_less);
-          const category = categories.find((c) => c.key === categoryKey);
+          const category = getCategories(t).find((c) => c.key === categoryKey);
           const isExpanded = expandedId === theme.id;
           
           return (
@@ -529,7 +540,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                   {/* Right side - Stats and status */}
                   <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                     {theme.max_points && (
-                      <UseTooltip text="Максимальный балл">
+                      <UseTooltip text={t("Максимальный балл")}>
                         <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
                           <div className="p-1 rounded bg-primary/10">
                             <LuHandCoins className="h-3.5 w-3.5 text-primary" />
@@ -550,7 +561,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                     {!isStudent && theme.locked && (
                       <Badge className="gap-1.5 bg-gray-100 text-gray-600 border-gray-200">
                         <Lock className="h-3 w-3" />
-                        Ограничен
+                        {t("Ограничен")}
                       </Badge>
                     )}
                   </div>
@@ -573,7 +584,7 @@ export const ListWeekThemes: React.FC<WeekThemeViewProps> = ({
                     <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 space-y-2">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                          Ваш результат
+                          {t("Ваш результат")}
                         </span>
                         <span className="text-sm font-bold text-green-700 dark:text-green-400">
                           {theme.result} / {theme.max_points}

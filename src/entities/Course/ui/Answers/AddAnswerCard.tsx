@@ -1,5 +1,6 @@
 import { PlusIcon } from "lucide-react";
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useForm } from "shared/hooks";
 import {
@@ -16,6 +17,7 @@ interface AddAnswerCardProps {
 }
 
 export const AddAnswerCard: FC<AddAnswerCardProps> = ({ themeId }) => {
+  const { t } = useTranslation();
   const openForm = useForm();
 
   return (
@@ -27,13 +29,13 @@ export const AddAnswerCard: FC<AddAnswerCardProps> = ({ themeId }) => {
         <PlusIcon />
       </AttachmentMedia>
       <AttachmentContent>
-        <AttachmentTitle>Добавить файл</AttachmentTitle>
+        <AttachmentTitle>{t("Добавить файл")}</AttachmentTitle>
         <AttachmentDescription>
-          Нажмите или перетащите файлы
+          {t("Нажмите или перетащите файлы")}
         </AttachmentDescription>
       </AttachmentContent>
       <AttachmentTrigger
-        aria-label="Добавить файл ответа"
+        aria-label={t("Добавить файл ответа")}
         onClick={() => openForm(FormQuery.ADD_ANSWER, { id: themeId })}
       />
     </Attachment>

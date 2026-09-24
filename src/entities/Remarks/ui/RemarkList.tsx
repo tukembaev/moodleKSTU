@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LuSearch,
   LuFilter,
@@ -43,6 +44,7 @@ const RemarkList = ({
   viewMode = "list",
   className,
 }: RemarkListProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRemark, setSelectedRemark] = useState<Remark | null>(null);
   const [statusFilters, setStatusFilters] = useState<RemarkStatus[]>([]);
@@ -103,7 +105,7 @@ const RemarkList = ({
           onClick={() => setSelectedRemark(null)}
           className="gap-2"
         >
-          ← Назад к списку
+          {t("← Назад к списку")}
         </Button>
         <RemarkChat
           remark={selectedRemark}
@@ -125,7 +127,7 @@ const RemarkList = ({
         <div className="relative flex-1">
           <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Поиск замечаний..."
+            placeholder={t("Поиск замечаний...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 bg-background"
@@ -137,7 +139,7 @@ const RemarkList = ({
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
                 <LuFilter className="h-4 w-4" />
-                Статус
+                {t("Статус")}
                 {statusFilters.length > 0 && (
                   <Badge variant="secondary" className="ml-1">
                     {statusFilters.length}
@@ -146,7 +148,7 @@ const RemarkList = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Фильтр по статусу</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("Фильтр по статусу")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem
                 checked={statusFilters.includes(RemarkStatus.PENDING)}
@@ -154,7 +156,7 @@ const RemarkList = ({
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500" />
-                  Ожидает ответа
+                  {t("Ожидает ответа")}
                   <Badge variant="outline" className="ml-auto">
                     {statusStats.pending}
                   </Badge>
@@ -166,7 +168,7 @@ const RemarkList = ({
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  На проверке
+                  {t("На проверке")}
                   <Badge variant="outline" className="ml-auto">
                     {statusStats.responded}
                   </Badge>
@@ -178,7 +180,7 @@ const RemarkList = ({
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-rose-500" />
-                  Требует исправления
+                  {t("Требует исправления")}
                   <Badge variant="outline" className="ml-auto">
                     {statusStats.rejected}
                   </Badge>
@@ -191,7 +193,7 @@ const RemarkList = ({
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
                 <LuListFilter className="h-4 w-4" />
-                Тип
+                {t("Тип")}
                 {typeFilter && (
                   <Badge variant="secondary" className="ml-1">
                     1
@@ -200,7 +202,7 @@ const RemarkList = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Фильтр по типу</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("Фильтр по типу")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem
                 checked={typeFilter === RemarkType.TEXT}
@@ -208,7 +210,7 @@ const RemarkList = ({
                   setTypeFilter(checked ? RemarkType.TEXT : null)
                 }
               >
-                Текстовые
+                {t("Текстовые")}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={typeFilter === RemarkType.FILE}
@@ -216,14 +218,14 @@ const RemarkList = ({
                   setTypeFilter(checked ? RemarkType.FILE : null)
                 }
               >
-                К файлу
+                {t("К файлу")}
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
           {hasActiveFilters && (
             <Button variant="ghost" onClick={clearFilters} className="gap-2">
-              Сбросить
+              {t("Сбросить")}
             </Button>
           )}
         </div>
@@ -236,18 +238,22 @@ const RemarkList = ({
             <LuInbox className="h-12 w-12 text-muted-foreground opacity-50" />
           </div>
           <h3 className="font-semibold text-lg mb-1">
-            {hasActiveFilters ? "Ничего не найдено" : "Нет замечаний"}
+            {hasActiveFilters ? t("Ничего не найдено") : t("Нет замечаний")}
           </h3>
           <p className="text-muted-foreground text-sm max-w-sm">
             {hasActiveFilters
-              ? "Попробуйте изменить параметры поиска или сбросить фильтры"
+              ? t("Попробуйте изменить параметры поиска или сбросить фильтры")
               : currentUserRole === "teacher"
-              ? "Все работы студентов в порядке! Создавайте замечания при проверке работ."
-              : "У вас пока нет замечаний от преподавателей. Продолжайте в том же духе!"}
+              ? t(
+                  "Все работы студентов в порядке! Создавайте замечания при проверке работ."
+                )
+              : t(
+                  "У вас пока нет замечаний от преподавателей. Продолжайте в том же духе!"
+                )}
           </p>
           {hasActiveFilters && (
             <Button variant="outline" onClick={clearFilters} className="mt-4">
-              Сбросить фильтры
+              {t("Сбросить фильтры")}
             </Button>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { UserFilesList } from "entities/User/types/user";
+import { useTranslation } from "react-i18next";
 import { LuFolderDown } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { SpringPopupList, UseTooltip } from "shared/components";
@@ -26,6 +27,7 @@ const FileTab = ({
   isLoading: boolean;
   error: Error | null;
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Render loading skeleton for cards
@@ -61,7 +63,7 @@ const FileTab = ({
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Источник:</span>
+                <span className="text-sm text-muted-foreground">{t("Источник:")}</span>
                 
                   <UseTooltip
                     text={material?.resides?.course[0]?.discipline_name}
@@ -87,7 +89,7 @@ const FileTab = ({
               >
                 <Button variant="outline" className="w-full gap-2">
                   <LuFolderDown className="h-4 w-4" />
-                  Скачать файл
+                  {t("Скачать файл")}
                 </Button>
               </a>
             </CardContent>
@@ -103,9 +105,9 @@ const FileTab = ({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="py-4 w-72">Файл</TableHead>
-            <TableHead className="py-4">Источник</TableHead>
-            <TableHead className="w-12 py-4 text-right">Действие</TableHead>
+            <TableHead className="py-4 w-72">{t("Файл")}</TableHead>
+            <TableHead className="py-4">{t("Источник")}</TableHead>
+            <TableHead className="w-12 py-4 text-right">{t("Действие")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

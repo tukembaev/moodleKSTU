@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { DragEvent, FC, useRef, useState } from "react";
 import { LuChevronDown, LuFileText, LuUpload } from "react-icons/lu";
@@ -31,6 +32,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
   open = true,
   onOpenChange,
 }) => {
+  const { t } = useTranslation();
   const auth_data = useAuth();
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -79,14 +81,14 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
     dragCounter.current = 0;
 
     if (!themeId || !canManageMaterials) {
-      toast.error("У вас нет прав для загрузки материалов");
+      toast.error(t("У вас нет прав для загрузки материалов"));
       return;
     }
 
     const files = Array.from(e.dataTransfer.files);
     
     if (files.length === 0) {
-      toast.error("Файлы не найдены");
+      toast.error(t("Файлы не найдены"));
       return;
     }
 
@@ -124,8 +126,8 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
         <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm z-10 flex items-center justify-center pointer-events-none">
           <div className="bg-background border-2 border-dashed border-primary rounded-lg p-8 flex flex-col items-center gap-3">
             <LuUpload size={48} className="text-primary" />
-            <p className="text-lg font-semibold">Перетащите файлы сюда</p>
-            <p className="text-sm text-muted-foreground">Файлы будут загружены как учебные материалы</p>
+            <p className="text-lg font-semibold">{t("Перетащите файлы сюда")}</p>
+            <p className="text-sm text-muted-foreground">{t("Файлы будут загружены как учебные материалы")}</p>
           </div>
         </div>
       )}
@@ -140,7 +142,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
         )}
       >
         <p className="min-w-0 truncate text-base font-semibold sm:text-lg">
-          Учебные материалы
+          {t("Учебные материалы")}
         </p>
         {collapsible && (
           <LuChevronDown
@@ -165,9 +167,9 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
                   <EmptyMedia variant="icon">
                     <LuFileText size={24} />
                   </EmptyMedia>
-                  <EmptyTitle>Нет материалов</EmptyTitle>
+                  <EmptyTitle>{t("Нет материалов")}</EmptyTitle>
                   <EmptyDescription>
-                    Учебные материалы для этой темы еще не добавлены
+                    {t("Учебные материалы для этой темы еще не добавлены")}
                   </EmptyDescription>
                 </EmptyContent>
               </Empty>

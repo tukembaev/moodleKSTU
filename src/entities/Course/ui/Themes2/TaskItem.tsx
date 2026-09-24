@@ -1,5 +1,4 @@
-import { format, isValid } from "date-fns";
-import { ru } from "date-fns/locale";
+import { format, isValid, type Locale } from "date-fns";
 import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import {
   studentCanContinueTest,
@@ -18,7 +17,9 @@ import {
   XCircle
 } from "lucide-react";
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { UseConfirmationDialog } from "shared/components";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { cn } from "shared/lib/utils";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
@@ -45,8 +46,8 @@ const parseScheduleDate = (value: ScheduleValue): Date | null => {
   return isValid(date) ? date : null;
 };
 
-const formatScheduleDay = (date: Date) =>
-  format(date, "d MMM yyyy", { locale: ru }).replace(".", "");
+const formatScheduleDay = (date: Date, locale: Locale) =>
+  format(date, "d MMM yyyy", { locale }).replace(".", "");
 
 const ThemeScheduleLine = ({
   openDate,
@@ -55,6 +56,8 @@ const ThemeScheduleLine = ({
   openDate?: ScheduleValue;
   deadline?: ScheduleValue;
 }) => {
+  const { t, i18n } = useTranslation();
+  const locale = getDateLocale(i18n.language);
   const open = parseScheduleDate(openDate);
   const due = parseScheduleDate(deadline);
 
@@ -62,7 +65,7 @@ const ThemeScheduleLine = ({
     return (
       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
         <InfinityIcon className="size-3.5 shrink-0" />
-        Открыт всегда
+        {t("Открыт всегда")}
       </p>
     );
   }
@@ -70,7 +73,12 @@ const ThemeScheduleLine = ({
     <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
       {open && (
         <span className="inline-flex min-w-0 items-center gap-1">
-          <span className="whitespace-normal">с {formatScheduleDay(open)} по {due ? formatScheduleDay(due) : 'сегодня'}</span>
+          <span className="whitespace-normal">
+            {t("с {{from}} по {{to}}", {
+              from: formatScheduleDay(open, locale),
+              to: due ? formatScheduleDay(due, locale) : t("сегодня"),
+            })}
+          </span>
         </span>
       )}
     </p>
@@ -122,6 +130,7 @@ export const TaskItem: FC<TaskItemProps> = ({
   needsReview = null,
   canReceivePoints = true,
 }) => {
+  const { t } = useTranslation();
   const showTeacherActions = !isStudent && !isTest && (onEdit || onDelete);
   const canTake =
     isTest &&
@@ -179,14 +188,14 @@ export const TaskItem: FC<TaskItemProps> = ({
           {title}
           {!isTest && week && canReceivePoints && (
             <span className="text-xs text-muted-foreground pl-1 sm:pl-2">
-              {week} неделя
+              {t("{{week}} неделя", { week })}
             </span>
           )}
         </h4>
         <ThemeScheduleLine openDate={openDate} deadline={deadline} />
         {isStudent && isTest && canContinue ? (
           <p className="mt-0.5 text-xs text-blue-600 dark:text-blue-400">
-            Продолжить
+            {t("Продолжить")}
           </p>
         ) : isStudent && canReceivePoints ? (
           <TeacherGradeComment
@@ -207,7 +216,7 @@ export const TaskItem: FC<TaskItemProps> = ({
           <Lock className="h-3 w-3" />
         )}
         <span className="hidden sm:inline">
-          {isItemOpen ? "Открыт" : "Закрыт"}
+          {isItemOpen ? t("Открыт") : t("Закрыт")}
         </span>
       </Badge>
 
@@ -219,7 +228,7 @@ export const TaskItem: FC<TaskItemProps> = ({
             </span>
           ) : (
             <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
-              {maxPoints} б.
+              {t("{{points}} б.", { points: maxPoints })}
             </span>
           )}
         </div>
@@ -236,11 +245,14 @@ export const TaskItem: FC<TaskItemProps> = ({
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit?.(id)}>
                 <Pencil className="mr-2 h-4 w-4" />
-                Редактировать
+                {t("Редактировать")}
               </DropdownMenuItem>
               <UseConfirmationDialog
-                title="Удалить тему?"
-                description={`«${title}» будет удалена без возможности восстановления.`}
+                title={t("Удалить тему?")}
+                description={t(
+                  "«{{title}}» будет удалена без возможности восстановления.",
+                  { title }
+                )}
                 onConfirm={() => onDelete?.(id)}
                 trigger={
                   <DropdownMenuItem
@@ -248,7 +260,7 @@ export const TaskItem: FC<TaskItemProps> = ({
                     className="text-destructive focus:text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Удалить
+                    {t("Удалить")}
                   </DropdownMenuItem>
                 }
               />

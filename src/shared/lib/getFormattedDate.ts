@@ -1,5 +1,6 @@
 import { format, isTomorrow, isThisMonth, getMonth, addWeeks, isWithinInterval, startOfWeek, endOfWeek, differenceInCalendarDays } from "date-fns";
-import { ru } from "date-fns/locale"; // Импортируем локаль
+import i18n from "shared/config/i18n/i18n";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 
 export const getFormattedDate = (date:Date) => {
   const now = new Date();
@@ -7,38 +8,35 @@ export const getFormattedDate = (date:Date) => {
 
   // Если дата в будущем
   if (isTomorrow(currentDate)) {
-    return "Завтра";
+    return i18n.t("Завтра");
   }
   if (currentDate.getDate() === now.getDate() + 1) {
-    return "Послезавтра";
+    return i18n.t("Послезавтра");
   }
 
   // Если дата прошла
   const daysDifference = differenceInCalendarDays(now, currentDate);
 
   if (daysDifference === 1) {
-    return "Прошлый день"; // Вчера
+    return i18n.t("Прошлый день");
   }
   if (daysDifference === 2) {
-    return "Позавчера"; // Позавчера
+    return i18n.t("Позавчера");
   }
   if (daysDifference > 2) {
-    return `Прошло ${daysDifference} дней`; // Больше двух дней
+    return i18n.t("Прошло {{count}} дней", { count: daysDifference });
   }
 
   // Проверка на следующую неделю
   if (isWithinInterval(currentDate, { start: addWeeks(startOfWeek(now, { weekStartsOn: 1 }), 1), end: endOfWeek(addWeeks(now, 1), { weekStartsOn: 1 }) })) {
-    return "На следующей неделе";
+    return i18n.t("На следующей неделе");
   }
-  // Проверка, если дата в этом месяце
   if (isThisMonth(currentDate)) {
-    return "В этом месяце";
+    return i18n.t("В этом месяце");
   }
-  // Проверка на следующий месяц
   if (getMonth(now) + 1 === getMonth(currentDate)) {
-    return "В следующем месяце";
+    return i18n.t("В следующем месяце");
   }
 
-  // Если дата не подходит ни под одну из категорий, выводим полную дату
-  return format(currentDate, "PPP", { locale: ru });
+  return format(currentDate, "PPP", { locale: getDateLocale() });
 };

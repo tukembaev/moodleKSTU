@@ -1,4 +1,5 @@
 import { addToCart } from "shared/functions";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "shared/hooks";
 import { Button } from "shared/shadcn/ui/button";
 import { Balance } from "widgets/Layout";
@@ -10,6 +11,7 @@ const GlobalCourseListByCategory = ({
   title: string;
   description: string;
 }) => {
+  const { t } = useTranslation();
   const auth = useAuth();
   const articles = [
     {
@@ -130,11 +132,11 @@ const GlobalCourseListByCategory = ({
                     variant={"outline"}
                     onClick={() => addToCart(article)}
                   >
-                    В корзину
+                    {t("В корзину")}
                   </Button>
                 )}
 
-                <Button>Подробнее</Button>
+                <Button>{t("Подробнее")}</Button>
               </div>
             </div>
           </div>

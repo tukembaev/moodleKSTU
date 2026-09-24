@@ -1,7 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function AboutUsPage() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col min-h-[100dvh]">
       <main className="flex-1">
@@ -10,17 +12,15 @@ export default function AboutUsPage() {
             <div className="grid gap-6 lg:grid-cols-[1fr_500px] lg:gap-12 xl:grid-cols-[1fr_550px]">
               <div className="space-y-4">
                 <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
-                  О платформе
+                  {t("О платформе")}
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-                  Создавай, обучай, зарабатывай — всё в одном месте
+                  {t("Создавай, обучай, зарабатывай — всё в одном месте")}
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Наша платформа — это удобный инструмент для создания
-                  собственных курсов, управления учебным процессом, организации
-                  тестирования и получения дохода от обучения. Принимай ответы
-                  от студентов, прикрепляй материалы, добавляй Google формы,
-                  отслеживай успеваемость и контролируй финансы в одном месте.
+                  {t(
+                    "Наша платформа — это удобный инструмент для создания собственных курсов, управления учебным процессом, организации тестирования и получения дохода от обучения. Принимай ответы от студентов, прикрепляй материалы, добавляй Google формы, отслеживай успеваемость и контролируй финансы в одном месте."
+                  )}
                 </p>
               </div>
               <img
@@ -38,15 +38,15 @@ export default function AboutUsPage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
-                  Наша команда
+                  {t("Наша команда")}
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Люди, стоящие за проектом
+                  {t("Люди, стоящие за проектом")}
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Мы — команда, увлечённая технологиями и образованием. Мы
-                  создаём инструменты, которые помогают преподавателям делиться
-                  знаниями, а студентам — учиться эффективно и интересно.
+                  {t(
+                    "Мы — команда, увлечённая технологиями и образованием. Мы создаём инструменты, которые помогают преподавателям делиться знаниями, а студентам — учиться эффективно и интересно."
+                  )}
                 </p>
               </div>
             </div>
@@ -58,7 +58,7 @@ export default function AboutUsPage() {
                 </Avatar>
                 <div className="text-center">
                   <h3 className="text-lg font-bold">Иван Иванов</h3>
-                  <p className="text-muted-foreground">Основатель</p>
+                  <p className="text-muted-foreground">{t("Основатель")}</p>
                 </div>
               </div>
               <div className="flex flex-col items-center justify-center space-y-2">
@@ -68,7 +68,7 @@ export default function AboutUsPage() {
                 </Avatar>
                 <div className="text-center">
                   <h3 className="text-lg font-bold">Мария Смирнова</h3>
-                  <p className="text-muted-foreground">Технический директор</p>
+                  <p className="text-muted-foreground">{t("Технический директор")}</p>
                 </div>
               </div>
               <div className="flex flex-col items-center justify-center space-y-2">
@@ -78,7 +78,7 @@ export default function AboutUsPage() {
                 </Avatar>
                 <div className="text-center">
                   <h3 className="text-lg font-bold">Алексей Кузнецов</h3>
-                  <p className="text-muted-foreground">Frontend-разработчик</p>
+                  <p className="text-muted-foreground">{t("Frontend-разработчик")}</p>
                 </div>
               </div>
             </div>
@@ -89,50 +89,42 @@ export default function AboutUsPage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
-                  Наша миссия
+                  {t("Наша миссия")}
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Образование должно быть доступным и удобным
+                  {t("Образование должно быть доступным и удобным")}
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Мы стремимся предоставить каждому возможность создавать и
-                  проходить качественные онлайн-курсы. Наша цель — сделать
-                  процесс обучения простым, гибким и финансово выгодным как для
-                  преподавателя, так и для студента.
+                  {t(
+                    "Мы стремимся предоставить каждому возможность создавать и проходить качественные онлайн-курсы. Наша цель — сделать процесс обучения простым, гибким и финансово выгодным как для преподавателя, так и для студента."
+                  )}
                 </p>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-bold">Наши ценности</h3>
+                  <h3 className="text-2xl font-bold">{t("Наши ценности")}</h3>
                   <p className="text-muted-foreground">
-                    Основные принципы, которыми мы руководствуемся:
+                    {t("Основные принципы, которыми мы руководствуемся:")}
                   </p>
                 </div>
                 <ul className="grid gap-2">
                   <li className="flex items-center gap-2">
                     <CheckIcon className="w-4 h-4 text-primary" />
-                    <span>Простота — обучение не должно быть сложным.</span>
+                    <span>{t("Простота — обучение не должно быть сложным.")}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckIcon className="w-4 h-4 text-primary" />
-                    <span>
-                      Доступность — возможность учиться и обучать где угодно.
-                    </span>
+                    <span>{t("Доступность — возможность учиться и обучать где угодно.")}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckIcon className="w-4 h-4 text-primary" />
-                    <span>
-                      Прозрачность — ясная система оплаты, доходов и статистики.
-                    </span>
+                    <span>{t("Прозрачность — ясная система оплаты, доходов и статистики.")}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckIcon className="w-4 h-4 text-primary" />
-                    <span>
-                      Развитие — постоянное улучшение платформы и обучение
-                      пользователей.
-                    </span>
+                    <span>{t("Развитие — постоянное улучшение платформы и обучение пользователей.")}</span>
                   </li>
                 </ul>
               </div>
@@ -151,15 +143,15 @@ export default function AboutUsPage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
-                  Достижения
+                  {t("Достижения")}
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Наши ключевые шаги вперёд
+                  {t("Наши ключевые шаги вперёд")}
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Мы гордимся тем, как быстро развиваемся, поддерживаем
-                  пользователей и внедряем полезные функции, делая платформу
-                  сильным помощником в сфере онлайн-образования.
+                  {t(
+                    "Мы гордимся тем, как быстро развиваемся, поддерживаем пользователей и внедряем полезные функции, делая платформу сильным помощником в сфере онлайн-образования."
+                  )}
                 </p>
               </div>
             </div>
@@ -169,9 +161,9 @@ export default function AboutUsPage() {
                   <AwardIcon className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-lg font-bold">Инновационный подход</h3>
+                  <h3 className="text-lg font-bold">{t("Инновационный подход")}</h3>
                   <p className="text-muted-foreground">
-                    Комбинация гибкого курса и внешнего тестирования.
+                    {t("Комбинация гибкого курса и внешнего тестирования.")}
                   </p>
                 </div>
               </div>
@@ -180,10 +172,9 @@ export default function AboutUsPage() {
                   <ScalingIcon className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-lg font-bold">Быстрый рост</h3>
+                  <h3 className="text-lg font-bold">{t("Быстрый рост")}</h3>
                   <p className="text-muted-foreground">
-                    С каждым днём к платформе присоединяются новые преподаватели
-                    и студенты.
+                    {t("С каждым днём к платформе присоединяются новые преподаватели и студенты.")}
                   </p>
                 </div>
               </div>
@@ -192,9 +183,9 @@ export default function AboutUsPage() {
                   <UsersIcon className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-lg font-bold">Доверие пользователей</h3>
+                  <h3 className="text-lg font-bold">{t("Доверие пользователей")}</h3>
                   <p className="text-muted-foreground">
-                    Более 90% пользователей возвращаются к новым курсам.
+                    {t("Более 90% пользователей возвращаются к новым курсам.")}
                   </p>
                 </div>
               </div>
@@ -202,25 +193,23 @@ export default function AboutUsPage() {
           </div>
         </section>
       </main>
-
       <section className="w-full py-12 md:py-24 lg:py-32 flex flex-col gap-2 justify-center items-center pt-4">
         <div className="mx-auto mt-5 max-w-2xl text-center">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-            Давайте развиваться вместе!
+            {t("Давайте развиваться вместе!")}
           </h1>
         </div>
-        {/* End Title */}
         <div className="mx-auto mt-5 max-w-3xl text-center">
           <p className="text-muted-foreground text-xl">
-            Присоединяйтесь к нам и начните создавать свои курсы уже сегодня!
-            Наша команда всегда готова помочь вам на каждом шаге.
+            {t(
+              "Присоединяйтесь к нам и начните создавать свои курсы уже сегодня! Наша команда всегда готова помочь вам на каждом шаге."
+            )}
           </p>
         </div>
-        {/* Buttons */}
         <div className="mt-8 flex justify-center gap-3">
-          <Button size={"lg"}>Войти</Button>
+          <Button size={"lg"}>{t("Войти")}</Button>
           <Button size={"lg"} variant={"outline"}>
-            Зарегистрироваться
+            {t("Зарегистрироваться")}
           </Button>
         </div>
       </section>

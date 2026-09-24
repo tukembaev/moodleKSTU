@@ -1,12 +1,16 @@
+import { BookOpen } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "shared/components/LanguageSwitcher";
 import { DEPARTMENT_PERMISSION } from "entities/User/lib/permissions";
 import { useHasPermission } from "entities/User/model/useHasPermission";
 import { useAuth } from "shared/hooks";
 import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
 import { cn } from "shared/lib/utils";
+import { Button } from "shared/shadcn/ui/button";
 import { HeaderNotifications } from "./lib/HeaderNotifications";
 import { HeaderSearch } from "./lib/HeaderSearch";
 import { HeaderUserMenu } from "./lib/HeaderUserMenu";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 
 const navLinkClass = (isActive: boolean) =>
   cn(
@@ -17,6 +21,7 @@ const navLinkClass = (isActive: boolean) =>
   );
 
 const Header = () => {
+  const { t } = useTranslation();
   const auth = useAuth();
   const location = useLocation();
   const isStudent = auth.isStudent;
@@ -36,13 +41,13 @@ const Header = () => {
               to={RoutePath[AppRoutes.TODAY]}
               className={({ isActive }) => navLinkClass(isActive)}
             >
-              Сегодня
+              {t("Сегодня")}
             </NavLink>
             <NavLink
               to={RoutePath[AppRoutes.COURSES]}
               className={({ isActive }) => navLinkClass(isActive)}
             >
-              Мои курсы
+              {t("Мои курсы")}
             </NavLink>
             {!isStudent && (
               <>
@@ -52,7 +57,7 @@ const Header = () => {
                     location.pathname.includes(RoutePath[AppRoutes.TEST])
                   )}
                 >
-                  Тестирование
+                  {t("Тестирование")}
                 </NavLink>
                 <NavLink
                   to={RoutePath[AppRoutes.QUESTION_BANK]}
@@ -62,7 +67,7 @@ const Header = () => {
                     )
                   )}
                 >
-                  Коллекция вопросов
+                  {t("Коллекция вопросов")}
                 </NavLink>
                 {canSeeWorkload && (
                   <NavLink
@@ -71,7 +76,7 @@ const Header = () => {
                       location.pathname.startsWith(RoutePath[AppRoutes.WORKLOAD])
                     )}
                   >
-                    Нагрузка
+                    {t("Нагрузка")}
                   </NavLink>
                 )}
               </>
@@ -80,8 +85,25 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-1">
+          {!isStudent && (
+            <Button
+              variant="ghost"
+              className={cn(
+                "gap-2",
+                location.pathname.startsWith(RoutePath[AppRoutes.GUIDE]) &&
+                  "bg-accent text-accent-foreground"
+              )}
+              asChild
+            >
+              <Link to={RoutePath[AppRoutes.GUIDE]}>
+                <BookOpen className="size-4" />
+                {t("Руководство")}
+              </Link>
+            </Button>
+          )}
           <HeaderSearch />
           <HeaderNotifications />
+          <LanguageSwitcher />
           <HeaderUserMenu />
         </div>
       </div>

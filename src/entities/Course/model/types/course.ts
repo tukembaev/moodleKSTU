@@ -81,6 +81,28 @@ export interface CourseThemesTypes {
   other: CourseDetail[];
 }
 
+/** Успеваемость на карточке курса. Приходит в `GET my-courses/` и `GET my-courses/archive/`. */
+export type CourseAcademicPerformance = {
+  /** Студент: сданные работы. */
+  works_submitted?: number;
+  /** Студент: всего работ, которые нужно сдать. */
+  works_total?: number;
+  /** Студент: тестов сдано. */
+  tests_submitted?: number;
+  /** Студент: тестов осталось. */
+  tests_remaining?: number;
+  /** Студент: набранные баллы. Если нет — фронт берёт `course_points`. */
+  student_points?: number;
+  /** Студент: максимум баллов курса. Если нет — фронт берёт `max_points`. */
+  points_total?: number;
+  /** Преподаватель: студентов на курсе. Если нет — фронт берёт `count_stud`. */
+  students_count?: number;
+  /** Преподаватель: проверенных работ. */
+  works_checked?: number;
+  /** Преподаватель: средний балл всех студентов курса. */
+  average_score?: number;
+};
+
 export type Course = {
   id: string;
   icon?: string;
@@ -101,6 +123,7 @@ export type Course = {
   course_points: number;
   max_points: number;
   count_stud?: number;
+  academic_performance?: CourseAcademicPerformance;
   is_favorite: boolean;
   can_delete?: boolean;
 };

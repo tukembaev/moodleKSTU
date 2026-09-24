@@ -6,8 +6,10 @@ import { Button } from "shared/shadcn/ui/button";
 
 import { userQueries } from "entities/User";
 import { FadeInList, SpringPopupList } from "shared/components";
+import { useTranslation } from "react-i18next";
 
 const RegistrationList = () => {
+  const { t } = useTranslation();
   const { data, isLoading, error } = useQuery(
     userQueries.availableRegistrations()
   );
@@ -19,10 +21,10 @@ const RegistrationList = () => {
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
             <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-left">
-              Регистрация на курсы
+              {t("Регистрация на курсы")}
             </h2>
             <p className="mt-1.5 text-lg text-muted-foreground">
-              Выберите курс, на который хотите зарегистрироваться
+              {t("Выберите курс, на который хотите зарегистрироваться")}
             </p>
           </div>
         </div>
@@ -35,7 +37,11 @@ const RegistrationList = () => {
               ))}
             </SpringPopupList>
           ) : error ? (
-            <p>Произошла непредвиденная ошибка! {error.message} </p>
+            <p>
+              {t("Произошла непредвиденная ошибка! {{message}}", {
+                message: error.message,
+              })}
+            </p>
           ) : (
             <FadeInList>
               {data?.map((course) => (
@@ -60,7 +66,7 @@ const RegistrationList = () => {
                       <span className="text-muted-foreground font-semibold flex flex-col text-md">
                         {course.course_owner[0].owner_name}
                         <span className="font-medium text-xs text-muted-foreground">
-                          Преподователь
+                          {t("Преподователь")}
                         </span>
                       </span>
                     </div>
@@ -69,7 +75,7 @@ const RegistrationList = () => {
                       variant={"outline"}
                       onClick={() => registrate(course.id)}
                     >
-                      Зарегистрироваться <ChevronRight />
+                      {t("Зарегистрироваться")} <ChevronRight />
                     </Button>
                   </div>
                 </div>

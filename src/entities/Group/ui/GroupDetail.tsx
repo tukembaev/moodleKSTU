@@ -7,6 +7,7 @@ import {
   MessageCircle,
   Settings2,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 
@@ -50,16 +51,17 @@ const features = [
 ];
 
 const GroupDetail = () => {
+  const { t } = useTranslation();
   return (
     <div className="flex">
       <div>
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
             <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-left">
-              Мои группы
+              {t("Мои группы")}
             </h2>
             <p className="mt-1.5 text-lg text-muted-foreground">
-              Все группы, которые связаны с вами
+              {t("Все группы, которые связаны с вами")}
             </p>
           </div>
         </div>

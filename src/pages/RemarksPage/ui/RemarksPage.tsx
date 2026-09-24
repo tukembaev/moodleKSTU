@@ -9,6 +9,7 @@ import {
   StudentRemarkSummary,
 } from "entities/Remarks";
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LuArchive,
   LuArrowLeft,
@@ -33,6 +34,7 @@ import {
 } from "shared/shadcn/ui/tabs";
 
 const RemarksPage = () => {
+  const { t } = useTranslation();
   const authData = useAuth();
 
   const currentUser = useMemo(() => {
@@ -223,7 +225,7 @@ const RemarksPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">
-          Требуется авторизация для просмотра замечаний
+          {t("Требуется авторизация для просмотра замечаний")}
         </p>
       </div>
     );
@@ -238,12 +240,12 @@ const RemarksPage = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-              Замечания
+              {t("Замечания")}
             </h1>
             <p className="text-muted-foreground mt-1">
               {currentUser.role === "teacher"
-                ? "Управление замечаниями по работам студентов"
-                : "Ваши замечания и требования к исправлению"}
+                ? t("Управление замечаниями по работам студентов")
+                : t("Ваши замечания и требования к исправлению")}
             </p>
           </div>
 
@@ -257,7 +259,7 @@ const RemarksPage = () => {
                 className="gap-1.5 h-8"
               >
                 <LuList className="h-4 w-4" />
-                <span className="hidden sm:inline">Список</span>
+                <span className="hidden sm:inline">{t("Список")}</span>
               </Button>
               <Button
                 variant={viewMode === "expanded" ? "default" : "ghost"}
@@ -266,7 +268,7 @@ const RemarksPage = () => {
                 className="gap-1.5 h-8"
               >
                 <LuLayoutGrid className="h-4 w-4" />
-                <span className="hidden sm:inline">Развёрнуто</span>
+                <span className="hidden sm:inline">{t("Развёрнуто")}</span>
               </Button>
             </div>
           </div>
@@ -283,7 +285,7 @@ const RemarksPage = () => {
                 <div>
                   <p className="text-2xl font-bold">{stats.pending}</p>
                   <p className="text-xs text-muted-foreground">
-                    Ожидает ответа
+                    {t("Ожидает ответа")}
                   </p>
                 </div>
               </div>
@@ -298,7 +300,7 @@ const RemarksPage = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.responded}</p>
-                  <p className="text-xs text-muted-foreground">На проверке</p>
+                  <p className="text-xs text-muted-foreground">{t("На проверке")}</p>
                 </div>
               </div>
             </CardContent>
@@ -313,7 +315,7 @@ const RemarksPage = () => {
                 <div>
                   <p className="text-2xl font-bold">{stats.rejected}</p>
                   <p className="text-xs text-muted-foreground">
-                    На исправлении
+                    {t("На исправлении")}
                   </p>
                 </div>
               </div>
@@ -328,7 +330,7 @@ const RemarksPage = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.archived}</p>
-                  <p className="text-xs text-muted-foreground">В архиве</p>
+                  <p className="text-xs text-muted-foreground">{t("В архиве")}</p>
                 </div>
               </div>
             </CardContent>
@@ -342,7 +344,7 @@ const RemarksPage = () => {
           <TabsList className="grid w-full sm:w-auto grid-cols-2">
             <TabsTrigger value="active" className="gap-2">
               <LuMessageSquareWarning className="h-4 w-4" />
-              Текущие
+              {t("Текущие")}
               {stats.total > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {stats.total}
@@ -351,7 +353,7 @@ const RemarksPage = () => {
             </TabsTrigger>
             <TabsTrigger value="archive" className="gap-2">
               <LuArchive className="h-4 w-4" />
-              Архив
+              {t("Архив")}
               {stats.archived > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {stats.archived}
@@ -364,7 +366,7 @@ const RemarksPage = () => {
             <div className="relative w-full sm:w-72">
               <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск студентов..."
+                placeholder={t("Поиск студентов...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -389,7 +391,7 @@ const RemarksPage = () => {
                   className="gap-2"
                 >
                   <LuArrowLeft className="h-4 w-4" />
-                  Назад к списку студентов
+                  {t("Назад к списку студентов")}
                 </Button>
                 <div className="flex items-center gap-3 mb-4 p-4 rounded-xl bg-muted/30 border">
                   <div className="flex-1">
@@ -398,7 +400,7 @@ const RemarksPage = () => {
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {selectedStudent.student_group} •{" "}
-                      {selectedStudent.total_remarks} замечаний
+                      {t("{{count}} замечаний", { count: selectedStudent.total_remarks })}
                     </p>
                   </div>
                 </div>

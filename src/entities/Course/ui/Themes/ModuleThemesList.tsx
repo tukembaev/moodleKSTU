@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Grid, List, Sparkles } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Badge } from "shared/shadcn/ui/badge";
@@ -18,6 +19,7 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
   course_name,
   course_owner,
 }) => {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
 
   const { data: courseModulesData, isLoading, error } = useQuery(
@@ -67,13 +69,13 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
   );
 
   if (isLoading) {
-    return <div className="py-8 text-center text-muted-foreground">Загрузка модулей...</div>;
+    return <div className="py-8 text-center text-muted-foreground">{t("Загрузка модулей...")}</div>;
   }
 
   if (error) {
     return (
       <div className="py-8 text-center text-red-500">
-        Ошибка при загрузке модулей: {error.message}
+        {t("Ошибка при загрузке модулей: {{message}}", { message: error.message })}
       </div>
     );
   }
@@ -81,7 +83,7 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
   if (!modules || modules.length === 0) {
     return (
       <div className="py-8 text-center text-muted-foreground">
-        Нет модулей для этого курса
+        {t("Нет модулей для этого курса")}
       </div>
     );
   }
@@ -93,14 +95,13 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 text-sm">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-xl sm:text-2xl font-semibold leading-tight">Навигация по модулям</span>
+              <span className="text-xl sm:text-2xl font-semibold leading-tight">{t("Навигация по модулям")}</span>
             </div>
             {/* <h2 className="text-xl sm:text-2xl font-semibold leading-tight">
               {course_name || courseModulesData?.discipline_name || "Модули курса"}
             </h2> */}
             <p className="text-sm text-foreground/70">
-              Выберите модуль, чтобы изучить его недели и темы. Для удобства
-              переключайтесь между сеткой и списком просмотра.
+              {t("Выберите модуль, чтобы изучить его недели и темы. Для удобства переключайтесь между сеткой и списком просмотра.")}
             </p>
           </div>
 
@@ -143,14 +144,14 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className="text-sm font-semibold line-clamp-1">
-                    {module.title} модуль
+                    {t("{{title}} модуль", { title: module.title })}
                   </span>
                   <Badge variant={isActive ? "default" : "secondary"}>
-                    {weeksCount} нед.
+                    {t("{{count}} нед.", { count: weeksCount })}
                   </Badge>
                 </div>
                 <p className="text-xs text-foreground/70 line-clamp-2">
-                  Нажмите, чтобы открыть недели и темы модуля.
+                  {t("Нажмите, чтобы открыть недели и темы модуля.")}
                 </p>
               </button>
             );
@@ -168,7 +169,7 @@ const ModuleThemesList: React.FC<ModuleThemesListProps> = ({
         />
       ) : (
         <div className="py-6 text-center text-muted-foreground">
-          Выберите модуль, чтобы увидеть его недели
+          {t("Выберите модуль, чтобы увидеть его недели")}
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import {
   AlertCircle,
   BarChart3,
@@ -39,11 +40,14 @@ const TestStatusBadge: React.FC<{
   result: number | null;
   needsReview?: boolean | null;
 }> = ({ passed, result, needsReview }) => {
+  const { t } = useTranslation();
   if (needsReview) {
     return (
       <Badge className="gap-1.5 bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800">
         <Clock className="h-3 w-3" />
-        На проверке{result !== null ? `: ${result}` : ""}
+        {result !== null
+          ? t("На проверке: {{result}}", { result })
+          : t("На проверке")}
       </Badge>
     );
   }
@@ -51,7 +55,9 @@ const TestStatusBadge: React.FC<{
     return (
       <Badge className="gap-1.5 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800">
         <CheckCircle2 className="h-3 w-3" />
-        Пройден{result !== null ? `: ${result}` : ""}
+        {result !== null
+          ? t("Пройден: {{result}}", { result })
+          : t("Пройден")}
       </Badge>
     );
   }
@@ -60,7 +66,9 @@ const TestStatusBadge: React.FC<{
     return (
       <Badge className="gap-1.5 bg-red-50 text-red-600 border-red-200 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800">
         <XCircle className="h-3 w-3" />
-        Не пройден{result !== null ? `: ${result}` : ""}
+        {result !== null
+          ? t("Не пройден: {{result}}", { result })
+          : t("Не пройден")}
       </Badge>
     );
   }
@@ -68,7 +76,7 @@ const TestStatusBadge: React.FC<{
   return (
     <Badge variant="secondary" className="gap-1.5 text-muted-foreground">
       <AlertCircle className="h-3 w-3" />
-      Не сдано
+      {t("Не сдано")}
     </Badge>
   );
 };
@@ -82,8 +90,10 @@ const TestCard = ({
   courseId?: string;
   viewMode?: "grid" | "list";
 }) => {
+  const { t, i18n } = useTranslation();
   const { isStudent } = useAuth();
   const navigate = useNavigate();
+  const dateLocale = getDateLocale(i18n.language);
   const passed = resolveTestPassed({
     result: item.result,
     minPoints: getTestMinPoints(item),
@@ -135,11 +145,11 @@ const TestCard = ({
                   </span>
                   <Badge className={`${testCategory.badgeClass} text-xs gap-1`}>
                     <LuShapes className="h-3 w-3" />
-                    Тест
+                    {t("Тест")}
                   </Badge>
                   <Badge variant={item.is_open ? "default" : "outline"} className="text-xs gap-1">
                     {item.is_open ? <LockOpen className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                    {item.is_open ? "Открыт" : "Закрыт"}
+                    {item.is_open ? t("Открыт") : t("Закрыт")}
                   </Badge>
                 </div>
                 
@@ -155,7 +165,7 @@ const TestCard = ({
             <div className="flex items-center gap-3 sm:gap-4 shrink-0 flex-wrap">
               {/* Stats */}
               <div className="flex gap-3 sm:gap-4 text-sm text-muted-foreground">
-                <UseTooltip text="Максимальные баллы">
+                <UseTooltip text={t("Максимальные баллы")}>
                   <div className="flex items-center gap-1.5 font-medium">
                     <div className="p-1 rounded bg-primary/10">
                       <LuHandCoins className="h-3.5 w-3.5 text-primary" />
@@ -165,7 +175,9 @@ const TestCard = ({
                 </UseTooltip>
                 
                 <UseTooltip
-                  text={`Дата открытия: ${format(new Date(item.opening_date), "PPP", { locale: ru })}`}
+                  text={t("Дата открытия: {{date}}", {
+                    date: format(new Date(item.opening_date), "PPP", { locale: dateLocale }),
+                  })}
                 >
                   <div className="flex items-center gap-1.5">
                     <div className="p-1 rounded bg-muted">
@@ -194,7 +206,7 @@ const TestCard = ({
                   onClick={goToCourse}
                 >
                   <BarChart3 className="h-4 w-4" />
-                  Результаты
+                  {t("Результаты")}
                 </Button>
               ) : canTake ? (
                 <Button
@@ -203,7 +215,7 @@ const TestCard = ({
                   onClick={goToPass}
                 >
                   <PlayCircle className="h-4 w-4" />
-                  {canContinue ? "Продолжить" : "Пройти"}
+                  {canContinue ? t("Продолжить") : t("Пройти")}
                 </Button>
               ) : null}
             </div>
@@ -227,12 +239,12 @@ const TestCard = ({
         <div className="flex items-start justify-between gap-3">
           <Badge className={`gap-1.5 ${testCategory.badgeClass}`}>
             <LuShapes className={testCategory.iconClass} />
-            <span>Тестирование</span>
+            <span>{t("Тестирование")}</span>
           </Badge>
           <div className="flex items-center gap-2">
             <Badge variant={item.is_open ? "default" : "outline"} className="gap-1">
               {item.is_open ? <LockOpen className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-              {item.is_open ? "Открыт" : "Закрыт"}
+              {item.is_open ? t("Открыт") : t("Закрыт")}
             </Badge>
             {isStudent && (
               <TestStatusBadge
@@ -258,17 +270,19 @@ const TestCard = ({
         
         {/* Stats */}
         <div className="flex gap-4 text-sm text-muted-foreground pt-2">
-          <UseTooltip text="Максимальные баллы">
+          <UseTooltip text={t("Максимальные баллы")}>
             <div className="flex items-center gap-1.5 font-medium">
               <div className="p-1 rounded bg-primary/10">
                 <LuHandCoins className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span>{item.max_points} баллов</span>
+              <span>{t("{{points}} баллов", { points: item.max_points })}</span>
             </div>
           </UseTooltip>
           
           <UseTooltip
-            text={`Дата открытия: ${format(new Date(item.opening_date), "PPP", { locale: ru })}`}
+            text={t("Дата открытия: {{date}}", {
+              date: format(new Date(item.opening_date), "PPP", { locale: dateLocale }),
+            })}
           >
             <div className="flex items-center gap-1.5">
               <div className="p-1 rounded bg-muted">
@@ -288,7 +302,7 @@ const TestCard = ({
               onClick={goToCourse}
             >
               <BarChart3 className="h-4 w-4" />
-              Открыть результаты
+              {t("Открыть результаты")}
             </Button>
           ) : canTake ? (
             <Button
@@ -296,14 +310,17 @@ const TestCard = ({
               onClick={goToPass}
             >
               <PlayCircle className="h-4 w-4" />
-              {canContinue ? "Продолжить тест" : "Пройти тест"}
+              {canContinue ? t("Продолжить тест") : t("Пройти тест")}
             </Button>
           ) : item.needsReview ? (
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
                 <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                  На проверке: {item.result ?? 0} / {item.max_points} баллов
+                  {t("На проверке: {{score}} / {{max}} баллов", {
+                    score: item.result ?? 0,
+                    max: item.max_points,
+                  })}
                 </span>
               </div>
               <TeacherGradeComment comment={item.comment} />
@@ -313,7 +330,10 @@ const TestCard = ({
               <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
                 <Trophy className="h-4 w-4 text-green-600 dark:text-green-400" />
                 <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                  Пройден: {item.result ?? 0} / {item.max_points} баллов
+                  {t("Пройден: {{score}} / {{max}} баллов", {
+                    score: item.result ?? 0,
+                    max: item.max_points,
+                  })}
                 </span>
               </div>
               <TeacherGradeComment comment={item.comment} />
@@ -323,7 +343,10 @@ const TestCard = ({
               <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
                 <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                 <span className="text-sm font-medium text-red-700 dark:text-red-400">
-                  Не пройден: {item.result ?? 0} / {item.max_points} баллов
+                  {t("Не пройден: {{score}} / {{max}} баллов", {
+                    score: item.result ?? 0,
+                    max: item.max_points,
+                  })}
                 </span>
               </div>
               <TeacherGradeComment comment={item.comment} />

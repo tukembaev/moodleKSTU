@@ -1,4 +1,5 @@
 import { CourseMaterials } from "entities/Course/model/types/course";
+import { useTranslation } from "react-i18next";
 import {
   DownloadIcon,
   ExternalLinkIcon,
@@ -54,11 +55,12 @@ export function MaterialAttachment({
   onDelete?: (id: string) => void;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const isUrl = Boolean(material.url);
   const youtubeId = isUrl ? getYouTubeId(material.url) : null;
   const sourceName = isUrl
-    ? material.url_name || "Ссылка на материал"
-    : material.file_name || "Без названия";
+    ? material.url_name || t("Ссылка на материал")
+    : material.file_name || t("Без названия");
   const fileSource = material.file || material.files || "";
   const extension = getExtension(material.file_name || fileSource);
   const isPdf = !isUrl && (isPdfExt(extension) || fileSource.toLowerCase().includes(".pdf"));
@@ -68,21 +70,21 @@ export function MaterialAttachment({
   const typeLabel = isUrl
     ? youtubeId
       ? "YouTube"
-      : "Ссылка"
+      : t("Ссылка")
     : extension
       ? extension.toUpperCase()
-      : "Файл";
+      : t("Файл");
   const description = [typeLabel, material.description].filter(Boolean).join(" · ");
 
   const deleteAction = canDelete ? (
     <UseConfirmationDialog
-      title="Удалить материал?"
-      description={`«${sourceName}» будет удалён без возможности восстановления.`}
+      title={t("Удалить материал?")}
+      description={t("«{{name}}» будет удалён без возможности восстановления.", { name: sourceName })}
       onConfirm={() => onDelete?.(material.id)}
       trigger={
         <AttachmentAction
           variant="ghost"
-          aria-label={`Удалить ${sourceName}`}
+          aria-label={t("Удалить {{name}}", { name: sourceName })}
           className="text-destructive hover:bg-destructive/10 hover:text-destructive"
         >
           <Trash2Icon />
@@ -111,7 +113,7 @@ export function MaterialAttachment({
           </AttachmentContent>
           <AttachmentActions>
             <AttachmentAction
-              aria-label={`Открыть ${sourceName} на YouTube`}
+              aria-label={t("Открыть {{name}} на YouTube", { name: sourceName })}
               onClick={() => window.open(material.url, "_blank", "noopener,noreferrer")}
             >
               <ExternalLinkIcon />
@@ -119,7 +121,7 @@ export function MaterialAttachment({
             {deleteAction}
           </AttachmentActions>
           <DialogTrigger asChild>
-            <AttachmentTrigger aria-label={`Смотреть ${sourceName}`} />
+            <AttachmentTrigger aria-label={t("Смотреть {{name}}", { name: sourceName })} />
           </DialogTrigger>
         </Attachment>
         <DialogContent className="max-w-4xl w-[90vw] overflow-hidden p-0">
@@ -154,7 +156,7 @@ export function MaterialAttachment({
         </AttachmentContent>
         <AttachmentActions>
           <AttachmentAction
-            aria-label={`Открыть ${sourceName}`}
+            aria-label={t("Открыть {{name}}", { name: sourceName })}
             onClick={() => window.open(material.url, "_blank", "noopener,noreferrer")}
           >
             <ExternalLinkIcon />
@@ -163,7 +165,7 @@ export function MaterialAttachment({
         </AttachmentActions>
         <AttachmentTrigger
           asChild
-          aria-label={`Открыть ${sourceName}`}
+          aria-label={t("Открыть {{name}}", { name: sourceName })}
         >
           <a href={material.url} target="_blank" rel="noopener noreferrer" />
         </AttachmentTrigger>
@@ -174,7 +176,7 @@ export function MaterialAttachment({
   const actions = (
     <AttachmentActions>
       <AttachmentAction
-        aria-label={`Скачать ${sourceName}`}
+        aria-label={t("Скачать {{name}}", { name: sourceName })}
         onClick={() => downloadUrl(fileSource, material.file_name)}
       >
         <DownloadIcon />
@@ -208,7 +210,7 @@ export function MaterialAttachment({
           {content}
           {actions}
           <DialogTrigger asChild>
-            <AttachmentTrigger aria-label={`Открыть превью ${sourceName}`} />
+            <AttachmentTrigger aria-label={t("Открыть превью {{name}}", { name: sourceName })} />
           </DialogTrigger>
         </Attachment>
         <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
@@ -229,7 +231,7 @@ export function MaterialAttachment({
           {content}
           {actions}
           <DialogTrigger asChild>
-            <AttachmentTrigger aria-label={`Открыть ${sourceName}`} />
+            <AttachmentTrigger aria-label={t("Открыть {{name}}", { name: sourceName })} />
           </DialogTrigger>
         </Attachment>
         <DialogContent className="max-w-4xl w-[90vw] overflow-hidden p-0">
@@ -253,7 +255,7 @@ export function MaterialAttachment({
       {media}
       {content}
       {actions}
-      <AttachmentTrigger asChild aria-label={`Скачать ${sourceName}`}>
+      <AttachmentTrigger asChild aria-label={t("Скачать {{name}}", { name: sourceName })}>
         <a href={fileSource} download={material.file_name} />
       </AttachmentTrigger>
     </Attachment>

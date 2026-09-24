@@ -2,10 +2,12 @@ import UserCardSkeleton from "entities/User/lib/UserCardSkeleton";
 import { userQueries } from "entities/User/model/userQueryFactory";
 import { UserProfileData } from "entities/User/types/user";
 import { format, parseISO } from "date-fns";
-import { ru } from "date-fns/locale";
 import { Briefcase, Calendar, Mail, User } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LuPencil, LuPhone, LuSend } from "react-icons/lu";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
+import i18n from "shared/config/i18n/i18n";
 import { PhoneInput } from "shared/components/PhoneInput";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Button } from "shared/shadcn/ui/button";
@@ -24,21 +26,23 @@ import { Input } from "shared/shadcn/ui/input";
 import { FieldLabel } from "shared/components/FieldLabel";
 
 const genderLabel = (gender?: string | null) => {
-  if (gender === "M") return "Мужской";
-  if (gender === "F") return "Женский";
+  if (gender === "M") return i18n.t("Мужской");
+  if (gender === "F") return i18n.t("Женский");
   return gender || "";
 };
 
 const employmentTypeLabel = (type?: string) => {
-  if (type === "MAIN") return "Основное";
-  if (type === "PART_TIME" || type === "INNER") return "Совместительство";
+  if (type === "MAIN") return i18n.t("Основное");
+  if (type === "PART_TIME" || type === "INNER") return i18n.t("Совместительство");
   return type || "";
 };
 
-const formatDate = (value?: string | null) => {
+const formatDate = (value?: string | null, language?: string) => {
   if (!value) return "";
   try {
-    return format(parseISO(value), "d MMMM yyyy", { locale: ru });
+    return format(parseISO(value), "d MMMM yyyy", {
+      locale: getDateLocale(language),
+    });
   } catch {
     return value;
   }
@@ -53,6 +57,7 @@ const UserCard = ({
   isLoading: boolean;
   isOwnProfile: boolean;
 }) => {
+  const { t, i18n: i18nInstance } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -140,7 +145,7 @@ const UserCard = ({
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Поменять аватар</DialogTitle>
+                <DialogTitle>{t("Поменять аватар")}</DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="flex items-center justify-center">
@@ -160,7 +165,7 @@ const UserCard = ({
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Отмена</Button>
+                  <Button variant="outline">{t("Отмена")}</Button>
                 </DialogClose>
                 <Button
                   onClick={() => {
@@ -171,7 +176,7 @@ const UserCard = ({
                   }}
                   disabled={!selectedFile}
                 >
-                  Сохранить
+                  {t("Сохранить")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -226,7 +231,7 @@ const UserCard = ({
             {data?.birth_date ? (
               <div className="flex items-center gap-3 md:gap-2">
                 <Calendar size={18} className="shrink-0" />
-                <span>{formatDate(data.birth_date)}</span>
+                <span>{formatDate(data.birth_date, i18nInstance.language)}</span>
                 {data.gender ? (
                   <span className="text-muted-foreground">
                     · {genderLabel(data.gender)}
@@ -270,12 +275,14 @@ const UserCard = ({
                         ) : null}
                         {job.rate ? (
                           <Badge variant="secondary" className="text-xs">
-                            Ставка {job.rate}
+                            {t("Ставка {{rate}}", { rate: job.rate })}
                           </Badge>
                         ) : null}
                         {job.start_date ? (
                           <Badge variant="outline" className="text-xs font-normal">
-                            с {formatDate(job.start_date)}
+                            {t("с {{date}}", {
+                              date: formatDate(job.start_date, i18nInstance.language),
+                            })}
                           </Badge>
                         ) : null}
                       </div>
@@ -290,7 +297,7 @@ const UserCard = ({
                 variant={"outline"}
                 onClick={() => setEditOpen(true)}
               >
-                Редактировать профиль
+                {t("Редактировать профиль")}
                 <LuPencil className="ml-2 h-4 w-4" />
               </Button>
             )}
@@ -327,7 +334,7 @@ const UserCard = ({
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Редактировать профиль</DialogTitle>
+            <DialogTitle>{t("Редактировать профиль")}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             {["bio", "telegram_username"].map((field) => (
@@ -346,13 +353,13 @@ const UserCard = ({
               </div>
             ))}
             <div className="flex gap-2 items-center ">
-              <FieldLabel htmlFor="number_phone">Номер телефона</FieldLabel>
+              <FieldLabel htmlFor="number_phone">{t("Номер телефона")}</FieldLabel>
               <PhoneInput value={numberPhone} onChange={setNumberPhone} />
             </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Отмена</Button>
+              <Button variant="outline">{t("Отмена")}</Button>
             </DialogClose>
             <Button
               onClick={() => {
@@ -367,7 +374,7 @@ const UserCard = ({
                 }
               }}
             >
-              Сохранить
+              {t("Сохранить")}
             </Button>
           </DialogFooter>
         </DialogContent>

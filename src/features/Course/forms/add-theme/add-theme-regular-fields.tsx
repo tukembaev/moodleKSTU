@@ -1,4 +1,5 @@
 import { UseFormRegister, FieldErrors, Control, Controller, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { FieldLabel } from "shared/components/FieldLabel";
 import { Input } from "shared/shadcn/ui/input";
 import { Textarea } from "shared/shadcn/ui/textarea";
@@ -32,29 +33,31 @@ export const AddThemeRegularFields = ({
   setValue,
   watch,
 }: AddThemeRegularFieldsProps) => {
+  const { t } = useTranslation();
+
   return (
     <>
       {canReceivePoints && (
       <div className="flex flex-col gap-2">
         <FieldLabel htmlFor="week" required>
-          Неделя
+          {t("Неделя")}
         </FieldLabel>
         <Controller
           name="week"
           control={control}
-          rules={requiredField("Выберите неделю")}
+          rules={requiredField(t("Выберите неделю"))}
           render={({ field }) => (
             <Select
               onValueChange={(value) => field.onChange(parseInt(value, 10))}
-              value={field.value?.toString() || "1"}
+              value={field.value ? String(field.value) : undefined}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Выберите неделю" />
+                <SelectValue placeholder={t("Выберите неделю")} />
               </SelectTrigger>
               <SelectContent>
                 {Array.from({ length: 16 }, (_, i) => i + 1).map((week) => (
                   <SelectItem key={week} value={week.toString()}>
-                    Неделя {week}
+                    {t("Неделя {{week}}", { week })}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -62,58 +65,58 @@ export const AddThemeRegularFields = ({
           )}
         />
         {errors.week && (
-          <span className="text-xs text-red-500">Выберите неделю</span>
+          <span className="text-xs text-red-500">{t("Выберите неделю")}</span>
         )}
       </div>
       )}
 
       <div className="flex flex-col gap-2">
         <FieldLabel htmlFor="title" required={!isTestType}>
-          Название
+          {t("Название")}
         </FieldLabel>
         <Textarea
-          placeholder="Введите название"
+          placeholder={t("Введите название")}
           className="resize-none break-words w-full max-w-full"
           style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-          {...register("title", requiredField("Заполните название"))}
+          {...register("title", requiredField(t("Заполните название")))}
         />
         {errors.title && (
-          <span className="text-xs text-red-500">Название обязательно</span>
+          <span className="text-xs text-red-500">{t("Название обязательно")}</span>
         )}
       </div>
 
       <div className="flex flex-col gap-2">
         <FieldLabel htmlFor="description" required={!isTestType}>
-          Описание
+          {t("Описание")}
         </FieldLabel>
         <Textarea
-          placeholder="Введите описание"
+          placeholder={t("Введите описание")}
           className="resize-none break-words w-full max-w-full"
           style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-          {...register("description", requiredField("Заполните описание"))}
+          {...register("description", requiredField(t("Заполните описание")))}
           rows={4}
         />
         {errors.description && (
-          <span className="text-xs text-red-500">Описание обязательно</span>
+          <span className="text-xs text-red-500">{t("Описание обязательно")}</span>
         )}
       </div>
 
       {canReceivePoints && (
       <div className="flex flex-col gap-2">
         <FieldLabel htmlFor="max_points" required={!isTestType && canReceivePoints}>
-          Макс. баллы
+          {t("Макс. баллы")}
         </FieldLabel>
         <Input
           type="number"
-          placeholder="Введите баллы"
+          placeholder={t("Введите баллы")}
           {...register("max_points", {
-            ...requiredField("Укажите количество баллов"),
+            ...requiredField(t("Укажите количество баллов")),
             valueAsNumber: true,
           })}
         />
         {errors.max_points && (
           <span className="text-xs text-red-500">
-            Укажите количество баллов
+            {t("Укажите количество баллов")}
           </span>
         )}
       </div>

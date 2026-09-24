@@ -1,6 +1,7 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { Pin } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { TodayAnnouncement, TodayCourse } from "../model/types";
 
 type TodayFeedProps = {
@@ -10,6 +11,7 @@ type TodayFeedProps = {
 };
 
 export function TodayFeed({ items, courses, onOpen }: TodayFeedProps) {
+  const { t, i18n } = useTranslation();
   const sorted = [...items].sort((a, b) => {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
     return b.createdAt.getTime() - a.createdAt.getTime();
@@ -17,10 +19,10 @@ export function TodayFeed({ items, courses, onOpen }: TodayFeedProps) {
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold">Объявления</h2>
+      <h2 className="text-sm font-semibold">{t("Объявления")}</h2>
       {sorted.length === 0 ? (
         <p className="rounded-2xl border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
-          Объявлений нет
+          {t("Объявлений нет")}
         </p>
       ) : (
         <ul className="flex flex-col gap-1.5">
@@ -42,14 +44,16 @@ export function TodayFeed({ items, courses, onOpen }: TodayFeedProps) {
                     {item.pinned && (
                       <span className="ml-auto inline-flex items-center gap-1">
                         <Pin className="size-3" />
-                        Закреплено
+                        {t("Закреплено")}
                       </span>
                     )}
                   </span>
                   <span className="line-clamp-3 text-sm">{item.text}</span>
                   <span className="text-xs text-muted-foreground">
                     {item.author} ·{" "}
-                    {format(item.createdAt, "d MMM, HH:mm", { locale: ru })}
+                    {format(item.createdAt, "d MMM, HH:mm", {
+                      locale: getDateLocale(i18n.language),
+                    })}
                   </span>
                 </button>
               </li>

@@ -3,12 +3,14 @@ import { StudyTask } from "entities/Course";
 import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-constants";
 import { LuListTodo } from "react-icons/lu";
 import { CommandGroup, CommandItem } from "shared/shadcn/ui/command";
+import { useTranslation } from "react-i18next";
 
 const StudyTasksGroup = ({ data }: { data: StudyTask[] }) => {
+    const { t } = useTranslation();
     if (data.length === 0) return null;
 
     return (
-        <CommandGroup heading="Задания">
+        <CommandGroup heading={t("Задания")}>
             {data.map((item) => (
                 <CommandItem
                     key={item.id}
@@ -35,12 +37,12 @@ const StudyTasksGroup = ({ data }: { data: StudyTask[] }) => {
                         </span>
                         {isGradableThemeType(item.type_less) && (
                         <span className="text-xs text-muted-foreground">
-                            {item.result !== null ? `${item.result} / ` : ""}{item.max_points} баллов
+                            {item.result !== null ? `${item.result} / ` : ""}{t("{{count}} баллов", { count: item.max_points })}
                         </span>
                         )}
                         {item.deadline && (
                             <span className="text-xs text-muted-foreground">
-                                • до {new Date(item.deadline).toLocaleDateString()}
+                                {t("• до {{date}}", { date: new Date(item.deadline).toLocaleDateString() })}
                             </span>
                         )}
                     </div>

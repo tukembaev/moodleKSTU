@@ -1,4 +1,5 @@
 import { CourseLessonsStatusCounter, CourseProgress } from "entities/Course";
+import { useTranslation } from "react-i18next";
 import { LuInfo } from "react-icons/lu";
 import { useAuth } from "shared/hooks";
 import {
@@ -18,6 +19,7 @@ export default function CourseStatisticTooltip({
   count_lb_pr: CourseLessonsStatusCounter;
   count_stud?: number;
 }) {
+  const { t } = useTranslation();
   const { isStudent } = useAuth();
   return (
     <TooltipProvider delayDuration={0}>
@@ -30,18 +32,28 @@ export default function CourseStatisticTooltip({
 
         <TooltipContent side="right">
           {!isStudent ? (
-            <p>Количество студентов : {count_stud}</p>
+            <p>
+              {t("Количество студентов : {{count}}", { count: count_stud })}
+            </p>
           ) : (
             <div className="flex flex-col gap-2">
-          
               <p>
-                Общий прогресс : {progress?.success}/{progress?.failure}
+                {t("Общий прогресс : {{success}}/{{failure}}", {
+                  success: progress?.success,
+                  failure: progress?.failure,
+                })}
               </p>
               <p>
-                Лабораторных: {count_lb_pr?.lb_done} из {count_lb_pr?.lb_left}
+                {t("Лабораторных: {{done}} из {{total}}", {
+                  done: count_lb_pr?.lb_done,
+                  total: count_lb_pr?.lb_left,
+                })}
               </p>
               <p>
-                Практик: {count_lb_pr?.pr_done} из {count_lb_pr?.pr_left}
+                {t("Практик: {{done}} из {{total}}", {
+                  done: count_lb_pr?.pr_done,
+                  total: count_lb_pr?.pr_left,
+                })}
               </p>
             </div>
           )}

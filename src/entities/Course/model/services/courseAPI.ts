@@ -4,6 +4,7 @@ import { CreateCourseStudentGroupPayload, EditCourseStudentGroupPayload, ExtraPo
 import $api_base_edu from "shared/api/api_base_edu";
 import $api_edu from "shared/api/api_edu";
 import $api_users from "shared/api/api_users";
+import i18n from "shared/config/i18n/i18n";
 import {
   getCourseInviteUrl,
   isUuid,
@@ -83,7 +84,7 @@ export const exportCoursePerformance = async (
   const mime = blob.type || "";
   if (mime.includes("json") || mime.includes("text/html")) {
     const text = await blob.text();
-    let message = "Не удалось экспортировать ведомость";
+    let message = i18n.t("Не удалось экспортировать ведомость");
     try {
       const parsed = JSON.parse(text) as { detail?: unknown };
       if (typeof parsed.detail === "string" && parsed.detail.trim()) {

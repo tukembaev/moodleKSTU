@@ -7,6 +7,7 @@ import {
   type LucideIcon,
   ArrowRight,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { LuCreditCard } from "react-icons/lu";
 import { cn } from "shared/lib/utils";
 
@@ -100,19 +101,20 @@ const TRANSACTIONS: Transaction[] = [
 export default function TransactionsList({
   transactions = TRANSACTIONS,
 }: List02Props) {
+  const { t } = useTranslation();
   return (
     <>
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm flex gap-1.5 items-center font-semibold text-zinc-900 dark:text-zinc-100">
             <LuCreditCard className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-50" />{" "}
-            Последние транзакции
+            {t("Последние транзакции")}
             <span className="text-xs font-normal text-zinc-600 dark:text-zinc-400 ml-1">
-              (23 транзакции)
+              {t("({{count}} транзакции)", { count: 23 })}
             </span>
           </h2>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">
-            в этом месяце
+            {t("В этом месяце")}
           </span>
         </div>
 
@@ -192,7 +194,7 @@ export default function TransactionsList({
             "focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
           )}
         >
-          <span>Посмотреть все транзакции</span>
+          <span>{t("Посмотреть все транзакции")}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

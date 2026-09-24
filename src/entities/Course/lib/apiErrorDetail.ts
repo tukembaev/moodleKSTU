@@ -1,4 +1,5 @@
 import axios from "axios";
+import i18n from "shared/config/i18n/i18n";
 
 function firstString(value: unknown): string | null {
   if (typeof value === "string" && value.trim()) return value.trim();
@@ -21,7 +22,7 @@ function detailFromData(data: unknown): string | null {
 
 export function apiErrorDetail(
   error: unknown,
-  fallback = "Что-то пошло не так"
+  fallback = i18n.t("Что-то пошло не так")
 ): string {
   if (!axios.isAxiosError(error)) {
     return error instanceof Error && error.message ? error.message : fallback;
@@ -32,7 +33,7 @@ export function apiErrorDetail(
 
 export async function apiErrorDetailAsync(
   error: unknown,
-  fallback = "Что-то пошло не так"
+  fallback = i18n.t("Что-то пошло не так")
 ): Promise<string> {
   if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
     try {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ import {
 } from "shared/shadcn/ui/card";
 
 const CourseInvitePage = () => {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -112,11 +114,11 @@ const CourseInvitePage = () => {
     const nextCourseId = inviteCourseId || getHiddenId("inviteCourseId");
     const nextLinkId = inviteLinkId || getHiddenId("inviteLinkId");
     if (!nextCourseId || !nextLinkId) {
-      toast.error("Недействительная ссылка приглашения");
+      toast.error(t("Недействительная ссылка приглашения"));
       return;
     }
     if (archived) {
-      toast.error("Этот курс находится в архиве");
+      toast.error(t("Этот курс находится в архиве"));
       return;
     }
     setJoining(true);
@@ -126,16 +128,18 @@ const CourseInvitePage = () => {
         link_id: nextLinkId,
       });
       await queryClient.invalidateQueries({ queryKey: ["course"] });
-      toast.success("Заявка на вступление отправлена");
+      toast.success(t("Заявка на вступление отправлена"));
       goToCourses();
     } catch (error: unknown) {
       if (isAlreadyMemberJoinError(error)) {
         setAlreadyMember(true);
-        toast.error("Вы уже состоите в этом курсе");
+        toast.error(t("Вы уже состоите в этом курсе"));
         return;
       }
       const message =
-        error instanceof Error ? error.message : "Не удалось отправить заявку";
+        error instanceof Error
+          ? error.message
+          : t("Не удалось отправить заявку");
       if (message === "Вы уже состоите в этом курсе") {
         setAlreadyMember(true);
       }
@@ -153,18 +157,31 @@ const CourseInvitePage = () => {
     );
   }
 
+  const description = archived
+    ? courseName
+      ? t("Курс «{{courseName}}» находится в архиве и больше недоступен.", {
+          courseName,
+        })
+      : t("Курс находится в архиве и больше недоступен.")
+    : isMember
+      ? courseName
+        ? t("Вы уже состоите в курсе «{{courseName}}».", { courseName })
+        : t("Вы уже состоите в этом курсе.")
+      : courseName
+        ? t(
+            "Вас пригласили вступить на курс «{{courseName}}». Нажмите «Присоединиться», чтобы отправить заявку.",
+            { courseName }
+          )
+        : t(
+            "Вас пригласили вступить на курс. Нажмите «Присоединиться», чтобы отправить заявку."
+          );
+
   return (
     <div className="flex min-h-full items-center justify-center py-8">
       <Card className="w-full max-w-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">Приглашение на курс</CardTitle>
-          <CardDescription>
-            {archived
-              ? `Курс${courseName ? ` «${courseName}»` : ""} находится в архиве и больше недоступен.`
-              : isMember
-              ? `Вы уже состоите${courseName ? ` в курсе «${courseName}»` : " в этом курсе"}.`
-              : `Вас пригласили вступить на курс${courseName ? ` «${courseName}»` : ""}. Нажмите «Присоединиться», чтобы отправить заявку.`}
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("Приглашение на курс")}</CardTitle>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
         {coursesLoading ? (
           <CardContent className="flex justify-center py-6">
@@ -174,15 +191,15 @@ const CourseInvitePage = () => {
         <CardFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           {archived ? (
             <Button variant="outline" onClick={goToCourses}>
-              К курсам
+              {t("К курсам")}
             </Button>
           ) : isMember ? (
             <Button variant="outline" onClick={goToCourse} disabled={joining}>
-              Перейти к курсу
+              {t("Перейти к курсу")}
             </Button>
           ) : (
             <Button variant="outline" onClick={goToCourses} disabled={joining}>
-              К курсам
+              {t("К курсам")}
             </Button>
           )}
           {!archived && (
@@ -191,10 +208,10 @@ const CourseInvitePage = () => {
               disabled={isMember || joining || !inviteLinkId || coursesLoading}
             >
               {isMember
-                ? "Вы уже состоите"
+                ? t("Вы уже состоите")
                 : joining
-                  ? "Отправка..."
-                  : "Присоединиться"}
+                  ? t("Отправка...")
+                  : t("Присоединиться")}
             </Button>
           )}
         </CardFooter>

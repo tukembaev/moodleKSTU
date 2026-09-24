@@ -7,6 +7,7 @@ import {
 } from "shared/components/QuestionEditor";
 import { dataUrlToFile } from "shared/lib/files";
 import $api_edu from "shared/api/api_edu";
+import i18n from "shared/config/i18n/i18n";
 import type { BankQuestion, CreateBankPayload, QuestionBank } from "../types/questionBank";
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
@@ -42,7 +43,7 @@ function apiErrorMessage(error: unknown, fallback: string): string {
     if (typeof first === "string" && first.trim()) return first;
     if (Array.isArray(first) && first[0]) return String(first[0]);
   }
-  if (error.response?.status === 404) return "Коллекция вопросов не найдена";
+  if (error.response?.status === 404) return i18n.t("Коллекция вопросов не найдена");
   return error.message || fallback;
 }
 
@@ -221,7 +222,7 @@ export async function getBanks(): Promise<QuestionBank[]> {
     const response = await $api_edu.get("question-banks/");
     return unwrapList(response.data).map(normalizeBank);
   } catch (error) {
-    throw new Error(apiErrorMessage(error, "Не удалось загрузить коллекции"));
+    throw new Error(apiErrorMessage(error, i18n.t("Не удалось загрузить коллекции")));
   }
 }
 
@@ -230,7 +231,7 @@ export async function getBank(id: string): Promise<QuestionBank> {
     const response = await $api_edu.get(`question-banks/${id}/`);
     return normalizeBank(response.data);
   } catch (error) {
-    throw new Error(apiErrorMessage(error, "Коллекция вопросов не найдена"));
+    throw new Error(apiErrorMessage(error, i18n.t("Коллекция вопросов не найдена")));
   }
 }
 
@@ -242,7 +243,7 @@ export async function createBank(payload: CreateBankPayload): Promise<QuestionBa
     });
     return normalizeBank(response.data);
   } catch (error) {
-    throw new Error(apiErrorMessage(error, "Не удалось создать коллекцию"));
+    throw new Error(apiErrorMessage(error, i18n.t("Не удалось создать коллекцию")));
   }
 }
 
@@ -250,7 +251,7 @@ export async function deleteBank(id: string): Promise<void> {
   try {
     await $api_edu.delete(`question-banks/${id}/`);
   } catch (error) {
-    throw new Error(apiErrorMessage(error, "Не удалось удалить коллекцию"));
+    throw new Error(apiErrorMessage(error, i18n.t("Не удалось удалить коллекцию")));
   }
 }
 
@@ -266,7 +267,7 @@ export async function addQuestion(
     );
     return normalizeQuestion(response.data);
   } catch (error) {
-    throw new Error(apiErrorMessage(error, "Не удалось сохранить вопрос"));
+    throw new Error(apiErrorMessage(error, i18n.t("Не удалось сохранить вопрос")));
   }
 }
 
@@ -283,7 +284,7 @@ export async function updateQuestion(
     );
     return normalizeQuestion(response.data);
   } catch (error) {
-    throw new Error(apiErrorMessage(error, "Не удалось обновить вопрос"));
+    throw new Error(apiErrorMessage(error, i18n.t("Не удалось обновить вопрос")));
   }
 }
 
@@ -294,6 +295,6 @@ export async function deleteQuestion(
   try {
     await $api_edu.delete(`question-banks/${bankId}/questions/${questionId}/`);
   } catch (error) {
-    throw new Error(apiErrorMessage(error, "Не удалось удалить вопрос"));
+    throw new Error(apiErrorMessage(error, i18n.t("Не удалось удалить вопрос")));
   }
 }

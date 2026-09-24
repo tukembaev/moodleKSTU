@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
@@ -13,6 +14,7 @@ import { UploadMaterialPayload } from "../model/types/course_payload";
 import { useEffect } from "react";
 
 const Add_Material_file = () => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -51,33 +53,33 @@ const Add_Material_file = () => {
         <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="course" required>
-              Описание материала
+              {t("Описание материала")}
             </FieldLabel>
             <Input
               type="text"
-              placeholder="Введите описание"
-              {...register("description", requiredField("Заполните описание материала"))}
+              placeholder={t("Введите описание")}
+              {...register("description", requiredField(t("Заполните описание материала")))}
             />
             {errors.description && (
-              <span className="text-xs text-red-500">Вопрос обязателен</span>
+              <span className="text-xs text-red-500">{t("Вопрос обязателен")}</span>
             )}
           </div>
           {!watch("file")?.length && (
             <div className="flex flex-col gap-2">
-              <FieldLabel htmlFor="course">Ссылка на файл/видео/фото</FieldLabel>
+              <FieldLabel htmlFor="course">{t("Ссылка на файл/видео/фото")}</FieldLabel>
               <Input
                 type="text"
-                placeholder="Добавьте ссылку"
+                placeholder={t("Добавьте ссылку")}
                 {...register("url")}
               />
             </div>
           )}
           {!watch("url")?.length && (
             <div className="flex flex-col gap-2">
-              <FieldLabel htmlFor="title">Материал</FieldLabel>
+              <FieldLabel htmlFor="title">{t("Материал")}</FieldLabel>
               <Input
                 type="file"
-                placeholder="Выберите файл.."
+                placeholder={t("Выберите файл..")}
                 {...register("file")}
               />
             </div>
@@ -87,7 +89,7 @@ const Add_Material_file = () => {
             
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload />{" "}
-              {isPending ? "Загрузка..." : "Загрузить материал"}
+              {isPending ? t("Загрузка...") : t("Загрузить материал")}
             </Button>
           </div>
         </form>

@@ -10,6 +10,7 @@ import { testQueries } from "entities/Test/model/services/testQueryFactory";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import { useMemo, useState, Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import { LuCheckCheck, LuChevronDown, LuRotateCcw, LuUser, LuX } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { UseConfirmationDialog } from "shared/components";
@@ -44,6 +45,7 @@ const EssayGradeForm = ({
   questionId: string;
   comment?: string | null;
 }) => {
+  const { t } = useTranslation();
   const { mutate: rateAnswer, isPending } = courseQueries.rate_answer();
   const [teacherComment, setTeacherComment] = useState(comment ?? "");
 
@@ -59,12 +61,12 @@ const EssayGradeForm = ({
   return (
     <div className="mt-3 space-y-2 rounded-lg border bg-background p-3">
       <FieldLabel className="text-xs text-muted-foreground">
-        Комментарий к ответу
+        {t("Комментарий к ответу")}
       </FieldLabel>
       <Textarea
         value={teacherComment}
         onChange={(event) => setTeacherComment(event.target.value)}
-        placeholder="Необязательный комментарий"
+        placeholder={t("Необязательный комментарий")}
         rows={3}
         className="min-h-16 resize-none"
       />
@@ -75,7 +77,7 @@ const EssayGradeForm = ({
           disabled={isPending}
           onClick={() => grade(1)}
         >
-          Зачесть
+          {t("Зачесть")}
         </Button>
         <Button
           type="button"
@@ -84,7 +86,7 @@ const EssayGradeForm = ({
           disabled={isPending}
           onClick={() => grade(0)}
         >
-          Не зачесть
+          {t("Не зачесть")}
         </Button>
       </div>
     </div>
@@ -100,11 +102,12 @@ const AnswerReview = ({
   question?: TestQuestion;
   resultId?: string | null;
 }) => {
+  const { t } = useTranslation();
   const type = resolveQuestionType({
     questionType: answer.questionType || question?.questionType,
     multipleAnswers: question?.multipleAnswers,
   });
-  const title = answer.questionText || question?.question || "Вопрос";
+  const title = answer.questionText || question?.question || t("Вопрос");
   const selected = (answer.selectedOptions || []).map(optionText).filter(Boolean);
   const textAnswer = answer.textAnswer?.trim() || "";
   const pending = answer.needsReview === true;
@@ -117,24 +120,24 @@ const AnswerReview = ({
         </Badge>
         {pending ? (
           <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
-            Требует проверки
+            {t("Требует проверки")}
           </Badge>
         ) : answer.isSkipped ? (
-          <Badge variant="outline">Пропущен</Badge>
+          <Badge variant="outline">{t("Пропущен")}</Badge>
         ) : answer.isCorrect ? (
           <Badge className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
-            Правильно
+            {t("Правильно")}
           </Badge>
         ) : answer.isCorrect === false ? (
           <Badge className="bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20">
-            Неправильно
+            {t("Неправильно")}
           </Badge>
         ) : null}
       </div>
       <p className="text-sm font-medium">{title}</p>
       {type === "essay" || type === "short_answer" ? (
         <p className="mt-2 whitespace-pre-wrap break-words rounded-md bg-muted/50 px-3 py-2 text-sm">
-          {textAnswer || "Ответ не дан"}
+          {textAnswer || t("Ответ не дан")}
         </p>
       ) : selected.length > 0 ? (
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
@@ -143,7 +146,7 @@ const AnswerReview = ({
           ))}
         </ul>
       ) : (
-        <p className="mt-2 text-sm text-muted-foreground">Ответ не выбран</p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("Ответ не выбран")}</p>
       )}
       <TeacherGradeComment comment={answer.comment} className="mt-2" />
       {pending && resultId && (
@@ -170,6 +173,7 @@ const TestTable = ({
   questions?: TestQuestion[];
   minPoints?: number;
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { mutate: resetResult, isPending } = testQueries.reset_result();
   const [onlyPending, setOnlyPending] = useState(false);
@@ -197,9 +201,9 @@ const TestTable = ({
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <LuUser className="h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-lg font-medium text-muted-foreground">Нет результатов</p>
+        <p className="text-lg font-medium text-muted-foreground">{t("Нет результатов")}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          Студенты еще не проходили этот тест
+          {t("Студенты еще не проходили этот тест")}
         </p>
       </div>
     );
@@ -214,18 +218,18 @@ const TestTable = ({
           variant={onlyPending ? "default" : "outline"}
           onClick={() => setOnlyPending((value) => !value)}
         >
-          Требует проверки
+          {t("Требует проверки")}
         </Button>
         {onlyPending && (
           <p className="text-sm text-muted-foreground">
-            Показаны студенты с непроверенными развёрнутыми ответами
+            {t("Показаны студенты с непроверенными развёрнутыми ответами")}
           </p>
         )}
       </div>
 
       {rows.length === 0 ? (
         <div className="rounded-md border px-4 py-8 text-center text-sm text-muted-foreground">
-          Нет работ, требующих проверки
+          {t("Нет работ, требующих проверки")}
         </div>
       ) : (
         <div className="rounded-md border overflow-hidden">
@@ -233,10 +237,10 @@ const TestTable = ({
             <TableHeader className="bg-muted/50">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-[50px]">№</TableHead>
-                <TableHead className="min-w-[250px]">Студент</TableHead>
-                <TableHead className="w-[150px] text-center">Статус</TableHead>
-                <TableHead className="w-[180px] text-center">Баллы</TableHead>
-                <TableHead className="w-[180px] text-right">Действия</TableHead>
+                <TableHead className="min-w-[250px]">{t("Студент")}</TableHead>
+                <TableHead className="w-[150px] text-center">{t("Статус")}</TableHead>
+                <TableHead className="w-[180px] text-center">{t("Баллы")}</TableHead>
+                <TableHead className="w-[180px] text-right">{t("Действия")}</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -299,21 +303,21 @@ const TestTable = ({
                               )}
                             >
                               {pending ? (
-                                <span>На проверке</span>
+                                <span>{t("На проверке")}</span>
                               ) : passed === true ? (
                                 <>
                                   <LuCheckCheck className="h-4 w-4" />
-                                  <span>Пройден</span>
+                                  <span>{t("Пройден")}</span>
                                 </>
                               ) : passed === false ? (
                                 <>
                                   <LuX className="h-4 w-4" />
-                                  <span>Не пройден</span>
+                                  <span>{t("Не пройден")}</span>
                                 </>
                               ) : (
                                 <>
                                   <LuX className="h-4 w-4" />
-                                  <span>Не сдано</span>
+                                  <span>{t("Не сдано")}</span>
                                 </>
                               )}
                             </Badge>
@@ -324,7 +328,7 @@ const TestTable = ({
                             <div className="flex flex-col items-center justify-center gap-1">
                               <div className="flex items-center justify-center gap-2">
                                 <span className="font-semibold text-lg">{resultValue}</span>
-                                <span className="text-sm text-muted-foreground">баллов</span>
+                                <span className="text-sm text-muted-foreground">{t("баллов")}</span>
                               </div>
                               <TeacherGradeComment comment={student.comment} compact />
                             </div>
@@ -341,7 +345,7 @@ const TestTable = ({
                                 className="gap-1.5"
                                 onClick={() => toggleRow(rowKey)}
                               >
-                                Ответы
+                                {t("Ответы")}
                                 <LuChevronDown
                                   className={cn(
                                     "h-4 w-4 transition-transform",
@@ -352,8 +356,10 @@ const TestTable = ({
                             )}
                             {hasResult && passed !== true && testId && courseId && studentId > 0 && (
                               <UseConfirmationDialog
-                                title="Разрешить пересдачу?"
-                                description="Результат студента будет обнулён. Он сможет пройти тест заново."
+                                title={t("Разрешить пересдачу?")}
+                                description={t(
+                                  "Результат студента будет обнулён. Он сможет пройти тест заново."
+                                )}
                                 onConfirm={() =>
                                   resetResult({
                                     test_id: testId,
@@ -369,7 +375,7 @@ const TestTable = ({
                                     className="gap-1.5"
                                   >
                                     <LuRotateCcw className="h-4 w-4" />
-                                    Разрешить пересдачу
+                                    {t("Разрешить пересдачу")}
                                   </Button>
                                 }
                               />

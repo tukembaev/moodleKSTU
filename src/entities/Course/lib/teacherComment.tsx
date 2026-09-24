@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "shared/lib/utils";
 
 export function teacherCommentText(comment?: string | null) {
@@ -14,6 +15,7 @@ export function TeacherGradeComment({
   compact?: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const text = teacherCommentText(comment);
   if (!text) return null;
 
@@ -38,7 +40,7 @@ export function TeacherGradeComment({
       )}
     >
       <p className="text-[11px] font-medium text-muted-foreground">
-        Комментарий
+        {t("Комментарий")}
       </p>
       <p className="mt-0.5 text-sm whitespace-pre-wrap break-words">{text}</p>
     </div>

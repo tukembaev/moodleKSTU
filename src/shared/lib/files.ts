@@ -1,8 +1,11 @@
+import i18n from "shared/config/i18n/i18n";
+
 export function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error ?? new Error("Не удалось прочитать файл"));
+    reader.onerror = () =>
+      reject(reader.error ?? new Error(i18n.t("Не удалось прочитать файл")));
     reader.readAsDataURL(file);
   });
 }

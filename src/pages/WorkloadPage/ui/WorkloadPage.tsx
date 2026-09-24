@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { DEPARTMENT_PERMISSION } from "entities/User/lib/permissions";
@@ -7,6 +8,7 @@ import AccessDenied from "shared/components/AccessDenied";
 import { WorkloadCatalog } from "./WorkloadCatalog";
 
 const WorkloadPage = () => {
+  const { t } = useTranslation();
   const { hasAccess, isLoading } = useHasPermission(DEPARTMENT_PERMISSION);
   const [params, setParams] = useSearchParams();
   const departmentId = params.get("department");
@@ -40,10 +42,10 @@ const WorkloadPage = () => {
     <div className="flex flex-col gap-5">
       <div>
         <h2 className="hidden text-4xl font-semibold tracking-tight md:block sm:text-5xl">
-          Нагрузка
+          {t("Нагрузка")}
         </h2>
         <p className="text-sm text-muted-foreground md:mt-1.5 md:text-lg">
-          Кафедры, преподаватели и загрузка материалов на курсах
+          {t("Кафедры, преподаватели и загрузка материалов на курсах")}
         </p>
       </div>
 

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import {
   ThemeDateRangeField,
@@ -13,6 +14,7 @@ import { Separator } from "shared/shadcn/ui/separator";
 import ListOfStudentsWithAnswers from "./ListOfStudentsWithAnswers";
 
 const ThemeAccess = ({ themeId }: { themeId: string }) => {
+  const { t } = useTranslation();
   const courseId = useCourseId();
   const {
     data: answers,
@@ -73,7 +75,7 @@ const ThemeAccess = ({ themeId }: { themeId: string }) => {
             <div className="flex items-center justify-between gap-3">
               <h3 className="flex min-w-0 items-center gap-2 text-base font-semibold">
                 <LuCalendarClock className="h-4 w-4 shrink-0 text-primary" />
-                Срок доступа к теме
+                {t("Срок доступа к теме")}
               </h3>
               <Button
                 type="button"
@@ -83,13 +85,11 @@ const ThemeAccess = ({ themeId }: { themeId: string }) => {
                 className="shrink-0"
               >
                 <LuSave />
-                {isPending ? "Сохранение..." : "Сохранить"}
+                {isPending ? t("Сохранение...") : t("Сохранить")}
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              Настройте период, в который тема автоматически открыта для всех
-              студентов. Ниже можно точечно управлять доступом отдельных
-              студентов.
+              {t("Настройте период, в который тема автоматически открыта для всех студентов. Ниже можно точечно управлять доступом отдельных студентов.")}
             </p>
           </div>
           <ThemeDateRangeField
@@ -107,11 +107,10 @@ const ThemeAccess = ({ themeId }: { themeId: string }) => {
           <div className="flex flex-col gap-1">
             <h3 className="flex items-center gap-2 text-base font-semibold">
               <LuUsers className="h-4 w-4 text-primary" />
-              Доступ студентов к теме
+              {t("Доступ студентов к теме")}
             </h3>
             <p className="text-sm text-muted-foreground">
-              Открывайте и закрывайте доступ конкретным студентам или сразу
-              всей группе.
+              {t("Открывайте и закрывайте доступ конкретным студентам или сразу всей группе.")}
             </p>
           </div>
           <ListOfStudentsWithAnswers

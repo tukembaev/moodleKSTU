@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 import { routeConfig } from "shared/config/routeConfig/routeConfig";
 import {
@@ -10,6 +11,7 @@ import {
 } from "shared/shadcn/ui/breadcrumb";
 
 const Breadcrumbs = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x);
 
@@ -29,7 +31,7 @@ const Breadcrumbs = () => {
         {pathnames.map((value, index) => {
           const to = `/${pathnames.slice(0, index + 1).join("/")}`;
           const isLast = index === pathnames.length - 1;
-          const breadcrumbName = getBreadcrumbName(value);
+          const breadcrumbName = t(getBreadcrumbName(value));
 
           return (
             <div key={to} className="flex items-center">

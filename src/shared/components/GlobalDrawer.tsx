@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { forms } from "shared/config/formConfig/formConfig";
 import { useAuth } from "shared/hooks";
@@ -8,6 +9,7 @@ import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
 import { Drawer } from "vaul";
 
 export default function GlobalDrawer() {
+  const { t } = useTranslation();
   const { isStudent } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -76,12 +78,12 @@ export default function GlobalDrawer() {
                 isMobile ? "text-xl" : "text-2xl"
               )}
             >
-              {currentForm?.title}
+              {currentForm?.title ? t(currentForm.title) : null}
             </Drawer.Title>
             {/* если это студент и ему не разрешено то null , иначе всем можно пользоваться */}
             <div className="min-w-0 flex-1">
               {isStudent && !currentForm?.is_student_allow
-                ? "Доступ студентам запрещен!"
+                ? t("Доступ студентам запрещен!")
                 : currentForm?.form}
             </div>
           </div>

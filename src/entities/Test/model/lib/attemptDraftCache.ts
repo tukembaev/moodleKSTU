@@ -6,6 +6,7 @@ export interface LocalAttemptDraft {
   startedAt: number;
   timeLimitSeconds: number;
   answers: SavedAttemptAnswer[];
+  questionIds?: string[];
 }
 
 const emptyAnswers = (
@@ -34,6 +35,9 @@ export const readAttemptDraft = (testId: string): LocalAttemptDraft | null => {
       startedAt: parsed.startedAt,
       timeLimitSeconds: parsed.timeLimitSeconds,
       answers: emptyAnswers(parsed.answers),
+      questionIds: Array.isArray(parsed.questionIds)
+        ? parsed.questionIds.filter((id) => typeof id === "string")
+        : undefined,
     };
   } catch {
     return null;

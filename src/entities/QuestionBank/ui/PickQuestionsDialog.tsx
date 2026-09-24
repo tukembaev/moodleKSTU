@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Search, Shuffle } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   QUESTION_TYPE_LABELS,
   resolveQuestionType,
@@ -51,6 +52,7 @@ const PickQuestionsDialog = ({
   onOpenChange,
   onInsert,
 }: PickQuestionsDialogProps) => {
+  const { t } = useTranslation();
   const { data: banks = [], isLoading } = useQuery({
     ...questionBankQueries.allBanks(),
     enabled: open,
@@ -146,11 +148,11 @@ const PickQuestionsDialog = ({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Добавить из коллекции вопросов</DialogTitle>
+          <DialogTitle>{t("Добавить из коллекции вопросов")}</DialogTitle>
           <DialogDescription>
-            Выберите коллекцию и отметьте вопросы вручную или сгенерируйте
-            случайную выборку. В тест попадут выбранные вопросы как обычный
-            список.
+            {t(
+              "Выберите коллекцию и отметьте вопросы вручную или сгенерируйте случайную выборку. В тест попадут выбранные вопросы как обычный список."
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -161,16 +163,16 @@ const PickQuestionsDialog = ({
           >
             <TabsList className="w-full">
               <TabsTrigger value="manual" className="flex-1">
-                Вручную
+                {t("Вручную")}
               </TabsTrigger>
               <TabsTrigger value="random" className="flex-1">
-                Случайная выборка
+                {t("Случайная выборка")}
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
           <div className="flex flex-col gap-2">
-            <FieldLabel required>Коллекция</FieldLabel>
+            <FieldLabel required>{t("Коллекция")}</FieldLabel>
             <Select
               value={bankId}
               onValueChange={(value) => {
@@ -181,7 +183,9 @@ const PickQuestionsDialog = ({
             >
               <SelectTrigger className="w-full">
                 <SelectValue
-                  placeholder={isLoading ? "Загрузка..." : "Выберите коллекцию"}
+                  placeholder={
+                    isLoading ? t("Загрузка...") : t("Выберите коллекцию")
+                  }
                 />
               </SelectTrigger>
               <SelectContent>
@@ -194,7 +198,7 @@ const PickQuestionsDialog = ({
             </Select>
             {!isLoading && banks.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Сначала создайте коллекцию на странице «Коллекция вопросов».
+                {t("Сначала создайте коллекцию на странице «Коллекция вопросов».")}
               </p>
             )}
           </div>
@@ -206,7 +210,7 @@ const PickQuestionsDialog = ({
                   <div className="flex flex-wrap items-end gap-3">
                     <div className="flex min-w-28 flex-1 flex-col gap-2">
                       <FieldLabel htmlFor="random-sample-size" required>
-                        Количество вопросов
+                        {t("Количество вопросов")}
                       </FieldLabel>
                       <Input
                         id="random-sample-size"
@@ -225,20 +229,25 @@ const PickQuestionsDialog = ({
                       onClick={generateSample}
                     >
                       <Shuffle className="h-4 w-4" />
-                      {hasGenerated ? "Перегенерировать" : "Сгенерировать"}
+                      {hasGenerated ? t("Перегенерировать") : t("Сгенерировать")}
                     </Button>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {isBankLoading
-                      ? "Загрузка вопросов..."
+                      ? t("Загрузка вопросов...")
                       : availableCount === 0
-                        ? "В текущем фильтре нет вопросов для выборки."
-                        : `Доступно в выборке: ${availableCount}. Случайные вопросы подставятся в список ниже, как если бы вы отметили их вручную.`}
+                        ? t("В текущем фильтре нет вопросов для выборки.")
+                        : t(
+                            "Доступно в выборке: {{count}}. Случайные вопросы подставятся в список ниже, как если бы вы отметили их вручную.",
+                            { count: availableCount }
+                          )}
                   </p>
                   {hasGenerated && selected.size > 0 && (
                     <p className="mt-1 text-sm">
-                      Выбрано {selected.size} из {availableCount}. Можно
-                      перегенерировать или поправить отметки до вставки.
+                      {t(
+                        "Выбрано {{selected}} из {{total}}. Можно перегенерировать или поправить отметки до вставки.",
+                        { selected: selected.size, total: availableCount }
+                      )}
                     </p>
                   )}
                 </div>
@@ -251,20 +260,20 @@ const PickQuestionsDialog = ({
                     <Input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Поиск по тексту вопроса"
+                      placeholder={t("Поиск по тексту вопроса")}
                       className="h-8 rounded-none border-0  bg-transparent px-2 pl-8 shadow-none focus-visible:border-0 focus-visible:ring-0"
-                      aria-label="Поиск по тексту вопроса"
+                      aria-label={t("Поиск по тексту вопроса")}
                     />
                   </div>
                 </div>
                 <div className="space-y-1 px-2 pb-2">
                   {isBankLoading ? (
                     <p className="p-3 text-sm text-muted-foreground">
-                      Загрузка вопросов...
+                      {t("Загрузка вопросов...")}
                     </p>
                   ) : visibleQuestions.length === 0 ? (
                     <p className="p-3 text-sm text-muted-foreground">
-                      Вопросы не найдены
+                      {t("Вопросы не найдены")}
                     </p>
                   ) : (
                     visibleQuestions.map((question) => (
@@ -300,14 +309,16 @@ const PickQuestionsDialog = ({
             variant="outline"
             onClick={() => handleOpenChange(false)}
           >
-            Отмена
+            {t("Отмена")}
           </Button>
           <Button
             type="button"
             disabled={selected.size === 0 || isInserting}
             onClick={insertSelected}
           >
-            {isInserting ? "Вставка..." : `Вставить (${selected.size})`}
+            {isInserting
+              ? t("Вставка...")
+              : t("Вставить ({{count}})", { count: selected.size })}
           </Button>
         </DialogFooter>
       </DialogContent>

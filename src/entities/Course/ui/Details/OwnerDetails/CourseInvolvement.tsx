@@ -1,9 +1,11 @@
 import ActivityList from "shared/components/ActivityList";
+import { useTranslation } from "react-i18next";
 import { ProgressCircle } from "shared/components/Progress/CircleProgressBar";
 import { useAuth } from "shared/hooks";
 import { Badge } from "shared/shadcn/ui/badge";
 
 const CourseInvolvement = () => {
+  const { t } = useTranslation();
   const auth_data = useAuth();
   return (
     <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -35,7 +37,7 @@ const CourseInvolvement = () => {
                                   text-amber-700 dark:text-amber-400
                                   border-amber-200/50 dark:border-amber-800/50"
               >
-                Создатель
+                {t("Создатель")}
               </Badge>
             </div>
           </div>
@@ -71,7 +73,7 @@ const CourseInvolvement = () => {
                                   text-purple-700 dark:text-purple-400
                                   border-purple-200/50 dark:border-purple-800/50"
               >
-                Соучастник
+                {t("Соучастник")}
               </Badge>
             </div>
           </div>

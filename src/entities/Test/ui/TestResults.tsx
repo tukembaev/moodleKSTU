@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { LuCalendarDays, LuCheckCheck, LuHandCoins, LuTrendingUp, LuUsers, LuX } from "react-icons/lu";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "shared/shadcn/ui/card";
@@ -23,6 +24,8 @@ const TestResults: FC<TestResultsProps> = ({
   courseId,
   compact = false,
 }) => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const test_id = testId;
 
   const { data: test_list, isLoading: isLoadingResults } = useQuery(
@@ -99,7 +102,7 @@ const TestResults: FC<TestResultsProps> = ({
         {!compact && (
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-              {testDetails?.title || "Результаты теста"}
+              {testDetails?.title || t("Результаты теста")}
             </h1>
             {testDetails?.description && (
               <p className="text-base sm:text-lg text-muted-foreground max-w-3xl">
@@ -113,19 +116,21 @@ const TestResults: FC<TestResultsProps> = ({
           {maxScore > 0 && (
             <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
               <LuHandCoins className="h-4 w-4" />
-              <span>Максимум: {maxScore} баллов</span>
+              <span>{t("Максимум: {{score}} баллов", { score: maxScore })}</span>
             </Badge>
           )}
           <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
             <LuCheckCheck className="h-4 w-4" />
-            <span>Проходной: {minScore} баллов</span>
+            <span>{t("Проходной: {{score}} баллов", { score: minScore })}</span>
           </Badge>
 
           {openingDate && (
             <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
               <LuCalendarDays className="h-4 w-4" />
               <span>
-                Открыт: {format(openingDate, "d MMMM yyyy", { locale: ru })}
+                {t("Открыт: {{date}}", {
+                  date: format(openingDate, "d MMMM yyyy", { locale: dateLocale }),
+                })}
               </span>
             </Badge>
           )}
@@ -139,7 +144,7 @@ const TestResults: FC<TestResultsProps> = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <LuUsers className="h-4 w-4" />
-              Всего студентов
+              {t("Всего студентов")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -151,12 +156,14 @@ const TestResults: FC<TestResultsProps> = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <LuCheckCheck className="h-4 w-4 text-green-600" />
-              Сдали тест
+              {t("Сдали тест")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-green-600">{passedCount}</p>
-            <p className="text-sm text-muted-foreground mt-1">{passedPercentage}% от общего числа</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("{{percent}}% от общего числа", { percent: passedPercentage })}
+            </p>
           </CardContent>
         </Card>
 
@@ -164,15 +171,20 @@ const TestResults: FC<TestResultsProps> = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <LuX className="h-4 w-4 text-red-600" />
-              Не сдали
+              {t("Не сдали")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-red-600">{failedCount}</p>
             <p className="text-sm text-muted-foreground mt-1">
               {pendingCount > 0
-                ? `${pendingCount} на проверке`
-                : `${totalStudents > 0 ? Math.round((failedCount / totalStudents) * 100) : 0}% от общего числа`}
+                ? t("{{count}} на проверке", { count: pendingCount })
+                : t("{{percent}}% от общего числа", {
+                    percent:
+                      totalStudents > 0
+                        ? Math.round((failedCount / totalStudents) * 100)
+                        : 0,
+                  })}
             </p>
           </CardContent>
         </Card>
@@ -181,7 +193,7 @@ const TestResults: FC<TestResultsProps> = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <LuTrendingUp className="h-4 w-4 text-blue-600" />
-              Средний балл
+              {t("Средний балл")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -190,7 +202,7 @@ const TestResults: FC<TestResultsProps> = ({
             </p>
             {averageScore > 0 && maxScore > 0 && (
               <p className="text-sm text-muted-foreground mt-1">
-                из {maxScore} возможных
+                {t("из {{max}} возможных", { max: maxScore })}
               </p>
             )}
           </CardContent>
@@ -199,7 +211,7 @@ const TestResults: FC<TestResultsProps> = ({
 
       <div className="flex flex-col gap-4">
         <h2 className="text-base sm:text-lg ">
-          Результаты студентов
+          {t("Результаты студентов")}
         </h2>
         <TestTable
           data={test_list || []}

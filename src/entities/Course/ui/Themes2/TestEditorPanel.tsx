@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { PickQuestionsDialog } from "entities/QuestionBank";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
@@ -48,6 +49,7 @@ interface QuizFormData {
   timeLimit: number;
   maxPoints: number;
   minPoints: number;
+  questionsPerAttempt: number;
   showCorrectAnswers: boolean;
   questions: QuestionForm[];
 }
@@ -69,7 +71,7 @@ const toFormQuestion = (question: QuestionDraft): QuestionForm => ({
   questionType: resolveQuestionType(question),
 });
 
-const mapDetailsToForm = (data: TestDetails): QuizFormData => ({
+const mapDetailsToForm = (data: TestDetails): QuizFormData => withAttemptSize({
   title: data.title,
   description: data.description || "",
   opening_date: data.opening_date ? new Date(data.opening_date) : new Date(),
@@ -78,6 +80,7 @@ const mapDetailsToForm = (data: TestDetails): QuizFormData => ({
   maxPoints: data.maxPoints,
   minPoints: getTestMinPoints(data),
   showCorrectAnswers: data.showCorrectAnswers,
+  questionsPerAttempt: data.questionsPerAttempt ?? 0,
   questions: (() => {
     const mapped = data.questions.filter(isFilledTestQuestion).map((question) => {
       const type = resolveQuestionType(question);
@@ -121,6 +124,14 @@ const mapDetailsToForm = (data: TestDetails): QuizFormData => ({
   })(),
 });
 
+const withAttemptSize = (form: QuizFormData): QuizFormData => ({
+  ...form,
+  questionsPerAttempt:
+    form.questionsPerAttempt > 0
+      ? form.questionsPerAttempt
+      : form.questions.filter(isQuestionDraftStarted).length || 1,
+});
+
 const isOwnerEditorPayload = (data?: TestDetails) =>
   Boolean(
     data &&
@@ -143,6 +154,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   courseId,
   onDeleted,
 }) => {
+  const { t } = useTranslation();
   const [panelTab, setPanelTab] = useState<"edit" | "results">("edit");
   const { data: courseTests } = useQuery(courseQueries.courseTests(courseId ?? null));
   const {
@@ -182,6 +194,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
       timeLimit: 60,
       maxPoints: 100,
       minPoints: 0,
+      questionsPerAttempt: 1,
       showCorrectAnswers: false,
       questions: [emptyQuestion()],
     },
@@ -280,8 +293,20 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
     const filledQuestions = formData.questions.filter(isQuestionDraftStarted);
 
     if (filledQuestions.length === 0) {
-      toastRequiredField("Добавьте хотя бы один вопрос");
+      toastRequiredField(t("Добавьте хотя бы один вопрос"));
       setActiveIndex(0);
+      return;
+    }
+
+    if (
+      !formData.questionsPerAttempt ||
+      formData.questionsPerAttempt > filledQuestions.length
+    ) {
+      toastRequiredField(
+        t("Не больше числа вопросов в тесте ({{count}})", {
+          count: filledQuestions.length,
+        })
+      );
       return;
     }
 
@@ -304,6 +329,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
       timeLimit: Number(formData.timeLimit),
       maxPoints: Number(formData.maxPoints) || 0,
       minPoints: Number(formData.minPoints) || 0,
+      questionsPerAttempt: Number(formData.questionsPerAttempt),
       showCorrectAnswers: formData.showCorrectAnswers || false,
       questions: filledQuestions.map((question) => toApiQuestionPayload(question)),
     };
@@ -349,7 +375,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border">
-        <p className="text-sm text-muted-foreground">Загрузка теста...</p>
+        <p className="text-sm text-muted-foreground">{t("Загрузка теста...")}</p>
       </div>
     );
   }
@@ -362,9 +388,9 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
             <EmptyMedia variant="icon">
               <AlertCircle size={24} />
             </EmptyMedia>
-            <EmptyTitle>Не удалось открыть тест</EmptyTitle>
+            <EmptyTitle>{t("Не удалось открыть тест")}</EmptyTitle>
             <EmptyDescription>
-              Проверьте права доступа или обновите страницу.
+              {t("Проверьте права доступа или обновите страницу.")}
             </EmptyDescription>
           </EmptyContent>
         </Empty>
@@ -382,15 +408,15 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
             </h2>
             {isCourseContext && (
               <Badge variant={isOpen ? "default" : "outline"}>
-                {isOpen ? "Открыт" : "Закрыт"}
+                {isOpen ? t("Открыт") : t("Закрыт")}
               </Badge>
             )}
           </div>
           {isCourseContext && (
             <p className="text-xs text-muted-foreground">
               {isOpen
-                ? "Студенты видят тест и могут его сдавать"
-                : "Студенты не видят этот тест и не могут сдавать"}
+                ? t("Студенты видят тест и могут его сдавать")
+                : t("Студенты не видят этот тест и не могут сдавать")}
             </p>
           )}
         </div>
@@ -404,7 +430,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                 disabled={isOpen || isAvailabilityPending}
               >
                 <LockOpen className="h-4 w-4" />
-                Открыть тест
+                {t("Открыть тест")}
               </Button>
               <Button
                 type="button"
@@ -414,7 +440,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                 disabled={!isOpen || isAvailabilityPending}
               >
                 <Lock className="h-4 w-4" />
-                Закрыть тест
+                {t("Закрыть тест")}
               </Button>
             </>
           )}
@@ -425,13 +451,13 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
               size="sm"
               disabled={isSaving}
             >
-              {isSaving ? "Сохранение..." : "Сохранить"}
+              {isSaving ? t("Сохранение...") : t("Сохранить")}
             </Button>
           )}
           {canEdit && (
             <UseConfirmationDialog
-              title="Удалить тест?"
-              description="Тест, вопросы, прикрепления и все результаты студентов будут удалены без возможности восстановления."
+              title={t("Удалить тест?")}
+              description={t("Тест, вопросы, прикрепления и все результаты студентов будут удалены без возможности восстановления.")}
               onConfirm={handleDelete}
               trigger={
                 <Button
@@ -441,7 +467,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                   disabled={isDeleting}
                 >
                   <Trash2 className="h-4 w-4" />
-                  Удалить
+                  {t("Удалить")}
                 </Button>
               }
             />
@@ -458,11 +484,11 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
             <TabsList className="h-9">
               <TabsTrigger value="edit" className="gap-1.5">
                 <Pencil className="h-4 w-4" />
-                Редактирование
+                {t("Редактирование")}
               </TabsTrigger>
               <TabsTrigger value="results" className="gap-1.5">
                 <BarChart3 className="h-4 w-4" />
-                Результаты
+                {t("Результаты")}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -480,10 +506,9 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
               <EmptyMedia variant="icon">
                 <Lock size={24} />
               </EmptyMedia>
-              <EmptyTitle>Редактирование недоступно</EmptyTitle>
+              <EmptyTitle>{t("Редактирование недоступно")}</EmptyTitle>
               <EmptyDescription>
-                Вопросы может менять только автор теста. Вы можете открывать и
-                закрывать его для студентов этого курса.
+                {t("Вопросы может менять только автор теста. Вы можете открывать и закрывать его для студентов этого курса.")}
               </EmptyDescription>
             </EmptyContent>
           </Empty>
@@ -499,75 +524,97 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <FieldLabel className="pb-2" required>
-                    Название теста
+                    {t("Название теста")}
                   </FieldLabel>
                   <Input
-                    {...register("title", requiredField("Заполните название теста"))}
-                    placeholder="Название теста"
-                  />
+                    {...register("title", requiredField(t("Заполните название теста")))}
+                    placeholder={t("Название теста")} />
                   {errors.title && (
-                    <p className="mt-1 text-xs text-destructive">Обязательно</p>
+                    <p className="mt-1 text-xs text-destructive">{t("Обязательно")}</p>
                   )}
                 </div>
                 <div className="md:col-span-2">
-                  <FieldLabel className="pb-2">Описание</FieldLabel>
+                  <FieldLabel className="pb-2">{t("Описание")}</FieldLabel>
                   <Input
                     {...register("description")}
-                    placeholder="Краткое описание"
-                  />
+                    placeholder={t("Краткое описание")} />
                 </div>
                 <div>
                   <FieldLabel className="pb-2" required>
-                    Время (минуты)
+                    {t("Время (минуты)")}
                   </FieldLabel>
                   <Input
                     type="number"
                     {...register("timeLimit", {
-                      ...requiredField("Укажите время теста"),
-                      min: { value: 1, message: "Минимум 1 минута" },
+                      ...requiredField(t("Укажите время теста")),
+                      min: { value: 1, message: t("Минимум 1 минута") },
                       valueAsNumber: true,
                     })}
                   />
                 </div>
                 <div>
                   <FieldLabel className="pb-2" required>
-                    Максимум баллов
+                    {t("Максимум баллов")}
                   </FieldLabel>
                   <Input
                     type="number"
                     step={1}
                     {...register("maxPoints", {
-                      ...requiredField("Укажите максимальный балл"),
-                      min: { value: 0, message: "Минимум 0 баллов" },
+                      ...requiredField(t("Укажите максимальный балл")),
+                      min: { value: 0, message: t("Минимум 0 баллов") },
                       valueAsNumber: true,
                     })}
                   />
                 </div>
                 <div>
                   <FieldLabel className="pb-2" required>
-                    Минимальный балл
+                    {t("Минимальный балл")}
                   </FieldLabel>
                   <Input
                     type="number"
                     step={1}
                     {...register("minPoints", {
-                      required: "Укажите минимальный балл",
-                      min: { value: 0, message: "От 0 до максимума" },
+                      required: t("Укажите минимальный балл"),
+                      min: { value: 0, message: t("От 0 до максимума") },
                       valueAsNumber: true,
                       validate: (value) => {
                         if (!Number.isFinite(value)) {
-                          return "Укажите минимальный балл";
+                          return t("Укажите минимальный балл");
                         }
                         return (
                           value <= (watch("maxPoints") || 0) ||
-                          "Не больше максимального балла"
+                          t("Не больше максимального балла")
                         );
                       },
                     })}
                   />
                   {errors.minPoints && (
                     <p className="mt-1 text-xs text-destructive">
-                      {errors.minPoints.message || "Целое число от 0 до максимума"}
+                      {errors.minPoints.message || t("Целое число от 0 до максимума")}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <FieldLabel className="pb-2" required>
+                    {t("Вопросов студенту")}
+                  </FieldLabel>
+                  <Input
+                    type="number"
+                    min={1}
+                    {...register("questionsPerAttempt", {
+                      ...requiredField(t("Укажите, сколько вопросов получит студент")),
+                      min: { value: 1, message: t("Минимум 1 вопрос") },
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("Случайно из пула. Сейчас вопросов: {{count}}", {
+                      count: (watchedQuestions ?? []).filter(isQuestionDraftStarted).length,
+                    })}
+                  </p>
+                  {errors.questionsPerAttempt && (
+                    <p className="mt-1 text-xs text-destructive">
+                      {errors.questionsPerAttempt.message || t("Минимум 1 вопрос")}
                     </p>
                   )}
                 </div>
@@ -580,7 +627,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                     }
                   />
                   <Label htmlFor="showCorrectAnswers" className="cursor-pointer font-normal">
-                    Показывать правильные ответы после сдачи
+                    {t("Показывать правильные ответы после сдачи")}
                   </Label>
                 </div>
                 <div className="flex items-center gap-2">
@@ -590,7 +637,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                     onCheckedChange={(checked) => setValue("required", !!checked)}
                   />
                   <Label htmlFor="required" className="cursor-pointer font-normal">
-                    Обязательный тест
+                    {t("Обязательный тест")}
                   </Label>
                 </div>
               </div>
@@ -601,13 +648,13 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="flex items-baseline gap-2 text-lg font-medium">
-                      Вопросы
+                      {t("Вопросы")}
                       <span className="text-destructive" aria-hidden="true">
                         *
                       </span>
                     </p>
                   </div>
-                  <UseTooltip text="Вставить готовые вопросы из коллекции">
+                  <UseTooltip text={t("Вставить готовые вопросы из коллекции")}>
                     <Button
                       type="button"
                       variant="outline"
@@ -615,7 +662,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                       onClick={() => setBankPickerOpen(true)}
                     >
                       <LuLibrary />
-                      Из коллекции вопросов
+                      {t("Из коллекции вопросов")}
                     </Button>
                   </UseTooltip>
                 </div>
@@ -627,7 +674,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                       type="button"
                       onClick={() => setActiveIndex(stepIndex)}
                       aria-current={stepIndex === activeIndex ? "step" : undefined}
-                      aria-label={`Перейти к вопросу ${stepIndex + 1}`}
+                      aria-label={t("Перейти к вопросу {{n}}", { n: stepIndex + 1 })}
                       className={cn(
                         "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors",
                         stepIndex === activeIndex
@@ -643,7 +690,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                     variant="outline"
                     size="icon-sm"
                     onClick={handleAppendQuestion}
-                    aria-label="Добавить вопрос"
+                    aria-label={t("Добавить вопрос")}
                     className="rounded-full"
                   >
                     <Plus />
@@ -689,7 +736,7 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                     disabled={activeIndex <= 0}
                   >
                     <ChevronLeft />
-                    Назад
+                    {t("Назад")}
                   </Button>
                   {activeIndex >= totalQuestions - 1 ? (
                     <Button
@@ -698,11 +745,11 @@ export const TestEditorPanel: FC<TestEditorPanelProps> = ({
                       onClick={handleAppendQuestion}
                     >
                       <Plus />
-                      Добавить вопрос
+                      {t("Добавить вопрос")}
                     </Button>
                   ) : (
                     <Button type="button" onClick={goNext}>
-                      Далее
+                      {t("Далее")}
                       <ChevronRight />
                     </Button>
                   )}

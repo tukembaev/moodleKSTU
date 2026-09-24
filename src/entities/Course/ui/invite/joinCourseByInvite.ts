@@ -1,6 +1,7 @@
 import axios from "axios";
 import { registerToCourse } from "entities/Course/model/services/courseAPI";
 import type { RegisterToCoursePayload } from "entities/Course/model/types/course";
+import i18n from "shared/config/i18n/i18n";
 
 const ALREADY_MEMBER_RE =
   /уже\s+(состоит|записан|добавлен|участник)|already\s+(enrolled|a member|joined|registered)|already exists/i;
@@ -32,7 +33,7 @@ export async function joinCourseByInvite(
     await registerToCourse(data);
   } catch (error: unknown) {
     if (isAlreadyMemberJoinError(error)) {
-      throw new Error("Вы уже состоите в этом курсе");
+      throw new Error(i18n.t("Вы уже состоите в этом курсе"));
     }
 
     const apiMessage = axios.isAxiosError(error)
@@ -53,6 +54,6 @@ export async function joinCourseByInvite(
         )?.detail
       : null;
 
-    throw new Error(apiMessage || "Не удалось отправить заявку на вступление");
+    throw new Error(apiMessage || i18n.t("Не удалось отправить заявку на вступление"));
   }
 }

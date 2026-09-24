@@ -4,13 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "shared/config/routeConfig/routePath";
 import { Avatar, AvatarImage } from "shared/shadcn/ui/avatar";
 import { CommandGroup, CommandItem } from "shared/shadcn/ui/command";
+import { useTranslation } from "react-i18next";
 
 const EmployeesGroup = ({ data }: { data: UserGroupList[] }) => {
+    const { t } = useTranslation();
   const navigate = useNavigate();
   if (data.length === 0) return null;
 
   return (
-    <CommandGroup heading="Пользователи">
+    <CommandGroup heading={t("Пользователи")}>
       {data.map((item) => (
         <CommandItem
           key={item.user_id}

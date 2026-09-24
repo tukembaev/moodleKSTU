@@ -12,6 +12,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 import { FieldLabel } from "shared/components/FieldLabel";
@@ -36,14 +37,14 @@ import {
 
 const QUESTION_TYPE_OPTIONS: Array<{
   type: QuestionType;
-  shortLabel: string;
+  shortLabelKey: string;
   icon: LucideIcon;
 }> = [
-  { type: "single_choice", shortLabel: "Один", icon: CircleDot },
-  { type: "multiple_choice", shortLabel: "Несколько", icon: ListChecks },
-  { type: "true_false", shortLabel: "Да/нет", icon: ToggleLeft },
-  { type: "short_answer", shortLabel: "Короткий", icon: Type },
-  { type: "essay", shortLabel: "Эссе", icon: AlignLeft },
+  { type: "single_choice", shortLabelKey: "Один", icon: CircleDot },
+  { type: "multiple_choice", shortLabelKey: "Несколько", icon: ListChecks },
+  { type: "true_false", shortLabelKey: "Да/нет", icon: ToggleLeft },
+  { type: "short_answer", shortLabelKey: "Короткий", icon: Type },
+  { type: "essay", shortLabelKey: "Эссе", icon: AlignLeft },
 ];
 
 interface QuestionEditorCardProps {
@@ -56,11 +57,13 @@ interface QuestionEditorCardProps {
   onAddOption?: () => void;
 }
 
-const typeHint = (type: QuestionType) => {
+const typeHintKey = (type: QuestionType) => {
   if (type === "multiple_choice") return "Отметьте все правильные варианты";
-  if (type === "single_choice") return "Нажмите на вариант, чтобы отметить правильный ответ";
+  if (type === "single_choice")
+    return "Нажмите на вариант, чтобы отметить правильный ответ";
   if (type === "true_false") return "Выберите, какой ответ считается правильным";
-  if (type === "short_answer") return "Укажите эталонный текст. Сверка без регистра и лишних пробелов";
+  if (type === "short_answer")
+    return "Укажите эталонный текст. Сверка без регистра и лишних пробелов";
   return "Студент напишет свободный ответ. Балл ставит преподаватель вручную";
 };
 
@@ -73,6 +76,7 @@ const QuestionEditorCard = ({
   onRemove,
   onAddOption,
 }: QuestionEditorCardProps) => {
+  const { t } = useTranslation();
   const uid = useId();
   const questionType = resolveQuestionType(value);
   const options = value.options || [];
@@ -149,12 +153,20 @@ const QuestionEditorCard = ({
     <div className="flex flex-col gap-4 rounded-2xl border p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-base leading-snug font-medium">Вопрос {index + 1}</p>
-          <p className="text-sm text-muted-foreground">{typeHint(questionType)}</p>
+          <p className="text-base leading-snug font-medium">
+            {t("Вопрос {{index}}", { index: index + 1 })}
+          </p>
+          <p className="text-sm text-muted-foreground">{t(typeHintKey(questionType))}</p>
         </div>
         <div className="flex items-center gap-3">
           {showRemove && (
-            <Button type="button" variant="ghost" size="icon-sm" onClick={onRemove} aria-label="Удалить вопрос">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={onRemove}
+              aria-label={t("Удалить вопрос")}
+            >
               <Trash2 className="text-destructive" />
             </Button>
           )}
@@ -163,7 +175,7 @@ const QuestionEditorCard = ({
 
       <div className="flex flex-col gap-1.5">
         <FieldLabel id={`${uid}-type-label`} htmlFor={`${uid}-type`} required>
-          Тип вопроса
+          {t("Тип вопроса")}
         </FieldLabel>
         <div className="md:hidden">
           <Select
@@ -187,7 +199,7 @@ const QuestionEditorCard = ({
           aria-labelledby={`${uid}-type-label`}
           className="hidden grid-cols-5 gap-2 md:grid"
         >
-          {QUESTION_TYPE_OPTIONS.map(({ type, shortLabel, icon: Icon }) => {
+          {QUESTION_TYPE_OPTIONS.map(({ type, shortLabelKey, icon: Icon }) => {
             const isActive = questionType === type;
             return (
               <button
@@ -206,7 +218,7 @@ const QuestionEditorCard = ({
                 )}
               >
                 <Icon className="size-4" />
-                <span>{shortLabel}</span>
+                <span>{t(shortLabelKey)}</span>
               </button>
             );
           })}
@@ -216,16 +228,16 @@ const QuestionEditorCard = ({
       <Input
         value={value.question}
         onChange={(e) => update({ ...value, question: e.target.value })}
-        placeholder="Введите текст вопроса"
+        placeholder={t("Введите текст вопроса")}
         className="min-h-11 rounded-xl"
-        aria-label={`Текст вопроса ${index + 1}`}
+        aria-label={t("Текст вопроса {{index}}", { index: index + 1 })}
       />
 
       {value.questionImagePreview ? (
         <div className="relative w-fit">
           <img
             src={value.questionImagePreview}
-            alt="Превью изображения вопроса"
+            alt={t("Превью изображения вопроса")}
             className="max-h-44 max-w-full rounded-xl border object-contain"
           />
           <Button
@@ -233,7 +245,7 @@ const QuestionEditorCard = ({
             variant="destructive"
             size="icon-sm"
             className="absolute -top-2 -right-2 rounded-full shadow-sm"
-            aria-label="Убрать изображение вопроса"
+            aria-label={t("Убрать изображение вопроса")}
             onClick={() =>
               update({ ...value, questionImage: null, questionImagePreview: undefined })
             }
@@ -253,7 +265,7 @@ const QuestionEditorCard = ({
           <Label htmlFor={`${uid}-question-image`} className="cursor-pointer">
             <span className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed px-3 text-sm text-muted-foreground transition-colors hover:border-solid hover:text-foreground">
               <ImagePlus className="size-4" />
-              Изображение к вопросу (необязательно)
+              {t("Изображение к вопросу (необязательно)")}
             </span>
           </Label>
         </div>
@@ -262,8 +274,8 @@ const QuestionEditorCard = ({
       {questionType === "true_false" && (
         <div className="grid gap-2 sm:grid-cols-2">
           {[
-            { value: true, label: "Верно" },
-            { value: false, label: "Неверно" },
+            { value: true, label: t("Верно") },
+            { value: false, label: t("Неверно") },
           ].map((option) => {
             const isChecked = trueFalseValue === option.value;
             return (
@@ -301,13 +313,13 @@ const QuestionEditorCard = ({
       {questionType === "short_answer" && (
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor={`${uid}-short-answer`} required>
-            Эталонный ответ
+            {t("Эталонный ответ")}
           </FieldLabel>
           <Input
             id={`${uid}-short-answer`}
             value={typeof value.correctAnswer === "string" ? value.correctAnswer : ""}
             onChange={(e) => update({ ...value, correctAnswer: e.target.value })}
-            placeholder="Например, Париж"
+            placeholder={t("Например, Париж")}
             className="min-h-11 rounded-xl"
           />
         </div>
@@ -315,7 +327,9 @@ const QuestionEditorCard = ({
 
       {questionType === "essay" && (
         <p className="rounded-xl border border-dashed px-3 py-2.5 text-sm text-muted-foreground">
-          Правильный ответ не указывается. После сдачи вопрос попадёт преподавателю на ручную проверку.
+          {t(
+            "Правильный ответ не указывается. После сдачи вопрос попадёт преподавателю на ручную проверку."
+          )}
         </p>
       )}
 
@@ -368,8 +382,11 @@ const QuestionEditorCard = ({
                         };
                         update({ ...value, options: updatedOptions });
                       }}
-                      placeholder={`Вариант ${oIndex + 1}`}
-                      aria-label={`Вариант ${oIndex + 1} вопроса ${index + 1}`}
+                      placeholder={t("Вариант {{index}}", { index: oIndex + 1 })}
+                      aria-label={t("Вариант {{option}} вопроса {{question}}", {
+                        option: oIndex + 1,
+                        question: index + 1,
+                      })}
                       className="h-8 border-transparent bg-transparent px-1.5 shadow-none hover:border-input focus-visible:border-ring focus-visible:bg-background"
                     />
                     {options.length > 2 && (
@@ -377,7 +394,7 @@ const QuestionEditorCard = ({
                         type="button"
                         variant="ghost"
                         size="icon-xs"
-                        aria-label={`Удалить вариант ${oIndex + 1}`}
+                        aria-label={t("Удалить вариант {{index}}", { index: oIndex + 1 })}
                         onClick={() => removeOption(oIndex)}
                       >
                         <X />
@@ -389,7 +406,7 @@ const QuestionEditorCard = ({
                     <div className="relative w-fit">
                       <img
                         src={option.imagePreview}
-                        alt={`Изображение варианта ${oIndex + 1}`}
+                        alt={t("Изображение варианта {{index}}", { index: oIndex + 1 })}
                         className="max-h-24 max-w-full rounded-lg border bg-background object-contain"
                       />
                       <Button
@@ -397,7 +414,7 @@ const QuestionEditorCard = ({
                         variant="destructive"
                         size="icon-xs"
                         className="absolute -top-2 -right-2 rounded-full shadow-sm"
-                        aria-label="Убрать изображение варианта"
+                        aria-label={t("Убрать изображение варианта")}
                         onClick={() => {
                           const updatedOptions = [...options];
                           updatedOptions[oIndex] = {
@@ -425,7 +442,7 @@ const QuestionEditorCard = ({
                         className="flex w-fit cursor-pointer items-center gap-1.5 rounded-lg px-1.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
                       >
                         <ImagePlus className="size-3.5" />
-                        Картинка
+                        {t("Картинка")}
                       </Label>
                     </div>
                   )}
@@ -441,7 +458,7 @@ const QuestionEditorCard = ({
               className="flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed text-sm text-muted-foreground transition-colors hover:border-solid hover:text-foreground"
             >
               <Plus className="size-5" />
-              Добавить вариант
+              {t("Добавить вариант")}
             </button>
           )}
         </div>
@@ -449,7 +466,7 @@ const QuestionEditorCard = ({
 
       {(questionType === "single_choice" || questionType === "multiple_choice") &&
         options.length >= 6 && (
-          <p className="text-xs text-muted-foreground">Максимум 6 вариантов ответа</p>
+          <p className="text-xs text-muted-foreground">{t("Максимум 6 вариантов ответа")}</p>
         )}
 
       {error && (

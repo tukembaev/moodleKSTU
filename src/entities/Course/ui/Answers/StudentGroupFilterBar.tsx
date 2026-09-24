@@ -1,4 +1,5 @@
 import { StudentsAnswers } from "entities/Course/model/types/course";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { LuPencil, LuPlus, LuUsers, LuX } from "react-icons/lu";
 import { FieldLabel } from "shared/components";
@@ -143,6 +144,7 @@ export const StudentGroupFilterBar = ({
     userIds: number[]
   ) => Promise<unknown> | void;
 }) => {
+  const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<StudentFilterGroup | null>(
     null
@@ -196,7 +198,7 @@ export const StudentGroupFilterBar = ({
   const handleSubmit = async () => {
     const name = groupName.trim();
     if (!name) {
-      setNameError("Введите название группы");
+      setNameError(t("Введите название группы"));
       return;
     }
     if (selectedUserIds.length === 0) return;
@@ -254,7 +256,7 @@ export const StudentGroupFilterBar = ({
               </button>
               <button
                 type="button"
-                aria-label={`Изменить группу ${group.name}`}
+                aria-label={t("Изменить группу {{name}}", { name: group.name })}
                 disabled={actionsDisabled}
                 className={badgeActionClassName}
                 onClick={() => openEdit(group)}
@@ -263,7 +265,7 @@ export const StudentGroupFilterBar = ({
               </button>
               <button
                 type="button"
-                aria-label={`Удалить группу ${group.name}`}
+                aria-label={t("Удалить группу {{name}}", { name: group.name })}
                 disabled={actionsDisabled}
                 className={badgeActionClassName}
                 onClick={() => handleRemove(group.id)}
@@ -284,7 +286,7 @@ export const StudentGroupFilterBar = ({
           )}
         >
           <LuPlus className="size-3.5" />
-          Добавить группу
+          {t("Добавить группу")}
         </button>
       </div>
 
@@ -298,19 +300,19 @@ export const StudentGroupFilterBar = ({
         <DialogContent className="flex max-h-[85vh] flex-col gap-4 overflow-hidden sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {isEdit ? "Изменить группу" : "Создать группу"}
+              {isEdit ? t("Изменить группу") : t("Создать группу")}
             </DialogTitle>
             <DialogDescription>
               {isEdit
-                ? "Измените название или состав. Сохранение полностью заменяет список студентов."
-                : "Назовите группу и отметьте студентов. Затем её можно включить как фильтр в списке."}
+                ? t("Измените название или состав. Сохранение полностью заменяет список студентов.")
+                : t("Назовите группу и отметьте студентов. Затем её можно включить как фильтр в списке.")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex min-h-0 flex-1 flex-col gap-3">
             <div className="flex flex-col gap-2">
               <FieldLabel htmlFor="student-filter-group-name" required>
-                Название группы
+                {t("Название группы")}
               </FieldLabel>
               <Input
                 id="student-filter-group-name"
@@ -320,7 +322,7 @@ export const StudentGroupFilterBar = ({
                   setGroupName(event.target.value);
                   if (nameError) setNameError("");
                 }}
-                placeholder="Например, Подгруппа А"
+                placeholder={t("Например, Подгруппа А")}
                 aria-invalid={Boolean(nameError)}
               />
               {nameError ? (
@@ -330,12 +332,12 @@ export const StudentGroupFilterBar = ({
 
             <div className="flex min-h-0 flex-col gap-2">
               <FieldLabel htmlFor="student-filter-group-search">
-                Студенты
+                {t("Студенты")}
               </FieldLabel>
               <Input
                 id="student-filter-group-search"
                 type="text"
-                placeholder="Поиск по имени..."
+                placeholder={t("Поиск по имени...")}
                 value={studentSearch}
                 onChange={(event) => setStudentSearch(event.target.value)}
               />
@@ -343,7 +345,7 @@ export const StudentGroupFilterBar = ({
                 {filteredStudents.length === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-center text-sm text-muted-foreground">
                     <LuUsers className="size-5" />
-                    Студенты не найдены
+                    {t("Студенты не найдены")}
                   </div>
                 ) : (
                   <ul className="divide-y">
@@ -363,7 +365,7 @@ export const StudentGroupFilterBar = ({
                                 toggleStudent(student.user_id, value === true)
                               }
                               onClick={(event) => event.stopPropagation()}
-                              aria-label={`Выбрать ${student.fullname}`}
+                              aria-label={t("Выбрать {{name}}", { name: student.fullname })}
                             />
                             <Avatar className="h-8 w-8 shrink-0">
                               <AvatarImage
@@ -392,7 +394,7 @@ export const StudentGroupFilterBar = ({
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Выбрано: {selectedUserIds.length}
+                {t("Выбрано: {{count}}", { count: selectedUserIds.length })}
               </p>
             </div>
           </div>
@@ -407,11 +409,11 @@ export const StudentGroupFilterBar = ({
             >
               {isSaving
                 ? isEdit
-                  ? "Сохраняем..."
-                  : "Создаём..."
+                  ? t("Сохраняем...")
+                  : t("Создаём...")
                 : isEdit
-                  ? "Сохранить"
-                  : "Создать"}
+                  ? t("Сохранить")
+                  : t("Создать")}
             </Button>
           </DialogFooter>
         </DialogContent>

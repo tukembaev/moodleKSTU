@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { useAuth } from "shared/hooks";
 import { useQuizId } from "shared/lib/navigation/hidden-ids";
@@ -18,6 +19,7 @@ interface QuizProps {
   onFinish: () => void;
 }
 const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
+  const { t } = useTranslation();
   const quizId = useQuizId();
   const authData = useAuth();
   const { data: quizData, isLoading } = useFetchQuiz(quizId || "");
@@ -67,7 +69,7 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
       if (lastAnswer === currentQuestion.correctAnswer) {
         setScore((prev) => prev + 1);
       }
-      toast.success("Тест завершён!");
+      toast.success(t("Тест завершён!"));
       console.log("Ответы пользователя:", allAnswers);
       onFinish();
       if (authData?.id) {
@@ -91,6 +93,7 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
       quizId,
       score,
       submitResult,
+      t,
     ]
   );
 
@@ -123,15 +126,15 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
   }, onFormInvalid);
 
   if (isLoading) {
-    return <div className="text-center mt-8">Загрузка...</div>;
+    return <div className="text-center mt-8">{t("Загрузка...")}</div>;
   }
 
   if (!quiz) {
-    return <div className="text-center mt-8">Викторина не найдена</div>;
+    return <div className="text-center mt-8">{t("Викторина не найдена")}</div>;
   }
 
   if (!quiz.questions.length) {
-    return <div className="text-center mt-8">В тесте нет вопросов</div>;
+    return <div className="text-center mt-8">{t("В тесте нет вопросов")}</div>;
   }
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
@@ -144,7 +147,10 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
         <h2 className="text-2xl font-semibold">{quiz.title}</h2>
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>
-            Вопрос {currentQuestionIndex + 1} / {totalQuestions}
+            {t("Вопрос {{current}} / {{total}}", {
+              current: currentQuestionIndex + 1,
+              total: totalQuestions,
+            })}
           </span>
         </div>
         <Progress value={progress} />
@@ -159,7 +165,7 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
                 type="radio"
                 id={`option-${index}`}
                 value={option}
-                {...register("answer", requiredField("Выберите ответ"))}
+                {...register("answer", requiredField(t("Выберите ответ")))}
                 className="h-4 w-4"
               />
               <label htmlFor={`option-${index}`} className="text-sm">
@@ -169,11 +175,11 @@ const Quiz = ({ id_quiz, onFinish }: QuizProps) => {
           ))}
           {errors.answer && (
             <p className="text-destructive">
-              Выберите один из вариантов ответа
+              {t("Выберите один из вариантов ответа")}
             </p>
           )}
           <Button type="submit" disabled={isPending} className="mt-4">
-            {isPending ? "Отправка..." : "Ответить"}
+            {isPending ? t("Отправка...") : t("Ответить")}
           </Button>
         </form>
       </div>

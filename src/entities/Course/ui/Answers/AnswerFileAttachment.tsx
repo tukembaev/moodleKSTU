@@ -1,5 +1,6 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { makeIsRead } from "entities/Course/model/services/courseAPI";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { FileAnswer } from "entities/Course/model/types/course";
@@ -42,6 +43,7 @@ export function AnswerFileAttachment({
   onRead?: () => void;
   className?: string;
 }) {
+  const { t, i18n } = useTranslation();
   const { mutate: deleteFile, isPending: isDeleting } =
     courseQueries.delete_answer();
 
@@ -51,13 +53,17 @@ export function AnswerFileAttachment({
   const FileKindIcon = getFileKindIcon(extension);
 
   const createdLabel = file.created_at
-    ? format(file.created_at, "d MMM yyyy", { locale: ru })
+    ? format(file.created_at, "d MMM yyyy", { locale: getDateLocale(i18n.language) })
     : null;
   const readLabel = file.is_read?.is_read
     ? file.is_read.read
-      ? `Просмотрен ${format(file.is_read.read, "d MMM, p", { locale: ru })}`
-      : "Просмотрен"
-    : "Не просмотрен";
+      ? t("Просмотрен {{date}}", {
+          date: format(file.is_read.read, "d MMM, p", {
+            locale: getDateLocale(i18n.language),
+          }),
+        })
+      : t("Просмотрен")
+    : t("Не просмотрен");
 
   const description = [extension ? extension.toUpperCase() : null, createdLabel, readLabel]
     .filter(Boolean)
@@ -74,8 +80,8 @@ export function AnswerFileAttachment({
       <AttachmentTrigger
         aria-label={
           isPdf
-            ? `Открыть превью ${file.file_names}`
-            : `Открыть ${file.file_names}`
+            ? t("Открыть превью {{name}}", { name: file.file_names })
+            : t("Открыть {{name}}", { name: file.file_names })
         }
         onClick={handleOpen}
       />
@@ -104,7 +110,7 @@ export function AnswerFileAttachment({
   const actions = (
     <AttachmentActions>
       <AttachmentAction
-        aria-label={`Скачать ${file.file_names}`}
+        aria-label={t("Скачать {{name}}", { name: file.file_names })}
         onClick={() => {
           handleOpen();
           const link = document.createElement("a");
@@ -121,14 +127,14 @@ export function AnswerFileAttachment({
       </AttachmentAction>
       {canDelete && (
         <UseConfirmationDialog
-          title="Удалить файл?"
-          description={`Файл «${file.file_names}» будет удалён без возможности восстановления.`}
+          title={t("Удалить файл?")}
+          description={t("Файл «{{name}}» будет удалён без возможности восстановления.", { name: file.file_names })}
           onConfirm={() => deleteFile(file.id)}
           trigger={
             <AttachmentAction
               variant="ghost"
               disabled={isDeleting}
-              aria-label={`Удалить ${file.file_names}`}
+              aria-label={t("Удалить {{name}}", { name: file.file_names })}
               className="text-destructive hover:text-destructive"
             >
               <Trash2Icon />
@@ -192,7 +198,7 @@ export function AnswerFileAttachment({
       {body}
       <AttachmentTrigger
         asChild
-        aria-label={`Скачать ${file.file_names}`}
+        aria-label={t("Скачать {{name}}", { name: file.file_names })}
       >
         <a
           href={file.file}

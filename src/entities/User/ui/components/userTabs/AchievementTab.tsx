@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { userQueries } from "entities/User/model/userQueryFactory";
 import { Achievement } from "entities/User/types/user";
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { UseTooltip } from "shared/components";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import {
@@ -12,7 +13,7 @@ import {
 } from "shared/shadcn/ui/dialog";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 
-const rarityLabels: Record<string, string> = {
+const rarityLabelKeys: Record<string, string> = {
   regular: "Обычные",
   rare: "Редкие",
   mythical: "Мифические",
@@ -66,6 +67,7 @@ const SkeletonBlock = () => (
 );
 
 const AchievementTab = () => {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery(userQueries.user_achievements());
 
   if (isLoading) {
@@ -85,7 +87,7 @@ const AchievementTab = () => {
         Object.entries(data).map(([rarity, items]) => (
           <div key={rarity} className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold text-gray-800 italic">
-              {rarityLabels[rarity]}
+              {rarityLabelKeys[rarity] ? t(rarityLabelKeys[rarity]) : rarity}
             </h2>
             <div className="flex gap-2 flex-wrap">
               {items.map((achievement: Achievement, index: string) => (

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
     Dialog,
     DialogContent,
@@ -18,6 +19,7 @@ import {
   import { studentAvatarSrc, studentInitials } from "./studentAvatar";
 
 const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
+  const { t, i18n } = useTranslation();
     const [open, setOpen] = useState(false);
     
     // Подсчет баллов за все задания
@@ -63,7 +65,11 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
                 <p className="font-medium text-xs sm:text-sm truncate">{title}</p>
                 {deadline && (
                   <p className="text-[10px] sm:text-xs text-muted-foreground">
-                    Дата сдачи: {new Date(deadline).toLocaleDateString('ru-RU')}
+                    {t("Дата сдачи: {{date}}", {
+                      date: new Date(deadline).toLocaleDateString(
+                        i18n.language === "en" ? "en-US" : i18n.language === "ky" ? "ky-KG" : "ru-RU"
+                      ),
+                    })}
                   </p>
                 )}
                 <TeacherGradeComment comment={comment} compact className="mt-1 max-w-none" />
@@ -114,7 +120,7 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
                   </Badge>
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
-              Детальная статистика успеваемости студента
+              {t("Детальная статистика успеваемости студента")}
             </DialogDescription>
           </DialogHeader>
 
@@ -136,17 +142,17 @@ const StudentDetailDialog = ({ student }: { student: TablePerfomance }) => {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    Нет доступных заданий
+                    {t("Нет доступных заданий")}
                   </p>
                 )}
             {/* <Card>
               <CardHeader className="px-4 sm:p-6">
                 <CardTitle className="flex items-center justify-between gap-2 text-base sm:text-lg">
-                  <span>Задания курса</span>
+                  <span>{t("Задания курса")}</span>
                 
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Общая успеваемость по всем заданиям
+                  {t("Общая успеваемость по всем заданиям")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-0">

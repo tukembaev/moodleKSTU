@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "shared/hooks";
 import { cn } from "shared/lib/utils";
 import { LuChevronDown } from "react-icons/lu";
@@ -17,6 +18,7 @@ const ThemeAnswers = ({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) => {
+  const { t } = useTranslation();
   const { isStudent } = useAuth();
   const {
     data: answersOfAllStudents,
@@ -59,7 +61,7 @@ const ThemeAnswers = ({
           className="flex min-h-10 w-full shrink-0 items-center justify-between gap-2 px-3 text-left active:bg-accent/50 lg:hidden lg:px-4"
         >
           <span className="truncate text-base font-semibold">
-            Список студентов
+            {t("Список студентов")}
           </span>
           <LuChevronDown
             className={cn(

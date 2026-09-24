@@ -9,6 +9,7 @@ import { CreateAnnouncementPayload, CreateCourseInvitePayload, UpdateAnnouncemen
 import { toast } from 'sonner';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AppRoutes, RoutePath } from 'shared/config/routeConfig/routePath';
+import i18n from "shared/config/i18n/i18n";
 import { BindCourseStreamsPayload, CreateCoursePayload, CreateCourseStudentGroupPayload, CreateFAQPayload, CreateThemePayload, EditCourseStudentGroupPayload, EditThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload, SetCourseAccessPayload } from '../types/course_payload';
 
 const MY_SUBMISSIONS_QUERY_KEY = ['course', 'my-submissions'] as const;
@@ -43,14 +44,14 @@ export const useRegistrateCourse = () => {
     mutationFn: (courseId: string) => {
       const mutationPromise = registerToCourse(courseId);
       toast.promise(mutationPromise, {
-        loading: "Регистрируемся на курс...",
-        success: "Регистрация на курс прошла успешно!",
+        loading: i18n.t("Регистрируемся на курс..."),
+        success: i18n.t("Регистрация на курс прошла успешно!"),
         // error: "Ошибка при регистрации. Попробуйте снова.",
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
       console.log(error.message);
     },
@@ -66,14 +67,14 @@ export const useRegistrateCourse = () => {
       mutationFn: (data: CreateCoursePayload) => {
         const mutationPromise = createCourse(data);
         toast.promise(mutationPromise, {
-          loading: "Создаем курс...",
-          success: "Создание курса прошло успешно!",
+          loading: i18n.t("Создаем курс..."),
+          success: i18n.t("Создание курса прошло успешно!"),
           // error: "Ошибка при создании курса. Попробуйте снова.",
         });
         return mutationPromise;
       },
       onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
         console.log(error.message);
       },
@@ -90,13 +91,13 @@ export const useRegistrateCourse = () => {
       mutationFn: (id: string) => {
         const mutationPromise = duplicateCourse(id);
         toast.promise(mutationPromise, {
-          loading: "Копируем курс со всеми темами и материалами...",
-          success: "Курс успешно продублирован!",
+          loading: i18n.t("Копируем курс со всеми темами и материалами..."),
+          success: i18n.t("Курс успешно продублирован!"),
         });
         return mutationPromise;
       },
       onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Не удалось продублировать курс"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось продублировать курс") }));
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['course'] });
@@ -110,14 +111,14 @@ export const useRegistrateCourse = () => {
       mutationFn: (data: CreateFAQPayload) => {
         const mutationPromise = createFAQ(data);
         toast.promise(mutationPromise, {
-          loading: "Создаем FAQ...",
-          success: "Создание FAQ прошло успешно!",
+          loading: i18n.t("Создаем FAQ..."),
+          success: i18n.t("Создание FAQ прошло успешно!"),
           // error: "Ошибка при создании FAQ. Попробуйте снова.",
         });
         return mutationPromise;
       },
       onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
         console.log(error.message);
       },
       onSuccess: () => {
@@ -132,14 +133,14 @@ export const useRegistrateCourse = () => {
       mutationFn: (data: FormData) => {
         const mutationPromise = createMaterial(data);
         toast.promise(mutationPromise, {
-          loading: "Загружаем материал...",
-          success: "Загрузка материала прошло успешно!",
+          loading: i18n.t("Загружаем материал..."),
+          success: i18n.t("Загрузка материала прошло успешно!"),
           // error: "Ошибка при загрузке материала. Попробуйте снова.",
         });
         return mutationPromise;
       },
       onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
         console.log(error.message);
       },
@@ -157,9 +158,9 @@ export const useRegistrateCourse = () => {
       mutationFn: (data: FormData) => {
         const mutationPromise = createAnswer(data);
         toast.promise(mutationPromise, {
-          loading: "Загружаем вашу работу...",
-          success: "Загрузка работы прошла успешно!",
-          error: (error) => apiErrorDetail(error, "Не удалось загрузить работу"),
+          loading: i18n.t("Загружаем вашу работу..."),
+          success: i18n.t("Загрузка работы прошла успешно!"),
+          error: (error) => apiErrorDetail(error, i18n.t("Не удалось загрузить работу")),
         });
         return mutationPromise;
       },
@@ -180,14 +181,14 @@ export const useRegistrateCourse = () => {
       mutationFn: (data: CreateThemePayload) => {
         const mutationPromise = createTheme(data);
         toast.promise(mutationPromise, {
-          loading: "Создаем тему...",
-          success: "Создание темы прошло успешно!",
+          loading: i18n.t("Создаем тему..."),
+          success: i18n.t("Создание темы прошло успешно!"),
           // error: "Ошибка при создании темы. Попробуйте снова.",
         });
         return mutationPromise;
       },
       onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
         console.log(error.message);
       },
@@ -205,13 +206,13 @@ export const useRegistrateCourse = () => {
       return useMutation({
         mutationFn: (data: RateAnswerPayload) => {
           if (!data.answer && !data.result) {
-            toast.warning("Студент не отвечал на задание, оценивание невозможно");
+            toast.warning(i18n.t("Студент не отвечал на задание, оценивание невозможно"));
             return Promise.reject("Нет ID ответа");
           }
           const mutationPromise = rateTheAnswerAndComment(data);
           toast.promise(mutationPromise, {
-            loading: "Оцениваем работу...",
-            success: "Оценивание работы прошло успешно!",
+            loading: i18n.t("Оцениваем работу..."),
+            success: i18n.t("Оценивание работы прошло успешно!"),
           });
           return mutationPromise;
         },
@@ -258,14 +259,14 @@ export const useRegistrateCourse = () => {
                   ])
                 : editPermissionTheme(id, data);
             toast.promise(mutationPromise, {
-              loading: "Меняем доступ...",
-              success: "Изменение доступа прошло успешно!",
+              loading: i18n.t("Меняем доступ..."),
+              success: i18n.t("Изменение доступа прошло успешно!"),
               // error: "Ошибка при изменении доступа. Попробуйте снова.",
             });
             return mutationPromise;
           },
           onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
             console.log(error.message);
           },
@@ -305,16 +306,16 @@ export const useRegistrateCourse = () => {
             ]);
             toast.promise(mutationPromise, {
               loading: locked
-                ? "Закрываем доступ всем..."
-                : "Открываем доступ всем...",
+                ? i18n.t("Закрываем доступ всем...")
+                : i18n.t("Открываем доступ всем..."),
               success: locked
-                ? "Доступ закрыт для всех студентов"
-                : "Доступ открыт для всех студентов",
+                ? i18n.t("Доступ закрыт для всех студентов")
+                : i18n.t("Доступ открыт для всех студентов"),
             });
             return mutationPromise;
           },
           onError: (error) => {
-            toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+            toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
           },
           onSuccess: async (_data, { id, locked }) => {
             patchThemeLockedInList(queryClient, id, locked);
@@ -334,10 +335,10 @@ export const useRegistrateCourse = () => {
             | { detail?: unknown; invalid_users?: unknown }
             | undefined;
           if (Array.isArray(data?.invalid_users) && data.invalid_users.length > 0) {
-            return `Студенты не записаны на курс: ${data.invalid_users.join(", ")}`;
+            return i18n.t("Студенты не записаны на курс: {{users}}", { users: data.invalid_users.join(", ") });
           }
         }
-        return apiErrorDetail(error, "Не удалось изменить доступ к курсу");
+        return apiErrorDetail(error, i18n.t("Не удалось изменить доступ к курсу"));
       };
 
       export const useSetCourseAccess = () => {
@@ -355,26 +356,26 @@ export const useRegistrateCourse = () => {
             const mutationPromise = setCourseAccess(courseId, payload);
             toast.promise(mutationPromise, {
               loading: locked
-                ? "Закрываем доступ ко всем темам..."
-                : "Открываем доступ ко всем темам...",
+                ? i18n.t("Закрываем доступ ко всем темам...")
+                : i18n.t("Открываем доступ ко всем темам..."),
               success: (data) => {
                 if (data.themes_updated === 0) {
-                  return "На курсе нет тем — доступ не изменён";
+                  return i18n.t("На курсе нет тем — доступ не изменён");
                 }
                 if (data.applied_to_all_students) {
                   return locked
-                    ? "Доступ ко всем темам закрыт для всех студентов"
-                    : "Доступ ко всем темам открыт для всех студентов";
+                    ? i18n.t("Доступ ко всем темам закрыт для всех студентов")
+                    : i18n.t("Доступ ко всем темам открыт для всех студентов");
                 }
                 return locked
-                  ? `Доступ ко всем темам закрыт (${data.students_updated})`
-                  : `Доступ ко всем темам открыт (${data.students_updated})`;
+                  ? i18n.t("Доступ ко всем темам закрыт ({{count}})", { count: data.students_updated })
+                  : i18n.t("Доступ ко всем темам открыт ({{count}})", { count: data.students_updated });
               },
             });
             return mutationPromise;
           },
           onError: (error) => {
-            toast.error(`Ошибка: ${courseAccessErrorMessage(error)}`);
+            toast.error(i18n.t("Ошибка: {{message}}", { message: courseAccessErrorMessage(error) }));
           },
           onSuccess: async (_data, { courseId }) => {
             await Promise.all([
@@ -418,14 +419,14 @@ export const useRegistrateCourse = () => {
             const mutationPromise = editTheme(id, data);
             if (!silent) {
               toast.promise(mutationPromise, {
-                loading: "Сохраняем тему...",
-                success: "Тема успешно изменена!",
+                loading: i18n.t("Сохраняем тему..."),
+                success: i18n.t("Тема успешно изменена!"),
               });
             }
             return mutationPromise;
           },
           onError: (error) => {
-            toast.error(`Ошибка: ${error?.message || "Не удалось изменить тему"}`);
+            toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось изменить тему") }));
           },
           onSuccess: async (_data, { id, data }) => {
             if (typeof data.locked === "boolean") {
@@ -451,13 +452,13 @@ export const useRegistrateCourse = () => {
           mutationFn: (id: string) => {
             const mutationPromise = deleteTheme(id);
             toast.promise(mutationPromise, {
-              loading: "Удаляем тему...",
-              success: "Тема успешно удалена!",
+              loading: i18n.t("Удаляем тему..."),
+              success: i18n.t("Тема успешно удалена!"),
             });
             return mutationPromise;
           },
           onError: (error) => {
-            toast.error(`Ошибка: ${error?.message || "Не удалось удалить тему"}`);
+            toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось удалить тему") }));
           },
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['course', 'course-all-themes'], exact: false });
@@ -475,14 +476,14 @@ export const useRegistrateCourse = () => {
           mutationFn: ({ id, data }: { id: string; data: editDetailPayload }) => {
             const mutationPromise = editCourseDetails(id,data);
             toast.promise(mutationPromise, {
-              loading: "Меняем детали курса...",
-              success: "Изменение информации о курсе прошло успешно!",
+              loading: i18n.t("Меняем детали курса..."),
+              success: i18n.t("Изменение информации о курсе прошло успешно!"),
               // error: "Ошибка при изменении информации о курсе. Попробуйте снова.",
             });
             return mutationPromise;
           },
           onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
             console.log(error.message);
           },
@@ -502,16 +503,16 @@ export const useRegistrateCourse = () => {
             const mutationPromise = setCourseArchive(id, archive);
             toast.promise(mutationPromise, {
               loading: archive
-                ? "Отправляем курс в архив..."
-                : "Возвращаем курс из архива...",
+                ? i18n.t("Отправляем курс в архив...")
+                : i18n.t("Возвращаем курс из архива..."),
               success: archive
-                ? "Курс отправлен в архив и скрыт у всех"
-                : "Курс возвращён из архива",
+                ? i18n.t("Курс отправлен в архив и скрыт у всех")
+                : i18n.t("Курс возвращён из архива"),
             });
             return mutationPromise;
           },
           onError: (error) => {
-            toast.error(`Ошибка: ${error?.message || "Не удалось изменить архив курса"}`);
+            toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось изменить архив курса") }));
           },
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['course'] });
@@ -561,9 +562,9 @@ export const useRegistrateCourse = () => {
 
       const deleteCourseErrorMessage = (error: unknown) => {
         const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-        if (status === 403) return "Недостаточно прав для удаления курса";
-        if (status === 404) return "Курс уже удалён или не найден";
-        return apiErrorDetail(error, "Не удалось удалить курс");
+        if (status === 403) return i18n.t("Недостаточно прав для удаления курса");
+        if (status === 404) return i18n.t("Курс уже удалён или не найден");
+        return apiErrorDetail(error, i18n.t("Не удалось удалить курс"));
       };
 
       export const useDeleteCourse = () => {
@@ -581,8 +582,8 @@ export const useRegistrateCourse = () => {
           mutationFn: (id: string) => {
             const mutationPromise = deleteCourse(id);
             toast.promise(mutationPromise, {
-              loading: "Удаляем курс...",
-              success: "Курс удалён",
+              loading: i18n.t("Удаляем курс..."),
+              success: i18n.t("Курс удалён"),
               error: (error) => deleteCourseErrorMessage(error),
             });
             return mutationPromise;
@@ -650,14 +651,14 @@ export const useRegistrateCourse = () => {
               user_id:data.user_id
             })
             toast.promise(mutationPromise, {
-              loading: "Выставляем итоговый балл для студента...",
-              success: "Итоговый балл выставлен!",
+              loading: i18n.t("Выставляем итоговый балл для студента..."),
+              success: i18n.t("Итоговый балл выставлен!"),
               // error: "Ошибка при выставлении итога. Попробуйте снова.",
             });
             return mutationPromise;
           },
           onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
             console.log(error.message);
           },
@@ -675,14 +676,14 @@ export const useRegistrateCourse = () => {
           mutationFn: ({ theme, text }: { theme: string; text: string }) => {
             const mutationPromise = createComment(theme,text);
             toast.promise(mutationPromise, {
-              loading: "Отправляем ваш комментарий...",
-              success: "Отправка комментария прошла успешно!",
+              loading: i18n.t("Отправляем ваш комментарий..."),
+              success: i18n.t("Отправка комментария прошла успешно!"),
               // error: "Ошибка при отправке комментария. Попробуйте снова.",
             });
             return mutationPromise;
           },
           onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
             console.log(error.message);
           },
@@ -699,14 +700,14 @@ export const useRegistrateCourse = () => {
           mutationFn: ({ comment_id, text }: { comment_id: string; text: string }) => {
             const mutationPromise = replyOnComment(comment_id,text);
             toast.promise(mutationPromise, {
-              loading: "Отвечаем на комментарий...",
-              success: "Отправка комментария прошла успешно!",
+              loading: i18n.t("Отвечаем на комментарий..."),
+              success: i18n.t("Отправка комментария прошла успешно!"),
               // error: "Ошибка при отправке комментария. Попробуйте снова.",
             });
             return mutationPromise;
           },
           onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
             console.log(error.message);
           },
@@ -725,7 +726,7 @@ export const useRegistrateCourse = () => {
             return mutationPromise;
           },
           onError: (error) => {
-        toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+        toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
             console.log(error.message);
           },
@@ -742,9 +743,9 @@ export const useDeleteAnswer = () => {
     mutationFn: (id: string) => {
       const mutationPromise = deleteAnswer(id);
       toast.promise(mutationPromise, {
-        loading: "Удаляем файл...",
-        success: "Файл успешно удалён!",
-        error: (error) => apiErrorDetail(error, "Не удалось удалить файл"),
+        loading: i18n.t("Удаляем файл..."),
+        success: i18n.t("Файл успешно удалён!"),
+        error: (error) => apiErrorDetail(error, i18n.t("Не удалось удалить файл")),
       });
       return mutationPromise;
     },
@@ -766,14 +767,14 @@ export const delete_material = () => {
     mutationFn: (id:string) => {
       const mutationPromise = deleteMaterial(id);
       toast.promise(mutationPromise, {
-        loading: `Удаляем материал...`,
-        success: `Материал успешно удален!`,
+        loading: i18n.t("Удаляем материал..."),
+        success: i18n.t("Материал успешно удален!"),
         // error: "Ошибка при удалении из избранного. Попробуйте снова.",
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Что-то пошло не так"}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Что-то пошло не так") }));
 
     },
     onSuccess: () => {
@@ -791,13 +792,13 @@ export const useBindCourseStreams = () => {
     mutationFn: (data: BindCourseStreamsPayload) => {
       const mutationPromise = bindCourseStreams(data);
       toast.promise(mutationPromise, {
-        loading: "Привязываем потоки к курсу...",
-        success: "Потоки успешно привязаны к курсу!",
+        loading: i18n.t("Привязываем потоки к курсу..."),
+        success: i18n.t("Потоки успешно привязаны к курсу!"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось привязать потоки"}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось привязать потоки") }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course', 'streams'], exact: false });
@@ -817,13 +818,13 @@ export const useRemoveStudentFromCourse = () => {
     }) => {
       const mutationPromise = removeStudentFromCourse(courseId, studentId);
       toast.promise(mutationPromise, {
-        loading: "Удаляем студента с курса...",
-        success: "Студент удалён с курса",
+        loading: i18n.t("Удаляем студента с курса..."),
+        success: i18n.t("Студент удалён с курса"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось удалить студента"}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось удалить студента") }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["answer-task"], exact: false });
@@ -845,13 +846,13 @@ export const useDeleteCourseStream = () => {
     mutationFn: (id: string) => {
       const mutationPromise = deleteCourseStream(id);
       toast.promise(mutationPromise, {
-        loading: "Отвязываем поток от курса...",
-        success: "Поток успешно отвязан от курса!",
+        loading: i18n.t("Отвязываем поток от курса..."),
+        success: i18n.t("Поток успешно отвязан от курса!"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось отвязать поток"}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось отвязать поток") }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course', 'streams'], exact: false });
@@ -865,13 +866,13 @@ export const useCreateCourseInvite = () => {
     mutationFn: (data: CreateCourseInvitePayload) => {
       const mutationPromise = createCourseInviteLink(data);
       toast.promise(mutationPromise, {
-        loading: "Создаём приглашение...",
-        success: "Приглашение на курс создано",
+        loading: i18n.t("Создаём приглашение..."),
+        success: i18n.t("Приглашение на курс создано"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось создать приглашение"}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось создать приглашение") }));
     },
     onSuccess: (data, variables) => {
       if (data) {
@@ -891,13 +892,13 @@ export const useDeleteCourseInvite = () => {
     mutationFn: (courseId: string) => {
       const mutationPromise = deleteCourseInviteLink(courseId);
       toast.promise(mutationPromise, {
-        loading: "Удаляем приглашение...",
-        success: "Приглашение удалено",
+        loading: i18n.t("Удаляем приглашение..."),
+        success: i18n.t("Приглашение удалено"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось удалить приглашение"}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: error?.message || i18n.t("Не удалось удалить приглашение") }));
     },
     onSuccess: (_data, courseId) => {
       queryClient.setQueryData(['course', 'invite-link', courseId], null);
@@ -914,13 +915,13 @@ export const useCreateAnnouncement = () => {
     }: CreateAnnouncementPayload & { courseId: string }) => {
       const mutationPromise = createCourseAnnouncement(courseId, payload);
       toast.promise(mutationPromise, {
-        loading: "Публикуем объявление...",
-        success: "Объявление опубликовано",
+        loading: i18n.t("Публикуем объявление..."),
+        success: i18n.t("Объявление опубликовано"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${apiErrorDetail(error, "Не удалось опубликовать объявление")}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: apiErrorDetail(error, i18n.t("Не удалось опубликовать объявление")) }));
     },
     onSuccess: (_data, { courseId }) => {
       queryClient.invalidateQueries({
@@ -947,13 +948,13 @@ export const useUpdateAnnouncement = () => {
         payload
       );
       toast.promise(mutationPromise, {
-        loading: "Сохраняем объявление...",
-        success: "Объявление обновлено",
+        loading: i18n.t("Сохраняем объявление..."),
+        success: i18n.t("Объявление обновлено"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${apiErrorDetail(error, "Не удалось обновить объявление")}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: apiErrorDetail(error, i18n.t("Не удалось обновить объявление")) }));
     },
     onSuccess: (_data, { courseId }) => {
       queryClient.invalidateQueries({
@@ -978,13 +979,13 @@ export const useDeleteAnnouncement = () => {
     }) => {
       const mutationPromise = deleteCourseAnnouncement(courseId, announcementId);
       toast.promise(mutationPromise, {
-        loading: "Удаляем объявление...",
-        success: "Объявление удалено",
+        loading: i18n.t("Удаляем объявление..."),
+        success: i18n.t("Объявление удалено"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${apiErrorDetail(error, "Не удалось удалить объявление")}`);
+      toast.error(i18n.t("Ошибка: {{message}}", { message: apiErrorDetail(error, i18n.t("Не удалось удалить объявление")) }));
     },
     onSuccess: (_data, { courseId }) => {
       queryClient.invalidateQueries({
@@ -1024,9 +1025,9 @@ export const useCreateCourseStudentGroup = () => {
     }) => {
       const mutationPromise = createCourseStudentGroup(courseId, data);
       toast.promise(mutationPromise, {
-        loading: "Создаем группу...",
-        success: "Группа создана",
-        error: (error) => apiErrorDetail(error, "Не удалось создать группу"),
+        loading: i18n.t("Создаем группу..."),
+        success: i18n.t("Группа создана"),
+        error: (error) => apiErrorDetail(error, i18n.t("Не удалось создать группу")),
       });
       return mutationPromise;
     },
@@ -1050,9 +1051,9 @@ export const useEditCourseStudentGroup = () => {
     }) => {
       const mutationPromise = editCourseStudentGroup(courseId, groupId, data);
       toast.promise(mutationPromise, {
-        loading: "Обновляем группу...",
-        success: "Группа обновлена",
-        error: (error) => apiErrorDetail(error, "Не удалось обновить группу"),
+        loading: i18n.t("Обновляем группу..."),
+        success: i18n.t("Группа обновлена"),
+        error: (error) => apiErrorDetail(error, i18n.t("Не удалось обновить группу")),
       });
       return mutationPromise;
     },
@@ -1074,9 +1075,9 @@ export const useDeleteCourseStudentGroup = () => {
     }) => {
       const mutationPromise = deleteCourseStudentGroup(courseId, groupId);
       toast.promise(mutationPromise, {
-        loading: "Удаляем группу...",
-        success: "Группа удалена",
-        error: (error) => apiErrorDetail(error, "Не удалось удалить группу"),
+        loading: i18n.t("Удаляем группу..."),
+        success: i18n.t("Группа удалена"),
+        error: (error) => apiErrorDetail(error, i18n.t("Не удалось удалить группу")),
       });
       return mutationPromise;
     },

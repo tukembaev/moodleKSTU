@@ -11,11 +11,13 @@ import { Card } from "shared/shadcn/ui/card";
 import { FieldLabel } from "shared/components/FieldLabel";
 import { UploadAnswerPayload } from "../model/types/course_payload";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { LuCloudUpload } from "react-icons/lu";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 
 
 const Add_Answer_Theme = () => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -58,7 +60,7 @@ const Add_Answer_Theme = () => {
     return (
       <section className="py-4">
         <Card className="p-6 text-sm text-muted-foreground">
-          Для этого типа занятия загрузка файлов не нужна.
+          {t("Для этого типа занятия загрузка файлов не нужна.")}
         </Card>
       </section>
     );
@@ -70,7 +72,7 @@ const Add_Answer_Theme = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="file">
-              Материалы (выберите несколько файлов)
+              {t("Материалы (выберите несколько файлов)")}
             </FieldLabel>
             <Input type="file" multiple {...register("list_files")} />
           </div>
@@ -79,7 +81,7 @@ const Add_Answer_Theme = () => {
            
             <Button type="submit" className="w-full mt-4" disabled={isPending || !canUpload}>
               <LuCloudUpload />{" "}
-              {isPending ? "Загрузка..." : "Загрузить материал"}
+              {isPending ? t("Загрузка...") : t("Загрузить материал")}
             </Button>
           </div>
         </form>

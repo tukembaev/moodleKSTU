@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "shared/lib/utils";
 import { Bubble, BubbleContent } from "shared/shadcn/ui/bubble";
 import {
@@ -73,6 +74,7 @@ const markerIcon = (type: ThreadMarker["type"]) => {
 };
 
 function RemarkThreadMarker({ marker }: { marker: ThreadMarker }) {
+  const { t } = useTranslation();
   const isApproved = marker.type === "approved";
   const isSeparator =
     marker.type === "date" || marker.type === "remark_opened";
@@ -93,7 +95,7 @@ function RemarkThreadMarker({ marker }: { marker: ThreadMarker }) {
       <MarkerContent>
         {marker.label}
         {isApproved ? (
-          <span className="mt-0.5 block text-xs">Замечаний больше нет</span>
+          <span className="mt-0.5 block text-xs">{t("Замечаний больше нет")}</span>
         ) : null}
       </MarkerContent>
     </Marker>

@@ -9,8 +9,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "shared/shadcn/ui/alert-dialog";
-// import { Button, buttonVariants } from "shared/shadcn/ui/button";
 import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   trigger: ReactNode;
@@ -27,6 +27,8 @@ export default function UseConfirmationDialog({
   icon,
   onConfirm,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
@@ -45,8 +47,8 @@ export default function UseConfirmationDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-2 sm:justify-center">
-          <AlertDialogCancel>Отмена</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Подтвердить</AlertDialogAction>
+          <AlertDialogCancel>{t("Отмена")}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>{t("Подтвердить")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -3,6 +3,7 @@ import UserCard from "./components/UserCard";
 
 import { useQuery } from "@tanstack/react-query";
 import { LuFileBox } from "react-icons/lu";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { UseTabs } from "shared/components";
 import { useAuth } from "shared/hooks";
@@ -11,6 +12,7 @@ import { userQueries } from "../model/userQueryFactory";
 import FileTab from "./components/userTabs/FileTab";
 
 const UserProfile = () => {
+  const { t } = useTranslation();
   const { id: visit_user } = useParams();
   const { id: user_id, isAuthenticated } = useAuth();
 
@@ -48,7 +50,7 @@ const UserProfile = () => {
 
   const tabs = [
     {
-      name: "Файлы",
+      name: t("Файлы"),
       value: "files",
       content: (
         <FileTab

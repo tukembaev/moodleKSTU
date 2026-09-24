@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { LogOutIcon, UserCircleIcon } from "lucide-react";
@@ -19,6 +20,7 @@ import {
 } from "shared/shadcn/ui/dropdown-menu";
 
 export function HeaderUserMenu() {
+  const { t } = useTranslation();
   const auth_data = useAuth();
   const { data: me, isLoading } = useQuery({
     ...userQueries.me(),
@@ -46,7 +48,7 @@ export function HeaderUserMenu() {
   const avatar = me?.avatar_url || auth_data?.avatar || "";
   const initials =
     `${firstName[0] || ""}${lastName[0] || ""}`.toUpperCase() || "U";
-  const displayName = `${firstName} ${lastName}`.trim() || me?.username || "Профиль";
+  const displayName = `${firstName} ${lastName}`.trim() || me?.username || t("Профиль");
 
   return (
     <DropdownMenu>
@@ -104,14 +106,14 @@ export function HeaderUserMenu() {
           <DropdownMenuItem asChild>
             <NavLink to="/profile" className="flex items-center gap-2">
               <UserCircleIcon />
-              Профиль
+              {t("Профиль")}
             </NavLink>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onExit}>
           <LogOutIcon />
-          Выйти
+          {t("Выйти")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

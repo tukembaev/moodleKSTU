@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { format, isValid } from "date-fns";
 import { resolveStudentThemeAccess } from "entities/Course/lib/themeStudentAccess";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { remarksQueries } from "entities/Remarks";
@@ -6,6 +7,7 @@ import { isGradableThemeType } from "features/Course/forms/add-theme/add-theme-c
 import { StudentComments } from "features/Course/hooks/StudentComments";
 import { AnimatePresence, motion } from "motion/react";
 import { FC, ReactNode, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { IconType } from "react-icons";
 import {
   LuClipboardList,
@@ -13,8 +15,10 @@ import {
   LuInfo,
   LuKeyRound,
   LuList,
+  LuLock,
   LuMessageSquareText,
 } from "react-icons/lu";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { useAuth } from "shared/hooks";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
@@ -42,24 +46,72 @@ import { MaterialsSection } from "./MaterialsSection";
 
 const FILES_TAB = "theme_answers";
 
+const unavailableBlurMask = {
+  WebkitMaskImage:
+    "radial-gradient(ellipse 92% 78% at 50% 46%, #000 18%, transparent 70%)",
+  maskImage:
+    "radial-gradient(ellipse 92% 78% at 50% 46%, #000 18%, transparent 70%)",
+} as const;
+
+const formatThemeOpenLabel = (
+  value: string | number | null | undefined,
+  language: string
+) => {
+  if (value == null || value === "") return null;
+
+  const raw = String(value).trim();
+  const numeric = typeof value === "number" || /^\d+$/.test(raw);
+  const date = numeric
+    ? new Date(Number(raw) < 1e12 ? Number(raw) * 1000 : Number(raw))
+    : new Date(value);
+
+  if (!isValid(date)) return null;
+
+  const pattern =
+    date.getFullYear() === new Date().getFullYear() ? "d MMMM" : "d MMMM yyyy";
+  return format(date, pattern, { locale: getDateLocale(language) });
+};
+
 const ThemeUnavailableCover = ({
   active,
   children,
+  description,
 }: {
   active: boolean;
   children: ReactNode;
+  description: string;
 }) => {
+  const { t } = useTranslation();
   if (!active) return <>{children}</>;
 
   return (
     <div className="relative h-full min-h-0 overflow-hidden">
-      <div className="pointer-events-none h-full min-h-0 select-none blur-sm">
-        {children}
+      <div
+        inert
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <div
+          className="absolute inset-4 select-none opacity-50 blur-2xl"
+          style={unavailableBlurMask}
+        >
+          {children}
+        </div>
       </div>
-      <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
-        <p className="rounded-lg border bg-background px-4 py-2 text-center text-sm font-medium shadow-sm">
-          Ещё недоступно
-        </p>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 left-1/2 h-36 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card blur-2xl"
+      />
+      <div className="relative z-10 flex h-full min-h-0 items-center justify-center">
+        <Empty className="min-h-0 gap-3 border-0 bg-transparent p-3 md:p-5">
+          <EmptyContent className="gap-2">
+            <EmptyMedia variant="icon">
+              <LuLock size={20} />
+            </EmptyMedia>
+            <EmptyTitle className="text-base">{t("Ещё недоступно")}</EmptyTitle>
+            <EmptyDescription>{description}</EmptyDescription>
+          </EmptyContent>
+        </Empty>
       </div>
     </div>
   );
@@ -171,6 +223,7 @@ const WorkspaceTabsList: FC<WorkspaceTabsListProps> = ({
 };
 
 export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
+  const { t, i18n } = useTranslation();
   const auth_data = useAuth();
   const courseId = useCourseId();
   const isMobile = useIsMobile();
@@ -192,6 +245,19 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
     auth_data.isStudent
   );
   const answersUnavailable = notYetOpen && !canSubmit;
+  const openLabel = formatThemeOpenLabel(
+    currentTheme?.open_date ?? currentTheme?.opening_date,
+    i18n.language
+  );
+  const materialsHint = openLabel
+    ? t("Учебные материалы откроются {{date}}", { date: openLabel })
+    : t("Учебные материалы откроются в день начала темы");
+  const answersHint = openLabel
+    ? t("Сдать работу можно будет {{date}}", { date: openLabel })
+    : t("Сдать работу можно будет, когда тема откроется");
+  const sectionHint = openLabel
+    ? t("Раздел откроется {{date}}", { date: openLabel })
+    : t("Раздел откроется вместе с темой");
   const canReceivePoints = isGradableThemeType(currentTheme?.type_less);
   const showStudentSubmissions = canReceivePoints;
   const showAnswersPane = !auth_data.isStudent || showStudentSubmissions;
@@ -228,14 +294,14 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
     {
       name: auth_data.isStudent
         ? showAnswersPane
-          ? "Мои файлы"
-          : "Материалы"
-        : "Список студентов",
+          ? t("Мои файлы")
+          : t("Материалы")
+        : t("Список студентов"),
       shortName: auth_data.isStudent
         ? showAnswersPane
-          ? "Файлы"
-          : "Материалы"
-        : "Студенты",
+          ? t("Файлы")
+          : t("Материалы")
+        : t("Студенты"),
       value: FILES_TAB,
       icon: LuList,
       count: 0,
@@ -243,8 +309,8 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
     ...(!auth_data.isStudent
       ? [
           {
-            name: "Доступ",
-            shortName: "Доступ",
+            name: t("Доступ"),
+            shortName: t("Доступ"),
             value: "access",
             icon: LuKeyRound,
             count: 0,
@@ -252,8 +318,8 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
         ]
       : []),
     {
-      name: "Обсуждение",
-      shortName: "Чат",
+      name: t("Обсуждение"),
+      shortName: t("Чат"),
       value: "feed",
       icon: LuMessageSquareText,
       count: comments?.length || 0,
@@ -268,8 +334,8 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
     ...(auth_data.isStudent && showStudentSubmissions
       ? [
           {
-            name: "Замечания",
-            shortName: "Замечания",
+            name: t("Замечания"),
+            shortName: t("Замечания"),
             value: "comments",
             icon: LuClipboardList,
             count: themeRemarks?.length || 0,
@@ -293,10 +359,11 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
               <EmptyMedia variant="icon">
                 <LuInfo size={24} />
               </EmptyMedia>
-              <EmptyTitle>Выберите тему</EmptyTitle>
+              <EmptyTitle>{t("Выберите тему")}</EmptyTitle>
               <EmptyDescription>
-                Выберите тему из списка слева, чтобы открыть материалы,
-                файлы и обсуждение
+                {t(
+                  "Выберите тему из списка слева, чтобы открыть материалы, файлы и обсуждение"
+                )}
               </EmptyDescription>
             </EmptyContent>
           </Empty>
@@ -346,11 +413,15 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
               >
                 <div
                   className={cn(
-                    "min-h-0 overflow-hidden bg-muted/15",
+                    "min-h-0 overflow-hidden",
+                    !notYetOpen && "bg-muted/15",
                     isMobile && !materialsOpen && "self-start"
                   )}
                 >
-                  <ThemeUnavailableCover active={notYetOpen}>
+                  <ThemeUnavailableCover
+                    active={notYetOpen}
+                    description={materialsHint}
+                  >
                     <MaterialsSection
                       themeId={themeId}
                       collapsible={isMobile && !notYetOpen}
@@ -368,7 +439,10 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
                         isMobile && !answersOpen && "self-start"
                       )}
                     >
-                      <ThemeUnavailableCover active={answersUnavailable}>
+                      <ThemeUnavailableCover
+                        active={answersUnavailable}
+                        description={answersHint}
+                      >
                         <ThemeAnswers
                           id={themeId}
                           collapsible={isMobile && !answersUnavailable}
@@ -395,7 +469,10 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
               value="feed"
               className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
             >
-              <ThemeUnavailableCover active={notYetOpen}>
+              <ThemeUnavailableCover
+                active={notYetOpen}
+                description={sectionHint}
+              >
                 <div className="flex h-full min-h-0 flex-col px-3 pb-3 lg:px-4 sm:pb-4">
                   <ThemeFeed
                     items={comments || []}
@@ -410,7 +487,10 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
               value="faq"
               className="m-0 h-full min-h-0 overflow-auto data-[state=inactive]:hidden"
             >
-              <ThemeUnavailableCover active={notYetOpen}>
+              <ThemeUnavailableCover
+                active={notYetOpen}
+                description={sectionHint}
+              >
                 <ThemeFAQ theme_id={themeId} />
               </ThemeUnavailableCover>
             </TabsContent>
@@ -420,7 +500,10 @@ export const ThemeWorkspace: FC<ThemeWorkspaceProps> = ({ themeId }) => {
               className="m-0 h-full min-h-0 overflow-hidden data-[state=inactive]:hidden"
             >
               {auth_data.isStudent && showStudentSubmissions && (
-                <ThemeUnavailableCover active={notYetOpen}>
+                <ThemeUnavailableCover
+                  active={notYetOpen}
+                  description={sectionHint}
+                >
                   <StudentComments theme_id={themeId} />
                 </ThemeUnavailableCover>
               )}

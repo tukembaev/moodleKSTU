@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { LuCloudUpload, LuX } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import { Card } from "shared/shadcn/ui/card";
 import { Input } from "shared/shadcn/ui/input";
@@ -17,6 +18,7 @@ import { UseDatePicker, UseMultiSelect } from "shared/components";
 import { TestPayload } from "../model/types/test_payload";
 
 const Add_Test = () => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -74,31 +76,31 @@ const Add_Test = () => {
       <Card className="flex flex-col gap-4 p-6 h-full overflow-y-auto">
         <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
-            <FieldLabel required>Название теста</FieldLabel>
+            <FieldLabel required>{t("Название теста")}</FieldLabel>
             <Input
               type="text"
-              placeholder="Введите название"
-              {...register("title", requiredField("Заполните название теста"))}
+              placeholder={t("Введите название")}
+              {...register("title", requiredField(t("Заполните название теста")))}
             />
             {errors.title && (
-              <span className="text-xs text-red-500">Название обязательно</span>
+              <span className="text-xs text-red-500">{t("Название обязательно")}</span>
             )}
           </div>
 
           <div className="flex flex-col gap-2">
-            <FieldLabel required>Описание</FieldLabel>
+            <FieldLabel required>{t("Описание")}</FieldLabel>
             <Input
               type="text"
-              placeholder="Введите описание"
-              {...register("description", requiredField("Заполните описание теста"))}
+              placeholder={t("Введите описание")}
+              {...register("description", requiredField(t("Заполните описание теста")))}
             />
             {errors.description && (
-              <span className="text-xs text-red-500">Описание обязательно</span>
+              <span className="text-xs text-red-500">{t("Описание обязательно")}</span>
             )}
           </div>
           <div className="flex flex-col gap-2 w-full">
             <FieldLabel htmlFor="deadline" required>
-              Дата открытия
+              {t("Дата открытия")}
             </FieldLabel>
             <UseDatePicker
               control={control}
@@ -107,13 +109,13 @@ const Add_Test = () => {
             />
             {errors.opening_date && (
               <span className="text-xs text-red-500">
-                Дата открытия обязательна
+                {t("Дата открытия обязательна")}
               </span>
             )}
           </div>
           <div className="flex flex-col gap-2 w-full">
             <FieldLabel htmlFor="deadline" required>
-              Дедлайн
+              {t("Дедлайн")}
             </FieldLabel>
             <UseDatePicker
               control={control}
@@ -121,18 +123,18 @@ const Add_Test = () => {
               className="w-full"
             />
             {errors.deadline && (
-              <span className="text-xs text-red-500">Дедлайн обязателен</span>
+              <span className="text-xs text-red-500">{t("Дедлайн обязателен")}</span>
             )}
           </div>
           <div className="flex flex-col gap-2 w-full">
             <FieldLabel htmlFor="deadline">
-              Выберите курсы для закрепления теста
+              {t("Выберите курсы для закрепления теста")}
             </FieldLabel>
             <UseMultiSelect
               options={courseOptions}
               onValueChange={setSelectedCourses}
               defaultValue={selectedCourses}
-              placeholder="Выберите курсы"
+              placeholder={t("Выберите курсы")}
               variant="default"
               animation={2}
               maxCount={3}
@@ -140,44 +142,44 @@ const Add_Test = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <FieldLabel required>Максимальное количество баллов</FieldLabel>
+            <FieldLabel required>{t("Максимальное количество баллов")}</FieldLabel>
             <Input
               type="number"
-              placeholder="Введите число"
+              placeholder={t("Введите число")}
               {...register("max_points", {
-                ...requiredField("Укажите максимальное количество баллов"),
-                min: { value: 0, message: "Укажите корректное число" },
+                ...requiredField(t("Укажите максимальное количество баллов")),
+                min: { value: 0, message: t("Укажите корректное число") },
                 valueAsNumber: true,
               })}
             />
             {errors.max_points && (
               <span className="text-xs text-red-500">
-                Укажите корректное число
+                {t("Укажите корректное число")}
               </span>
             )}
           </div>
 
           <div className="flex flex-col gap-2">
-            <FieldLabel required>Ссылка на форму</FieldLabel>
+            <FieldLabel required>{t("Ссылка на форму")}</FieldLabel>
             <Input
               type="url"
               placeholder="https://example.com/form"
-              {...register("link_form", requiredField("Укажите ссылку на форму"))}
+              {...register("link_form", requiredField(t("Укажите ссылку на форму")))}
             />
             {errors.link_form && (
-              <span className="text-xs text-red-500">Ссылка обязательна</span>
+              <span className="text-xs text-red-500">{t("Ссылка обязательна")}</span>
             )}
           </div>
 
           <div className="flex flex-col gap-2">
-            <FieldLabel required>Ссылка на документ</FieldLabel>
+            <FieldLabel required>{t("Ссылка на документ")}</FieldLabel>
             <Input
               type="url"
               placeholder="https://example.com/doc"
-              {...register("link_doc", requiredField("Укажите ссылку на документ"))}
+              {...register("link_doc", requiredField(t("Укажите ссылку на документ")))}
             />
             {errors.link_doc && (
-              <span className="text-xs text-red-500">Ссылка обязательна</span>
+              <span className="text-xs text-red-500">{t("Ссылка обязательна")}</span>
             )}
           </div>
 
@@ -191,11 +193,11 @@ const Add_Test = () => {
                 navigate(-1);
               }}
             >
-              <LuX /> Отменить
+              <LuX /> {t("Отменить")}
             </Button>
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload />{" "}
-              {isPending ? "Загрузка..." : "Опубликовать тест"}
+              {isPending ? t("Загрузка...") : t("Опубликовать тест")}
             </Button>
           </div>
         </form>

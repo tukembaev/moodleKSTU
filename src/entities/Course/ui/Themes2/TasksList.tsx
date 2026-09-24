@@ -1,5 +1,6 @@
 import { FC, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { useAuth, useForm } from "shared/hooks";
 import { TaskGroup } from "./TaskGroup";
@@ -78,6 +79,7 @@ export const TasksList: FC<TasksListProps> = ({
   selectedTaskId,
   onItemClick,
 }) => {
+  const { t } = useTranslation();
   const auth_data = useAuth();
   const openForm = useForm();
   const id = useCourseId();
@@ -189,7 +191,7 @@ export const TasksList: FC<TasksListProps> = ({
 
       {Object.keys(groupedTasks).length === 0 && isStudent && (
         <div className="text-center py-12 text-muted-foreground">
-          <p className="text-lg">Задания пока не добавлены</p>
+          <p className="text-lg">{t("Задания пока не добавлены")}</p>
         </div>
       )}
 
@@ -199,9 +201,11 @@ export const TasksList: FC<TasksListProps> = ({
             <EmptyMedia variant="icon">
               <Plus size={24} />
             </EmptyMedia>
-            <EmptyTitle>Добавить новую тему или тест</EmptyTitle>
+            <EmptyTitle>{t("Добавить новую тему или тест")}</EmptyTitle>
             <EmptyDescription>
-              Нажмите кнопку ниже, чтобы добавить новую тему или заранее созданный тест
+              {t(
+                "Нажмите кнопку ниже, чтобы добавить новую тему или заранее созданный тест"
+              )}
             </EmptyDescription>
 
             <button
@@ -213,7 +217,7 @@ export const TasksList: FC<TasksListProps> = ({
               }
               className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
             >
-              Добавить 
+              {t("Добавить")}{" "}
             </button>
           </EmptyContent>
         </Empty>

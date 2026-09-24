@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -84,6 +85,7 @@ function DepartmentsPanel({
 }: {
   onSelectDepartment: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const { data, isLoading, error } = useQuery(departmentQueries.list());
   const departments = useMemo(() => {
@@ -95,7 +97,9 @@ function DepartmentsPanel({
   if (error) {
     return (
       <WorkloadError
-        message={error instanceof Error ? error.message : "Неизвестная ошибка"}
+        message={
+          error instanceof Error ? error.message : t("Неизвестная ошибка")
+        }
       />
     );
   }
@@ -105,16 +109,18 @@ function DepartmentsPanel({
       <WorkloadSearch
         value={query}
         onChange={setQuery}
-        placeholder="Поиск кафедры..."
+        placeholder={t("Поиск кафедры...")}
       />
       {departments.length === 0 ? (
         <WorkloadEmpty
           icon={<Building2 />}
-          title={query ? "Кафедры не найдены" : "Кафедр пока нет"}
+          title={query ? t("Кафедры не найдены") : t("Кафедр пока нет")}
           description={
             query
-              ? "Попробуйте другое название"
-              : "Как только появятся курсы с кафедрой, список заполнится здесь"
+              ? t("Попробуйте другое название")
+              : t(
+                  "Как только появятся курсы с кафедрой, список заполнится здесь"
+                )
           }
         />
       ) : (
@@ -134,6 +140,7 @@ function TeachersPanel({
   departmentId: string;
   onBack: () => void;
 }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [openTeacher, setOpenTeacher] = useState("");
   const departmentsQuery = useQuery(departmentQueries.list());
@@ -153,19 +160,19 @@ function TeachersPanel({
       .sort((a, b) => compareRu(a.name, b.name));
   }, [teachersQuery.data, query]);
 
-  const title = department?.name ?? "Кафедра";
+  const title = department?.name ?? t("Кафедра");
 
   return (
     <div className="space-y-4">
       <WorkloadBackBar
         title={title}
-        subtitle="Преподаватели кафедры"
+        subtitle={t("Преподаватели кафедры")}
         onBack={onBack}
       />
       <WorkloadSearch
         value={query}
         onChange={setQuery}
-        placeholder="Поиск преподавателя..."
+        placeholder={t("Поиск преподавателя...")}
       />
       {teachersQuery.isLoading ? (
         <WorkloadListSkeleton />
@@ -174,17 +181,21 @@ function TeachersPanel({
           message={
             teachersQuery.error instanceof Error
               ? teachersQuery.error.message
-              : "Неизвестная ошибка"
+              : t("Неизвестная ошибка")
           }
         />
       ) : teachers.length === 0 ? (
         <WorkloadEmpty
           icon={query ? <Search /> : <Users />}
-          title={query ? "Преподаватели не найдены" : "На кафедре нет преподавателей"}
+          title={
+            query
+              ? t("Преподаватели не найдены")
+              : t("На кафедре нет преподавателей")
+          }
           description={
             query
-              ? "Попробуйте фамилию или должность"
-              : "Курсы этой кафедры пока ни за кем не закреплены"
+              ? t("Попробуйте фамилию или должность")
+              : t("Курсы этой кафедры пока ни за кем не закреплены")
           }
         />
       ) : (
@@ -216,7 +227,7 @@ function TeachersPanel({
                         {teacher.name}
                       </span>
                       <span className="text-xs font-normal text-muted-foreground">
-                        {teacher.position || "Преподаватель"}
+                        {teacher.position || t("Преподаватель")}
                         {teacher.files_count > 0
                           ? ` · ${filesCountLabel(teacher.files_count)}`
                           : ""}
@@ -251,6 +262,7 @@ function TeacherCourses({
   departmentId: string;
   teacherId: number;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const coursesQuery = useQuery(
     departmentQueries.teacherCourses(departmentId, teacherId)
@@ -265,7 +277,7 @@ function TeacherCourses({
         message={
           coursesQuery.error instanceof Error
             ? coursesQuery.error.message
-            : "Неизвестная ошибка"
+            : t("Неизвестная ошибка")
         }
       />
     );
@@ -274,8 +286,10 @@ function TeacherCourses({
     return (
       <WorkloadEmpty
         icon={<BookOpen />}
-        title="Нет дисциплин"
-        description="На этой кафедре за преподавателем пока не закреплены курсы"
+        title={t("Нет дисциплин")}
+        description={t(
+          "На этой кафедре за преподавателем пока не закреплены курсы"
+        )}
       />
     );
   }
@@ -325,12 +339,13 @@ function TeacherCourses({
 }
 
 function CourseTypeCards({ course }: { course: DepartmentTeacherCourse }) {
+  const { t } = useTranslation();
   const types = Array.isArray(course.by_type) ? course.by_type : [];
 
   if (types.length === 0) {
     return (
       <p className="px-1 py-2 text-sm text-muted-foreground">
-        В курсе пока нет тем
+        {t("В курсе пока нет тем")}
       </p>
     );
   }

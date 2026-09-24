@@ -2,6 +2,7 @@ import { teacherCommentText } from "entities/Course/lib/teacherComment";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LucideWandSparkles } from "lucide-react";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { GaugeWithSliderSmall } from "shared/components/Progress/GaugeWithSliderSmall";
 import { Button } from "shared/shadcn/ui/button";
 import {
@@ -28,6 +29,7 @@ export function SetMark({
   comment?: string | null;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   const { mutate: rate_answer, isPending } = courseQueries.rate_answer();
   const [open, setOpen] = useState(false);
   const [score, setScore] = useState(points ?? 0);
@@ -74,7 +76,7 @@ export function SetMark({
             htmlFor={`grade-comment-${id ?? "new"}`}
             className="text-xs text-muted-foreground"
           >
-            Комментарий
+            {t("Комментарий")}
           </FieldLabel>
           {existingComment ? (
             <p className="rounded-md border bg-muted/40 px-2.5 py-2 text-sm whitespace-pre-wrap break-words">
@@ -85,7 +87,7 @@ export function SetMark({
               id={`grade-comment-${id ?? "new"}`}
               value={teacherComment}
               onChange={(event) => setTeacherComment(event.target.value)}
-              placeholder="Необязательный комментарий к оценке"
+              placeholder={t("Необязательный комментарий к оценке")}
               rows={3}
               className="min-h-16 resize-none"
               onPointerDown={(event) => event.stopPropagation()}
@@ -100,7 +102,7 @@ export function SetMark({
           disabled={isPending}
           onClick={() => handleSubmit()}
         >
-          Применить
+          {t("Применить")}
           <LucideWandSparkles />
         </Button>
       </DropdownMenuContent>

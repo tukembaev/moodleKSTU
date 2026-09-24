@@ -3,6 +3,7 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { addToCart } from "shared/functions";
 import { LuStar } from "react-icons/lu";
 import { useAuth } from "shared/hooks";
@@ -20,6 +21,7 @@ import { useAuth } from "shared/hooks";
 // }
 
 export default function HighRatedCourseCarousel() {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout>(null);
@@ -156,11 +158,11 @@ export default function HighRatedCourseCarousel() {
                 });
               }}
             >
-              В корзину
+              {t("В корзину")}
             </Button>
           )}
 
-          <Button>Подробнее</Button>
+          <Button>{t("Подробнее")}</Button>
         </div>
       </div>
 

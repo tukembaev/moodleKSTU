@@ -19,10 +19,15 @@ export const getAllTest = async (courseId?: string): Promise<Test[]> => {
 
 export const getTestQuestions = async (id: string | null): Promise<TestDetails> => {
   const response = await $api_edu.get(`testing/${id}/`);
-  const data = response.data as TestDetails;
+  const data = response.data as TestDetails & {
+    questions_per_attempt?: number;
+    attempt_question_ids?: string[];
+  };
   return {
     ...data,
     minPoints: getTestMinPoints(data),
+    questionsPerAttempt: data.questionsPerAttempt ?? data.questions_per_attempt,
+    attemptQuestionIds: data.attemptQuestionIds ?? data.attempt_question_ids,
   };
 };
 

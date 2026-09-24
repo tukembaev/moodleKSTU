@@ -10,6 +10,7 @@ import {
   UserCircleIcon,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { MobileBottomSheet } from "shared/components";
 import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
@@ -27,6 +28,7 @@ export function MobileProfileSheet({
   open,
   onOpenChange,
 }: MobileProfileSheetProps) {
+  const { t } = useTranslation();
   const auth = useAuth();
   const navigate = useNavigate();
   const { data: me, isLoading } = useQuery({
@@ -53,7 +55,7 @@ export function MobileProfileSheet({
   const initials =
     `${firstName[0] || ""}${lastName[0] || ""}`.toUpperCase() || "U";
   const displayName =
-    `${firstName} ${lastName}`.trim() || me?.username || "Профиль";
+    `${firstName} ${lastName}`.trim() || me?.username || t("Профиль");
 
   const go = (path: string) => {
     onOpenChange(false);
@@ -64,7 +66,7 @@ export function MobileProfileSheet({
     <MobileBottomSheet
       open={open}
       onOpenChange={onOpenChange}
-      title="Аккаунт"
+      title={t("Аккаунт")}
       bodyClassName="p-3"
     >
       <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
@@ -89,7 +91,7 @@ export function MobileProfileSheet({
             </>
           )}
           <span className="mt-1.5 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-            {auth.isStudent ? "Студент" : "Преподаватель"}
+            {auth.isStudent ? t("Студент") : t("Преподаватель")}
           </span>
         </div>
       </div>
@@ -97,23 +99,23 @@ export function MobileProfileSheet({
       <nav className="mt-3 overflow-hidden rounded-xl border">
         <MenuRow
           icon={CalendarDays}
-          label="Сегодня"
+          label={t("Сегодня")}
           onClick={() => go(RoutePath[AppRoutes.TODAY])}
         />
         <MenuRow
           icon={UserCircleIcon}
-          label="Мой профиль"
+          label={t("Мой профиль")}
           onClick={() => go(RoutePath[AppRoutes.PROFILE])}
         />
         <MenuRow
           icon={BookOpen}
-          label="Мои курсы"
+          label={t("Мои курсы")}
           onClick={() => go(RoutePath[AppRoutes.COURSES])}
         />
         {!auth.isStudent && canSeeWorkload && (
           <MenuRow
             icon={BriefcaseBusiness}
-            label="Нагрузка"
+            label={t("Нагрузка")}
             onClick={() => go(RoutePath[AppRoutes.WORKLOAD])}
           />
         )}
@@ -125,7 +127,7 @@ export function MobileProfileSheet({
         className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 text-sm font-medium text-destructive transition-colors active:bg-destructive/10"
       >
         <LogOutIcon className="size-4" />
-        Выйти
+        {t("Выйти")}
       </button>
     </MobileBottomSheet>
   );

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { CourseStudentGroup } from "entities/Course/model/types/course";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import i18n from "shared/config/i18n/i18n";
 
 export type StudentFilterGroupColorId =
   | "blue"
@@ -221,7 +222,7 @@ export const useCourseStudentGroups = (courseId: string | null) => {
 
   const addGroup = useCallback(
     async (name: string, userIds: number[]) => {
-      if (!courseId) throw new Error("Курс не выбран");
+      if (!courseId) throw new Error(i18n.t("Курс не выбран"));
       await createGroup({
         courseId,
         data: {
@@ -236,7 +237,7 @@ export const useCourseStudentGroups = (courseId: string | null) => {
 
   const editGroup = useCallback(
     async (groupId: string, name: string, userIds: number[]) => {
-      if (!courseId) throw new Error("Курс не выбран");
+      if (!courseId) throw new Error(i18n.t("Курс не выбран"));
       await updateGroup({
         courseId,
         groupId,
@@ -251,7 +252,7 @@ export const useCourseStudentGroups = (courseId: string | null) => {
 
   const removeGroup = useCallback(
     async (groupId: string) => {
-      if (!courseId) throw new Error("Курс не выбран");
+      if (!courseId) throw new Error(i18n.t("Курс не выбран"));
       await deleteGroup({ courseId, groupId });
       setActiveGroupIds((prev) => prev.filter((id) => id !== groupId));
     },

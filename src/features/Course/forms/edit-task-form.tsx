@@ -19,6 +19,7 @@ import {
 } from "shared/shadcn/ui/dialog";
 import { Textarea } from "shared/shadcn/ui/textarea";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import {
   isGradableThemeType,
@@ -74,6 +75,7 @@ export const EditTaskForm = ({
   onOpenChange,
   taskData,
 }: EditTaskFormProps) => {
+  const { t } = useTranslation();
   const { mutate: editTheme, isPending } = courseQueries.edit_theme();
   const {
     register,
@@ -95,8 +97,8 @@ export const EditTaskForm = ({
   const canReceivePoints = isGradableThemeType(selectedType);
 
   useEffect(() => {
-    register("type_less", requiredField("Выберите тип занятия"));
-  }, [register]);
+    register("type_less", requiredField(t("Выберите тип занятия")));
+  }, [register, t]);
 
   useEffect(() => {
     if (!canReceivePoints) {
@@ -104,8 +106,8 @@ export const EditTaskForm = ({
       unregister("week");
       return;
     }
-    register("week", requiredField("Выберите неделю"));
-  }, [canReceivePoints, register, unregister]);
+    register("week", requiredField(t("Выберите неделю")));
+  }, [canReceivePoints, register, unregister, t]);
 
   useEffect(() => {
     if (taskData) {
@@ -151,7 +153,7 @@ export const EditTaskForm = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] min-w-0 flex-col overflow-hidden sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle>Редактировать задание</DialogTitle>
+          <DialogTitle>{t("Редактировать задание")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(handleFormSubmit, onFormInvalid)} className="flex min-h-0 min-w-0 flex-col gap-4">
@@ -159,25 +161,25 @@ export const EditTaskForm = ({
           {/* Название темы */}
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="title" required>
-              Название темы
+              {t("Название темы")}
             </FieldLabel>
             <Input
               type="text"
-              placeholder="Введите название темы"
-              {...register("title", requiredField("Заполните название темы"))}
+              placeholder={t("Введите название темы")}
+              {...register("title", requiredField(t("Заполните название темы")))}
             />
             {errors.title && (
               <span className="text-xs text-red-500">
-                Название темы обязательно
+                {t("Название темы обязательно")}
               </span>
             )}
           </div>
 
           {/* Описание */}
           <div className="flex flex-col gap-2">
-            <FieldLabel htmlFor="description">Описание</FieldLabel>
+            <FieldLabel htmlFor="description">{t("Описание")}</FieldLabel>
             <Textarea
-              placeholder="Введите описание задания"
+              placeholder={t("Введите описание задания")}
               rows={4}
               {...register("description")}
             />
@@ -186,21 +188,24 @@ export const EditTaskForm = ({
           {canReceivePoints && (
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="max_points" required={canReceivePoints}>
-              Максимальные баллы
+              {t("Максимальные баллы")}
             </FieldLabel>
             <Input
               type="number"
               min="0"
-              placeholder="Введите максимальные баллы"
+              placeholder={t("Введите максимальные баллы")}
               {...register("max_points", {
-                ...requiredField("Укажите максимальные баллы"),
+                ...requiredField(t("Укажите максимальные баллы")),
                 valueAsNumber: true,
-                min: { value: 0, message: "Максимальные баллы не могут быть меньше 0" },
+                min: {
+                  value: 0,
+                  message: t("Максимальные баллы не могут быть меньше 0"),
+                },
               })}
             />
             {errors.max_points && (
               <span className="text-xs text-red-500">
-                Максимальные баллы обязательны
+                {t("Максимальные баллы обязательны")}
               </span>
             )}
           </div>
@@ -210,32 +215,32 @@ export const EditTaskForm = ({
             {canReceivePoints && (
             <div className="flex flex-col gap-2">
               <FieldLabel htmlFor="week" required>
-                Неделя
+                {t("Неделя")}
               </FieldLabel>
               <Select
-                value={selectedWeek}
+                value={selectedWeek || undefined}
                 onValueChange={(value) => setValue("week", value, { shouldValidate: true })}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Выберите неделю" />
+                  <SelectValue placeholder={t("Выберите неделю")} />
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: 16 }, (_, i) => i + 1).map((week) => (
                     <SelectItem key={week} value={week.toString()}>
-                      Неделя {week}
+                      {t("Неделя {{week}}", { week })}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {errors.week && (
-                <span className="text-xs text-red-500">Неделя обязательна</span>
+                <span className="text-xs text-red-500">{t("Неделя обязательна")}</span>
               )}
             </div>
             )}
 
             <div className="flex flex-col gap-2">
               <FieldLabel htmlFor="type_less" required>
-                Тип занятия
+                {t("Тип занятия")}
               </FieldLabel>
               <Select
                 value={selectedType}
@@ -248,7 +253,7 @@ export const EditTaskForm = ({
                 }}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Выберите тип занятия" />
+                  <SelectValue placeholder={t("Выберите тип занятия")} />
                 </SelectTrigger>
                 <SelectContent>
                   <ThemeTypeSelectItems />
@@ -256,7 +261,7 @@ export const EditTaskForm = ({
               </Select>
               {errors.type_less && (
                 <span className="text-xs text-red-500">
-                  Тип занятия обязателен
+                  {t("Тип занятия обязателен")}
                 </span>
               )}
             </div>
@@ -278,10 +283,10 @@ export const EditTaskForm = ({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Отмена
+              {t("Отмена")}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Сохранение..." : "Сохранить"}
+              {isPending ? t("Сохранение...") : t("Сохранить")}
             </Button>
           </DialogFooter>
         </form>

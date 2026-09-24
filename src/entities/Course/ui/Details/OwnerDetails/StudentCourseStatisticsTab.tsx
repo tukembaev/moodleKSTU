@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { TeacherGradeComment } from "entities/Course/lib/teacherComment";
 import type { TaskByType, TaskListItem, TestListItem } from "entities/Course/model/types/statistics";
@@ -21,6 +22,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "shared/shadcn/ui/tabs";
 
 export const StudentCourseStatisticsTab = () => {
+  const { t, i18n } = useTranslation();
   const id = useCourseId();
   const { data, isLoading, error } = useQuery(courseQueries.studentCourseDetail(id || null));
 
@@ -44,16 +46,16 @@ export const StudentCourseStatisticsTab = () => {
   if (error) {
     return (
       <div className="text-center text-destructive p-4">
-        <p className="font-semibold">Ошибка при загрузке статистики курса</p>
+        <p className="font-semibold">{t("Ошибка при загрузке статистики курса")}</p>
         <p className="text-sm text-muted-foreground mt-2">
-          {error instanceof Error ? error.message : "Неизвестная ошибка"}
+          {error instanceof Error ? error.message : t("Неизвестная ошибка")}
         </p>
       </div>
     );
   }
 
   if (!data) {
-    return <div className="text-center text-muted-foreground">Нет данных для отображения</div>;
+    return <div className="text-center text-muted-foreground">{t("Нет данных для отображения")}</div>;
   }
 
   const {
@@ -75,7 +77,7 @@ export const StudentCourseStatisticsTab = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader>
-              <CardDescription>Общий прогресс</CardDescription>
+              <CardDescription>{t("Общий прогресс")}</CardDescription>
               <CardTitle className="text-3xl font-semibold">
                 {overall_statistics.completion_percentage.toFixed(1)}%
               </CardTitle>
@@ -83,7 +85,10 @@ export const StudentCourseStatisticsTab = () => {
             <CardContent>
               <Progress value={overall_statistics.completion_percentage} className="h-2" />
               <p className="text-sm text-muted-foreground mt-2">
-                {overall_statistics.current_points} / {overall_statistics.max_points} баллов
+                {t("{{current}} / {{max}} баллов", {
+                  current: overall_statistics.current_points,
+                  max: overall_statistics.max_points,
+                })}
               </p>
             </CardContent>
           </Card>
@@ -91,14 +96,14 @@ export const StudentCourseStatisticsTab = () => {
           {extraPoints && (
             <Card>
               <CardHeader>
-                <CardDescription>Дополнительные баллы</CardDescription>
+                <CardDescription>{t("Дополнительные баллы")}</CardDescription>
                 <CardTitle className="text-3xl font-semibold">
                   {extraPoints.total}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  {extraPoints.items?.length ?? 0} начислений
+                  {t("{{count}} начислений", { count: extraPoints.items?.length ?? 0 })}
                 </p>
               </CardContent>
             </Card>
@@ -107,7 +112,7 @@ export const StudentCourseStatisticsTab = () => {
           {tasksOverall && (
             <Card>
               <CardHeader>
-                <CardDescription>Задания</CardDescription>
+                <CardDescription>{t("Задания")}</CardDescription>
                 <CardTitle className="text-3xl font-semibold">
                   {tasksOverall.completed} / {tasksOverall.total}
                 </CardTitle>
@@ -115,7 +120,9 @@ export const StudentCourseStatisticsTab = () => {
               <CardContent>
                 <Progress value={tasksOverall.completion_percentage} className="h-2" />
                 <p className="text-sm text-muted-foreground mt-2">
-                  {tasksOverall.completion_percentage.toFixed(1)}% выполнено
+                  {t("{{percent}}% выполнено", {
+                    percent: tasksOverall.completion_percentage.toFixed(1),
+                  })}
                 </p>
               </CardContent>
             </Card>
@@ -124,14 +131,16 @@ export const StudentCourseStatisticsTab = () => {
           {testsOverall && (
             <Card>
               <CardHeader>
-                <CardDescription>Тесты</CardDescription>
+                <CardDescription>{t("Тесты")}</CardDescription>
                 <CardTitle className="text-3xl font-semibold">
                   {testsOverall.completed} / {testsOverall.total}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Средний балл: {testsOverall.average_score.toFixed(1)}
+                  {t("Средний балл: {{score}}", {
+                    score: testsOverall.average_score.toFixed(1),
+                  })}
                 </p>
               </CardContent>
             </Card>
@@ -141,20 +150,20 @@ export const StudentCourseStatisticsTab = () => {
 
       <Tabs defaultValue="tasks" className="w-full">
         <TabsList>
-          <TabsTrigger value="tasks">Задания</TabsTrigger>
-          <TabsTrigger value="tests">Тесты</TabsTrigger>
+          <TabsTrigger value="tasks">{t("Задания")}</TabsTrigger>
+          <TabsTrigger value="tests">{t("Тесты")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tasks" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Статистика по заданиям</CardTitle>
-              <CardDescription>Ваша статистика выполнения заданий</CardDescription>
+              <CardTitle>{t("Статистика по заданиям")}</CardTitle>
+              <CardDescription>{t("Ваша статистика выполнения заданий")}</CardDescription>
             </CardHeader>
             <CardContent>
               {Object.keys(tasksByType).length > 0 && (
                 <div className="space-y-4 mb-6">
-                  <h3 className="font-semibold">По типам заданий</h3>
+                  <h3 className="font-semibold">{t("По типам заданий")}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {(Object.entries(tasksByType) as [string, TaskByType[string]][]).map(([type, stats]) => (
                       <Card key={type}>
@@ -164,7 +173,7 @@ export const StudentCourseStatisticsTab = () => {
                         <CardContent>
                           <div className="space-y-2">
                             <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Выполнено</span>
+                              <span className="text-sm text-muted-foreground">{t("Выполнено")}</span>
                               <span className="font-medium">
                                 {stats.completed} / {stats.total}
                               </span>
@@ -172,7 +181,7 @@ export const StudentCourseStatisticsTab = () => {
                             <Progress value={stats.completion_percentage} className="h-2" />
                             {stats.earned_points !== undefined && (
                               <div className="flex justify-between mt-2">
-                                <span className="text-sm text-muted-foreground">Баллы</span>
+                                <span className="text-sm text-muted-foreground">{t("Баллы")}</span>
                                 <span className="font-medium">
                                   {stats.earned_points} / {stats.max_points}
                                 </span>
@@ -188,16 +197,16 @@ export const StudentCourseStatisticsTab = () => {
 
               {tasksList.length > 0 && (
                 <div>
-                  <h3 className="font-semibold mb-4">Список заданий</h3>
+                  <h3 className="font-semibold mb-4">{t("Список заданий")}</h3>
                   <div className="border rounded-lg">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Задание</TableHead>
-                          <TableHead>Тип</TableHead>
-                          <TableHead>Статус</TableHead>
-                          <TableHead>Баллы</TableHead>
-                          <TableHead>Дедлайн</TableHead>
+                          <TableHead>{t("Задание")}</TableHead>
+                          <TableHead>{t("Тип")}</TableHead>
+                          <TableHead>{t("Статус")}</TableHead>
+                          <TableHead>{t("Баллы")}</TableHead>
+                          <TableHead>{t("Дедлайн")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -222,12 +231,12 @@ export const StudentCourseStatisticsTab = () => {
                                 }
                               >
                                 {task.status === "completed"
-                                  ? "Выполнено"
+                                  ? t("Выполнено")
                                   : task.status === "on_review"
-                                    ? "На проверке"
+                                    ? t("На проверке")
                                     : task.status === "overdue"
-                                      ? "Просрочено"
-                                      : "Не начато"}
+                                      ? t("Просрочено")
+                                      : t("Не начато")}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -247,7 +256,7 @@ export const StudentCourseStatisticsTab = () => {
                                 <div className="flex items-center gap-2 text-sm">
                                   <LuClock className="h-4 w-4" />
                                   {format(new Date(task.course_detail.deadline), "dd.MM.yyyy", {
-                                    locale: ru,
+                                    locale: getDateLocale(i18n.language),
                                   })}
                                 </div>
                               )}
@@ -266,8 +275,8 @@ export const StudentCourseStatisticsTab = () => {
         <TabsContent value="tests" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Статистика по тестам</CardTitle>
-              <CardDescription>Ваши результаты тестов</CardDescription>
+              <CardTitle>{t("Статистика по тестам")}</CardTitle>
+              <CardDescription>{t("Ваши результаты тестов")}</CardDescription>
             </CardHeader>
             <CardContent>
               {testsList.length > 0 ? (
@@ -277,7 +286,7 @@ export const StudentCourseStatisticsTab = () => {
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg">{test.testing.title}</CardTitle>
-                          <Badge variant="outline">{test.testing.max_points} баллов</Badge>
+                          <Badge variant="outline">{t("{{count}} баллов", { count: test.testing.max_points })}</Badge>
                         </div>
                         {test.testing.description && (
                           <CardDescription>{test.testing.description}</CardDescription>
@@ -287,33 +296,33 @@ export const StudentCourseStatisticsTab = () => {
                         {test.result_testing ? (
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
-                              <p className="text-sm text-muted-foreground">Балл</p>
+                              <p className="text-sm text-muted-foreground">{t("Балл")}</p>
                               <p className="text-xl font-bold">
                                 {test.result_testing.score} / {test.result_testing.total_questions}
                               </p>
                             </div>
                             {test.correct_percentage !== null && (
                               <div>
-                                <p className="text-sm text-muted-foreground">Правильность</p>
+                                <p className="text-sm text-muted-foreground">{t("Правильность")}</p>
                                 <p className="text-xl font-bold">
                                   {test.correct_percentage.toFixed(1)}%
                                 </p>
                               </div>
                             )}
                             <div>
-                              <p className="text-sm text-muted-foreground">Попыток</p>
+                              <p className="text-sm text-muted-foreground">{t("Попыток")}</p>
                               <p className="text-xl font-bold">{test.attempts_count}</p>
                             </div>
                             {test.best_score !== null && (
                               <div>
-                                <p className="text-sm text-muted-foreground">Лучший результат</p>
+                                <p className="text-sm text-muted-foreground">{t("Лучший результат")}</p>
                                 <p className="text-xl font-bold">{test.best_score}</p>
                               </div>
                             )}
                           </div>
                         ) : (
                           <div className="text-center text-muted-foreground py-4">
-                            Тест еще не пройден
+                            {t("Тест еще не пройден")}
                           </div>
                         )}
                       </CardContent>
@@ -321,7 +330,7 @@ export const StudentCourseStatisticsTab = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center text-muted-foreground py-4">Нет тестов</div>
+                <div className="text-center text-muted-foreground py-4">{t("Нет тестов")}</div>
               )}
             </CardContent>
           </Card>

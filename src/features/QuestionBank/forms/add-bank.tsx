@@ -2,6 +2,7 @@ import { questionBankQueries, type CreateBankPayload } from "entities/QuestionBa
 import { useForm } from "react-hook-form";
 import { LuCloudUpload } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { openBank } from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
 import { Card } from "shared/shadcn/ui/card";
@@ -11,6 +12,7 @@ import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 import { Textarea } from "shared/shadcn/ui/textarea";
 
 const Add_Bank = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     register,
@@ -41,39 +43,39 @@ const Add_Bank = () => {
         <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="bank-name" className="pb-2" required>
-              Название
+              {t("Название")}
             </FieldLabel>
             <Input
               id="bank-name"
-              placeholder="Программирование"
+              placeholder={t("Программирование")}
               {...register("name", {
-                ...requiredField("Заполните название коллекции"),
+                ...requiredField(t("Заполните название коллекции")),
                 minLength: {
                   value: 2,
-                  message: "Название коллекции должно быть не короче 2 символов",
+                  message: t("Название коллекции должно быть не короче 2 символов"),
                 },
               })}
             />
             {errors.name && (
               <span className="text-xs text-red-500 pt-1">
-                Укажите название коллекции
+                {t("Укажите название коллекции")}
               </span>
             )}
           </div>
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="bank-description" className="pb-2">
-              Описание
+              {t("Описание")}
             </FieldLabel>
             <Textarea
               id="bank-description"
-              placeholder="Вопросы по основам языка и алгоритмам"
+              placeholder={t("Вопросы по основам языка и алгоритмам")}
               {...register("description")}
             />
           </div>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload />
-              {isPending ? "Создание..." : "Создать коллекцию"}
+              {isPending ? t("Создание...") : t("Создать коллекцию")}
             </Button>
           </div>
         </form>

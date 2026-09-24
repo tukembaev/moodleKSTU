@@ -1,5 +1,6 @@
 import { FileAnswer, StudentsAnswers, TaskSubmission } from "../model/types/course";
 import { RemarkStatus } from "entities/Remarks";
+import i18n from "shared/config/i18n/i18n";
 
 export interface FileSubmissionGroup {
   key: string;
@@ -115,15 +116,15 @@ export function blockedUploadCaption(
 ): string {
   const statuses = remarks.map((remark) => String(remark.status ?? "").toLowerCase());
   if (statuses.includes(RemarkStatus.REJECTED)) {
-    return "Новую версию можно загрузить после замечания преподавателя";
+    return i18n.t("Новую версию можно загрузить после замечания преподавателя");
   }
   if (
     statuses.includes(RemarkStatus.PENDING) ||
     statuses.includes(RemarkStatus.RESPONDED)
   ) {
-    return "Ожидает проверки";
+    return i18n.t("Ожидает проверки");
   }
-  return "Загрузка закрыта";
+  return i18n.t("Загрузка закрыта");
 }
 
 function submissionToGroup(submission: TaskSubmission): FileSubmissionGroup {

@@ -1,5 +1,6 @@
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { ru } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import type { Notification } from "entities/User/types/user";
 import { Bell } from "lucide-react";
 import { cn } from "shared/lib/utils";
@@ -18,11 +19,12 @@ export function NotificationList({
   density = "compact",
   className,
 }: NotificationListProps) {
+  const { t, i18n } = useTranslation();
   if (!notifications.length) {
     return (
       <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
         <Bell className="size-6 text-muted-foreground/50" />
-        <p className="text-xs text-muted-foreground">У вас нет уведомлений</p>
+        <p className="text-xs text-muted-foreground">{t("У вас нет уведомлений")}</p>
       </div>
     );
   }
@@ -53,7 +55,7 @@ export function NotificationList({
                     : "text-muted-foreground"
                 )}
               >
-                {notification.type || "Уведомление"}
+                {notification.type || t("Уведомление")}
               </p>
               {!notification.status && (
                 <span className="size-1.5 shrink-0 rounded-full bg-blue-600" />
@@ -83,7 +85,7 @@ export function NotificationList({
             >
               {formatDistanceToNow(parseISO(notification.created_at), {
                 addSuffix: true,
-                locale: ru,
+                locale: getDateLocale(i18n.language),
               })}
             </p>
           </div>

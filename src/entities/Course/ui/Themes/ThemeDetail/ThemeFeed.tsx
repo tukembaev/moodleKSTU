@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { sortDiscussionNewestFirst } from "entities/Course/lib/themeDiscussion";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { FeedItem } from "entities/Course/model/types/course";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import {
   ArrowUpIcon,
   MessageCircle,
@@ -65,6 +66,7 @@ export const ThemeFeed: React.FC<FeedProps> = ({
   isLoading,
   theme_id,
 }) => {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -80,8 +82,8 @@ export const ThemeFeed: React.FC<FeedProps> = ({
     [items]
   );
   const placeholder = replyTarget
-    ? `Ответ для ${replyTarget.name}...`
-    : "Написать комментарий...";
+    ? t("Ответ для {{name}}...", { name: replyTarget.name })
+    : t("Написать комментарий...");
 
   useEffect(() => {
     if (replyTarget) {
@@ -136,9 +138,9 @@ export const ThemeFeed: React.FC<FeedProps> = ({
               <EmptyMedia variant="icon">
                 <MessageCircleDashedIcon />
               </EmptyMedia>
-              <EmptyTitle>Пока нет обсуждения</EmptyTitle>
+              <EmptyTitle>{t("Пока нет обсуждения")}</EmptyTitle>
               <EmptyDescription>
-                Будьте первым — напишите комментарий в поле ниже.
+                {t("Будьте первым — напишите комментарий в поле ниже.")}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -168,7 +170,7 @@ export const ThemeFeed: React.FC<FeedProps> = ({
             <InputGroupAddon align="block-start" className="border-b">
               <InputGroupText className="text-xs">
                 <MessageCircle className="size-3.5 text-primary" />
-                Режим ответа ·{" "}
+                {t("Режим ответа")} ·{" "}
                 <span className="font-medium text-foreground">
                   {replyTarget.name}
                 </span>
@@ -176,7 +178,7 @@ export const ThemeFeed: React.FC<FeedProps> = ({
               <InputGroupButton
                 size="icon-xs"
                 className="ml-auto"
-                aria-label="Отменить ответ"
+                aria-label={t("Отменить ответ")}
                 onClick={() => setReplyTarget(null)}
               >
                 <XIcon />
@@ -206,7 +208,7 @@ export const ThemeFeed: React.FC<FeedProps> = ({
               className="ml-auto"
             >
               <ArrowUpIcon />
-              <span className="sr-only">Отправить</span>
+              <span className="sr-only">{t("Отправить")}</span>
             </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
@@ -228,6 +230,7 @@ const FeedMessage: React.FC<FeedMessageProps> = ({
   replyTargetId,
   onReply,
 }) => {
+  const { t, i18n } = useTranslation();
   const auth = useAuth();
   const { mutate: like_comment } = courseQueries.like_comment();
   const isOwn = auth?.id === item.user.user_id;
@@ -251,7 +254,7 @@ const FeedMessage: React.FC<FeedMessageProps> = ({
             <span className="truncate text-foreground">{item.user.name}</span>
             <span className="shrink-0 font-normal">
               {format(new Date(item.created_at), "d MMM, HH:mm", {
-                locale: ru,
+                locale: getDateLocale(i18n.language),
               })}
             </span>
           </MessageHeader>
@@ -272,7 +275,7 @@ const FeedMessage: React.FC<FeedMessageProps> = ({
               )}
             >
               <MessageCircle className="size-3.5" />
-              {isReplying ? "Отвечаете" : "Ответить"}
+              {isReplying ? t("Отвечаете") : t("Ответить")}
             </Button>
             <Button
               type="button"
@@ -282,7 +285,7 @@ const FeedMessage: React.FC<FeedMessageProps> = ({
               className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
               <ThumbsUp className="size-3.5" />
-              Полезно
+              {t("Полезно")}
               {(item.likes || 0) > 0 && (
                 <span className="tabular-nums">({item.likes})</span>
               )}

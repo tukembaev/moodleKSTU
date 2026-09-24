@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { remarksQueries, RemarkStatus } from "entities/Remarks";
 import { ArrowUpIcon, Check, MessageCircleDashedIcon, X } from "lucide-react";
 import React, { useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import {
   Card,
@@ -55,6 +56,7 @@ export function SetComment({
   submission_id,
   children,
 }: SetCommentProps) {
+  const { t } = useTranslation();
   const [note, setNote] = useState("");
   const [open, setOpen] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -113,7 +115,7 @@ export function SetComment({
         {
           theme_id,
           student_id,
-          title: text || "Замечание",
+          title: text || t("Замечание"),
           message: note,
           ...(submission_id ? { submission_id } : {}),
         },
@@ -181,10 +183,16 @@ export function SetComment({
               <CardDescription>
                 <DialogDescription>
                   {remarkAwaitingReview
-                    ? "Студент ответил — одобрите работу или отклоните с комментарием."
+                    ? t(
+                        "Студент ответил — одобрите работу или отклоните с комментарием."
+                      )
                     : activeRemark
-                      ? "Ответьте в текущее замечание или продолжите переписку."
-                      : "Напишите первое замечание — оно появится в переписке."}
+                      ? t(
+                          "Ответьте в текущее замечание или продолжите переписку."
+                        )
+                      : t(
+                          "Напишите первое замечание — оно появится в переписке."
+                        )}
                 </DialogDescription>
               </CardDescription>
             </CardHeader>
@@ -202,9 +210,11 @@ export function SetComment({
                     <EmptyMedia variant="icon">
                       <MessageCircleDashedIcon />
                     </EmptyMedia>
-                    <EmptyTitle>Замечаний пока нет</EmptyTitle>
+                    <EmptyTitle>{t("Замечаний пока нет")}</EmptyTitle>
                     <EmptyDescription>
-                      Напишите первое сообщение ниже, чтобы начать переписку.
+                      {t(
+                        "Напишите первое сообщение ниже, чтобы начать переписку."
+                      )}
                     </EmptyDescription>
                   </EmptyHeader>
                 </Empty>
@@ -238,8 +248,8 @@ export function SetComment({
                     }}
                   >
                     {rejectingId === remarkAwaitingReview.id
-                      ? "Отмена"
-                      : "Отклонить"}
+                      ? t("Отмена")
+                      : t("Отклонить")}
                     <X />
                   </Button>
                   <Button
@@ -252,7 +262,7 @@ export function SetComment({
                       handleApprove(remarkAwaitingReview.id);
                     }}
                   >
-                    Одобрить
+                    {t("Одобрить")}
                     <Check />
                   </Button>
                 </div>
@@ -271,10 +281,10 @@ export function SetComment({
                     onChange={(e) => setNote(e.target.value)}
                     placeholder={
                       rejectingId
-                        ? "Причина отклонения..."
+                        ? t("Причина отклонения...")
                         : activeRemark
-                          ? "Ответить в текущее замечание..."
-                          : "Написать новое замечание..."
+                          ? t("Ответить в текущее замечание...")
+                          : t("Написать новое замечание...")
                     }
                     disabled={!canSubmit}
                     rows={2}
@@ -295,7 +305,7 @@ export function SetComment({
                         onClick={cancelReject}
                       >
                         <X />
-                        <span className="sr-only">Отменить отклонение</span>
+                        <span className="sr-only">{t("Отменить отклонение")}</span>
                       </InputGroupButton>
                     ) : null}
                     <InputGroupButton
@@ -307,7 +317,7 @@ export function SetComment({
                     >
                       <ArrowUpIcon />
                       <span className="sr-only">
-                        {rejectingId ? "Отклонить" : "Отправить"}
+                        {rejectingId ? t("Отклонить") : t("Отправить")}
                       </span>
                     </InputGroupButton>
                   </InputGroupAddon>

@@ -1,10 +1,12 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="text-white p-4 border-t">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="text-xl text-primary font-bold">Логотип</div>
+        <div className="text-xl text-primary font-bold">{t("Логотип")}</div>
 
         <Button variant="outline" className="md:hidden">
           <svg

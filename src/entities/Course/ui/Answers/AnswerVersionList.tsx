@@ -1,8 +1,9 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { FileAnswer } from "entities/Course/model/types/course";
 import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { cn } from "shared/lib/utils";
 import { Badge } from "shared/shadcn/ui/badge";
 import {
@@ -16,11 +17,11 @@ import {
 } from "../../lib/answerSubmissions";
 import { AnswerFileAttachment } from "./AnswerFileAttachment";
 
-function versionDateLabel(value: string | null) {
+function versionDateLabel(value: string | null, language: string) {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  return format(date, "d MMM yyyy", { locale: ru });
+  return format(date, "d MMM yyyy", { locale: getDateLocale(language) });
 }
 
 function FileRow({
@@ -78,6 +79,7 @@ export function AnswerVersionList({
   deleteFallback?: boolean;
   currentExtra?: ReactNode;
 }) {
+  const { t, i18n } = useTranslation();
   const hasVersionLabels = groups.some((group) => group.version != null);
   const current = groups.find((group) => group.isCurrent) ?? groups[0];
   const previous = groups.filter((group) => group !== current);
@@ -103,15 +105,15 @@ export function AnswerVersionList({
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-medium text-muted-foreground">
               {current.version != null
-                ? `Версия ${current.version}`
-                : "Текущие файлы"}
+                ? t("Версия {{version}}", { version: current.version })
+                : t("Текущие файлы")}
             </p>
             <Badge variant="secondary" className="h-5 px-1.5 text-[11px]">
-              актуальная
+              {t("актуальная")}
             </Badge>
-            {versionDateLabel(current.createdAt) ? (
+            {versionDateLabel(current.createdAt, i18n.language) ? (
               <span className="text-[11px] text-muted-foreground">
-                {versionDateLabel(current.createdAt)}
+                {versionDateLabel(current.createdAt, i18n.language)}
               </span>
             ) : null}
           </div>
@@ -139,18 +141,18 @@ export function AnswerVersionList({
         <Collapsible>
           <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md py-1 text-left text-xs font-medium text-muted-foreground hover:text-foreground">
             <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-            Предыдущие версии ({previous.length})
+            {t("Предыдущие версии ({{count}})", { count: previous.length })}
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
-            {previous.map((group) => (
+            {previous.map((group) => {
+              const dateLabel = versionDateLabel(group.createdAt, i18n.language);
+              return (
               <div key={group.key} className="space-y-2">
                 <p className="text-xs text-muted-foreground">
                   {group.version != null
-                    ? `Версия ${group.version}`
-                    : "Предыдущие файлы"}
-                  {versionDateLabel(group.createdAt)
-                    ? ` · ${versionDateLabel(group.createdAt)}`
-                    : ""}
+                    ? t("Версия {{version}}", { version: group.version })
+                    : t("Предыдущие файлы")}
+                  {dateLabel ? ` · ${dateLabel}` : ""}
                 </p>
                 <FileRow
                   files={group.files}
@@ -161,7 +163,8 @@ export function AnswerVersionList({
                   deleteFallback={false}
                 />
               </div>
-            ))}
+            );
+            })}
           </CollapsibleContent>
         </Collapsible>
       ) : null}

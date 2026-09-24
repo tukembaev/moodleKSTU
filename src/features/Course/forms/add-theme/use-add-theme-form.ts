@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { CreateThemePayload } from "../../model/types/course_payload";
 import { testQueries } from "entities/Test/model/services/testQueryFactory";
@@ -9,6 +10,7 @@ import { isGradableThemeType, isTestThemeType, resolveThemeTypeLabel } from "./a
 import { requiredField } from "shared/lib/onFormInvalid";
 
 export const useAddThemeForm = () => {
+  const { t } = useTranslation();
   const [selectedType, setSelectedType] = useState<string>("");
   const formCourseId = useFormParam("id");
   const storedCourseId = useCourseId();
@@ -26,7 +28,6 @@ export const useAddThemeForm = () => {
   } = useForm<CreateThemePayload>({
     defaultValues: {
       course: courseId || "",
-      week: 1,
       locked: false,
       opening_date: null,
       deadline: null,
@@ -56,6 +57,7 @@ export const useAddThemeForm = () => {
   }, [typeParam, setValue]);
 
   const handleTypeChange = (value: string) => {
+    const wasGradable = isGradableThemeType(selectedType);
     setSelectedType(value);
     setValue("type_less", value, { shouldValidate: true });
     clearErrors();
@@ -63,6 +65,8 @@ export const useAddThemeForm = () => {
       setValue("locked", false);
       setValue("max_points", 0);
       setValue("week", 1);
+    } else if (!wasGradable) {
+      setValue("week", undefined);
     }
   };
 
@@ -70,8 +74,8 @@ export const useAddThemeForm = () => {
   const canReceivePoints = isGradableThemeType(selectedType);
 
   useEffect(() => {
-    register("type_less", requiredField("Выберите тип занятия"));
-  }, [register]);
+    register("type_less", requiredField(t("Выберите тип занятия")));
+  }, [register, t]);
 
   useEffect(() => {
     if (!canReceivePoints) {
@@ -89,9 +93,9 @@ export const useAddThemeForm = () => {
     unregister("description");
     unregister("max_points");
     unregister("week");
-    register("test_id", requiredField("Выберите тест"));
+    register("test_id", requiredField(t("Выберите тест")));
     return () => unregister("test_id");
-  }, [isTestType, register, unregister]);
+  }, [isTestType, register, unregister, t]);
 
   return {
     register,

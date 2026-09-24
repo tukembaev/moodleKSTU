@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import { LuCloudUpload } from "react-icons/lu";
 import { Card } from "shared/shadcn/ui/card";
@@ -12,6 +13,7 @@ import { AddThemeRegularFields } from "./add-theme-regular-fields";
 import { AddThemeLockedCheckbox } from "./add-theme-locked-checkbox";
 
 const Add_Theme = () => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -92,7 +94,7 @@ const Add_Theme = () => {
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload />{" "}
-              {isPending ? "Загрузка..." : "Добавить задание"}
+              {isPending ? t("Загрузка...") : t("Добавить задание")}
             </Button>
           </div>
         </form>

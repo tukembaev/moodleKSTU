@@ -1,5 +1,6 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import i18n from "shared/config/i18n/i18n";
 import type { QuestionDraft } from "shared/components/QuestionEditor";
 import {
   addQuestion,
@@ -39,13 +40,17 @@ const useCreateBank = () => {
     mutationFn: (data: CreateBankPayload) => {
       const mutationPromise = createBank(data);
       toast.promise(mutationPromise, {
-        loading: "Создаём Коллекция вопросов...",
-        success: "Коллекция вопросов создан",
+        loading: i18n.t("Создаём Коллекция вопросов..."),
+        success: i18n.t("Коллекция вопросов создан"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось создать Коллекция"}`);
+      toast.error(
+        i18n.t("Ошибка: {{message}}", {
+          message: error?.message || i18n.t("Не удалось создать Коллекция"),
+        })
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LIST_KEY });
@@ -59,13 +64,17 @@ const useDeleteBank = () => {
     mutationFn: (id: string) => {
       const mutationPromise = deleteBank(id);
       toast.promise(mutationPromise, {
-        loading: "Удаляем Коллекция...",
-        success: "Коллекция удалён",
+        loading: i18n.t("Удаляем Коллекция..."),
+        success: i18n.t("Коллекция удалён"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось удалить Коллекция"}`);
+      toast.error(
+        i18n.t("Ошибка: {{message}}", {
+          message: error?.message || i18n.t("Не удалось удалить Коллекция"),
+        })
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LIST_KEY });
@@ -79,13 +88,17 @@ const useAddQuestion = () => {
     mutationFn: ({ bankId, question }: { bankId: string; question: QuestionDraft }) => {
       const mutationPromise = addQuestion(bankId, question);
       toast.promise(mutationPromise, {
-        loading: "Сохраняем вопрос...",
-        success: "Вопрос добавлен в Коллекция",
+        loading: i18n.t("Сохраняем вопрос..."),
+        success: i18n.t("Вопрос добавлен в Коллекция"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось сохранить вопрос"}`);
+      toast.error(
+        i18n.t("Ошибка: {{message}}", {
+          message: error?.message || i18n.t("Не удалось сохранить вопрос"),
+        })
+      );
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: LIST_KEY });
@@ -108,13 +121,17 @@ const useUpdateQuestion = () => {
     }) => {
       const mutationPromise = updateQuestion(bankId, questionId, question);
       toast.promise(mutationPromise, {
-        loading: "Обновляем вопрос...",
-        success: "Вопрос обновлён",
+        loading: i18n.t("Обновляем вопрос..."),
+        success: i18n.t("Вопрос обновлён"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось обновить вопрос"}`);
+      toast.error(
+        i18n.t("Ошибка: {{message}}", {
+          message: error?.message || i18n.t("Не удалось обновить вопрос"),
+        })
+      );
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: LIST_KEY });
@@ -129,13 +146,17 @@ const useDeleteQuestion = () => {
     mutationFn: ({ bankId, questionId }: { bankId: string; questionId: string }) => {
       const mutationPromise = deleteQuestion(bankId, questionId);
       toast.promise(mutationPromise, {
-        loading: "Удаляем вопрос...",
-        success: "Вопрос удалён",
+        loading: i18n.t("Удаляем вопрос..."),
+        success: i18n.t("Вопрос удалён"),
       });
       return mutationPromise;
     },
     onError: (error) => {
-      toast.error(`Ошибка: ${error?.message || "Не удалось удалить вопрос"}`);
+      toast.error(
+        i18n.t("Ошибка: {{message}}", {
+          message: error?.message || i18n.t("Не удалось удалить вопрос"),
+        })
+      );
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: LIST_KEY });

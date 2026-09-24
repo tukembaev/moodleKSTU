@@ -1,5 +1,6 @@
 import { PlusIcon } from "lucide-react";
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { FormQuery } from "shared/config/formConfig/formQuery";
 import { useForm } from "shared/hooks";
 import {
@@ -16,6 +17,7 @@ interface AddMaterialCardProps {
 }
 
 export const AddMaterialCard: FC<AddMaterialCardProps> = ({ themeId }) => {
+  const { t } = useTranslation();
   const openForm = useForm();
 
   return (
@@ -27,13 +29,13 @@ export const AddMaterialCard: FC<AddMaterialCardProps> = ({ themeId }) => {
         <PlusIcon />
       </AttachmentMedia>
       <AttachmentContent>
-        <AttachmentTitle>Добавить материал</AttachmentTitle>
+        <AttachmentTitle>{t("Добавить материал")}</AttachmentTitle>
         <AttachmentDescription>
-          Нажмите или перетащите файлы
+          {t("Нажмите или перетащите файлы")}
         </AttachmentDescription>
       </AttachmentContent>
       <AttachmentTrigger
-        aria-label="Добавить учебный материал"
+        aria-label={t("Добавить учебный материал")}
         onClick={() => openForm(FormQuery.ADD_MATERIAL, { id: themeId })}
       />
     </Attachment>

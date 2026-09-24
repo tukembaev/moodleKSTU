@@ -22,6 +22,7 @@ import CourseDetails from "entities/Course/ui/CourseDetails";
 import CourseInvitePage from "pages/CourseInvitePage/ui/CourseInvitePage";
 import { WorkloadPage } from "pages/WorkloadPage";
 import { TodayPage } from "pages/TodayPage";
+import { TeacherGuidePage } from "pages/TeacherGuidePage";
 import {
   AppRoutes,
   AppSubRoutes,
@@ -165,6 +166,11 @@ export const routeConfig: Record<AppRoutes, AppRoutesProps> = {
     path: RoutePath.universities,
     element: <UniversitiesPage />,
     breadcrumbName: "Университеты",
+  },
+  [AppRoutes.GUIDE]: {
+    path: RoutePath[AppRoutes.GUIDE],
+    element: <TeacherGuidePage />,
+    breadcrumbName: "Руководство",
   },
   [AppRoutes.NOT_FOUND]: {
     path: RoutePath.not_found,

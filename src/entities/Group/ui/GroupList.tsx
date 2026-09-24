@@ -7,6 +7,7 @@ import {
   MessageCircle,
   Settings2,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Button } from "shared/shadcn/ui/button";
 
@@ -50,16 +51,17 @@ const features = [
 ];
 
 const GroupList = () => {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex py-3">
       <div>
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
             <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-left">
-              Мои группы
+              {t("Мои группы")}
             </h2>
             <p className="mt-1.5 text-lg text-muted-foreground">
-              Все группы, которые связаны с вами
+              {t("Все группы, которые связаны с вами")}
             </p>
           </div>
         </div>
@@ -84,10 +86,10 @@ const GroupList = () => {
                 </div>
                 <span className="text-lg font-semibold">{feature.title}</span>
                 <p className="mt-1 text-foreground/80 text-[15px]">
-                  Успеваемость: {feature.uspeh}
+                  {t("Успеваемость")}: {feature.uspeh}
                 </p>
                 <p className="mt-1 text-foreground/80 text-[15px]">
-                  Количество студентов : {feature.kolvo_student}
+                  {t("Количество студентов")} : {feature.kolvo_student}
                 </p>
               </div>
               <div className="mt-6 flex items-center justify-between align-middle">

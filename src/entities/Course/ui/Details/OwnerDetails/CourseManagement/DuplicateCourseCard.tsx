@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LuCopy, LuTriangleAlert } from "react-icons/lu";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { Alert, AlertDescription, AlertTitle } from "shared/shadcn/ui/alert";
@@ -29,6 +30,7 @@ export const DuplicateCourseCard = ({
   courseId,
   courseName,
 }: DuplicateCourseCardProps) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { mutate: duplicateCourse, isPending } =
     courseQueries.duplicate_course();
@@ -45,24 +47,27 @@ export const DuplicateCourseCard = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <LuCopy className="h-5 w-5 text-primary" />
-            Дублирование курса
+            {t("Дублирование курса")}
           </CardTitle>
           <CardDescription>
-            Создаёт полный дубликат курса: темы, материалы, описания и настройки.
+            {t(
+              "Создаёт полный дубликат курса: темы, материалы, описания и настройки."
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Alert>
             <LuTriangleAlert />
-            <AlertTitle>Полная копия</AlertTitle>
+            <AlertTitle>{t("Полная копия")}</AlertTitle>
             <AlertDescription>
-              Новый курс будет независимым. Студенты и потоки в копию не
-              переносятся — их нужно назначить отдельно.
+              {t(
+                "Новый курс будет независимым. Студенты и потоки в копию не переносятся — их нужно назначить отдельно."
+              )}
             </AlertDescription>
           </Alert>
           <Button onClick={() => setOpen(true)} disabled={isPending}>
             <LuCopy />
-            {isPending ? "Копируем курс..." : "Дублировать курс"}
+            {isPending ? t("Копируем курс...") : t("Дублировать курс")}
           </Button>
         </CardContent>
       </Card>
@@ -75,17 +80,22 @@ export const DuplicateCourseCard = ({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Дублировать курс?</AlertDialogTitle>
+            <AlertDialogTitle>{t("Дублировать курс?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Будет создан такой же курс
-              {courseName ? ` «${courseName}»` : ""} со всеми темами и
-              материалами. Исходный курс не изменится.
+              {courseName
+                ? t(
+                    "Будет создан такой же курс «{{name}}» со всеми темами и материалами. Исходный курс не изменится.",
+                    { name: courseName }
+                  )
+                : t(
+                    "Будет создан такой же курс со всеми темами и материалами. Исходный курс не изменится."
+                  )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Отмена</AlertDialogCancel>
+            <AlertDialogCancel disabled={isPending}>{t("Отмена")}</AlertDialogCancel>
             <Button onClick={handleDuplicate} disabled={isPending}>
-              {isPending ? "Копируем..." : "Создать копию"}
+              {isPending ? t("Копируем...") : t("Создать копию")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { CourseStream } from "entities/Course/model/types/course";
@@ -45,6 +46,7 @@ interface CourseStreamsProps {
 }
 
 export const CourseStreams = ({ courseId }: CourseStreamsProps) => {
+  const { t } = useTranslation();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [streamToDelete, setStreamToDelete] = useState<CourseStream | null>(
     null
@@ -86,16 +88,15 @@ export const CourseStreams = ({ courseId }: CourseStreamsProps) => {
           <div className="flex flex-col gap-1.5">
             <CardTitle className="flex items-center gap-2">
               <LuUsers className="h-5 w-5 text-primary" />
-              Потоки
+              {t("Потоки")}
             </CardTitle>
             <CardDescription>
-              Список потоков, которым доступен этот курс. Можно добавить новый
-              поток или убрать существующий.
+              {t("Список потоков, которым доступен этот курс. Можно добавить новый поток или убрать существующий.")}
             </CardDescription>
           </div>
           <Button size="sm" onClick={() => setIsAddOpen(true)}>
             <LuPlus />
-            Добавить поток
+            {t("Добавить поток")}
           </Button>
         </CardHeader>
         <CardContent>
@@ -104,8 +105,8 @@ export const CourseStreams = ({ courseId }: CourseStreamsProps) => {
               <Table>
                 <TableHeader className="bg-muted">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead>Поток</TableHead>
-                    <TableHead>Идентификатор</TableHead>
+                    <TableHead>{t("Поток")}</TableHead>
+                    <TableHead>{t("Идентификатор")}</TableHead>
                     <TableHead className="w-[60px]" />
                   </TableRow>
                 </TableHeader>
@@ -128,7 +129,7 @@ export const CourseStreams = ({ courseId }: CourseStreamsProps) => {
             </div>
           ) : error ? (
             <p className="text-sm text-destructive">
-              Не удалось загрузить потоки. {error.message}
+              {t("Не удалось загрузить потоки. {{message}}", { message: error.message })}
             </p>
           ) : streams.length === 0 ? (
             <Empty className="border border-dashed">
@@ -136,9 +137,9 @@ export const CourseStreams = ({ courseId }: CourseStreamsProps) => {
                 <EmptyMedia variant="icon">
                   <LuUsers />
                 </EmptyMedia>
-                <EmptyTitle>Потоки ещё не добавлены</EmptyTitle>
+                <EmptyTitle>{t("Потоки ещё не добавлены")}</EmptyTitle>
                 <EmptyDescription>
-                  Добавьте поток, чтобы студенты этой группы увидели курс.
+                  {t("Добавьте поток, чтобы студенты этой группы увидели курс.")}
                 </EmptyDescription>
            
               </EmptyContent>
@@ -148,8 +149,8 @@ export const CourseStreams = ({ courseId }: CourseStreamsProps) => {
               <Table>
                 <TableHeader className="bg-muted">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead>Поток</TableHead>
-                    <TableHead>Идентификатор</TableHead>
+                    <TableHead>{t("Поток")}</TableHead>
+                    <TableHead>{t("Идентификатор")}</TableHead>
                     <TableHead className="w-[60px]" />
                   </TableRow>
                 </TableHeader>
@@ -167,7 +168,7 @@ export const CourseStreams = ({ courseId }: CourseStreamsProps) => {
                           size="icon-sm"
                           className="text-muted-foreground hover:text-destructive"
                           onClick={() => setStreamToDelete(stream)}
-                          aria-label={`Удалить поток ${stream.title}`}
+                          aria-label={t("Удалить поток {{title}}", { title: stream.title })}
                         >
                           <LuTrash2 />
                         </Button>
@@ -198,20 +199,22 @@ export const CourseStreams = ({ courseId }: CourseStreamsProps) => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить поток?</AlertDialogTitle>
+            <AlertDialogTitle>{t("Удалить поток?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Поток «{streamToDelete?.title}» потеряет доступ к этому курсу.
-              Студенты потока больше не увидят темы и материалы.
+              {t(
+                "Поток «{{title}}» потеряет доступ к этому курсу. Студенты потока больше не увидят темы и материалы.",
+                { title: streamToDelete?.title ?? "" }
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Отмена</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t("Отмена")}</AlertDialogCancel>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "Удаляем..." : "Удалить"}
+              {isDeleting ? t("Удаляем...") : t("Удалить")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

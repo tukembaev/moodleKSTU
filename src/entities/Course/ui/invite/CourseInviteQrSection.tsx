@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "shared/config/i18n/i18n";
 import { useQuery } from "@tanstack/react-query";
 import QRCode from "qrcode";
 import { ChevronDown, Download, QrCode, Trash2 } from "lucide-react";
@@ -39,12 +41,12 @@ import {
 import { toast } from "sonner";
 
 const INVITE_DURATIONS: { label: string; duration: string | null }[] = [
-  { label: "1 день", duration: "P1D" },
-  { label: "3 дня", duration: "P3D" },
-  { label: "Неделя", duration: "P7D" },
-  { label: "Месяц", duration: "P30D" },
-  { label: "Год", duration: "P365D" },
-  { label: "Открыт всегда", duration: null },
+  { label: i18n.t("1 день"), duration: "P1D" },
+  { label: i18n.t("3 дня"), duration: "P3D" },
+  { label: i18n.t("Неделя"), duration: "P7D" },
+  { label: i18n.t("Месяц"), duration: "P30D" },
+  { label: i18n.t("Год"), duration: "P365D" },
+  { label: i18n.t("Открыт всегда"), duration: null },
 ];
 
 function wrapCanvasText(
@@ -91,7 +93,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Не удалось загрузить QR"));
+    img.onerror = () => reject(new Error(i18n.t("Не удалось загрузить QR")));
     img.src = src;
   });
 }
@@ -108,10 +110,10 @@ async function downloadInvitePoster(options: {
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas недоступен");
+  if (!ctx) throw new Error(i18n.t("Canvas недоступен"));
 
   const qrImage = await loadImage(options.qrDataUrl);
-  const courseName = options.courseName.trim() || "Курс";
+  const courseName = options.courseName.trim() || i18n.t("Курс");
   const teacherName = options.teacherName.trim();
   const pad = 80;
 
@@ -126,7 +128,7 @@ async function downloadInvitePoster(options: {
   ctx.textAlign = "center";
   ctx.fillStyle = "#3f3f46";
   ctx.font = "600 22px Arial, sans-serif";
-  ctx.fillText("ПРИГЛАШЕНИЕ НА КУРС", width / 2, 120);
+  ctx.fillText(i18n.t("ПРИГЛАШЕНИЕ НА КУРС"), width / 2, 120);
 
   ctx.fillStyle = "#18181b";
   ctx.font = "700 42px Arial, sans-serif";
@@ -148,7 +150,7 @@ async function downloadInvitePoster(options: {
   if (teacherName) {
     ctx.fillStyle = "#71717a";
     ctx.font = "500 18px Arial, sans-serif";
-    ctx.fillText("Преподаватель", width / 2, y);
+    ctx.fillText(i18n.t("Преподаватель"), width / 2, y);
     y += 36;
     ctx.fillStyle = "#27272a";
     ctx.font = "600 28px Arial, sans-serif";
@@ -184,12 +186,12 @@ async function downloadInvitePoster(options: {
 
   ctx.fillStyle = "#3f3f46";
   ctx.font = "500 22px Arial, sans-serif";
-  ctx.fillText("Отсканируйте код, чтобы вступить на курс", width / 2, qrY + qrSize + 72);
+  ctx.fillText(i18n.t("Отсканируйте код, чтобы вступить на курс"), width / 2, qrY + qrSize + 72);
 
   await new Promise<void>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (!blob) {
-        reject(new Error("Не удалось создать файл"));
+        reject(new Error(i18n.t("Не удалось создать файл")));
         return;
       }
       const url = URL.createObjectURL(blob);
@@ -215,11 +217,12 @@ export function CourseInviteQrButton({
   courseName?: string;
   teacherName?: string;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [dataUrl, setDataUrl] = useState("");
   const [downloading, setDownloading] = useState(false);
-  const title = courseName?.trim() || "Курс";
+  const title = courseName?.trim() || t("Курс");
   const teacher = teacherName?.trim() || "";
 
   const {
@@ -253,7 +256,7 @@ export function CourseInviteQrButton({
         if (!cancelled) setDataUrl(url);
       })
       .catch(() => {
-        if (!cancelled) toast.error("Не удалось сформировать QR-код");
+        if (!cancelled) toast.error(t("Не удалось сформировать QR-код"));
       });
     return () => {
       cancelled = true;
@@ -282,7 +285,7 @@ export function CourseInviteQrButton({
         fileName: `invite-${safeName}.png`,
       });
     } catch {
-      toast.error("Не удалось скачать изображение");
+      toast.error(t("Не удалось скачать изображение"));
     } finally {
       setDownloading(false);
     }
@@ -295,7 +298,7 @@ export function CourseInviteQrButton({
           <Button
             type="button"
             variant="outline"
-            aria-label="QR-код курса"
+            aria-label={t("QR-код курса")}
             className="h-auto self-stretch aspect-square shrink-0 px-0"
           >
             <QrCode className="h-6 w-6 sm:h-7 sm:w-7" />
@@ -303,10 +306,10 @@ export function CourseInviteQrButton({
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Приглашение на курс</DialogTitle>
+            <DialogTitle>{t("Приглашение на курс")}</DialogTitle>
             <DialogDescription>
               {title}
-              {teacher ? `. Преподаватель: ${teacher}` : ""}
+              {teacher ? t(". Преподаватель: {{teacher}}", { teacher }) : ""}
             </DialogDescription>
           </DialogHeader>
 
@@ -320,11 +323,11 @@ export function CourseInviteQrButton({
                 <EmptyMedia variant="icon">
                   <QrCode />
                 </EmptyMedia>
-                <EmptyTitle>Не удалось загрузить приглашение</EmptyTitle>
+                <EmptyTitle>{t("Не удалось загрузить приглашение")}</EmptyTitle>
                 <EmptyDescription>
                   {error instanceof Error
                     ? error.message
-                    : "Попробуйте открыть окно ещё раз"}
+                    : t("Попробуйте открыть окно ещё раз")}
                 </EmptyDescription>
               </EmptyContent>
             </Empty>
@@ -333,7 +336,7 @@ export function CourseInviteQrButton({
               {dataUrl ? (
                 <img
                   src={dataUrl}
-                  alt="QR-код приглашения на курс"
+                  alt={t("QR-код приглашения на курс")}
                   className="h-56 w-56 rounded-md border bg-white p-2"
                 />
               ) : (
@@ -346,20 +349,19 @@ export function CourseInviteQrButton({
                 <EmptyMedia variant="icon">
                   <QrCode />
                 </EmptyMedia>
-                <EmptyTitle>Приглашение ещё не создано</EmptyTitle>
+                <EmptyTitle>{t("Приглашение ещё не создано")}</EmptyTitle>
                 <EmptyDescription>
-                  Создайте ссылку и выберите срок действия — студенты смогут
-                  вступить на курс по QR-коду.
+                  {t("Создайте ссылку и выберите срок действия — студенты смогут вступить на курс по QR-коду.")}
                 </EmptyDescription>
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button type="button" disabled={isCreating} className="gap-2">
-                      {isCreating ? "Создаём..." : "Создать приглашение"}
+                      {isCreating ? t("Создаём...") : t("Создать приглашение")}
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="center" className="w-52">
-                    <DropdownMenuLabel>Срок действия</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t("Срок действия")}</DropdownMenuLabel>
                     {INVITE_DURATIONS.map((item) => (
                       <DropdownMenuItem
                         key={item.label}
@@ -384,7 +386,7 @@ export function CourseInviteQrButton({
                 disabled={!dataUrl || downloading}
               >
                 <Download className="h-4 w-4" />
-                {downloading ? "Готовим файл..." : "Скачать PNG"}
+                {downloading ? t("Готовим файл...") : t("Скачать PNG")}
               </Button>
               <Button
                 type="button"
@@ -394,7 +396,7 @@ export function CourseInviteQrButton({
                 disabled={isDeleting}
               >
                 <Trash2 className="h-4 w-4" />
-                Удалить приглашение
+                {t("Удалить приглашение")}
               </Button>
             </DialogFooter>
           ) : null}
@@ -409,20 +411,21 @@ export function CourseInviteQrButton({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить приглашение?</AlertDialogTitle>
+            <AlertDialogTitle>{t("Удалить приглашение?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              QR-код и ссылка перестанут работать. Чтобы пригласить студентов
-              снова, нужно будет создать новое приглашение.
+              {t(
+                "QR-код и ссылка перестанут работать. Чтобы пригласить студентов снова, нужно будет создать новое приглашение."
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Отмена</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t("Отмена")}</AlertDialogCancel>
             <Button
               variant="destructive"
               onClick={onDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "Удаляем..." : "Удалить"}
+              {isDeleting ? t("Удаляем...") : t("Удалить")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

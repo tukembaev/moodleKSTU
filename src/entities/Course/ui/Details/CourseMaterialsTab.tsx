@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
+import i18n from "shared/config/i18n/i18n";
 import axios from "axios";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { DownloadIcon, Loader2, Search, Trash2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { LuFolderOpen } from "react-icons/lu";
@@ -30,7 +32,7 @@ function apiStatus(error: unknown) {
 function formatUploadedAt(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return format(date, "dd.MM.yyyy HH:mm", { locale: ru });
+  return format(date, "dd.MM.yyyy HH:mm", { locale: getDateLocale(i18n.language) });
 }
 
 function groupByTheme(items: CourseMaterialFile[]) {
@@ -38,7 +40,7 @@ function groupByTheme(items: CourseMaterialFile[]) {
   for (const item of items) {
     const themeId = item.theme?.id || "unknown";
     const bucket = map.get(themeId) ?? {
-      title: item.theme?.title || "Без темы",
+      title: item.theme?.title || i18n.t("Без темы"),
       files: [],
     };
     bucket.files.push(item);
@@ -88,10 +90,11 @@ function MaterialFileRow({
   onOpenTheme: (themeId: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   const FileKindIcon = getFileKindIcon(
     getExtension(item.file_name || item.file)
   );
-  const fileName = item.file_name || "Без названия";
+  const fileName = item.file_name || t("Без названия");
 
   return (
     <li className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center">
@@ -127,8 +130,8 @@ function MaterialFileRow({
       <div className="flex shrink-0 items-center gap-1">
         {canDelete ? (
           <UseConfirmationDialog
-            title="Удалить материал?"
-            description={`«${fileName}» будет удалён без возможности восстановления.`}
+            title={t("Удалить материал?")}
+            description={t("«{{name}}» будет удалён без возможности восстановления.", { name: fileName })}
             onConfirm={() => onDelete(item.id)}
             trigger={
               <Button
@@ -137,7 +140,7 @@ function MaterialFileRow({
                 size="icon-sm"
                 className="size-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 disabled={isDeleting}
-                aria-label={`Удалить ${fileName}`}
+                aria-label={t("Удалить {{name}}", { name: fileName })}
               >
                 <Trash2Icon />
               </Button>
@@ -152,7 +155,7 @@ function MaterialFileRow({
             rel="noreferrer"
           >
             <DownloadIcon />
-            Скачать
+            {t("Скачать")}
           </a>
         </Button>
       </div>
@@ -165,6 +168,7 @@ export const CourseMaterialsTab = ({
 }: {
   onOpenTheme: (themeId: string) => void;
 }) => {
+  const { t } = useTranslation();
   const courseId = useCourseId();
   const { isStudent, isAuthenticated } = useAuth();
   const [searchInput, setSearchInput] = useState("");
@@ -195,10 +199,9 @@ export const CourseMaterialsTab = ({
       <Input
         value={searchInput}
         onChange={(event) => setSearchInput(event.target.value)}
-        placeholder="Поиск по названию файла..."
+        placeholder={t("Поиск по названию файла...")}
         className="pl-9 pr-9"
-        aria-label="Поиск по названию файла"
-      />
+        aria-label={t("Поиск по названию файла")} />
       {isFetching && !isPending ? (
         <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
       ) : null}
@@ -213,9 +216,9 @@ export const CourseMaterialsTab = ({
     return (
       <Empty className="mt-6 border-0">
         <EmptyHeader>
-          <EmptyTitle>Нет доступа к материалам курса</EmptyTitle>
+          <EmptyTitle>{t("Нет доступа к материалам курса")}</EmptyTitle>
           <EmptyDescription>
-            Войдите в аккаунт и убедитесь, что вы записаны на этот курс.
+            {t("Войдите в аккаунт и убедитесь, что вы записаны на этот курс.")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -226,9 +229,9 @@ export const CourseMaterialsTab = ({
     return (
       <Empty className="mt-6 border-0">
         <EmptyHeader>
-          <EmptyTitle>Курс не найден</EmptyTitle>
+          <EmptyTitle>{t("Курс не найден")}</EmptyTitle>
           <EmptyDescription>
-            Этого курса нет или он был удалён.
+            {t("Этого курса нет или он был удалён.")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -239,14 +242,14 @@ export const CourseMaterialsTab = ({
     return (
       <Empty className="mt-6 border-0">
         <EmptyHeader>
-          <EmptyTitle>Не удалось загрузить материалы</EmptyTitle>
+          <EmptyTitle>{t("Не удалось загрузить материалы")}</EmptyTitle>
           <EmptyDescription>
-            Проверьте соединение и попробуйте ещё раз.
+            {t("Проверьте соединение и попробуйте ещё раз.")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={() => refetch()}>
-            Повторить
+            {t("Повторить")}
           </Button>
         </EmptyContent>
       </Empty>
@@ -263,19 +266,18 @@ export const CourseMaterialsTab = ({
             <EmptyMedia variant="icon">
               <LuFolderOpen />
             </EmptyMedia>
-            <EmptyTitle>К курсу пока не прикреплены файлы</EmptyTitle>
+            <EmptyTitle>{t("К курсу пока не прикреплены файлы")}</EmptyTitle>
             <EmptyDescription>
-              Учебные материалы появятся здесь, когда преподаватель
-              прикрепит их к темам курса.
+              {t("Учебные материалы появятся здесь, когда преподаватель прикрепит их к темам курса.")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : materials.length === 0 ? (
         <Empty className="min-h-48 border-0">
           <EmptyHeader>
-            <EmptyTitle>Ничего не найдено</EmptyTitle>
+            <EmptyTitle>{t("Ничего не найдено")}</EmptyTitle>
             <EmptyDescription>
-              Ничего не найдено по запросу «{debouncedSearch}»
+              {t("Ничего не найдено по запросу «{{query}}»", { query: debouncedSearch })}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

@@ -7,6 +7,7 @@ import {
   QrCode,
   Wallet,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { LuWallet } from "react-icons/lu";
 import { cn } from "shared/lib/utils";
 
@@ -67,6 +68,7 @@ export default function BalanceList({
   accounts = ACCOUNTS,
   className,
 }: List01Props) {
+  const { t } = useTranslation();
   return (
     <div
       className={cn(
@@ -81,7 +83,7 @@ export default function BalanceList({
       <div className="p-4 ">
         <p className=" flex gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
           <LuWallet className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-50" />{" "}
-          Весь баланс
+          {t("Весь баланс")}
         </p>
         <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
           {totalBalance}
@@ -92,7 +94,7 @@ export default function BalanceList({
       <div className="p-3">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
-            Ваш аккаунт
+            {t("Ваш аккаунт")}
           </h2>
         </div>
 
@@ -170,7 +172,7 @@ export default function BalanceList({
             )}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Добавить</span>
+            <span>{t("Добавить")}</span>
           </button>
 
           <button
@@ -187,7 +189,7 @@ export default function BalanceList({
             )}
           >
             <ArrowDownLeft className="w-3.5 h-3.5" />
-            <span>Пополнить</span>
+            <span>{t("Пополнить")}</span>
           </button>
           <button
             type="button"
@@ -203,7 +205,7 @@ export default function BalanceList({
             )}
           >
             <ArrowRight className="w-3.5 h-3.5" />
-            <span>Подробнее</span>
+            <span>{t("Подробнее")}</span>
           </button>
         </div>
       </div>

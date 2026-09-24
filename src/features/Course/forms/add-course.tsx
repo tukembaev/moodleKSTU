@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
@@ -20,6 +21,7 @@ import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
 import { CreateCoursePayload } from "../model/types/course_payload";
 
 const Add_Course = () => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -75,17 +77,17 @@ const Add_Course = () => {
         <form onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="title" className="pb-2" required>
-              Название курса
+              {t("Название курса")}
             </FieldLabel>
             <Input
               type="text"
-              placeholder="Введите название курса"
+              placeholder={t("Введите название курса")}
               maxLength={100}
               {...register("discipline_name", {
-                ...requiredField("Заполните название курса"),
+                ...requiredField(t("Заполните название курса")),
                 maxLength: {
                   value: 100,
-                  message: "Название курса не должно превышать 100 символов",
+                  message: t("Название курса не должно превышать 100 символов"),
                 },
               })}
             />
@@ -98,7 +100,7 @@ const Add_Course = () => {
 
           <div className="flex flex-col">
             <FieldLabel htmlFor="organization_id" className="pb-2" required>
-              Кафедра
+              {t("Кафедра")}
             </FieldLabel>
             <Select
               value={selectedOrganizationId || undefined}
@@ -109,10 +111,10 @@ const Add_Course = () => {
                 <SelectValue
                   placeholder={
                     isMeLoading
-                      ? "Загрузка кафедр..."
+                      ? t("Загрузка кафедр...")
                       : departments.length === 0
-                        ? "Нет доступных кафедр"
-                        : "Выберите кафедру"
+                        ? t("Нет доступных кафедр")
+                        : t("Выберите кафедру")
                   }
                 />
               </SelectTrigger>
@@ -126,16 +128,16 @@ const Add_Course = () => {
             </Select>
             <input
               type="hidden"
-              {...register("organization_id", requiredField("Выберите кафедру"))}
+              {...register("organization_id", requiredField(t("Выберите кафедру")))}
             />
             {errors.organization_id && (
               <span className="text-xs text-red-500 pt-1">
-                Выберите кафедру
+                {t("Выберите кафедру")}
               </span>
             )}
             {!isMeLoading && departments.length === 0 && (
               <span className="text-xs text-muted-foreground pt-1">
-                В профиле нет кафедр для привязки курса
+                {t("В профиле нет кафедр для привязки курса")}
               </span>
             )}
           </div>
@@ -143,7 +145,7 @@ const Add_Course = () => {
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="submit" className="w-full mt-4" disabled={isPending}>
               <LuCloudUpload />
-              {isPending ? "Загрузка..." : "Добавить курс"}
+              {isPending ? t("Загрузка...") : t("Добавить курс")}
             </Button>
           </div>
         </form>

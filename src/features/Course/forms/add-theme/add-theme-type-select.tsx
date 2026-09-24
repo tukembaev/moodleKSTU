@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { FieldLabel } from "shared/components/FieldLabel";
 import {
   Select,
@@ -26,29 +27,33 @@ interface AddThemeTypeSelectProps {
   error?: string;
 }
 
-export const ThemeTypeSelectItems = () => (
-  <>
-    {TYPE_SELECT_ORDER.map((key) => (
-      <SelectItem key={key} value={TYPE_LABELS[key]}>
-        {TYPE_LABELS[key]}
-      </SelectItem>
-    ))}
-  </>
-);
+export const ThemeTypeSelectItems = () => {
+  const { t } = useTranslation();
+  return (
+    <>
+      {TYPE_SELECT_ORDER.map((key) => (
+        <SelectItem key={key} value={TYPE_LABELS[key]}>
+          {t(TYPE_LABELS[key])}
+        </SelectItem>
+      ))}
+    </>
+  );
+};
 
 export const AddThemeTypeSelect = ({
   value,
   onChange,
   error,
 }: AddThemeTypeSelectProps) => {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-2">
       <FieldLabel htmlFor="type_theme" required>
-        Тип занятия
+        {t("Тип занятия")}
       </FieldLabel>
       <Select value={value} onValueChange={onChange} required>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Выберите тип занятия" />
+          <SelectValue placeholder={t("Выберите тип занятия")} />
         </SelectTrigger>
         <SelectContent
           position="item-aligned"

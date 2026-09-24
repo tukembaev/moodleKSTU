@@ -1,5 +1,7 @@
 import { ChevronLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
+import { LanguageSwitcher } from "shared/components/LanguageSwitcher";
 import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
 import { runMobileBackHandler } from "shared/lib/navigation/mobile-back";
 import { Button } from "shared/shadcn/ui/button";
@@ -18,6 +20,7 @@ function isRootPath(pathname: string) {
  * назад слева — только если есть куда выйти.
  */
 export function MobileHeader() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const isFocusedRoute = FOCUSED_ROUTES.some((route) =>
@@ -43,7 +46,7 @@ export function MobileHeader() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Назад"
+          aria-label={t("Назад")}
           onClick={goBack}
           className="relative z-10 size-9 shrink-0"
         >
@@ -55,7 +58,9 @@ export function MobileHeader() {
       <h1 className="pointer-events-none absolute inset-x-12 truncate text-center text-[15px] font-semibold tracking-tight">
         Unet LMS
       </h1>
-      <span className="ml-auto size-9 shrink-0" aria-hidden />
+      <span className="ml-auto shrink-0">
+        <LanguageSwitcher />
+      </span>
     </header>
   );
 }

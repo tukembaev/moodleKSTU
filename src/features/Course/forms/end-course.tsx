@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Button } from "shared/shadcn/ui/button";
 import { Input } from "shared/shadcn/ui/input";
 
@@ -11,6 +12,7 @@ import { FinishCourseFormPayload } from "../model/types/course_payload";
 import { UseConfirmationDialog } from "shared/components";
 
 const End_Course = () => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -46,11 +48,11 @@ const End_Course = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="title" className="pb-2">
-              Причина дополнительных баллов
+              {t("Причина дополнительных баллов")}
             </FieldLabel>
             <Input
               type="text"
-              placeholder="Введите причину"
+              placeholder={t("Введите причину")}
               maxLength={30}
               minLength={6}
               {...register("reason", {
@@ -62,21 +64,26 @@ const End_Course = () => {
           </div>
           <div className="flex flex-col ">
             <FieldLabel htmlFor="points" className="pb-2">
-              Количество доп. баллов
+              {t("Количество доп. баллов")}
             </FieldLabel>
             <Input
               type="number"
-              placeholder={`Макс: ${maxAvailable}`}
+              placeholder={t("Макс: {{max}}", { max: maxAvailable })}
               {...register("points", {
                 required: false,
                 valueAsNumber: true,
                 validate: (value) => {
                   const total = current_points + (value || 0);
                   if (value && value > maxAvailable) {
-                    return `Можно добавить не больше ${maxAvailable} баллов`;
+                    return t("Можно добавить не больше {{max}} баллов", {
+                      max: maxAvailable,
+                    });
                   }
                   if (total > 100) {
-                    return `Общий лимит 100: сейчас ${current_points}, добавляете ${value}`;
+                    return t(
+                      "Общий лимит 100: сейчас {{current}}, добавляете {{value}}",
+                      { current: current_points, value }
+                    );
                   }
                   return true;
                 },
@@ -97,8 +104,11 @@ const End_Course = () => {
             />
             {extra_points !== undefined && !isLimitExceeded && (
               <span className="text-xs text-gray-400 pt-3">
-                Итого баллов: {current_points} + {extra_points} ={" "}
-                {current_points + extra_points}
+                {t("Итого баллов: {{current}} + {{extra}} = {{total}}", {
+                  current: current_points,
+                  extra: extra_points,
+                  total: current_points + extra_points,
+                })}
               </span>
             )}
           </div>
@@ -113,11 +123,13 @@ const End_Course = () => {
               }}
             >
               <LuX />
-              Отменить
+              {t("Отменить")}
             </Button>
             <UseConfirmationDialog
-              title="Подтвердите завершение курса"
-              description="Это действие нельзя отменить. Убедитесь, что всё заполнено корректно."
+              title={t("Подтвердите завершение курса")}
+              description={t(
+                "Это действие нельзя отменить. Убедитесь, что всё заполнено корректно."
+              )}
               icon={<LuOctagonAlert className="h-7 w-7 text-destructive" />}
               onConfirm={handleSubmit(onSubmit)}
               trigger={
@@ -126,7 +138,7 @@ const End_Course = () => {
                   className="w-full mt-4"
                   disabled={isPending}
                 >
-                  {isPending ? "Загрузка..." : "Подвести итог"}
+                  {isPending ? t("Загрузка...") : t("Подвести итог")}
                   <LuCloudUpload />
                 </Button>
               }

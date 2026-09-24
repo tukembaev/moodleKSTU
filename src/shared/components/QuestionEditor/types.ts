@@ -1,3 +1,5 @@
+import i18n from "shared/config/i18n/i18n";
+
 export type QuestionType =
   | "single_choice"
   | "multiple_choice"
@@ -14,12 +16,22 @@ export const QUESTION_TYPES: QuestionType[] = [
 ];
 
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
-  single_choice: "Один вариант",
-  multiple_choice: "Несколько вариантов",
-  true_false: "Верно/неверно",
-  short_answer: "Короткий ответ",
-  essay: "Развёрнутый ответ",
-};
+  get single_choice() {
+    return i18n.t("Один вариант");
+  },
+  get multiple_choice() {
+    return i18n.t("Несколько вариантов");
+  },
+  get true_false() {
+    return i18n.t("Верно/неверно");
+  },
+  get short_answer() {
+    return i18n.t("Короткий ответ");
+  },
+  get essay() {
+    return i18n.t("Развёрнутый ответ");
+  },
+} as Record<QuestionType, string>;
 
 export type QuestionCorrectAnswer = string | string[] | boolean | null;
 
@@ -189,34 +201,34 @@ export const isQuestionDraftStarted = (question?: QuestionDraft) => {
 };
 
 export const validateQuestionDraft = (question?: QuestionDraft): true | string => {
-  if (!question?.question?.trim()) return "Введите текст вопроса";
+  if (!question?.question?.trim()) return i18n.t("Введите текст вопроса");
   const type = resolveQuestionType(question);
   if (type === "essay") return true;
   if (type === "short_answer") {
     const text =
       typeof question.correctAnswer === "string" ? question.correctAnswer.trim() : "";
-    if (!text) return "Укажите эталонный текст ответа";
+    if (!text) return i18n.t("Укажите эталонный текст ответа");
     return true;
   }
   if (type === "true_false") {
     if (typeof question.correctAnswer !== "boolean") {
-      return "Выберите правильный ответ";
+      return i18n.t("Выберите правильный ответ");
     }
     return true;
   }
   if (question.options.some((option) => !option.text.trim())) {
-    return "Заполните все варианты ответов";
+    return i18n.t("Заполните все варианты ответов");
   }
   if (type === "multiple_choice") {
     if (
       !Array.isArray(question.correctAnswer) ||
       question.correctAnswer.length === 0
     ) {
-      return "Выберите правильный ответ";
+      return i18n.t("Выберите правильный ответ");
     }
     return true;
   }
-  if (!question.correctAnswer) return "Выберите правильный ответ";
+  if (!question.correctAnswer) return i18n.t("Выберите правильный ответ");
   return true;
 };
 

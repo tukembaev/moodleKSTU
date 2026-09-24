@@ -86,7 +86,7 @@ export interface CreateCoursePayload {
   }
   export interface CreateThemePayload {
       course?: string;
-    week: number;
+    week?: number;
     title?: string;
     type_less: string;
     max_points?: number;

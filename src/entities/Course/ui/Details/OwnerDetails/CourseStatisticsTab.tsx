@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import type { TaskDetail, TeacherCourseDetail, TeacherCourseTasksStatistics, TestDetail } from "entities/Course/model/types/statistics";
@@ -18,6 +19,7 @@ import {
 import { LuUsers, LuFileCheck } from "react-icons/lu";
 
 export const CourseStatisticsTab = () => {
+  const { t } = useTranslation();
   const id = useCourseId();
   const { data, isLoading, error } = useQuery(courseQueries.teacherCourseDetail(id || null));
 
@@ -41,16 +43,16 @@ export const CourseStatisticsTab = () => {
   if (error) {
     return (
       <div className="text-center text-destructive p-4">
-        <p className="font-semibold">Ошибка при загрузке статистики курса</p>
+        <p className="font-semibold">{t("Ошибка при загрузке статистики курса")}</p>
         <p className="text-sm text-muted-foreground mt-2">
-          {error instanceof Error ? error.message : "Неизвестная ошибка"}
+          {error instanceof Error ? error.message : t("Неизвестная ошибка")}
         </p>
       </div>
     );
   }
 
   if (!data) {
-    return <div className="text-center text-muted-foreground">Нет данных для отображения</div>;
+    return <div className="text-center text-muted-foreground">{t("Нет данных для отображения")}</div>;
   }
 
   const {
@@ -72,7 +74,7 @@ export const CourseStatisticsTab = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader>
-              <CardDescription>Всего студентов</CardDescription>
+              <CardDescription>{t("Всего студентов")}</CardDescription>
               <CardTitle className="text-3xl font-semibold">
                 {students_statistics.total_students}
               </CardTitle>
@@ -81,7 +83,7 @@ export const CourseStatisticsTab = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <LuUsers className="h-4 w-4" />
                 <span>
-                  Активных: {students_statistics.active_students}
+                  {t("Активных: {{count}}", { count: students_statistics.active_students })}
                 </span>
               </div>
             </CardContent>
@@ -89,22 +91,22 @@ export const CourseStatisticsTab = () => {
 
           <Card>
             <CardHeader>
-              <CardDescription>Средний балл</CardDescription>
+              <CardDescription>{t("Средний балл")}</CardDescription>
               <CardTitle className="text-3xl font-semibold">
                 {students_statistics.average_score.toFixed(1)}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-sm text-muted-foreground">
-                <p>Макс: {students_statistics.max_score}</p>
-                <p>Мин: {students_statistics.min_score}</p>
+                <p>{t("Макс: {{score}}", { score: students_statistics.max_score })}</p>
+                <p>{t("Мин: {{score}}", { score: students_statistics.min_score })}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardDescription>Завершили курс</CardDescription>
+              <CardDescription>{t("Завершили курс")}</CardDescription>
               <CardTitle className="text-3xl font-semibold">
                 {students_statistics.completed_students}
               </CardTitle>
@@ -123,7 +125,7 @@ export const CourseStatisticsTab = () => {
           {tasks_statistics?.overall && (
             <Card>
               <CardHeader>
-                <CardDescription>Непроверенных работ</CardDescription>
+                <CardDescription>{t("Непроверенных работ")}</CardDescription>
                 <CardTitle className="text-3xl font-semibold text-destructive">
                   {tasks_statistics.overall.unchecked_responses}
                 </CardTitle>
@@ -131,7 +133,7 @@ export const CourseStatisticsTab = () => {
               <CardContent>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <LuFileCheck className="h-4 w-4" />
-                  <span>Требуют внимания</span>
+                  <span>{t("Требуют внимания")}</span>
                 </div>
               </CardContent>
             </Card>
@@ -142,14 +144,14 @@ export const CourseStatisticsTab = () => {
       {scoreDistribution && (
         <Card>
           <CardHeader>
-            <CardTitle>Распределение баллов</CardTitle>
-            <CardDescription>По категориям успеваемости</CardDescription>
+            <CardTitle>{t("Распределение баллов")}</CardTitle>
+            <CardDescription>{t("По категориям успеваемости")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {scoreDistribution.excellent && (
                 <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Отлично</p>
+                  <p className="text-sm text-muted-foreground">{t("Отлично")}</p>
                   <p className="text-2xl font-bold">
                     {scoreDistribution.excellent.count}
                   </p>
@@ -163,7 +165,7 @@ export const CourseStatisticsTab = () => {
               )}
               {scoreDistribution.good && (
                 <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Хорошо</p>
+                  <p className="text-sm text-muted-foreground">{t("Хорошо")}</p>
                   <p className="text-2xl font-bold">
                     {scoreDistribution.good.count}
                   </p>
@@ -177,7 +179,7 @@ export const CourseStatisticsTab = () => {
               )}
               {scoreDistribution.satisfactory && (
                 <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Удовлетворительно</p>
+                  <p className="text-sm text-muted-foreground">{t("Удовлетворительно")}</p>
                   <p className="text-2xl font-bold">
                     {scoreDistribution.satisfactory.count}
                   </p>
@@ -191,7 +193,7 @@ export const CourseStatisticsTab = () => {
               )}
               {scoreDistribution.unsatisfactory && (
                 <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Неудовлетворительно</p>
+                  <p className="text-sm text-muted-foreground">{t("Неудовлетворительно")}</p>
                   <p className="text-2xl font-bold">
                     {scoreDistribution.unsatisfactory.count}
                   </p>
@@ -210,28 +212,28 @@ export const CourseStatisticsTab = () => {
 
       <Tabs defaultValue="tasks" className="w-full">
         <TabsList>
-          <TabsTrigger value="tasks">Задания</TabsTrigger>
-          <TabsTrigger value="tests">Тесты</TabsTrigger>
-          {hasTopStudents && <TabsTrigger value="top">Топ студентов</TabsTrigger>}
+          <TabsTrigger value="tasks">{t("Задания")}</TabsTrigger>
+          <TabsTrigger value="tests">{t("Тесты")}</TabsTrigger>
+          {hasTopStudents && <TabsTrigger value="top">{t("Топ студентов")}</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="tasks" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Статистика по заданиям</CardTitle>
+              <CardTitle>{t("Статистика по заданиям")}</CardTitle>
               <CardDescription>
-                Общая статистика выполнения заданий студентами
+                {t("Общая статистика выполнения заданий студентами")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {tasks_statistics?.overall && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Всего заданий</p>
+                    <p className="text-sm text-muted-foreground">{t("Всего заданий")}</p>
                     <p className="text-2xl font-bold">{tasks_statistics.overall.total_tasks}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Проверено</p>
+                    <p className="text-sm text-muted-foreground">{t("Проверено")}</p>
                     <p className="text-2xl font-bold">
                       {tasks_statistics.overall.checked_responses} / {tasks_statistics.overall.total_responses}
                     </p>
@@ -247,7 +249,7 @@ export const CourseStatisticsTab = () => {
                     )}
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Средний балл</p>
+                    <p className="text-sm text-muted-foreground">{t("Средний балл")}</p>
                     <p className="text-2xl font-bold">
                       {tasks_statistics.overall.average_score.toFixed(1)}
                     </p>
@@ -257,7 +259,7 @@ export const CourseStatisticsTab = () => {
 
               {Object.keys(tasksByType).length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold">По типам заданий</h3>
+                  <h3 className="font-semibold">{t("По типам заданий")}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {(Object.entries(tasksByType) as [string, TeacherCourseTasksStatistics["by_type"][string]][]).map(([type, stats]) => (
                       <Card key={type}>
@@ -267,17 +269,17 @@ export const CourseStatisticsTab = () => {
                         <CardContent>
                           <div className="space-y-2">
                             <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Всего заданий</span>
+                              <span className="text-sm text-muted-foreground">{t("Всего заданий")}</span>
                               <span className="font-medium">{stats.total_tasks}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Проверено</span>
+                              <span className="text-sm text-muted-foreground">{t("Проверено")}</span>
                               <span className="font-medium">
                                 {stats.checked_responses} / {stats.total_responses}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Средний балл</span>
+                              <span className="text-sm text-muted-foreground">{t("Средний балл")}</span>
                               <span className="font-medium">{stats.average_score.toFixed(1)}</span>
                             </div>
                             <Progress value={stats.completion_percentage} className="h-2" />
@@ -291,17 +293,17 @@ export const CourseStatisticsTab = () => {
 
               {tasksDetail.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="font-semibold mb-4">Детали по заданиям</h3>
+                  <h3 className="font-semibold mb-4">{t("Детали по заданиям")}</h3>
                   <div className="border rounded-lg">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Задание</TableHead>
-                          <TableHead>Тип</TableHead>
-                          <TableHead>Ответов</TableHead>
-                          <TableHead>Проверено</TableHead>
-                          <TableHead>Средний балл</TableHead>
-                          <TableHead>Просрочено</TableHead>
+                          <TableHead>{t("Задание")}</TableHead>
+                          <TableHead>{t("Тип")}</TableHead>
+                          <TableHead>{t("Ответов")}</TableHead>
+                          <TableHead>{t("Проверено")}</TableHead>
+                          <TableHead>{t("Средний балл")}</TableHead>
+                          <TableHead>{t("Просрочено")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -339,28 +341,28 @@ export const CourseStatisticsTab = () => {
         <TabsContent value="tests" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Статистика по тестам</CardTitle>
-              <CardDescription>Общая статистика прохождения тестов</CardDescription>
+              <CardTitle>{t("Статистика по тестам")}</CardTitle>
+              <CardDescription>{t("Общая статистика прохождения тестов")}</CardDescription>
             </CardHeader>
             <CardContent>
               {tests_statistics?.overall && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Всего тестов</p>
+                    <p className="text-sm text-muted-foreground">{t("Всего тестов")}</p>
                     <p className="text-2xl font-bold">{tests_statistics.overall.total_tests}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Попыток</p>
+                    <p className="text-sm text-muted-foreground">{t("Попыток")}</p>
                     <p className="text-2xl font-bold">{tests_statistics.overall.total_attempts}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Средний балл</p>
+                    <p className="text-sm text-muted-foreground">{t("Средний балл")}</p>
                     <p className="text-2xl font-bold">
                       {tests_statistics.overall.average_score.toFixed(1)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Процент прохождения</p>
+                    <p className="text-sm text-muted-foreground">{t("Процент прохождения")}</p>
                     <p className="text-2xl font-bold">
                       {tests_statistics.overall.completion_percentage.toFixed(1)}%
                     </p>
@@ -370,13 +372,13 @@ export const CourseStatisticsTab = () => {
 
               {testsDetail.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Детали по тестам</h3>
+                  <h3 className="font-semibold">{t("Детали по тестам")}</h3>
                   {testsDetail.map((test: TestDetail) => (
                     <Card key={test.testing.id}>
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg">{test.testing.title}</CardTitle>
-                          <Badge variant="outline">{test.testing.max_points} баллов</Badge>
+                          <Badge variant="outline">{t("{{count}} баллов", { count: test.testing.max_points })}</Badge>
                         </div>
                         {test.testing.description && (
                           <CardDescription>{test.testing.description}</CardDescription>
@@ -385,21 +387,21 @@ export const CourseStatisticsTab = () => {
                       <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div>
-                            <p className="text-sm text-muted-foreground">Попыток</p>
+                            <p className="text-sm text-muted-foreground">{t("Попыток")}</p>
                             <p className="text-xl font-bold">{test.attempts_count}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Средний балл</p>
+                            <p className="text-sm text-muted-foreground">{t("Средний балл")}</p>
                             <p className="text-xl font-bold">{test.average_score.toFixed(1)}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Макс / Мин</p>
+                            <p className="text-sm text-muted-foreground">{t("Макс / Мин")}</p>
                             <p className="text-xl font-bold">
                               {test.max_score} / {test.min_score}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Правильность</p>
+                            <p className="text-sm text-muted-foreground">{t("Правильность")}</p>
                             <p className="text-xl font-bold">
                               {test.average_correct_percentage.toFixed(1)}%
                             </p>
@@ -418,19 +420,19 @@ export const CourseStatisticsTab = () => {
           <TabsContent value="top" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Топ студентов</CardTitle>
-                <CardDescription>Студенты с наивысшими баллами</CardDescription>
+                <CardTitle>{t("Топ студентов")}</CardTitle>
+                <CardDescription>{t("Студенты с наивысшими баллами")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="border rounded-lg">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Место</TableHead>
-                        <TableHead>Студент</TableHead>
-                        <TableHead>Группа</TableHead>
-                        <TableHead>Баллы</TableHead>
-                        <TableHead>Статус</TableHead>
+                        <TableHead>{t("Место")}</TableHead>
+                        <TableHead>{t("Студент")}</TableHead>
+                        <TableHead>{t("Группа")}</TableHead>
+                        <TableHead>{t("Баллы")}</TableHead>
+                        <TableHead>{t("Статус")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -450,7 +452,7 @@ export const CourseStatisticsTab = () => {
                             <Badge
                               variant={student.course_students.is_end ? "default" : "secondary"}
                             >
-                              {student.course_students.is_end ? "Завершен" : "Активен"}
+                              {student.course_students.is_end ? t("Завершен") : t("Активен")}
                             </Badge>
                           </TableCell>
                         </TableRow>

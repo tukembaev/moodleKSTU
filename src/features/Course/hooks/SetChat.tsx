@@ -1,8 +1,9 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
 import { LucideCheck, LucideCheckCheck } from "lucide-react";
 import React, { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { LuSend } from "react-icons/lu";
 import { useAuth } from "shared/hooks";
 import { cn } from "shared/lib/utils";
@@ -85,6 +86,8 @@ export function SetChat({
   id?: string;
   children: React.ReactNode;
 }) {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const { mutate: comment_answer, isPending } = courseQueries.rate_answer();
   const [note, setNote] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -157,7 +160,7 @@ export function SetChat({
                   )}
                 >
                   <span>
-                    {format(item.date, "dd MMM HH:mm", { locale: ru })}
+                    {format(item.date, "dd MMM HH:mm", { locale: dateLocale })}
                   </span>
                   {item.author === "me" && (
                     <span>
@@ -179,7 +182,7 @@ export function SetChat({
           <Input
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Написать замечание..."
+            placeholder={t("Написать замечание...")}
             className="text-sm max-h-11"
           />
           <Button

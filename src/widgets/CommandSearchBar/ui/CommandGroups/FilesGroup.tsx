@@ -6,12 +6,14 @@ import { Badge } from "shared/shadcn/ui/badge";
 import { openCourse } from "shared/lib/navigation/hidden-ids";
 import { Button } from "shared/shadcn/ui/button";
 import { CommandGroup, CommandItem } from "shared/shadcn/ui/command";
+import { useTranslation } from "react-i18next";
 
 const FilesGroup = ({ data }: { data: UserFilesList[] }) => {
+    const { t } = useTranslation();
   const navigate = useNavigate();
   if (data.length === 0) return null;
   return (
-    <CommandGroup heading="Файлы">
+    <CommandGroup heading={t("Файлы")}>
       {data.map((item) => (
         <CommandItem
           key={item.id}

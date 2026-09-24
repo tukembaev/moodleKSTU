@@ -4,6 +4,7 @@ import {
   CourseFeedKind,
   CourseFeedMaterial,
 } from "entities/Course/model/types/course";
+import i18n from "shared/config/i18n/i18n";
 
 const FEED_KINDS = new Set<CourseFeedKind>([
   "announcement",
@@ -67,7 +68,7 @@ function parseTheme(value: unknown): CourseFeedMaterial["theme"] {
   const id = asString(record.id);
   const title = asString(record.title);
   if (!id && !title) return null;
-  return { id, title: title || "Без темы" };
+  return { id, title: title || i18n.t("Без темы") };
 }
 
 function parseMaterial(value: unknown): CourseFeedMaterial | null {
@@ -80,7 +81,7 @@ function parseMaterial(value: unknown): CourseFeedMaterial | null {
   if (!fileName && !record.file) return null;
   return {
     id: asString(record.id) || null,
-    file_name: fileName || "Без названия",
+    file_name: fileName || i18n.t("Без названия"),
     previous_file_name:
       asString(record.previous_file_name) ||
       asString(record.old_file_name) ||

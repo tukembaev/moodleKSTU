@@ -1,4 +1,5 @@
 import { ShieldOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
 import { Button } from "shared/shadcn/ui/button";
@@ -13,6 +14,7 @@ import {
 
 export default function AccessDenied() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
@@ -21,9 +23,9 @@ export default function AccessDenied() {
           <EmptyMedia variant="icon">
             <ShieldOff />
           </EmptyMedia>
-          <EmptyTitle>У вас нет доступа</EmptyTitle>
+          <EmptyTitle>{t("У вас нет доступа")}</EmptyTitle>
           <EmptyDescription>
-            Эта страница недоступна для вашей учётной записи.
+            {t("Эта страница недоступна для вашей учётной записи.")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
@@ -31,7 +33,7 @@ export default function AccessDenied() {
             onClick={() => navigate(RoutePath[AppRoutes.COURSES])}
             className="cursor-pointer"
           >
-            На главную
+            {t("На главную")}
           </Button>
         </EmptyContent>
       </Empty>

@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import {
   LuMessageSquare,
   LuPaperclip,
@@ -9,9 +8,11 @@ import {
   LuChevronRight,
   LuFileText,
 } from "react-icons/lu";
+import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "shared/shadcn/ui/avatar";
 import { Badge } from "shared/shadcn/ui/badge";
 import { Card, CardHeader } from "shared/shadcn/ui/card";
+import { getDateLocale } from "shared/config/i18n/dateLocale";
 import { cn } from "shared/lib/utils";
 import { Remark, RemarkStatus, RemarkType } from "entities/Remarks/model/types/remarks";
 
@@ -39,6 +40,9 @@ const RemarkItem = ({
   isCompact = false,
   className,
 }: RemarkItemProps) => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
+
   const getStatusConfig = (status: RemarkStatus) => {
     switch (status) {
       case RemarkStatus.PENDING:
@@ -46,7 +50,7 @@ const RemarkItem = ({
           badge: (
             <Badge className="gap-1 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
               <LuClock className="h-3 w-3" />
-              {!isCompact && "Ожидает"}
+              {!isCompact && t("Ожидает")}
             </Badge>
           ),
           borderColor: "border-l-amber-500",
@@ -57,7 +61,7 @@ const RemarkItem = ({
           badge: (
             <Badge className="gap-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800">
               <LuMessageSquare className="h-3 w-3" />
-              {!isCompact && "На проверке"}
+              {!isCompact && t("На проверке")}
             </Badge>
           ),
           borderColor: "border-l-blue-500",
@@ -68,7 +72,7 @@ const RemarkItem = ({
           badge: (
             <Badge className="gap-1 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800">
               <LuCheck className="h-3 w-3" />
-              {!isCompact && "Одобрено"}
+              {!isCompact && t("Одобрено")}
             </Badge>
           ),
           borderColor: "border-l-emerald-500",
@@ -79,7 +83,7 @@ const RemarkItem = ({
           badge: (
             <Badge className="gap-1 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800">
               <LuCircleAlert className="h-3 w-3" />
-              {!isCompact && "Исправить"}
+              {!isCompact && t("Исправить")}
             </Badge>
           ),
           borderColor: "border-l-rose-500",
@@ -150,13 +154,15 @@ const RemarkItem = ({
               </span>
               {remark.submission_version != null && (
                 <Badge variant="secondary" className="text-xs shrink-0">
-                  к версии {remark.submission_version}
+                  {t("к версии {{version}}", {
+                    version: remark.submission_version,
+                  })}
                 </Badge>
               )}
               {remark.type === RemarkType.FILE && (
                 <Badge variant="secondary" className="gap-1 text-xs shrink-0">
                   <LuPaperclip className="h-3 w-3" />
-                  К файлу
+                  {t("К файлу")}
                 </Badge>
               )}
             </div>
@@ -167,7 +173,9 @@ const RemarkItem = ({
                 <div className={cn("w-1.5 h-1.5 rounded-full mt-1.5 shrink-0", statusConfig.dotColor)} />
                 <p className="text-xs text-muted-foreground line-clamp-2">
                   <span className="font-medium text-foreground/80">
-                    {lastMessage.sender_role === "teacher" ? "Преподаватель: " : "Студент: "}
+                    {lastMessage.sender_role === "teacher"
+                      ? t("Преподаватель: ")
+                      : t("Студент: ")}
                   </span>
                   {lastMessage.message}
                 </p>
@@ -177,7 +185,9 @@ const RemarkItem = ({
             {/* Footer */}
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span>{format(remark.updated_at, "d MMM, HH:mm", { locale: ru })}</span>
+                <span>
+                  {format(remark.updated_at, "d MMM, HH:mm", { locale: dateLocale })}
+                </span>
                 <span className="flex items-center gap-1">
                   <LuMessageSquare className="h-3 w-3" />
                   {remark.messages.length}

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import {
   FileText,
@@ -9,6 +8,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // Импортируем react-pdf для просмотра PDF
 import { Document, Page, pdfjs } from "react-pdf";
@@ -28,6 +28,7 @@ interface PdfViewerProps {
 }
 
 const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
+  const { t } = useTranslation();
   const [numPages, setNumPages] = useState<number>();
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(0.8);
@@ -82,7 +83,7 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
       {!inDialog && (
         <div className="mb-4 flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Документ</h3>
+          <h3 className="text-lg font-semibold">{t("Документ")}</h3>
         </div>
       )}
       <div className="mb-4 flex items-center justify-between">
@@ -94,7 +95,7 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
             className="gap-2"
           >
             <ExternalLink className="h-4 w-4" />
-            Открыть в новой вкладке
+            {t("Открыть в новой вкладке")}
           </Button>
           <Button
             onClick={handleDownload}
@@ -103,7 +104,7 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            Скачать
+            {t("Скачать")}
           </Button>
         </div>
       </div>
@@ -163,12 +164,14 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
           onLoadSuccess={({ numPages }) => setNumPages(numPages)}
           loading={
             <div className="flex items-center justify-center p-8">
-              <div className="animate-pulse text-muted-foreground">Загрузка документа...</div>
+              <div className="animate-pulse text-muted-foreground">
+                {t("Загрузка документа...")}
+              </div>
             </div>
           }
           error={
             <div className="flex items-center justify-center p-8">
-              <div className="text-destructive">Ошибка загрузки документа</div>
+              <div className="text-destructive">{t("Ошибка загрузки документа")}</div>
             </div>
           }
         >

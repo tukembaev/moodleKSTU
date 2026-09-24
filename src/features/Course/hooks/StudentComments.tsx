@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { remarksQueries, RemarkStatus } from "entities/Remarks";
 import { ArrowUpIcon, MessageCircleDashedIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Empty,
   EmptyDescription,
@@ -24,6 +25,7 @@ interface StudentCommentsProps {
 }
 
 export function StudentComments({ theme_id }: StudentCommentsProps) {
+  const { t } = useTranslation();
   const [note, setNote] = useState("");
 
   const { data: remarks, isLoading } = useQuery(
@@ -69,20 +71,20 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
 
   const canSend = Boolean(replyTarget);
   const placeholder = canSend
-    ? "Написать сообщение..."
-    : "Замечаний пока нет";
+    ? t("Написать сообщение...")
+    : t("Замечаний пока нет");
 
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-transparent">
         <div className="shrink-0 px-4 pb-3">
           <h3 className="text-base font-semibold leading-none">
-            Замечания преподавателя
+            {t("Замечания преподавателя")}
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
             {canSend
-              ? "Пишите в переписку — преподаватель увидит сообщения."
-              : "Здесь отображается переписка по вашей работе."}
+              ? t("Пишите в переписку — преподаватель увидит сообщения.")
+              : t("Здесь отображается переписка по вашей работе.")}
           </p>
         </div>
 
@@ -99,9 +101,11 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
                 <EmptyMedia variant="icon">
                   <MessageCircleDashedIcon />
                 </EmptyMedia>
-                <EmptyTitle>Замечаний пока нет</EmptyTitle>
+                <EmptyTitle>{t("Замечаний пока нет")}</EmptyTitle>
                 <EmptyDescription>
-                  Когда преподаватель оставит замечание, оно появится здесь.
+                  {t(
+                    "Когда преподаватель оставит замечание, оно появится здесь."
+                  )}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -146,7 +150,7 @@ export function StudentComments({ theme_id }: StudentCommentsProps) {
                   className="ml-auto"
                 >
                   <ArrowUpIcon />
-                  <span className="sr-only">Отправить</span>
+                  <span className="sr-only">{t("Отправить")}</span>
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>

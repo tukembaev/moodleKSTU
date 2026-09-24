@@ -1,4 +1,6 @@
 import { courseQueries } from "entities/Course/model/services/courseQueryFactory";
+import { useTranslation } from "react-i18next";
+import i18n from "shared/config/i18n/i18n";
 import { CourseOwner } from "entities/Course/model/types/course";
 import {
   BookOpen,
@@ -41,19 +43,19 @@ type EmptyCopy = {
 
 const EMPTY_COPY = {
   description: {
-    title: "Описание курса пока не заполнено",
+    title: i18n.t("Описание курса пока не заполнено"),
     description:
-      "Преподаватель ещё не рассказал, о чём этот курс, какие темы будут изучаться и какие результаты вы получите. Когда раздел заполнят, здесь появится подробное описание дисциплины.",
+      i18n.t("Преподаватель ещё не рассказал, о чём этот курс, какие темы будут изучаться и какие результаты вы получите. Когда раздел заполнят, здесь появится подробное описание дисциплины."),
   },
   audience: {
-    title: "Аудитория курса не указана",
+    title: i18n.t("Аудитория курса не указана"),
     description:
-      "Пока нет сведений о том, для кого предназначен курс: студентов какого курса, направления или уровня подготовки. Эта информация появится, когда преподаватель заполнит раздел.",
+      i18n.t("Пока нет сведений о том, для кого предназначен курс: студентов какого курса, направления или уровня подготовки. Эта информация появится, когда преподаватель заполнит раздел."),
   },
   requirements: {
-    title: "Требования к курсу не указаны",
+    title: i18n.t("Требования к курсу не указаны"),
     description:
-      "Преподаватель ещё не описал, какие знания, навыки или материалы понадобятся перед началом обучения. Как только требования будут добавлены, вы увидите их в этом блоке.",
+      i18n.t("Преподаватель ещё не описал, какие знания, навыки или материалы понадобятся перед началом обучения. Как только требования будут добавлены, вы увидите их в этом блоке."),
   },
 } as const satisfies Record<string, EmptyCopy>;
 
@@ -133,14 +135,14 @@ const AboutBlock: FC<{
               value={draftValue}
               onChange={(e) => setDraftValue(e.target.value)}
               className="min-h-[140px] resize-none"
-              placeholder="Заполните этот раздел для студентов"
+              placeholder={i18n.t("Заполните этот раздел для студентов")}
             />
             <div className="flex gap-2">
               <Button onClick={handleSave} size="sm">
-                Сохранить
+                {i18n.t("Сохранить")}
               </Button>
               <Button onClick={handleCancel} variant="outline" size="sm">
-                Отменить
+                {i18n.t("Отменить")}
               </Button>
             </div>
           </div>
@@ -165,6 +167,7 @@ const AboutBlock: FC<{
 };
 
 const InstructorCard: FC<{ instructor: CourseOwner }> = ({ instructor }) => {
+  const { t } = useTranslation();
   const initials = instructor.owner_name
     ?.split(" ")
     .filter(Boolean)
@@ -177,10 +180,10 @@ const InstructorCard: FC<{ instructor: CourseOwner }> = ({ instructor }) => {
       <CardHeader className="px-4 sm:px-6">
         <CardTitle className="flex items-center gap-2 text-base">
           <GraduationCap className="h-5 w-5 text-primary" />
-          Преподаватель
+          {t("Преподаватель")}
         </CardTitle>
         <CardDescription>
-          Контактное лицо курса и сведения о профиле
+          {t("Контактное лицо курса и сведения о профиле")}
         </CardDescription>
       </CardHeader>
       <CardContent className="px-4 sm:px-6">
@@ -188,19 +191,19 @@ const InstructorCard: FC<{ instructor: CourseOwner }> = ({ instructor }) => {
           <Avatar className="h-20 w-20 ring-2 ring-primary/10">
             <AvatarImage src={instructor.avatar} alt={instructor.owner_name} />
             <AvatarFallback className="text-base font-semibold bg-primary/10 text-primary">
-              {initials || "П"}
+              {initials || t("П")}
             </AvatarFallback>
           </Avatar>
 
           <div className="w-full min-w-0 space-y-1">
             <h4 className="font-semibold text-base leading-tight">
-              {instructor.owner_name || "Имя преподавателя не указано"}
+              {instructor.owner_name || t("Имя преподавателя не указано")}
             </h4>
             {instructor.position ? (
               <p className="text-sm text-muted-foreground">{instructor.position}</p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Должность в профиле пока не указана
+                {t("Должность в профиле пока не указана")}
               </p>
             )}
           </div>
@@ -216,7 +219,7 @@ const InstructorCard: FC<{ instructor: CourseOwner }> = ({ instructor }) => {
               {instructor.review?.count_courses > 0 && (
                 <Badge variant="outline" className="gap-1">
                   <BookOpen className="h-3 w-3" />
-                  {instructor.review.count_courses} курсов
+                  {t("{{count}} курсов", { count: instructor.review.count_courses })}
                 </Badge>
               )}
             </div>
@@ -250,6 +253,7 @@ const AboutCourse = ({
   audience?: string;
   course_owner?: CourseOwner | undefined;
 }) => {
+  const { t } = useTranslation();
   const { id, isStudent, isAuthenticated } = useAuth();
   const isOwner =
     isSameUserId(course_owner?.user_id, id) ||
@@ -266,8 +270,8 @@ const AboutCourse = ({
         <div className="space-y-4 sm:space-y-6">
           <AboutBlock
             field="description"
-            title="Описание курса"
-            subtitle="Цели дисциплины, содержание и ожидаемые результаты обучения"
+            title={t("Описание курса")}
+            subtitle={t("Цели дисциплины, содержание и ожидаемые результаты обучения")}
             icon={FileText}
             value={description || ""}
             onChange={setDescription}
@@ -278,8 +282,8 @@ const AboutCourse = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <AboutBlock
               field="audience"
-              title="Для кого этот курс"
-              subtitle="Кому будет полезно пройти обучение"
+              title={t("Для кого этот курс")}
+              subtitle={t("Кому будет полезно пройти обучение")}
               icon={Users}
               value={audience || ""}
               onChange={setAudience}
@@ -290,8 +294,8 @@ const AboutCourse = ({
 
             <AboutBlock
               field="requirements"
-              title="Требования"
-              subtitle="Что нужно знать и подготовить заранее"
+              title={t("Требования")}
+              subtitle={t("Что нужно знать и подготовить заранее")}
               icon={ClipboardList}
               value={requirements || ""}
               onChange={setRequirements}
@@ -309,7 +313,7 @@ const AboutCourse = ({
             <CardHeader className="px-4 sm:px-6">
               <CardTitle className="flex items-center gap-2 text-base">
                 <GraduationCap className="h-5 w-5 text-primary" />
-                Преподаватель
+                {t("Преподаватель")}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 sm:px-6">
@@ -318,11 +322,9 @@ const AboutCourse = ({
                   <EmptyMedia variant="icon">
                     <GraduationCap className="size-6" />
                   </EmptyMedia>
-                  <EmptyTitle>Преподаватель ещё не назначен</EmptyTitle>
+                  <EmptyTitle>{t("Преподаватель ещё не назначен")}</EmptyTitle>
                   <EmptyDescription>
-                    Сведения о преподавателе курса пока не поступили. Когда
-                    ответственный преподаватель будет указан, его профиль появится
-                    в этом блоке.
+                    {t("Сведения о преподавателе курса пока не поступили. Когда ответственный преподаватель будет указан, его профиль появится в этом блоке.")}
                   </EmptyDescription>
                 </EmptyContent>
               </Empty>

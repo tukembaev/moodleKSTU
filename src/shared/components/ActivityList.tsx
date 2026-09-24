@@ -6,6 +6,7 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "shared/lib/utils";
 
 interface Activity {
@@ -108,13 +109,14 @@ export default function ActivityList({
   activities = ACTIVITIES,
   className,
 }: List02Props) {
+  const { t } = useTranslation();
   return (
     <div className={cn(className)}>
       <div className="flex items-center justify-between mb-2 sm:mb-3">
         <h2 className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-          Недавние активности
+          {t("Недавние активности")}
           <span className="text-[10px] sm:text-xs font-normal text-zinc-600 dark:text-zinc-400 ml-1">
-            (23 активности)
+            {t("({{count}} активности)", { count: 23 })}
           </span>
         </h2>
       </div>

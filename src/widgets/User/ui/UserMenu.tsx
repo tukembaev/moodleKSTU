@@ -1,4 +1,5 @@
 import { LogOut, Settings, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { LuBriefcaseBusiness } from "react-icons/lu";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "shared/hooks";
@@ -12,6 +13,7 @@ import {
 } from "shared/shadcn/ui/dropdown-menu";
 
 const UserMenu = () => {
+  const { t } = useTranslation();
   const auth_data = useAuth();
 
   const onExit = () => {
@@ -36,25 +38,25 @@ const UserMenu = () => {
         <DropdownMenuContent className="z-41">
           <DropdownMenuItem>
             <NavLink to={`/profile`} className={"flex items-center gap-2"}>
-              <User className="h-4 w-4" /> Профиль
+              <User className="h-4 w-4" /> {t("Профиль")}
             </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <NavLink to={`/profile`} className={"flex items-center gap-2"}>
-              <LuBriefcaseBusiness className="h-4 w-4" /> Личный кабинет{" "}
+              <LuBriefcaseBusiness className="h-4 w-4" /> {t("Личный кабинет")}{" "}
             </NavLink>
           </DropdownMenuItem>
 
           <DropdownMenuItem>
             <NavLink to={`/settings`} className={"flex items-center gap-2"}>
-              <Settings className="h-4 w-4" /> Настройки
+              <Settings className="h-4 w-4" /> {t("Настройки")}
             </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive cursor-pointer"
             onClick={onExit}
           >
-            <LogOut className="h-4 w-4" /> Выйти
+            <LogOut className="h-4 w-4" /> {t("Выйти")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

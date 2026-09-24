@@ -1,5 +1,6 @@
 import { Bell, BookOpen, CalendarDays, Search, UserRound } from "lucide-react";
 import { ComponentType, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppRoutes, RoutePath } from "shared/config/routeConfig/routePath";
 import { useAuth } from "shared/hooks";
@@ -16,6 +17,7 @@ type SheetKey = "search" | "notifications" | "profile";
 const FOCUSED_ROUTES = ["/test/pass"];
 
 const MobileBottomNav = () => {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const { isAuthenticated } = useAuth();
   const location = useLocation();
@@ -49,13 +51,13 @@ const MobileBottomNav = () => {
   return (
     <>
       <nav
-        aria-label="Основная навигация"
+        aria-label={t("Основная навигация")}
         className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
       >
         <ul className="flex items-stretch">
           <NavItem
             icon={CalendarDays}
-            label="Сегодня"
+            label={t("Сегодня")}
             active={isTodayActive && !activeSheet}
             onClick={() => {
               setActiveSheet(null);
@@ -64,7 +66,7 @@ const MobileBottomNav = () => {
           />
           <NavItem
             icon={BookOpen}
-            label="Курсы"
+            label={t("Курсы")}
             active={isCoursesActive && !activeSheet}
             onClick={() => {
               setActiveSheet(null);
@@ -73,20 +75,20 @@ const MobileBottomNav = () => {
           />
           <NavItem
             icon={Search}
-            label="Поиск"
+            label={t("Поиск")}
             active={activeSheet === "search"}
             onClick={() => toggleSheet("search")}
           />
           <NavItem
             icon={Bell}
-            label="Уведомления"
+            label={t("Уведомления")}
             badge={unreadCount}
             active={activeSheet === "notifications"}
             onClick={() => toggleSheet("notifications")}
           />
           <NavItem
             icon={UserRound}
-            label="Профиль"
+            label={t("Профиль")}
             active={activeSheet === "profile" || (isProfileActive && !activeSheet)}
             onClick={() => toggleSheet("profile")}
           />
