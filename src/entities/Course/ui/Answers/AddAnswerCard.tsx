@@ -31,7 +31,7 @@ export const AddAnswerCard: FC<AddAnswerCardProps> = ({ themeId }) => {
       <AttachmentContent>
         <AttachmentTitle>{t("Добавить файл")}</AttachmentTitle>
         <AttachmentDescription>
-          {t("Нажмите или перетащите файлы")}
+          {t("Нажмите или перетащите PDF или изображение")}
         </AttachmentDescription>
       </AttachmentContent>
       <AttachmentTrigger

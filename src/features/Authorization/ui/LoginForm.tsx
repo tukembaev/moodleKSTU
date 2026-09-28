@@ -21,8 +21,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { useGoogleToken } from "../lib/useGoogleToken";
 import { LoginPayload } from "../model/types/login";
-import { Loader2, Eye, EyeOff, BookOpen } from "lucide-react";
-import teacherGuidePdf from "../../../../docs/user-guide/Unet-LMS-rukovodstvo-prepodavatelya.pdf?url";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 interface SignupProps {
   heading?: string;
@@ -308,7 +307,7 @@ const LoginForm = ({
                   )}
                   <span className="truncate">{resolvedGoogleText}</span>
                 </Button>
-              
+        
               </div>
             </div>
           )}

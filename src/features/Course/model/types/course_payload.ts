@@ -35,7 +35,7 @@ export interface CreateCoursePayload {
   export interface UploadMaterialPayload {
     description: string;
     url: string;
-    file: string;
+    file: FileList;
     course_detail: string;
   }
   export interface UploadAnswerPayload {

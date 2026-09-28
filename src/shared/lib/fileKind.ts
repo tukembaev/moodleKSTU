@@ -42,6 +42,29 @@ export function isPdfExt(extension: string) {
   return extension === "pdf";
 }
 
+export const MATERIAL_FILE_ACCEPT =
+  "application/pdf,image/*,.pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp,.svg,.avif";
+
+export function isAllowedMaterialFile(file: File) {
+  const ext = getExtension(file.name);
+  if (isPdfExt(ext) || isImageExt(ext)) return true;
+  const type = (file.type || "").toLowerCase();
+  return type === "application/pdf" || type.startsWith("image/");
+}
+
+export function splitMaterialFiles(files: File[]) {
+  const accepted: File[] = [];
+  const rejected: File[] = [];
+  for (const file of files) {
+    if (isAllowedMaterialFile(file)) {
+      accepted.push(file);
+    } else {
+      rejected.push(file);
+    }
+  }
+  return { accepted, rejected };
+}
+
 export function getFileKindIcon(extension: string): LucideIcon {
   if (isImageExt(extension)) return FileIcon;
   if (isPdfExt(extension) || ["doc", "docx", "ppt", "pptx", "txt"].includes(extension))

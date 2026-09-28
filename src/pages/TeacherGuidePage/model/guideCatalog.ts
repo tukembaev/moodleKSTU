@@ -27,28 +27,34 @@ type PlannedSection = {
  */
 const PLANNED_SECTIONS: PlannedSection[] = [
   {
-    folder: "01-courses",
+    folder: "01-start",
+    title: "Начало работы",
+    parts: [{ file: "01-login", title: "Часть 1. Вход в систему" }],
+  },
+  {
+    folder: "02-courses",
     title: "Курсы",
     parts: [
       { file: "01-create-course", title: "Часть 1. Создание курса" },
       { file: "02-course-page", title: "Часть 2. Страница курса" },
       { file: "03-add-theme", title: "Часть 3. Добавление темы" },
       { file: "04-materials", title: "Часть 4. Учебные материалы" },
+      { file: "05-assign-grades", title: "Часть 5. Выставление оценок" },
+      { file: "06-course-settings", title: "Часть 6. Приглашение студентов на курс" },
+      { file: "07-students", title: "Часть 6. Работа со студентами" },
+      { file: "08-delete-course", title: "Часть 8. Удаление курса" },
+
     ],
   },
   {
-    folder: "02-testing",
+    folder: "03-testing",
     title: "Тестирование",
     parts: [
       { file: "01-create-test", title: "Часть 1. Создание теста" },
       { file: "02-question-bank", title: "Часть 2. Коллекция вопросов" },
     ],
   },
-  {
-    folder: "03-start",
-    title: "Начало работы",
-    parts: [{ file: "01-login", title: "Часть 1. Вход в систему" }],
-  },
+ 
 ];
 
 const videoFiles = import.meta.glob("../videos/**/*.{mp4,webm,mov,m4v}", {

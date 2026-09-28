@@ -10,8 +10,10 @@ import { useFormParam } from "shared/hooks";
 import { Card } from "shared/shadcn/ui/card";
 import { FieldLabel } from "shared/components/FieldLabel";
 import { onFormInvalid, requiredField } from "shared/lib/onFormInvalid";
+import { isAllowedMaterialFile, MATERIAL_FILE_ACCEPT } from "shared/lib/fileKind";
 import { UploadMaterialPayload } from "../model/types/course_payload";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 const Add_Material_file = () => {
   const { t } = useTranslation();
@@ -36,7 +38,11 @@ const Add_Material_file = () => {
 
     const formData = new FormData();
     if (file?.length) {
-      formData.append("file", file[0]); // Передаем первый файл в бинарном виде
+      if (!isAllowedMaterialFile(file[0])) {
+        toast.error(t("Можно загрузить только PDF или изображения"));
+        return;
+      }
+      formData.append("file", file[0]);
     } else {
       formData.append("url", data.url || "");
     }
@@ -79,9 +85,26 @@ const Add_Material_file = () => {
               <FieldLabel htmlFor="title">{t("Материал")}</FieldLabel>
               <Input
                 type="file"
+                accept={MATERIAL_FILE_ACCEPT}
                 placeholder={t("Выберите файл..")}
-                {...register("file")}
+                {...register("file", {
+                  validate: (files) => {
+                    if (!files?.length) return true;
+                    return (
+                      isAllowedMaterialFile(files[0]) ||
+                      t("Можно загрузить только PDF или изображения")
+                    );
+                  },
+                })}
               />
+              <p className="text-xs text-muted-foreground">
+                {t("Можно загрузить PDF или изображение. Рекомендуется PDF.")}
+              </p>
+              {errors.file && (
+                <span className="text-xs text-red-500">
+                  {String(errors.file.message)}
+                </span>
+              )}
             </div>
           )}
 

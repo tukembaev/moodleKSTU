@@ -4,49 +4,48 @@ import {
   Download,
   ZoomIn,
   ZoomOut,
-  ChevronLeft,
-  ChevronRight,
   ExternalLink,
+  Maximize2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-// Импортируем react-pdf для просмотра PDF
 import { Document, Page, pdfjs } from "react-pdf";
 
-// Импортируем стили для react-pdf
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { Button } from "shared/shadcn/ui/button";
 import { Card, CardContent } from "shared/shadcn/ui/card";
 
-// Используем версию worker, соответствующую версии pdfjs-dist
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PdfViewerProps {
   url: string;
-  inDialog?: boolean; // Если true, не используем Card обертку
+  inDialog?: boolean;
 }
 
 const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
   const { t } = useTranslation();
   const [numPages, setNumPages] = useState<number>();
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState<number>(0.8);
-  const [containerWidth, setContainerWidth] = useState<number>(600);
+  const [scale, setScale] = useState<number>(0.5);
+  const [containerWidth, setContainerWidth] = useState<number>(960);
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
-  // Update width on resize
   useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
     const updateWidth = () => {
-      if (containerRef.current) {
-        const width = containerRef.current.offsetWidth;
-        setContainerWidth(width - 32);
+      const width = el.clientWidth;
+      if (width > 0) {
+        setContainerWidth(Math.max(width - 48, 320));
       }
     };
 
     updateWidth();
-    window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const handleDownload = () => {
@@ -61,128 +60,124 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
   };
 
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.2, 3.0));
+    setScale((prev) => Math.min(Number((prev + 0.15).toFixed(2)), 3));
   };
 
   const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.2, 0.5));
+    setScale((prev) => Math.max(Number((prev - 0.15).toFixed(2)), 0.25));
   };
 
-  const handlePrevPage = () => {
-    setPageNumber(prev => Math.max(prev - 1, 1));
+  const handleFitWidth = () => {
+    setScale(0.5);
+    viewportRef.current?.scrollTo({ top: 0, left: 0 });
   };
 
-  const handleNextPage = () => {
-    setPageNumber(prev => Math.min(prev + 1, numPages || 1));
-  };
+  const pageWidth = containerWidth * scale;
+  const pages = numPages ? Array.from({ length: numPages }, (_, index) => index + 1) : [];
 
-  const pageWidth = Math.min(containerWidth, 600);
+  const toolbar = (
+    <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b bg-background/95 p-2">
+      <span className="px-1 text-sm font-medium">
+        {numPages ? t("{{count}} стр.", { count: numPages }) : t("Документ")}
+      </span>
+
+      <div className="flex items-center gap-2">
+        <Button
+          onClick={handleZoomOut}
+          disabled={scale <= 0.25}
+          variant="outline"
+          size="sm"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <span className="min-w-[52px] text-center text-sm font-medium">
+          {Math.round(scale * 100)}%
+        </span>
+        <Button
+          onClick={handleZoomIn}
+          disabled={scale >= 3}
+          variant="outline"
+          size="sm"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button
+          onClick={handleFitWidth}
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+        >
+          <Maximize2 className="h-4 w-4" />
+          {t("По ширине")}
+        </Button>
+      </div>
+    </div>
+  );
 
   const content = (
-    <div className={inDialog ? "px-6 pb-6" : "p-4"} ref={containerRef}>
+    <div
+      ref={containerRef}
+      className={inDialog ? "flex h-full min-h-0 flex-col" : "flex min-h-[70vh] flex-col p-4"}
+    >
       {!inDialog && (
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-3 flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-semibold">{t("Документ")}</h3>
         </div>
       )}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={openInNewTab}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t("Открыть в новой вкладке")}
-          </Button>
-          <Button
-            onClick={handleDownload}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            {t("Скачать")}
-          </Button>
-        </div>
+
+      <div className="mb-3 flex shrink-0 flex-wrap items-center gap-2 px-1">
+        <Button onClick={openInNewTab} variant="outline" size="sm" className="gap-2">
+          <ExternalLink className="h-4 w-4" />
+          {t("Открыть в новой вкладке")}
+        </Button>
+        <Button onClick={handleDownload} variant="outline" size="sm" className="gap-2">
+          <Download className="h-4 w-4" />
+          {t("Скачать")}
+        </Button>
       </div>
 
-      {/* Панель управления */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 p-2 border rounded-lg bg-muted/30">
-        {/* Навигация по страницам */}
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handlePrevPage}
-            disabled={pageNumber <= 1}
-            variant="outline"
-            size="sm"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm font-medium min-w-[100px] text-center">
-            {pageNumber} / {numPages || "..."}
-          </span>
-          <Button
-            onClick={handleNextPage}
-            disabled={pageNumber >= (numPages || 1)}
-            variant="outline"
-            size="sm"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Управление масштабом */}
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handleZoomOut}
-            disabled={scale <= 0.5}
-            variant="outline"
-            size="sm"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <span className="text-sm font-medium min-w-[60px] text-center">
-            {Math.round(scale * 100)}%
-          </span>
-          <Button
-            onClick={handleZoomIn}
-            disabled={scale >= 3.0}
-            variant="outline"
-            size="sm"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-      
-      <div className={`flex justify-center overflow-auto ${inDialog ? "max-h-[calc(90vh-16rem)]" : "max-h-[calc(100vh-20rem)]"} rounded-lg border bg-muted/10`}>
-        <Document
-          file={url}
-          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-          loading={
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-pulse text-muted-foreground">
-                {t("Загрузка документа...")}
-              </div>
-            </div>
-          }
-          error={
-            <div className="flex items-center justify-center p-8">
-              <div className="text-destructive">{t("Ошибка загрузки документа")}</div>
-            </div>
-          }
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-muted/20">
+        {toolbar}
+        <div
+          ref={viewportRef}
+          className="min-h-0 flex-1 overflow-auto bg-neutral-100 dark:bg-neutral-900"
         >
-          <Page 
-            pageNumber={pageNumber}
-            width={pageWidth * scale}
-            renderTextLayer={true}
-            renderAnnotationLayer={true}
-            className="shadow-lg"
-          />
-        </Document>
+          <Document
+            file={url}
+            onLoadSuccess={({ numPages: nextPages }) => setNumPages(nextPages)}
+            loading={
+              <div className="flex items-center justify-center p-8">
+                <div className="animate-pulse text-muted-foreground">
+                  {t("Загрузка документа...")}
+                </div>
+              </div>
+            }
+            error={
+              <div className="flex items-center justify-center p-8">
+                <div className="text-destructive">{t("Ошибка загрузки документа")}</div>
+              </div>
+            }
+          >
+            <div className="flex flex-col items-center gap-4 p-4">
+              {pages.map((page) => (
+                <Page
+                  key={page}
+                  pageNumber={page}
+                  width={pageWidth}
+                  renderTextLayer
+                  renderAnnotationLayer
+                  className="shadow-xl"
+                  devicePixelRatio={
+                    typeof window !== "undefined"
+                      ? Math.min(window.devicePixelRatio || 1, 2)
+                      : 1
+                  }
+                />
+              ))}
+            </div>
+          </Document>
+        </div>
       </div>
     </div>
   );
@@ -192,10 +187,8 @@ const PdfViewer = ({ url, inDialog = false }: PdfViewerProps) => {
   }
 
   return (
-    <Card className="hover:shadow-md transition-all duration-200 h-fit">
-      <CardContent className="p-0">
-        {content}
-      </CardContent>
+    <Card className="h-fit transition-all duration-200 hover:shadow-md">
+      <CardContent className="p-0">{content}</CardContent>
     </Card>
   );
 };

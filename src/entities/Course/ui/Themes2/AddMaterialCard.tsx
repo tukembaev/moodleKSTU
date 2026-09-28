@@ -31,7 +31,7 @@ export const AddMaterialCard: FC<AddMaterialCardProps> = ({ themeId }) => {
       <AttachmentContent>
         <AttachmentTitle>{t("Добавить материал")}</AttachmentTitle>
         <AttachmentDescription>
-          {t("Нажмите или перетащите файлы")}
+          {t("Нажмите или перетащите PDF или изображение")}
         </AttachmentDescription>
       </AttachmentContent>
       <AttachmentTrigger

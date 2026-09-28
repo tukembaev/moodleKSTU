@@ -6,6 +6,7 @@ import { courseQueries } from "entities/Course/model/services/courseQueryFactory
 import { FileAnswer } from "entities/Course/model/types/course";
 import { DownloadIcon, Trash2Icon } from "lucide-react";
 import { UseConfirmationDialog, UseTooltip } from "shared/components";
+import ImagePreview from "shared/components/ImagePreview";
 import PdfViewer from "shared/components/PdfPreview";
 import { getExtension, getFileKindIcon, isImageExt, isPdfExt } from "shared/lib/fileKind";
 import {
@@ -160,11 +161,13 @@ export function AnswerFileAttachment({
           {body}
           {previewTrigger}
         </Attachment>
-        <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="px-6 pt-6 pb-0">
+        <DialogContent className="flex h-[96vh] max-h-[96vh] w-[96vw] max-w-[1800px] flex-col overflow-hidden p-0 sm:max-w-[1800px]">
+          <DialogHeader className="shrink-0 px-6 pt-5 pb-2">
             <DialogTitle>{file.file_names}</DialogTitle>
           </DialogHeader>
-          <PdfViewer url={file.file || ""} inDialog={true} />
+          <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4">
+            <PdfViewer url={file.file || ""} inDialog={true} />
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -177,16 +180,12 @@ export function AnswerFileAttachment({
           {body}
           {previewTrigger}
         </Attachment>
-        <DialogContent className="max-w-4xl w-[90vw] overflow-hidden p-0">
-          <DialogHeader className="px-6 pt-6 pb-2">
+        <DialogContent className="flex h-[96vh] max-h-[96vh] w-[96vw] max-w-[1800px] flex-col overflow-hidden p-0 sm:max-w-[1800px]">
+          <DialogHeader className="shrink-0 px-6 pt-5 pb-2">
             <DialogTitle>{file.file_names}</DialogTitle>
           </DialogHeader>
-          <div className="px-6 pb-6">
-            <img
-              src={file.file}
-              alt={file.file_names}
-              className="max-h-[70vh] w-full rounded-lg object-contain bg-muted"
-            />
+          <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4">
+            <ImagePreview url={file.file} alt={file.file_names} />
           </div>
         </DialogContent>
       </Dialog>

@@ -17,6 +17,7 @@ import { useCourseId } from "shared/lib/navigation/hidden-ids";
 import { cn } from "shared/lib/utils";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import { toast } from "sonner";
+import { splitMaterialFiles } from "shared/lib/fileKind";
 import { AddAnswerCard } from "./AddAnswerCard";
 import { AnswerVersionList } from "./AnswerVersionList";
 
@@ -100,8 +101,18 @@ const SingleStudentAnswers = ({
       return;
     }
 
+    const { accepted, rejected } = splitMaterialFiles(files);
+    if (rejected.length) {
+      toast.error(
+        t("{{count}} файл(ов) пропущены: допустимы только PDF и изображения", {
+          count: rejected.length,
+        })
+      );
+    }
+    if (!accepted.length) return;
+
     const formData = new FormData();
-    files.forEach((file, index) => {
+    accepted.forEach((file, index) => {
       formData.append(`list_files[${index}]`, file, file.name);
     });
     formData.append("task", id);
@@ -133,7 +144,7 @@ const SingleStudentAnswers = ({
             <LuUpload size={48} className="text-primary" />
             <p className="text-lg font-semibold">{t("Перетащите файлы сюда")}</p>
             <p className="text-sm text-muted-foreground">
-              {t("Файлы будут загружены как ответы по теме")}
+              {t("Можно загрузить PDF или изображение. Рекомендуется PDF.")}
             </p>
           </div>
         </div>

@@ -14,6 +14,7 @@ import {
   EmptyTitle,
 } from "shared/shadcn/ui/empty";
 import { toast } from "sonner";
+import { splitMaterialFiles } from "shared/lib/fileKind";
 import { AddMaterialCard } from "./AddMaterialCard";
 import { MaterialAttachment } from "./MaterialAttachment";
 
@@ -86,14 +87,23 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
     }
 
     const files = Array.from(e.dataTransfer.files);
-    
+
     if (files.length === 0) {
       toast.error(t("Файлы не найдены"));
       return;
     }
 
-    // Загружаем каждый файл отдельно
-    for (const file of files) {
+    const { accepted, rejected } = splitMaterialFiles(files);
+    if (rejected.length) {
+      toast.error(
+        t("{{count}} файл(ов) пропущены: допустимы только PDF и изображения", {
+          count: rejected.length,
+        })
+      );
+    }
+    if (!accepted.length) return;
+
+    for (const file of accepted) {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("description", file.name);
@@ -127,7 +137,9 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
           <div className="bg-background border-2 border-dashed border-primary rounded-lg p-8 flex flex-col items-center gap-3">
             <LuUpload size={48} className="text-primary" />
             <p className="text-lg font-semibold">{t("Перетащите файлы сюда")}</p>
-            <p className="text-sm text-muted-foreground">{t("Файлы будут загружены как учебные материалы")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("Можно загрузить PDF или изображение. Рекомендуется PDF.")}
+            </p>
           </div>
         </div>
       )}

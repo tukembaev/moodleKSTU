@@ -7,6 +7,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { UseConfirmationDialog, UseTooltip } from "shared/components";
+import ImagePreview from "shared/components/ImagePreview";
 import PdfViewer from "shared/components/PdfPreview";
 import {
   getExtension,
@@ -213,11 +214,13 @@ export function MaterialAttachment({
             <AttachmentTrigger aria-label={t("Открыть превью {{name}}", { name: sourceName })} />
           </DialogTrigger>
         </Attachment>
-        <DialogContent className="max-w-screen-2xl w-[90vw] max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="px-6 pt-6 pb-0">
+        <DialogContent className="flex h-[96vh] max-h-[96vh] w-[96vw] max-w-[1800px] flex-col overflow-hidden p-0 sm:max-w-[1800px]">
+          <DialogHeader className="shrink-0 px-6 pt-5 pb-2">
             <DialogTitle>{sourceName}</DialogTitle>
           </DialogHeader>
-          <PdfViewer url={fileSource} inDialog={true} />
+          <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4">
+            <PdfViewer url={fileSource} inDialog={true} />
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -234,16 +237,12 @@ export function MaterialAttachment({
             <AttachmentTrigger aria-label={t("Открыть {{name}}", { name: sourceName })} />
           </DialogTrigger>
         </Attachment>
-        <DialogContent className="max-w-4xl w-[90vw] overflow-hidden p-0">
-          <DialogHeader className="px-6 pt-6 pb-2">
+        <DialogContent className="flex h-[96vh] max-h-[96vh] w-[96vw] max-w-[1800px] flex-col overflow-hidden p-0 sm:max-w-[1800px]">
+          <DialogHeader className="shrink-0 px-6 pt-5 pb-2">
             <DialogTitle>{sourceName}</DialogTitle>
           </DialogHeader>
-          <div className="px-6 pb-6">
-            <img
-              src={fileSource}
-              alt={sourceName}
-              className="max-h-[70vh] w-full rounded-lg object-contain bg-muted"
-            />
+          <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4">
+            <ImagePreview url={fileSource} alt={sourceName} />
           </div>
         </DialogContent>
       </Dialog>
