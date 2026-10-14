@@ -77,11 +77,13 @@ function parseMaterial(value: unknown): CourseFeedMaterial | null {
   const fileName =
     asString(record.file_name) ||
     asString(record.filename) ||
-    asString(record.name);
-  if (!fileName && !record.file) return null;
+    asString(record.name) ||
+    asString(record.description);
+  const isText = record.kind === "text" || Boolean(asString(record.content));
+  if (!fileName && !record.file && !isText) return null;
   return {
     id: asString(record.id) || null,
-    file_name: fileName || i18n.t("Без названия"),
+    file_name: fileName || (isText ? i18n.t("Текстовый материал") : i18n.t("Без названия")),
     previous_file_name:
       asString(record.previous_file_name) ||
       asString(record.old_file_name) ||

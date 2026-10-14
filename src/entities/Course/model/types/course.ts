@@ -171,13 +171,15 @@ export interface CourseThemes {
 
 export interface CourseMaterials {
   id: string,
-  file: string,
-  file_name: string,
+  file: string | null,
+  file_name: string | null,
   description: string,
-  url: string,
-  url_name: string,
+  url: string | null,
+  url_name: string | null,
   course_detail: string,
-  files: string
+  files: string | null,
+  content: string | null,
+  kind?: "file" | "url" | "text",
 }
 
 export interface CourseAllMaterials {

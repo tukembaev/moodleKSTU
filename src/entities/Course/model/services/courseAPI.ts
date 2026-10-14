@@ -284,6 +284,21 @@ export const createMaterial = async (data: FormData) => {
 
   return response.data;
 };
+export const createTextMaterial = async (data: {
+  course_detail: string;
+  description: string;
+  content: string;
+}) => {
+  const response = await $api_edu.post(`material/`, { ...data, kind: "text" });
+  return response.data;
+};
+export const updateTextMaterial = async (
+  id: string,
+  data: { description: string; content: string }
+) => {
+  const response = await $api_edu.patch(`material/${id}/`, data);
+  return response.data;
+};
 export const createAnswer = async (data: FormData) => {
   const response = await $api_edu.post(`answer-task/`, data, {
     headers: {

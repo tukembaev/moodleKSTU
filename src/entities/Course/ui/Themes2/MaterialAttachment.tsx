@@ -1,12 +1,16 @@
 import { CourseMaterials } from "entities/Course/model/types/course";
+import { isTextMaterial } from "entities/Course/lib/textMaterial";
 import { useTranslation } from "react-i18next";
 import {
   DownloadIcon,
   ExternalLinkIcon,
+  FileTextIcon,
   LinkIcon,
   Trash2Icon,
 } from "lucide-react";
-import { UseConfirmationDialog, UseTooltip } from "shared/components";
+import { RichTextView, UseConfirmationDialog, UseTooltip } from "shared/components";
+import { FormQuery } from "shared/config/formConfig/formQuery";
+import { useForm } from "shared/hooks";
 import ImagePreview from "shared/components/ImagePreview";
 import PdfViewer from "shared/components/PdfPreview";
 import {
@@ -29,6 +33,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -57,11 +62,15 @@ export function MaterialAttachment({
   className?: string;
 }) {
   const { t } = useTranslation();
-  const isUrl = Boolean(material.url);
-  const youtubeId = isUrl ? getYouTubeId(material.url) : null;
-  const sourceName = isUrl
-    ? material.url_name || t("Ссылка на материал")
-    : material.file_name || t("Без названия");
+  const openForm = useForm();
+  const isText = isTextMaterial(material);
+  const isUrl = Boolean(material.url) && !isText;
+  const youtubeId = isUrl ? getYouTubeId(material.url || "") : null;
+  const sourceName = isText
+    ? material.description || t("Текстовый материал")
+    : isUrl
+      ? material.url_name || t("Ссылка на материал")
+      : material.file_name || t("Без названия");
   const fileSource = material.file || material.files || "";
   const extension = getExtension(material.file_name || fileSource);
   const isPdf = !isUrl && (isPdfExt(extension) || fileSource.toLowerCase().includes(".pdf"));
@@ -100,6 +109,63 @@ export function MaterialAttachment({
     </UseTooltip>
   );
 
+  if (isText) {
+    const titleText = material.description || t("Текстовый материал");
+    const card = (
+      <>
+        <AttachmentMedia>
+          <FileTextIcon />
+        </AttachmentMedia>
+        <AttachmentContent>
+          <UseTooltip text={titleText}>
+            <AttachmentTitle>{titleText}</AttachmentTitle>
+          </UseTooltip>
+          <AttachmentDescription>{t("Текст")}</AttachmentDescription>
+        </AttachmentContent>
+        <AttachmentActions>{deleteAction}</AttachmentActions>
+      </>
+    );
+
+    if (canDelete) {
+      return (
+        <Attachment className={className}>
+          {card}
+          <AttachmentTrigger
+            aria-label={t("Редактировать {{name}}", { name: titleText })}
+            onClick={() =>
+              openForm(FormQuery.ADD_MATERIAL, {
+                id: material.course_detail,
+                material: material.id,
+              })
+            }
+          />
+        </Attachment>
+      );
+    }
+
+    return (
+      <Dialog>
+        <Attachment className={className}>
+          {card}
+          <DialogTrigger asChild>
+            <AttachmentTrigger aria-label={t("Читать {{name}}", { name: titleText })} />
+          </DialogTrigger>
+        </Attachment>
+        <DialogContent className="flex max-h-[90vh] w-[92vw] max-w-3xl flex-col overflow-hidden p-0 sm:max-w-3xl">
+          <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
+            <DialogTitle>{titleText}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {t("Текст учебного материала")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+            <RichTextView content={material.content ?? ""} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   if (isUrl && youtubeId) {
     const thumb = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
     return (
@@ -115,7 +181,7 @@ export function MaterialAttachment({
           <AttachmentActions>
             <AttachmentAction
               aria-label={t("Открыть {{name}} на YouTube", { name: sourceName })}
-              onClick={() => window.open(material.url, "_blank", "noopener,noreferrer")}
+              onClick={() => window.open(material.url || "", "_blank", "noopener,noreferrer")}
             >
               <ExternalLinkIcon />
             </AttachmentAction>
@@ -158,7 +224,7 @@ export function MaterialAttachment({
         <AttachmentActions>
           <AttachmentAction
             aria-label={t("Открыть {{name}}", { name: sourceName })}
-            onClick={() => window.open(material.url, "_blank", "noopener,noreferrer")}
+            onClick={() => window.open(material.url || "", "_blank", "noopener,noreferrer")}
           >
             <ExternalLinkIcon />
           </AttachmentAction>
@@ -168,7 +234,7 @@ export function MaterialAttachment({
           asChild
           aria-label={t("Открыть {{name}}", { name: sourceName })}
         >
-          <a href={material.url} target="_blank" rel="noopener noreferrer" />
+          <a href={material.url || ""} target="_blank" rel="noopener noreferrer" />
         </AttachmentTrigger>
       </Attachment>
     );
@@ -178,7 +244,7 @@ export function MaterialAttachment({
     <AttachmentActions>
       <AttachmentAction
         aria-label={t("Скачать {{name}}", { name: sourceName })}
-        onClick={() => downloadUrl(fileSource, material.file_name)}
+        onClick={() => downloadUrl(fileSource, material.file_name || undefined)}
       >
         <DownloadIcon />
       </AttachmentAction>
@@ -255,7 +321,7 @@ export function MaterialAttachment({
       {content}
       {actions}
       <AttachmentTrigger asChild aria-label={t("Скачать {{name}}", { name: sourceName })}>
-        <a href={fileSource} download={material.file_name} />
+        <a href={fileSource} download={material.file_name || undefined} />
       </AttachmentTrigger>
     </Attachment>
   );

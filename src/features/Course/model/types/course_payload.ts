@@ -38,6 +38,17 @@ export interface CreateCoursePayload {
     file: FileList;
     course_detail: string;
   }
+
+  export interface CreateTextMaterialPayload {
+    course_detail: string;
+    description: string;
+    content: string;
+  }
+
+  export interface UpdateTextMaterialPayload {
+    description: string;
+    content: string;
+  }
   export interface UploadAnswerPayload {
     task: string;      // Идентификатор курса
     list_files?: File[];        // Массив файлов, если отправляются через форму

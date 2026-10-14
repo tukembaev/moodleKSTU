@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { forms } from "shared/config/formConfig/formConfig";
+import { FormQuery, forms } from "shared/config/formConfig/formConfig";
 import { useAuth } from "shared/hooks";
 import { closeFormSearch } from "shared/hooks/useForm";
+import { useMaterialDrawerWide } from "shared/lib/materialDrawerWidth";
 import { cn } from "shared/lib/utils";
 import { useIsMobile } from "shared/shadcn/hooks/use-mobile";
 import { Drawer } from "vaul";
@@ -14,6 +15,7 @@ export default function GlobalDrawer() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const wide = useMaterialDrawerWide();
   const [open, setOpen] = useState(false);
 
   const searchParams = useMemo(
@@ -36,6 +38,9 @@ export default function GlobalDrawer() {
     navigate({ search: searchParams.toString() }, { replace: true });
   };
 
+  const expanded =
+    wide && currentForm?.query === FormQuery.ADD_MATERIAL;
+
   return (
     <Drawer.Root
       key={isMobile ? "bottom" : "right"}
@@ -49,8 +54,12 @@ export default function GlobalDrawer() {
           className={cn(
             "fixed z-41 flex outline-none min-w-0",
             isMobile
-              ? "inset-x-0 bottom-0 max-h-[min(92dvh,100%)]"
-              : "right-2 top-2 bottom-2 w-[min(440px,calc(100vw-1.5rem))] lg:w-[510px]"
+              ? expanded
+                ? "inset-x-0 bottom-0 max-h-[96dvh]"
+                : "inset-x-0 bottom-0 max-h-[min(92dvh,100%)]"
+              : expanded
+                ? "right-2 top-2 bottom-2 w-[min(980px,calc(100vw-2rem))]"
+                : "right-2 top-2 bottom-2 w-[min(440px,calc(100vw-1.5rem))] lg:w-[510px]"
           )}
           aria-describedby={undefined}
           style={
@@ -63,9 +72,12 @@ export default function GlobalDrawer() {
         >
           <div
             className={cn(
-              "bg-zinc-50 w-full grow flex flex-col overflow-y-auto overscroll-contain min-w-0 min-h-0",
+              "bg-zinc-50 w-full grow flex flex-col min-w-0 min-h-0",
+              expanded ? "overflow-hidden" : "overflow-y-auto overscroll-contain",
               isMobile
-                ? "rounded-t-2xl px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] max-h-[min(92dvh,100%)]"
+                ? expanded
+                  ? "max-h-[96dvh] rounded-t-2xl px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]"
+                  : "max-h-[min(92dvh,100%)] rounded-t-2xl px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]"
                 : "h-full rounded-[16px] p-4 lg:p-5"
             )}
           >
@@ -81,7 +93,12 @@ export default function GlobalDrawer() {
               {currentForm?.title ? t(currentForm.title) : null}
             </Drawer.Title>
             {/* если это студент и ему не разрешено то null , иначе всем можно пользоваться */}
-            <div className="min-w-0 flex-1">
+            <div
+              className={cn(
+                "min-w-0 flex-1",
+                expanded && "flex min-h-0 flex-col overflow-hidden"
+              )}
+            >
               {isStudent && !currentForm?.is_student_allow
                 ? t("Доступ студентам запрещен!")
                 : currentForm?.form}

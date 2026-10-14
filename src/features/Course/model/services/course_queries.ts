@@ -4,13 +4,13 @@ import { registerToCourse } from 'entities/User';
 
 import { createCourse, createTheme } from 'entities/Course';
 import { apiErrorDetail } from 'entities/Course/lib/apiErrorDetail';
-import { bindCourseStreams, createAnswer, createComment, createCourseAnnouncement, createCourseInviteLink, createCourseStudentGroup, createFAQ, createMaterial, deleteAnswer, deleteCourse, deleteCourseAnnouncement, deleteCourseInviteLink, deleteCourseStream, deleteCourseStudentGroup, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editCourseStudentGroup, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setCourseAccess, setCourseArchive, setExtraPoints, updateCourseAnnouncement } from 'entities/Course/model/services/courseAPI';
+import { bindCourseStreams, createAnswer, createComment, createCourseAnnouncement, createCourseInviteLink, createCourseStudentGroup, createFAQ, createMaterial, createTextMaterial, deleteAnswer, deleteCourse, deleteCourseAnnouncement, deleteCourseInviteLink, deleteCourseStream, deleteCourseStudentGroup, deleteMaterial, deleteTheme, duplicateCourse, editCourseDetails, editCourseStudentGroup, editPermissionTheme, editTheme, finishCourse, likeComment, rateTheAnswerAndComment, removeStudentFromCourse, replyOnComment, setCourseAccess, setCourseArchive, setExtraPoints, updateCourseAnnouncement, updateTextMaterial } from 'entities/Course/model/services/courseAPI';
 import { CreateAnnouncementPayload, CreateCourseInvitePayload, UpdateAnnouncementPayload } from 'entities/Course/model/types/course';
 import { toast } from 'sonner';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AppRoutes, RoutePath } from 'shared/config/routeConfig/routePath';
 import i18n from "shared/config/i18n/i18n";
-import { BindCourseStreamsPayload, CreateCoursePayload, CreateCourseStudentGroupPayload, CreateFAQPayload, CreateThemePayload, EditCourseStudentGroupPayload, EditThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload, SetCourseAccessPayload } from '../types/course_payload';
+import { BindCourseStreamsPayload, CreateCoursePayload, CreateCourseStudentGroupPayload, CreateFAQPayload, CreateTextMaterialPayload, CreateThemePayload, EditCourseStudentGroupPayload, EditThemePayload, editDetailPayload, editPermissionPayload, FinishCourseFormPayload, RateAnswerPayload, SetCourseAccessPayload, UpdateTextMaterialPayload } from '../types/course_payload';
 
 const MY_SUBMISSIONS_QUERY_KEY = ['course', 'my-submissions'] as const;
 const COURSE_MATERIALS_QUERY_KEY = ['course', 'course-materials'] as const;
@@ -149,6 +149,46 @@ export const useRegistrateCourse = () => {
         queryClient.invalidateQueries({ queryKey: COURSE_MATERIALS_QUERY_KEY, exact: false });
         queryClient.invalidateQueries({ queryKey: COURSE_FEED_QUERY_KEY, exact: false });
       },
+    });
+  };
+
+  const invalidateMaterials = (queryClient: QueryClient) => {
+    queryClient.invalidateQueries({ queryKey: ['course','task-materials'], exact: false });
+    queryClient.invalidateQueries({ queryKey: COURSE_FEED_QUERY_KEY, exact: false });
+  };
+
+  export const useCreateTextMaterial = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (data: CreateTextMaterialPayload) => {
+        const mutationPromise = createTextMaterial(data);
+        toast.promise(mutationPromise, {
+          loading: i18n.t("Сохраняем текст..."),
+          success: i18n.t("Текстовый материал сохранён"),
+          error: (error) => apiErrorDetail(error, i18n.t("Не удалось сохранить текст")),
+        });
+        return mutationPromise;
+      },
+      onSuccess: () => invalidateMaterials(queryClient),
+    });
+  };
+
+  export const useUpdateTextMaterial = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (data: UpdateTextMaterialPayload & { id: string }) => {
+        const mutationPromise = updateTextMaterial(data.id, {
+          description: data.description,
+          content: data.content,
+        });
+        toast.promise(mutationPromise, {
+          loading: i18n.t("Сохраняем изменения..."),
+          success: i18n.t("Текст материала обновлён"),
+          error: (error) => apiErrorDetail(error, i18n.t("Не удалось сохранить текст")),
+        });
+        return mutationPromise;
+      },
+      onSuccess: () => invalidateMaterials(queryClient),
     });
   };
 

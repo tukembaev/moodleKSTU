@@ -5,7 +5,7 @@ import { getAnswerTask, getArchivedCourses, getCourseAllTasks, getCoursesOfProfe
 import { getStudentCourseDetail, getStudentDashboard, getTeacherCourseDetail, getTeacherDashboard } from './statisticsAPI';
 
 import { DISCUSSION_POLL_MS } from 'entities/Course/lib/themeDiscussion';
-import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnnouncement, useCreateAnswer, useCreateCourse, useCreateCourseInvite, useCreateCourseStudentGroup, useCreateFAQ, useCreateMaterial, useCreateTheme, useDeleteAnnouncement, useDeleteAnswer, useDeleteCourse, useDeleteCourseInvite, useDeleteCourseStream, useDeleteCourseStudentGroup, useDeleteTheme, useDuplicateCourse, useEditCourseStudentGroup, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetCourseAccess, useSetCourseArchive, useSetThemeAccessForAll, useUpdateAnnouncement } from 'features/Course/model/services/course_queries';
+import { delete_material, useAddComment, useBindCourseStreams, useChangeDetails, useChangePermission, useCreateAnnouncement, useCreateAnswer, useCreateCourse, useCreateCourseInvite, useCreateCourseStudentGroup, useCreateFAQ, useCreateMaterial, useCreateTextMaterial, useCreateTheme, useDeleteAnnouncement, useDeleteAnswer, useDeleteCourse, useDeleteCourseInvite, useDeleteCourseStream, useDeleteCourseStudentGroup, useDeleteTheme, useDuplicateCourse, useEditCourseStudentGroup, useEditTheme, useFinishCourse, useRateAnswerAndComment, useRateComment, useRemoveStudentFromCourse, useReplyToComment, useSetCourseAccess, useSetCourseArchive, useSetThemeAccessForAll, useUpdateAnnouncement, useUpdateTextMaterial } from 'features/Course/model/services/course_queries';
 
 
 
@@ -210,6 +210,8 @@ export const courseQueries = {
   create_theme: () => useCreateTheme(),
   create_faq: () => useCreateFAQ(),
   create_material: () => useCreateMaterial(),
+  create_text_material: () => useCreateTextMaterial(),
+  update_text_material: () => useUpdateTextMaterial(),
   create_answer: () => useCreateAnswer(),
   rate_answer: () => useRateAnswerAndComment(),
   finish_course: () => useFinishCourse(),

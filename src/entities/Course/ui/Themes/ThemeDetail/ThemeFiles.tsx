@@ -20,6 +20,7 @@ import { Button } from "shared/shadcn/ui/button";
 import { Skeleton } from "shared/shadcn/ui/skeleton";
 import ThemeAnswers from "../../Answers/ThemeAnswers";
 import ThemeAccess from "../../Answers/ThemeAccess";
+import { visibleThemeMaterials } from "entities/Course/lib/textMaterial";
 import { AddMaterialCard } from "../../Themes2/AddMaterialCard";
 import { MaterialAttachment } from "../../Themes2/MaterialAttachment";
 import ThemeFAQ from "./ThemeFAQ";
@@ -97,11 +98,7 @@ const ThemeFiles = ({ id, isOwner }: { id: string; isOwner: boolean }) => {
       : []),
   ];
 
-  // Объединяем материалы с файлами и URL в один массив
-  const allMaterials = [
-    ...(data?.filter((material) => material.files) || []),
-    ...(data?.filter((material) => material.url) || []),
-  ];
+  const allMaterials = visibleThemeMaterials(data);
 
   const { mutate: delete_material } = courseQueries.delete_material();
 

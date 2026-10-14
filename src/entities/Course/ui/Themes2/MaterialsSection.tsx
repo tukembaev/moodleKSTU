@@ -15,6 +15,7 @@ import {
 } from "shared/shadcn/ui/empty";
 import { toast } from "sonner";
 import { splitMaterialFiles } from "shared/lib/fileKind";
+import { visibleThemeMaterials } from "entities/Course/lib/textMaterial";
 import { AddMaterialCard } from "./AddMaterialCard";
 import { MaterialAttachment } from "./MaterialAttachment";
 
@@ -47,10 +48,7 @@ export const MaterialsSection: FC<MaterialsSectionProps> = ({
 
   const canManageMaterials = Boolean(auth_data.isAuthenticated && !auth_data.isStudent);
 
-  const allMaterials = [
-    ...(materials?.filter((material) => material.files) || []),
-    ...(materials?.filter((material) => material.url) || []),
-  ];
+  const allMaterials = visibleThemeMaterials(materials);
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
