@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const html = path.join(__dirname, "Unet-LMS-rukovodstvo-prepodavatelya.html");
 const out = path.join(__dirname, "Unet-LMS-rukovodstvo-prepodavatelya.pdf");
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ headless: true, channel: "chrome" });
 const page = await browser.newPage();
 await page.goto(pathToFileURL(html).href, { waitUntil: "networkidle" });
 await page.pdf({
